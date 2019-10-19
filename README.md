@@ -83,7 +83,7 @@ let result:any = await db.open({name:"testsqlite"});
 npm install --save capacitor-sqlite@latest
 ```
 
-Ionic App showing an integration of [capacitor-data-storage-sqlite plugin](https://github.com/jepiqueau/ionic-capacitor-sqlite)
+Ionic App showing an integration of [capacitor-sqlite plugin](https://github.com/jepiqueau/ionic-capacitor-sqlite)
 
 
 
