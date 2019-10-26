@@ -3,17 +3,17 @@ Capacitor SQlite  Plugin is a custom Native Capacitor plugin to store permanentl
 
 
     *********************************************************************
-    WARNING this is an ALPHA version with only the IOS plugin implemented
+    WARNING this is an ALPHA version with both the IOS  and Android plugins implemented
     *********************************************************************
 
 
 ## Methods available
 
-    open({name:string})                         open a database
-    execute({statements:string})                execute a batch of raw SQL statements           
+    open({name:string})                                open a database
+    execute({statements:string})                       execute a batch of raw SQL statements           
     run({statement:string,values:Array<Array<any>>})   run a SQL statement
-    query({statement:string})                   query a SELECT SQL statement
-    deleteDatabase({name:string})               delete a database
+    query({statement:string,values:Array<string>})     query a SELECT SQL statement
+    deleteDatabase({name:string})                      delete a database
 
 ## Usage
 ### open
@@ -41,7 +41,7 @@ let result:any = await db.open({name:"testsqlite"});
       COMMIT TRANSACTION;
       `;
       const retExe: any = await db.execute({statements:sqlcmd});
-      const res: Number = retExe.result // should be 0
+      const res: Number = retExe.result // should be 0 in IOS and 1 in Android
 ```
 
 ```
@@ -59,7 +59,7 @@ let result:any = await db.open({name:"testsqlite"});
 ### run
 ```
       sqlcmd = "INSERT INTO users (name,email,age) VALUES (?,?,?)";
-      let values: Array<Array<any>>  = [["Simpson","TEXT"],["Simpson@example.com","TEXT"],[69,"INTEGER"]];
+      let values: Array<any>  = ["Simpson","Simpson@example.com",69];
       const retRun: any = await db.run({statement:sqlcmd,values:values});
       const res: Number = retRun.result // should be 1
 ```
@@ -74,9 +74,16 @@ let result:any = await db.open({name:"testsqlite"});
  - Select all Users
 ```
       sqlcmd = "SELECT * FROM users";
-      const retSelect: any = await db.query({statement:sqlcmd});
-      const res: Number = retSelect.result.length    
+      const retSelect: any = await db.query({statement:sqlcmd,values:[]});
+      const res: Number = retSelect.result.length;    
 ```
+
+ - Select Users where age > 30
+```
+      sqlcmd = "SELECT name,email,age FROM users WHERE age > ?";
+      const retSelect: any = await db.query({statement:sqlcmd,values:["30"]});
+      const res: Number = retSelect.result.length;    
+``` 
 
 ## To use the Plugin in your Project
 ```bash
@@ -88,7 +95,7 @@ Ionic App showing an integration of [capacitor-sqlite plugin](https://github.com
 
 
 ## Remarks
-This release of the plugin includes the Native IOS code (Objective-C/Swift) using Capacitor v1.2.1
+This release of the plugin includes the Native IOS (Objective-C/Swift) and Native Android code (Java) using Capacitor v1.2.1
 
 ## Dependencies
 The IOS code is based on SQLite.swift as wrapper for SQLite.

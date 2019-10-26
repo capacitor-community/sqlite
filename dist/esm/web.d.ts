@@ -19,12 +19,13 @@ export declare class CapacitorSQLiteWeb extends WebPlugin implements CapacitorSQ
     }>;
     run(options: {
         statement: string;
-        values: Array<Array<any>>;
+        values: Array<any>;
     }): Promise<{
         result: number;
     }>;
     query(options: {
         statement: string;
+        values: Array<string>;
     }): Promise<{
         result: Array<any>;
     }>;

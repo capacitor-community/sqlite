@@ -21,11 +21,11 @@ export class CapacitorSQLiteWeb extends WebPlugin implements CapacitorSQLitePlug
     console.log('execute', options);
     return Promise.reject("Not implemented");    
   }
-  async run(options: {statement: string, values: Array<Array<any>> }): Promise<{result: number}>{
+  async run(options: {statement: string, values: Array<any> }): Promise<{result: number}>{
     console.log('run', options);
     return Promise.reject("Not implemented");    
   }
-  async query(options: {statement: string}): Promise<{result: Array<any>}>{
+  async query(options: {statement: string, values: Array<string>}): Promise<{result: Array<any>}>{
     console.log('query', options);
     return Promise.reject("Not implemented");    
   }

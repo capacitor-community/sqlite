@@ -79,12 +79,22 @@ class DatabaseHelper {
         }
     }
 
-    func selectSQL(sql:String) throws -> Array<[String: Any]> {
+    func selectSQL(sql:String,values: Array<String>) throws -> Array<[String: Any]> {
         guard let db: Connection = try getReadableDatabase() else {
             throw DatabaseHelperError.dbConnection(message:"Error: DB connection")
         }
         do {
-            let stmt:Statement = try db.prepare(sql)
+            let stmt:Statement
+            if !values.isEmpty {
+                var bindings: [Binding] = []
+                for value in values {
+                    bindings.append(value as Binding)
+                }
+                stmt = try db.prepare(sql,bindings)
+
+            } else {
+                stmt = try db.prepare(sql)
+            }
             var result: Array<[String: Any]> = []
             for row in stmt {
                 var rowData: [String: Any] = [:]

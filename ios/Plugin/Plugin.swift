@@ -1,6 +1,6 @@
 import Foundation
 import Capacitor
-
+import SQLite
 /**
  * Please read the Capacitor iOS Plugin Development Guide
  * here: https://capacitor.ionicframework.com/docs/plugins/ios
@@ -57,8 +57,8 @@ public class CapacitorSQLite: CAPPlugin {
             call.reject("Must provide a SQL statement")
             return
         }
-        guard let values = call.options["values"] as? Array<Array<Any>> else {
-            call.reject("Values should be an Array of Array of value")
+        guard let values = call.options["values"] as? Array<Any> else {
+            call.reject("Values should be an Array of value")
             return
         }
         if(mDb != nil) {
@@ -67,18 +67,20 @@ public class CapacitorSQLite: CAPPlugin {
                 if(values.count > 0 ) {
                     var val: Array<Any> = []
                     for value in values {
-                        if(value[1] as! String == "TEXT") {
-                            let str: String = "\(String(describing: value[0]))"
+                        if let obj = value as? String {
+                            let str: String = "\(String(describing: obj))"
                             val.append(str)
-                        } else if (value[1] as! String == "INTEGER") {
-                            val.append(value[0] as! Int)
-                        } else if (value[1] as! String == "REAL") {
-                            val.append(value[0] as! Double)
+                        } else if let obj = value as? Int {
+                            val.append(obj)
+                        } else if let obj = value as? Float {
+                            val.append(obj)
+                        } else if let obj = value as? Blob {
+                            val.append(obj)
                         } else {
-                            val.append(value[0])
+                            call.reject("Not a SQL type")
                         }
                     }
-                    res = try (mDb?.runSQL(sql:statement,values: val))
+                     res = try (mDb?.runSQL(sql:statement,values: val))
                 } else {
                     res = try (mDb?.runSQL(sql:statement,values: []))
                 }
@@ -102,9 +104,18 @@ public class CapacitorSQLite: CAPPlugin {
             call.reject("Must provide a query statement")
             return
         }
+        guard let values = call.options["values"] as? Array<String> else {
+            call.reject("Values should be an Array of string")
+            return
+        }
         if(mDb != nil) {
+            let res:Array<[String: Any]>
             do {
-                let res:Array<[String: Any]> = try (mDb?.selectSQL(sql:statement))!;
+                if(values.count > 0) {
+                    res = try (mDb?.selectSQL(sql:statement,values:values))!;
+                } else {
+                    res = try (mDb?.selectSQL(sql:statement,values:[]))!;
+                }
                 call.success([
                     "result": res
                 ])
