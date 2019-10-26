@@ -2,16 +2,17 @@
 Capacitor SQlite  Plugin is a custom Native Capacitor plugin to store permanently data to SQLite on IOS and Android platforms. 
 
 
-    *********************************************************************
-    WARNING this is an ALPHA version with both the IOS  and Android plugins implemented
-    *********************************************************************
+    ******************************************************
+    WARNING this is an ALPHA version 
+    with both the IOS  and Android plugins implemented
+    ******************************************************
 
 
 ## Methods available
 
     open({name:string})                                open a database
     execute({statements:string})                       execute a batch of raw SQL statements           
-    run({statement:string,values:Array<Array<any>>})   run a SQL statement
+    run({statement:string,values:Array<any>})   run a SQL statement
     query({statement:string,values:Array<string>})     query a SELECT SQL statement
     deleteDatabase({name:string})                      delete a database
 
