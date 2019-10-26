@@ -15,6 +15,7 @@ import com.jeep.plugin.capacitor.sqlite.DatabaseHelper;
 import org.json.JSONException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @NativePlugin()
@@ -69,7 +70,7 @@ public class CapacitorSQLite extends Plugin {
         call.resolve(ret);
     }
     @PluginMethod()
-    public void run(PluginCall call) {
+    public void run(PluginCall call) throws JSONException {
         String statement = call.getString("statement");
         if (statement == null) {
             call.reject("Must provide a SQL statement");
