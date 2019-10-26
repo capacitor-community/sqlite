@@ -44,8 +44,9 @@ public class CapacitorSQLite extends Plugin {
             return;
         }
         mDb = DatabaseHelper.getInstance(context,name+".db",1);
-
-        call.resolve();
+        JSObject ret = new JSObject();
+        ret.put("result",true);
+        call.resolve(ret);
     }
     @PluginMethod()
     public void execute(PluginCall call) {
