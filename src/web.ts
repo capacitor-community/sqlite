@@ -1,5 +1,5 @@
 import { WebPlugin } from '@capacitor/core';
-import { CapacitorSQLitePlugin } from './definitions';
+import { CapacitorSQLitePlugin, capSQLiteOptions, capSQLiteResult } from './definitions';
 
 export class CapacitorSQLiteWeb extends WebPlugin implements CapacitorSQLitePlugin {
   constructor() {
@@ -13,23 +13,27 @@ export class CapacitorSQLiteWeb extends WebPlugin implements CapacitorSQLitePlug
     console.log('ECHO', options);
     return options;
   }
-  async open(options: { name: string }): Promise<{result: boolean}> {
+  async open(options: capSQLiteOptions): Promise<capSQLiteResult> {
     console.log('open', options);
     return Promise.reject("Not implemented");
   }
-  async execute(options: {statements: string }): Promise<{result: number}> {
+  async close(options: capSQLiteOptions): Promise<capSQLiteResult> {
+    console.log('close', options);
+    return Promise.reject("Not implemented");
+  }
+  async execute(options: capSQLiteOptions): Promise<capSQLiteResult> {
     console.log('execute', options);
     return Promise.reject("Not implemented");    
   }
-  async run(options: {statement: string, values: Array<any> }): Promise<{result: number}>{
+  async run(options: capSQLiteOptions): Promise<capSQLiteResult>{
     console.log('run', options);
     return Promise.reject("Not implemented");    
   }
-  async query(options: {statement: string, values: Array<string>}): Promise<{result: Array<any>}>{
+  async query(options: capSQLiteOptions): Promise<capSQLiteResult>{
     console.log('query', options);
     return Promise.reject("Not implemented");    
   }
-  async deleteDatabase(options: { name: string }): Promise<{result: boolean}>{
+  async deleteDatabase(options: capSQLiteOptions): Promise<capSQLiteResult>{
     console.log('deleteDatabase', options);
     return Promise.reject("Not implemented");    
   }

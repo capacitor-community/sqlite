@@ -1,5 +1,5 @@
 import { WebPlugin } from '@capacitor/core';
-import { CapacitorSQLitePlugin } from './definitions';
+import { CapacitorSQLitePlugin, capSQLiteOptions, capSQLiteResult } from './definitions';
 export declare class CapacitorSQLiteWeb extends WebPlugin implements CapacitorSQLitePlugin {
     constructor();
     echo(options: {
@@ -7,33 +7,12 @@ export declare class CapacitorSQLiteWeb extends WebPlugin implements CapacitorSQ
     }): Promise<{
         value: string;
     }>;
-    open(options: {
-        name: string;
-    }): Promise<{
-        result: boolean;
-    }>;
-    execute(options: {
-        statements: string;
-    }): Promise<{
-        result: number;
-    }>;
-    run(options: {
-        statement: string;
-        values: Array<any>;
-    }): Promise<{
-        result: number;
-    }>;
-    query(options: {
-        statement: string;
-        values: Array<string>;
-    }): Promise<{
-        result: Array<any>;
-    }>;
-    deleteDatabase(options: {
-        name: string;
-    }): Promise<{
-        result: boolean;
-    }>;
+    open(options: capSQLiteOptions): Promise<capSQLiteResult>;
+    close(options: capSQLiteOptions): Promise<capSQLiteResult>;
+    execute(options: capSQLiteOptions): Promise<capSQLiteResult>;
+    run(options: capSQLiteOptions): Promise<capSQLiteResult>;
+    query(options: capSQLiteOptions): Promise<capSQLiteResult>;
+    deleteDatabase(options: capSQLiteOptions): Promise<capSQLiteResult>;
 }
 declare const CapacitorSQLite: CapacitorSQLiteWeb;
 export { CapacitorSQLite };

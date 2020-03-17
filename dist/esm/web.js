@@ -27,6 +27,12 @@ export class CapacitorSQLiteWeb extends WebPlugin {
             return Promise.reject("Not implemented");
         });
     }
+    close(options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log('close', options);
+            return Promise.reject("Not implemented");
+        });
+    }
     execute(options) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('execute', options);

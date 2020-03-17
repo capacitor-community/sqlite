@@ -1,6 +1,6 @@
 {
   "name": "capacitor-sqlite",
-  "version": "0.0.1-alpha.14",
+  "version": "1.5.1-3",
   "description": "Capacitor SQLite Plugin",
   "main": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
@@ -29,7 +29,9 @@
   "keywords": [
     "capacitor",
     "plugin",
-    "native"
+    "native",
+    "database",
+    "sqlite"
   ],
   "capacitor": {
     "ios": {

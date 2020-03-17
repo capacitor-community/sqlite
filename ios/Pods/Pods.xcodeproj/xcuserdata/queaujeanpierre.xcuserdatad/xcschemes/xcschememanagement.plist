@@ -32,7 +32,7 @@
 			<key>orderHint</key>
 			<integer>3</integer>
 		</dict>
-		<key>SQLite.swift.xcscheme</key>
+		<key>SQLCipher.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
