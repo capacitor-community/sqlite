@@ -1,3 +1,9 @@
+## 1.5.1 (2020-03-17)
+
+### Bug Fixes
+
+* fix README link to applications
+
 ## 1.5.1-3 (2020-03-17)
 
 ### Bug Fixes

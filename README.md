@@ -115,6 +115,19 @@ Modify the secret key with the newsecret key of an encrypted store and open it w
 Type: `Promise<{result:boolean,message:string}>`
 
 
+## Applications demonstrating the use of the plugin
+
+### Ionic/Angular
+
+  - [angular-sqlite-app-starter] (https://github.com/jepiqueau/angular-sqlite-app-starter)
+
+  - [test-angular-jeep-capacitor-plugins] (https://github.com/jepiqueau/capacitor-apps/IonicAngular/jeep-test-app)
+
+### Ionic/React
+
+  - [react-sqlite-app-starter] (https://github.com/jepiqueau/react-sqlite-app-starter)
+
+
 ## Using the Plugin in your App
 
  - [see capacitor documentation](https://capacitor.ionicframework.com/docs/getting-started/with-ionic)
