@@ -55,7 +55,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
     }
     private void InitializeSQLCipher() {
         SQLiteDatabase.loadLibs(context);
-        SQLiteDatabase database;
+        SQLiteDatabase database = null;
         File databaseFile;
         File tempFile;
 
@@ -107,6 +107,8 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
            }
            Log.d(TAG, "InitializeSQLCipher isOpen: " + isOpen );
         }
+        if(database != null) database.close();
+
     }
     private void encryptDataBase(String passphrase) throws IOException {
 
@@ -152,6 +154,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
             Log.d(TAG, "Error: execSQL failed: ",e);
             return Integer.valueOf(-1);
         } finally {
+            db.close();
             return dbChanges();
         }
 
@@ -177,6 +180,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
             Log.d(TAG, "Error: runSQL failed: ",e);
             return Integer.valueOf(-1);
         } finally {
+            db.close();
             return dbChanges();
         }
 
@@ -185,7 +189,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         JSArray  retArray = new JSArray();
         // Open the database for reading
         SQLiteDatabase db = getReadableDatabase(secret);
-        Cursor c ;
+        Cursor c = null;
         try {
             if(values != null && !values.isEmpty()) {
                 // with values
@@ -231,7 +235,10 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                     }
                 } catch (Exception e) {
                     Log.d(TAG, "Error: Error while creating the resulting cursor");
-                    c.close();
+                    if (c != null && !c.isClosed()) {
+                        c.close();
+                    }
+                    db.close();
                     return new JSArray();
 
                 } finally {
@@ -246,9 +253,11 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
             }
         } catch (Exception e) {
             Log.d(TAG, "Error: querySQL failed: ",e);
+            db.close();
             return new JSArray();
 
         } finally {
+            db.close();
             return retArray;
         }
     }
@@ -291,7 +300,8 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
     private boolean dropAllTables(SQLiteDatabase db) {
         boolean ret = false;
         List<String> tables = new ArrayList<String>();
-        Cursor cursor = db.rawQuery("SELECT * FROM sqlite_master WHERE type='table';", null);
+        Cursor cursor = null;
+        cursor = db.rawQuery("SELECT * FROM sqlite_master WHERE type='table';", null);
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
             String tableName = cursor.getString(1);
@@ -318,7 +328,10 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         String SELECT_CHANGE = "SELECT changes()";
         SQLiteDatabase db = getReadableDatabase(secret);
         Cursor cursor = db.rawQuery(SELECT_CHANGE, null);
-        return cursor.getCount();
+        int ret = cursor.getCount();
+        cursor.close();
+        db.close();
+        return ret;
     }
     
 }

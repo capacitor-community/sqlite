@@ -1,3 +1,9 @@
+## 1.5.2-1 (2020-03-18)
+
+### Bug Fixes
+
+* Fix Cursor not close in Android plugin
+
 ## 1.5.1 (2020-03-17)
 
 ### Bug Fixes
