@@ -157,7 +157,7 @@ public class CapacitorSQLite extends Plugin {
         }
         int res;
         if(values.length() > 0) {
-            ArrayList vals = new ArrayList<>();
+            ArrayList<Object> vals = new ArrayList<Object>();
             for (int i = 0; i < values.length(); i++) {
                vals.add(values.get(i));
              }
@@ -185,7 +185,7 @@ public class CapacitorSQLite extends Plugin {
         }
         JSArray res;
         if(values.length() > 0) {
-            ArrayList vals = new ArrayList<String>();
+            ArrayList<String> vals = new ArrayList<String>();
             for (int i = 0; i < values.length(); i++) {
                 vals.add(values.getString(i));
             }

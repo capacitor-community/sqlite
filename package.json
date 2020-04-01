@@ -1,6 +1,6 @@
 {
   "name": "capacitor-sqlite",
-  "version": "1.5.2-1",
+  "version": "1.5.2",
   "description": "Capacitor SQLite Plugin",
   "main": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
@@ -13,12 +13,12 @@
   "author": "Jean Pierre Queau",
   "license": "MIT",
   "dependencies": {
-    "@capacitor/core": "latest"
+    "@capacitor/core": "^1.5.2"
   },
   "devDependencies": {
-    "typescript": "^3.2.4",
-    "@capacitor/ios": "latest",
-    "@capacitor/android": "latest"
+    "@capacitor/android": "^1.5.2",
+    "@capacitor/ios": "^1.5.2",
+    "typescript": "^3.2.4"
   },
   "files": [
     "dist/",

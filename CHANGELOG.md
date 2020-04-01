@@ -1,3 +1,9 @@
+## 1.5.2 (2020-04-01)
+
+### Chores
+
+* capacitor: update to capacitor 1.5.2
+
 ## 1.5.2-1 (2020-03-18)
 
 ### Bug Fixes
