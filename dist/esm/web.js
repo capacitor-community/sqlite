@@ -24,7 +24,7 @@ export class CapacitorSQLiteWeb extends WebPlugin {
     open(options) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('open', options);
-            const sqlite3 = this.sqlite3;
+            const sqlite3 = window['sqlite3'];
             if (sqlite3) {
                 return new Promise((resolve, reject) => {
                     const db = new sqlite3.Database('./my.db');

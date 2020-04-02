@@ -2,7 +2,6 @@ import { WebPlugin } from '@capacitor/core';
 import { CapacitorSQLitePlugin, capSQLiteOptions, capSQLiteResult } from './definitions';
 
 export class CapacitorSQLiteWeb extends WebPlugin implements CapacitorSQLitePlugin {
-  public sqlite3: any;
 
   constructor() {
     super({
@@ -17,7 +16,7 @@ export class CapacitorSQLiteWeb extends WebPlugin implements CapacitorSQLitePlug
   }
   async open(options: capSQLiteOptions): Promise<capSQLiteResult> {
     console.log('open', options);
-    const sqlite3: any = this.sqlite3;
+    const sqlite3: any = window['sqlite3' as any];
     if (sqlite3) {
         return new Promise((resolve, reject) => {
             const db = new sqlite3.Database('./my.db');
