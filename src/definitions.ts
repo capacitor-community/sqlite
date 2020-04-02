@@ -5,6 +5,8 @@ declare module "@capacitor/core" {
 }
 
 export interface CapacitorSQLitePlugin {
+  sqlite3: any;
+
   echo(options: { value: string }): Promise<{value: string}>;
   /**
    * Open a SQLite database

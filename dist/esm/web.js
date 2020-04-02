@@ -12,7 +12,7 @@ export class CapacitorSQLiteWeb extends WebPlugin {
     constructor() {
         super({
             name: 'CapacitorSQLite',
-            platforms: ['web']
+            platforms: ['web', 'electron']
         });
     }
     echo(options) {
@@ -24,7 +24,31 @@ export class CapacitorSQLiteWeb extends WebPlugin {
     open(options) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('open', options);
-            return Promise.reject("Not implemented");
+            const sqlite3 = this.sqlite3;
+            if (sqlite3) {
+                return new Promise((resolve, reject) => {
+                    const db = new sqlite3.Database('./my.db');
+                    db.serialize(function () {
+                        db.run("CREATE TABLE if not exists lorem (info TEXT)");
+                        var stmt = db.prepare("INSERT INTO lorem VALUES (?)");
+                        for (var i = 0; i < 10; i++) {
+                            stmt.run("Ipsum " + i);
+                        }
+                        stmt.finalize();
+                        db.all("SELECT rowid AS id, info FROM lorem", (err, rows) => {
+                            if (err) {
+                                reject(err);
+                            }
+                            else {
+                                resolve(rows);
+                            }
+                        });
+                    });
+                });
+            }
+            else {
+                return Promise.reject("Not implemented");
+            }
         });
     }
     close(options) {
