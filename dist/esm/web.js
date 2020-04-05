@@ -111,7 +111,6 @@ export class CapacitorSQLiteWeb extends WebPlugin {
                         reject("No Database Open");
                     }
                     else {
-                        console.log(options.values);
                         this.db.run(options.statement, options.values, function (err) {
                             if (err) {
                                 reject(err);

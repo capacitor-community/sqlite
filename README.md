@@ -279,6 +279,21 @@ Type: `Promise<{result:boolean,message:string}>`
  npx cap open ios
  ```
 
+ ### Running on IOS
+
+ Modify the index.html file under src folder and include after body tag
+
+  `<script>try {window.sqlite3 = require('sqlite3');} catch(e) {/**/}</script>`
+
+ Go to electron folder and run
+  `npm install sqlite3`
+
+ ```bash
+ npx cap update
+ npm run build
+ npx cap copy
+ ```
+
 ## Dependencies
 The IOS  and Android codes are using SQLCipher allowing for database encryption
 

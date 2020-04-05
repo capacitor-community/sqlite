@@ -67,7 +67,6 @@ export class CapacitorSQLiteWeb extends WebPlugin implements CapacitorSQLitePlug
         } else  if (!this.db) {
           reject("No Database Open");
         } else {
-
           this.db.exec(options.statements, (err: any) => {
             if (err) {
               reject(err);
