@@ -287,12 +287,22 @@ Type: `Promise<{result:boolean,message:string}>`
 
  Go to electron folder and run
   `npm install sqlite3`
+  `npm install electron-builder` ->   See https://github.com/electron-userland/electron-builder for more details.
+  
+Add scripts tag to package.json
+  `electron-builder: electron-builder`
 
+
+In main folder run
  ```bash
  npx cap update
  npm run build
  npx cap copy
  ```
+
+in electron folder run
+
+  `npm run electron-builder`
 
 ## Dependencies
 The IOS  and Android codes are using SQLCipher allowing for database encryption
