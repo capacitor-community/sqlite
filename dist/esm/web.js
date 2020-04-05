@@ -23,56 +23,140 @@ export class CapacitorSQLiteWeb extends WebPlugin {
     }
     open(options) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('open', options);
             const sqlite3 = window['sqlite3'];
             if (sqlite3) {
                 return new Promise((resolve, reject) => {
-                    const db = new sqlite3.Database('./my.db');
-                    db.serialize(function () {
-                        db.run("CREATE TABLE if not exists lorem (info TEXT)");
-                        var stmt = db.prepare("INSERT INTO lorem VALUES (?)");
-                        for (var i = 0; i < 10; i++) {
-                            stmt.run("Ipsum " + i);
-                        }
-                        stmt.finalize();
-                        db.all("SELECT rowid AS id, info FROM lorem", (err, rows) => {
-                            if (err) {
-                                reject(err);
-                            }
-                            else {
-                                resolve(rows);
-                            }
-                        });
-                    });
+                    if (!options || !options.database) {
+                        reject("Must provide a database name");
+                    }
+                    else {
+                        this.db = new sqlite3.Database(options.database);
+                        resolve({ result: true });
+                    }
                 });
             }
             else {
+                console.log('open', options);
                 return Promise.reject("Not implemented");
             }
         });
     }
     close(options) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('close', options);
-            return Promise.reject("Not implemented");
+            const sqlite3 = window['sqlite3'];
+            if (sqlite3) {
+                return new Promise((resolve, reject) => {
+                    if (!options || !options.database) {
+                        reject("Must provide a database name");
+                    }
+                    else if (!this.db) {
+                        reject("No Database Open");
+                    }
+                    else {
+                        this.db.close((err) => {
+                            if (err) {
+                                reject(err);
+                            }
+                            else {
+                                resolve({ result: true });
+                            }
+                        });
+                    }
+                });
+            }
+            else {
+                console.log('close', options);
+                return Promise.reject("Not implemented");
+            }
         });
     }
     execute(options) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('execute', options);
-            return Promise.reject("Not implemented");
+            const sqlite3 = window['sqlite3'];
+            if (sqlite3) {
+                return new Promise((resolve, reject) => {
+                    if (!options || !options.statements) {
+                        reject("Must provide a statements");
+                    }
+                    else if (!this.db) {
+                        reject("No Database Open");
+                    }
+                    else {
+                        this.db.exec(options.statements, (err) => {
+                            if (err) {
+                                reject(err);
+                            }
+                            else {
+                                resolve({ result: true });
+                            }
+                        });
+                    }
+                });
+            }
+            else {
+                console.log('execute', options);
+                return Promise.reject("Not implemented");
+            }
         });
     }
     run(options) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('run', options);
-            return Promise.reject("Not implemented");
+            const sqlite3 = window['sqlite3'];
+            if (sqlite3) {
+                return new Promise((resolve, reject) => {
+                    if (!options || !options.statement) {
+                        reject("Must provide a statement");
+                    }
+                    else if (!this.db) {
+                        reject("No Database Open");
+                    }
+                    else {
+                        console.log(options.values);
+                        this.db.run(options.statement, options.values, function (err) {
+                            if (err) {
+                                reject(err);
+                            }
+                            else {
+                                resolve({ result: true, changes: this.changes });
+                            }
+                        });
+                    }
+                });
+            }
+            else {
+                console.log('run', options);
+                return Promise.reject("Not implemented");
+            }
         });
     }
     query(options) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('query', options);
-            return Promise.reject("Not implemented");
+            const sqlite3 = window['sqlite3'];
+            if (sqlite3) {
+                return new Promise((resolve, reject) => {
+                    if (!options || !options.statement) {
+                        reject("Must provide a statement");
+                    }
+                    else if (!this.db) {
+                        reject("No Database Open");
+                    }
+                    else {
+                        this.db.all(options.statement, options.values, (err, result) => {
+                            if (err) {
+                                console.error('query', err);
+                                reject(err);
+                            }
+                            else {
+                                resolve({ values: result });
+                            }
+                        });
+                    }
+                });
+            }
+            else {
+                console.log('query', options);
+                return Promise.reject("Not implemented");
+            }
         });
     }
     deleteDatabase(options) {

@@ -1,6 +1,7 @@
 import { WebPlugin } from '@capacitor/core';
 import { CapacitorSQLitePlugin, capSQLiteOptions, capSQLiteResult } from './definitions';
 export declare class CapacitorSQLiteWeb extends WebPlugin implements CapacitorSQLitePlugin {
+    private db;
     constructor();
     echo(options: {
         value: string;
