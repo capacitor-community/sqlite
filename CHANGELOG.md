@@ -1,3 +1,9 @@
+## 1.5.3 (2020-04-06)
+
+### Added Features
+
+* Add Electron Plugin based on sqlite3. Works only for non-encrypted databases
+
 ## 1.5.2 (2020-04-01)
 
 ### Chores

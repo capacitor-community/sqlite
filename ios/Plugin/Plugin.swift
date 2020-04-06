@@ -111,11 +111,11 @@ public class CapacitorSQLite: CAPPlugin {
     
     @objc func run(_ call: CAPPluginCall) {
         guard let statement = call.options["statement"] as? String else {
-            retChanges(call:call,ret:-1,message:"Execute command failed : Must provide a SQL statement")
+            retChanges(call:call,ret:-1,message:"Run command failed : Must provide a SQL statement")
             return
         }
         guard let values = call.options["values"] as? Array<Any> else {
-            retChanges(call:call,ret:-1,message:"Execute command failed : Values should be an Array of values")
+            retChanges(call:call,ret:-1,message:"Run command failed : Values should be an Array of values")
             return
         }
         if(mDb != nil) {

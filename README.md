@@ -1,7 +1,9 @@
 # Capacitor SQLite Plugin
 Capacitor SQlite  Plugin is a custom Native Capacitor plugin to create SQLite databases, tables, indexes and store permanently data to it. 
 It is then available only for IOS and Android platforms.
-Databases can be or not encrypted using SQLCipher module. 
+Databases can be or not encrypted using SQLCipher module.
+
+  **A pre-release is now available for Electron platform with no database encryption**
 
 
 If an error occurs:
@@ -41,7 +43,7 @@ Execute a batch of raw SQL statements
 
 Type: `Promise<{changes:number,message:string}>`
 
-### `run({statement:"fooStatement"}) => Promise<{changes:number,message:string}>`
+### `run({statement:"fooStatement",values:[]}) => Promise<{changes:number,message:string}>`
 
 Run a SQL statement
 
@@ -58,7 +60,7 @@ Run a SQL statement with given values
 
 Type: `Promise<{changes:number,message:string}>`
 
-### `query({statement:"fooStatement"}) => Promise<{values:Array<any>,message:string}>`
+### `query({statement:"fooStatement",values:[]}) => Promise<{values:Array<any>,message:string}>`
 
 Query a SELECT SQL statement
 
@@ -153,6 +155,8 @@ Type: `Promise<{result:boolean,message:string}>`
       const info = await Device.getInfo();
       if (info.platform === "ios" || info.platform === "android") {
         this._sqlite = CapacitorSQLite;
+      } else if(info.platform === "electron") {
+        this._sqlite = CapacitorSQLPlugin.CapacitorSQLiteElectron;
       } else {
         this._sqlite = CapacitorSQLPlugin.CapacitorSQLite;
       }
@@ -224,7 +228,7 @@ Type: `Promise<{result:boolean,message:string}>`
  npx cap open android
  ``` 
  Android Studio will be opened with your project and will sync the files.
- In Android Studio go to the file MainActivity
+ In Android Studio go to the file **MainActivity**
 
  ```java 
   ...
@@ -279,6 +283,65 @@ Type: `Promise<{result:boolean,message:string}>`
  npx cap open ios
  ```
 
+### Running on Electron
+
+In your application folder add the Electron platform
+
+```bash
+npx cap add electron
+```
+
+In the Electron folder of your application
+
+```bash
+npm install --save sqlite3
+npm install --save-dev @types/sqlite3
+npm install --save-dev electron-rebuild
+```
+
+Modify the Electron package.json file by adding a script "postinstall"
+
+```json
+  "scripts": {
+    "electron:start": "electron ./",
+    "postinstall": "electron-rebuild -f -w sqlite3"
+  },
+```
+
+Execute the postinstall script
+
+```bash
+npm run postinstall
+```
+Go back in the main folder of your application
+Add a script in the index.html file of your application in the body tag
+
+```html
+<body>
+  <app-root></app-root>
+  <script>
+    if (typeof (process.versions.electron) === 'string' && process.versions.hasOwnProperty('electron')) {
+      const sqlite3 = require('sqlite3');
+      const fs = require('fs');
+      const path = require('path');
+      window.sqlite3 = sqlite3;
+      window.fs = fs;
+      window.path = path;
+    }
+  </script>
+</body>
+```
+an then build the apllication
+
+```bash
+ npx cap update
+ npm run build
+ npx cap copy
+ npx cap open electron
+```
+
+
 ## Dependencies
 The IOS  and Android codes are using SQLCipher allowing for database encryption
+The Electron code use sqlite3
 
