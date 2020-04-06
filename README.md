@@ -279,7 +279,7 @@ Type: `Promise<{result:boolean,message:string}>`
  npx cap open ios
  ```
 
- ### Running on IOS
+ ### Running on Electron
 
  Modify the index.html file under src folder and include after body tag
 
