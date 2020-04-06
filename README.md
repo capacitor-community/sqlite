@@ -340,6 +340,7 @@ an then build the application
  npx cap open electron
 ```
 
+The databases created are under **YourApplication/Electron/Databases**
 
 ## Dependencies
 The IOS  and Android codes are using SQLCipher allowing for database encryption
