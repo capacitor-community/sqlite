@@ -331,7 +331,7 @@ Add a script in the index.html file of your application in the body tag
   </script>
 </body>
 ```
-an then build the application
+and then build the application
 
 ```bash
  npx cap update
