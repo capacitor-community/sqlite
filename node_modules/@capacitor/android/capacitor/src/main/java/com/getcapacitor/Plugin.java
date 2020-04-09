@@ -6,9 +6,11 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -415,6 +417,16 @@ public class Plugin {
   }
 
   /**
+   * Exported plugin call to remove all listeners from this plugin
+   * @param call
+   */
+  @SuppressWarnings("unused")
+  @PluginMethod(returnType=PluginMethod.RETURN_NONE)
+  public void removeAllListeners(PluginCall call) {
+    eventListeners.clear();
+  }
+
+  /**
    * Exported plugin call to request all permissions for this plugin
    * @param call
    */
@@ -531,6 +543,11 @@ public class Plugin {
    * Handle onStop
    */
   protected void handleOnStop() {}
+
+  /**
+   * Handle onDestroy
+   */
+  protected void handleOnDestroy() {}
 
   /**
    * Start a new Activity.

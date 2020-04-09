@@ -1,3 +1,14 @@
+## 2.0.0-1 (2020-04-09)
+
+### Chores
+
+* capacitor: update to capacitor 2.0.0
+* android: update to androidX
+ 
+### Added Features
+
+* add a .gitignore file
+
 ## 1.5.3 (2020-04-06)
 
 ### Added Features

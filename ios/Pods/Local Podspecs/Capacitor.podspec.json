@@ -1,6 +1,6 @@
 {
   "name": "Capacitor",
-  "version": "1.5.1",
+  "version": "2.0.0",
   "summary": "Capacitor for iOS",
   "social_media_url": "http://twitter.com/getcapacitor",
   "license": "MIT",
@@ -13,7 +13,7 @@
   },
   "source": {
     "git": "https://github.com/ionic-team/capacitor.git",
-    "tag": "1.5.1"
+    "tag": "2.0.0"
   },
   "source_files": [
     "ios/Capacitor/Capacitor/*.{swift,h,m}",
@@ -22,9 +22,9 @@
   ],
   "dependencies": {
     "CapacitorCordova": [
-      "1.5.1"
+      "2.0.0"
     ]
   },
-  "swift_versions": "4.2",
-  "swift_version": "4.2"
+  "swift_versions": "5.0",
+  "swift_version": "5.0"
 }

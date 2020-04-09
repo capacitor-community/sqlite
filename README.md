@@ -320,13 +320,18 @@ Add a script in the index.html file of your application in the body tag
 <body>
   <app-root></app-root>
   <script>
-    if (typeof (process.versions.electron) === 'string' && process.versions.hasOwnProperty('electron')) {
-      const sqlite3 = require('sqlite3');
-      const fs = require('fs');
-      const path = require('path');
-      window.sqlite3 = sqlite3;
-      window.fs = fs;
-      window.path = path;
+    try {
+      if (process && typeof (process.versions.electron) === 'string' && process.versions.hasOwnProperty('electron')) {
+        const sqlite3 = require('sqlite3');
+        const fs = require('fs');
+        const path = require('path');
+        window.sqlite3 = sqlite3;
+        window.fs = fs;
+        window.path = path;
+      }
+    }
+    catch {
+      console.log("process doesn't exists");
     }
   </script>
 </body>

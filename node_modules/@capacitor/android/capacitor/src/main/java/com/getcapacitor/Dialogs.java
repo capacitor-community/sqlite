@@ -6,9 +6,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.widget.EditText;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.getcapacitor.ui.ModalsBottomSheetDialogFragment;
 
@@ -137,7 +137,7 @@ public class Dialogs {
                             final String message,
                             final Dialogs.OnResultListener listener) {
 
-    prompt(context, message, null, null, null, null, listener);
+    prompt(context, message, null, null, null, null, null, listener);
   }
 
   public static void prompt(final Context context,
@@ -146,11 +146,13 @@ public class Dialogs {
                             final String okButtonTitle,
                             final String cancelButtonTitle,
                             final String inputPlaceholder,
+                            final String inputText,
                             final Dialogs.OnResultListener listener) {
     final String promptTitle = title == null ? "Prompt" : title;
     final String promptOkButtonTitle = okButtonTitle == null ? "OK" : okButtonTitle;
     final String promptCancelButtonTitle = cancelButtonTitle == null ? "Cancel" : cancelButtonTitle;
     final String promptInputPlaceholder = inputPlaceholder == null ? "" : inputPlaceholder;
+    final String promptInputText = inputText == null ? "" : inputText;
 
     new Handler(Looper.getMainLooper()).post(new Runnable() {
       @Override
@@ -158,7 +160,8 @@ public class Dialogs {
         final AlertDialog.Builder builder = new AlertDialog.Builder(context);
         final EditText input = new EditText(context);
 
-        input.setText(promptInputPlaceholder);
+        input.setHint(promptInputPlaceholder);
+        input.setText(promptInputText);
 
         builder
             .setMessage(message)
