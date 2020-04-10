@@ -95,18 +95,17 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         } else if (encrypted && mode.equals("encryption") && secret.length() > 0) {
 
             try {
-               encryptDataBase(secret);
-           } catch (Exception e) {
-               Log.d(TAG, "InitializeSQLCipher: Error while encrypting the database");
-               database = null;
-           } finally {
-               databaseFile = context.getDatabasePath(dbName);
-               database = SQLiteDatabase.openOrCreateDatabase(databaseFile, secret, null);
-               encrypted = true;
-               isOpen = true;
+                encryptDataBase(secret);
+                databaseFile = context.getDatabasePath(dbName);
+                database = SQLiteDatabase.openOrCreateDatabase(databaseFile, secret, null);
+                encrypted = true;
+                isOpen = true;
+            } catch (Exception e) {
+                Log.d(TAG, "InitializeSQLCipher: Error while encrypting the database");
+                database = null;
            }
-           Log.d(TAG, "InitializeSQLCipher isOpen: " + isOpen );
         }
+        Log.d(TAG, "InitializeSQLCipher isOpen: " + isOpen );
         if(database != null) database.close();
 
     }
@@ -144,26 +143,34 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
     // execute sql raw statements
     public int execSQL(String[] statements) {
         // Open the database for writing
-        SQLiteDatabase db = getWritableDatabase(secret);
 
+        SQLiteDatabase db = null;        
+        boolean success = true;
         try {
+            db = getWritableDatabase(secret);
             for (String cmd : statements ) {
                 db.execSQL(cmd+";");
             }
         } catch (Exception e) {
             Log.d(TAG, "Error: execSQL failed: ",e);
-            return Integer.valueOf(-1);
+            success = false;            
         } finally {
-            db.close();
-            return dbChanges();
+            if(db != null) db.close();
+            if(!success) {
+                return Integer.valueOf(-1);
+            } else {
+                return dbChanges();
+            }
         }
 
     }
     // run one statement with or without values
     public int runSQL(String statement, ArrayList values) {
         // Open the database for writing
-        SQLiteDatabase db = getWritableDatabase(secret);
+        SQLiteDatabase db = null;        
+        boolean success = true;
         try {
+            db = getWritableDatabase(secret);
             if(values != null && !values.isEmpty()) {
                 // with value
                 Object[] bindings = new Object[values.size()];
@@ -178,19 +185,25 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
             }
         } catch (Exception e) {
             Log.d(TAG, "Error: runSQL failed: ",e);
-            return Integer.valueOf(-1);
+            success = false;            
         } finally {
-            db.close();
-            return dbChanges();
+            if(db != null) db.close();
+            if(!success) {
+                return Integer.valueOf(-1);
+            } else {
+                return dbChanges();
+            }
         }
 
     }
     public JSArray querySQL(String statement, ArrayList<String> values) {
         JSArray  retArray = new JSArray();
         // Open the database for reading
-        SQLiteDatabase db = getReadableDatabase(secret);
+        SQLiteDatabase db = null;
+        Boolean success = true;
         Cursor c = null;
         try {
+            db = getReadableDatabase(secret);
             if(values != null && !values.isEmpty()) {
                 // with values
                 String[] bindings = new String[values.size()];
@@ -203,81 +216,70 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                 c = db.rawQuery(statement, null);
             }
             if(c.getCount() > 0) {
-                try {
-                    if (c.moveToFirst()) {
-                        do {
+                if (c.moveToFirst()) {
+                    do {
 
-                            JSObject row = new JSObject();
+                        JSObject row = new JSObject();
 
-                            for (int i = 0; i< c.getColumnCount(); i++) {
-                                int type = c.getType(i);
-                                switch (type ) {
-                                    case FIELD_TYPE_STRING :
-                                        row.put(c.getColumnName(i),c.getString(c.getColumnIndex(c.getColumnName(i))));
-                                        break;
-                                    case FIELD_TYPE_INTEGER :
-                                        row.put(c.getColumnName(i),c.getLong(c.getColumnIndex(c.getColumnName(i))));
-                                        break;
-                                    case FIELD_TYPE_FLOAT :
-                                        row.put(c.getColumnName(i),c.getFloat(c.getColumnIndex(c.getColumnName(i))));
-                                        break;
-                                    case FIELD_TYPE_BLOB :
-                                        row.put(c.getColumnName(i),c.getBlob(c.getColumnIndex(c.getColumnName(i))));
-                                        break;
-                                    case FIELD_TYPE_NULL :
-                                        break;
-                                    default :
-                                        break;
-                                }
+                        for (int i = 0; i< c.getColumnCount(); i++) {
+                            int type = c.getType(i);
+                            switch (type ) {
+                                case FIELD_TYPE_STRING :
+                                    row.put(c.getColumnName(i),c.getString(c.getColumnIndex(c.getColumnName(i))));
+                                    break;
+                                case FIELD_TYPE_INTEGER :
+                                    row.put(c.getColumnName(i),c.getLong(c.getColumnIndex(c.getColumnName(i))));
+                                    break;
+                                case FIELD_TYPE_FLOAT :
+                                    row.put(c.getColumnName(i),c.getFloat(c.getColumnIndex(c.getColumnName(i))));
+                                    break;
+                                case FIELD_TYPE_BLOB :
+                                    row.put(c.getColumnName(i),c.getBlob(c.getColumnIndex(c.getColumnName(i))));
+                                    break;
+                                case FIELD_TYPE_NULL :
+                                    break;
+                                default :
+                                    break;
                             }
-                            retArray.put(row);
-                        } while (c.moveToNext());
-                    }
-                } catch (Exception e) {
-                    Log.d(TAG, "Error: Error while creating the resulting cursor");
-                    if (c != null && !c.isClosed()) {
-                        c.close();
-                    }
-                    db.close();
-                    return new JSArray();
-
-                } finally {
-                    if (c != null && !c.isClosed()) {
-                        c.close();
-                    }
-                }
-            } else {
-                if (c != null && !c.isClosed()) {
-                    c.close();
+                        }
+                        retArray.put(row);
+                    } while (c.moveToNext());
                 }
             }
         } catch (Exception e) {
             Log.d(TAG, "Error: querySQL failed: ",e);
-            db.close();
-            return new JSArray();
-
+            success = false;
         } finally {
-            db.close();
-            return retArray;
-        }
+            if(db != null) db.close();
+            if (c != null && !c.isClosed()) {
+                c.close();
+            }
+            if(!success) {
+                return new JSArray();
+            } else {
+                return retArray;
+            }
+         }
     }
     public boolean closeDB(String databaseName) {
-        boolean ret = false;
+        boolean success = true;
         Log.d(TAG, "closeDB: databaseName " + databaseName);
-
+        SQLiteDatabase database = null;
         File databaseFile = context.getDatabasePath(databaseName);
         try {
-            SQLiteDatabase database = SQLiteDatabase.openOrCreateDatabase(databaseFile, secret,
-                    null);
+            database = SQLiteDatabase.openOrCreateDatabase(databaseFile, secret,
+                    null);           
             database.close();
         } catch (Exception e) {
             Log.d(TAG, "Error: closeDB failed: ",e);
-            return false;
+            success = false;
         } finally {
-            isOpen = false;
-            ret = true;
-            Log.d(TAG, "closeDB: successful isOpen " + String.valueOf(isOpen));
-            return ret;
+            if(!success) {
+                return false;
+            } else {
+                isOpen = false;
+                return true;
+            }
         }
     }
     public boolean deleteDB(String databaseName) {
@@ -292,13 +294,12 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         } else {
             isOpen = false;
             return true;
-
         }
 
     }
 
     private boolean dropAllTables(SQLiteDatabase db) {
-        boolean ret = false;
+        boolean ret = true;
         List<String> tables = new ArrayList<String>();
         Cursor cursor = null;
         cursor = db.rawQuery("SELECT * FROM sqlite_master WHERE type='table';", null);
@@ -317,21 +318,30 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
             }
         } catch (Exception e) {
             Log.d(TAG, "Error: dropAllTables failed: ",e);
-            return false;
+            ret = false;
         } finally {
-            ret = true;
+            return ret;
         }
-        return ret;
     }
 
     private int dbChanges() {
         String SELECT_CHANGE = "SELECT changes()";
-        SQLiteDatabase db = getReadableDatabase(secret);
-        Cursor cursor = db.rawQuery(SELECT_CHANGE, null);
-        int ret = cursor.getCount();
-        cursor.close();
-        db.close();
-        return ret;
+        Boolean success = true;
+        SQLiteDatabase db = null;
+        int ret = Integer.valueOf(-1);
+        try {
+            db = getReadableDatabase(secret);
+            Cursor cursor = db.rawQuery(SELECT_CHANGE, null);
+            ret = cursor.getCount();
+            cursor.close();   
+        }
+        catch (Exception e) {
+            Log.d(TAG, "Error: dbChanges failed: ",e);
+        }
+        finally {
+            if(db != null) db.close();
+             return ret;
+        }
     }
     
 }
