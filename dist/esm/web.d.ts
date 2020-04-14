@@ -13,6 +13,7 @@ export declare class CapacitorSQLiteWeb extends WebPlugin implements CapacitorSQ
     run(options: capSQLiteOptions): Promise<capSQLiteResult>;
     query(options: capSQLiteOptions): Promise<capSQLiteResult>;
     deleteDatabase(options: capSQLiteOptions): Promise<capSQLiteResult>;
+    importFromJson(options: capSQLiteOptions): Promise<capSQLiteResult>;
 }
 declare const CapacitorSQLite: CapacitorSQLiteWeb;
 export { CapacitorSQLite };

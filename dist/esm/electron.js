@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { WebPlugin } from '@capacitor/core';
 import { DatabaseSQLiteHelper } from './electron-utils/DatabaseSQLiteHelper';
+import { isJsonSQLite } from './electron-utils/JsonUtils';
 export class CapacitorSQLitePluginElectron extends WebPlugin {
     constructor() {
         super({
@@ -115,6 +116,25 @@ export class CapacitorSQLitePluginElectron extends WebPlugin {
             const ret = yield this.mDb.deleteDB(dbName);
             this.mDb = null;
             return Promise.resolve({ result: ret });
+        });
+    }
+    importFromJson(options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const jsonStrObj = options.jsonstring;
+            if (typeof jsonStrObj != "string" || jsonStrObj == null || jsonStrObj.length === 0) {
+                return Promise.reject({ changes: -1, message: "Must provide a json object" });
+            }
+            const jsonObj = JSON.parse(jsonStrObj);
+            const isValid = isJsonSQLite(jsonObj);
+            if (!isValid)
+                return Promise.reject({ changes: -1, message: "Must provide a jsonSQLite object" });
+            //      const importData: jsonSQLite = jsonObj;
+            const dbName = `${jsonObj.database}SQLite.db`;
+            this.mDb = new DatabaseSQLiteHelper(dbName);
+            const ret = yield this.mDb.importJson(jsonObj);
+            this.mDb.close(dbName);
+            this.mDb = null;
+            return Promise.resolve({ changes: ret });
         });
     }
 }

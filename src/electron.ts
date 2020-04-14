@@ -1,6 +1,7 @@
 import { WebPlugin } from '@capacitor/core';
-import { CapacitorSQLitePlugin, capSQLiteOptions, capSQLiteResult } from './definitions';
+import { CapacitorSQLitePlugin, capSQLiteOptions, capSQLiteResult/*, jsonSQLite*/} from './definitions';
 import { DatabaseSQLiteHelper } from './electron-utils/DatabaseSQLiteHelper';
+import { isJsonSQLite } from './electron-utils/JsonUtils';
 
 export class CapacitorSQLitePluginElectron extends WebPlugin implements CapacitorSQLitePlugin {
     mDb:DatabaseSQLiteHelper;
@@ -42,60 +43,76 @@ export class CapacitorSQLitePluginElectron extends WebPlugin implements Capacito
         } 
         return Promise.resolve({result:true});
     }
-  async execute(options: capSQLiteOptions): Promise<capSQLiteResult> {
-    if(typeof options.statements === 'undefined') {
-      return Promise.reject({changes:-1, message:"Execute command failed : Must provide raw SQL statements"});
+    async execute(options: capSQLiteOptions): Promise<capSQLiteResult> {
+      if(typeof options.statements === 'undefined') {
+        return Promise.reject({changes:-1, message:"Execute command failed : Must provide raw SQL statements"});
+      }
+      const statements:string = options.statements;
+      const ret: number = await this.mDb.exec(statements);    
+      return Promise.resolve({changes:ret});    
     }
-    const statements:string = options.statements;
-    const ret: number = await this.mDb.exec(statements);    
-    return Promise.resolve({changes:ret});    
-  }
-  async run(options: capSQLiteOptions): Promise<capSQLiteResult>{
-    if(typeof options.statement === 'undefined') {
-      return Promise.reject({changes:-1, message:"Run command failed : Must provide a SQL statement"});
+    async run(options: capSQLiteOptions): Promise<capSQLiteResult>{
+      if(typeof options.statement === 'undefined') {
+        return Promise.reject({changes:-1, message:"Run command failed : Must provide a SQL statement"});
+      }
+      if(typeof options.values === 'undefined') {
+        return Promise.reject({changes:-1, message:"Run command failed : Values should be an Array of values"});
+      }
+      const statement: string = options.statement;
+      const values:Array<any> = options.values;
+      let ret:number;
+      if(values.length > 0) {
+        ret = await this.mDb.run(statement,values);
+      } else {
+        ret = await this.mDb.run(statement,null);
+      }
+      return Promise.resolve({changes:ret});    
     }
-    if(typeof options.values === 'undefined') {
-      return Promise.reject({changes:-1, message:"Run command failed : Values should be an Array of values"});
+    async query(options: capSQLiteOptions): Promise<capSQLiteResult>{
+      if(typeof options.statement === 'undefined') {
+        return Promise.reject({changes:-1, message:"Query command failed : Must provide a SQL statement"});
+      }
+      if(typeof options.values === 'undefined') {
+        return Promise.reject({changes:-1, message:"Query command failed : Values should be an Array of values"});
+      }
+      const statement: string = options.statement;
+      const values:Array<any> = options.values;
+      let ret:Array<any>;
+      if(values.length > 0) {
+        ret = await this.mDb.query(statement,values);
+      } else {
+        ret = await this.mDb.query(statement,[]);
+      }
+      return Promise.resolve({values:ret});    
     }
-    const statement: string = options.statement;
-    const values:Array<any> = options.values;
-    let ret:number;
-    if(values.length > 0) {
-      ret = await this.mDb.run(statement,values);
-    } else {
-      ret = await this.mDb.run(statement,null);
+    async deleteDatabase(options: capSQLiteOptions): Promise<capSQLiteResult>{
+      let dbName = options.database;
+      if (dbName == null) {
+        return Promise.reject({result:false,message:"Must provide a Database Name"});
+      }
+      dbName = `${options.database}SQLite.db`;
+      if(typeof this.mDb === 'undefined' || this.mDb === null) this.mDb = new DatabaseSQLiteHelper(dbName);
+      const ret = await this.mDb.deleteDB(dbName);
+      this.mDb = null;
+      return Promise.resolve({result:ret});
     }
-    return Promise.resolve({changes:ret});    
-  }
-  async query(options: capSQLiteOptions): Promise<capSQLiteResult>{
-    if(typeof options.statement === 'undefined') {
-      return Promise.reject({changes:-1, message:"Query command failed : Must provide a SQL statement"});
+    async importFromJson(options: capSQLiteOptions): Promise<capSQLiteResult>{
+      const jsonStrObj = options.jsonstring;
+      if(typeof jsonStrObj != "string" || jsonStrObj == null || jsonStrObj.length === 0) {
+        return Promise.reject({changes:-1,message:"Must provide a json object"});
+      }
+      const jsonObj = JSON.parse(jsonStrObj)
+      const isValid = isJsonSQLite(jsonObj);
+      if(!isValid) return Promise.reject({changes:-1,message:"Must provide a jsonSQLite object"});
+//      const importData: jsonSQLite = jsonObj;
+      const dbName:string = `${jsonObj.database}SQLite.db`;
+      this.mDb = new DatabaseSQLiteHelper(dbName);
+      const ret = await this.mDb.importJson(jsonObj);
+      this.mDb.close(dbName);
+      this.mDb = null;
+      return Promise.resolve({changes:ret});    
     }
-    if(typeof options.values === 'undefined') {
-      return Promise.reject({changes:-1, message:"Query command failed : Values should be an Array of values"});
-    }
-    const statement: string = options.statement;
-    const values:Array<any> = options.values;
-    let ret:Array<any>;
-    if(values.length > 0) {
-      ret = await this.mDb.query(statement,values);
-    } else {
-      ret = await this.mDb.query(statement,[]);
-    }
-    return Promise.resolve({values:ret});    
-  }
-  async deleteDatabase(options: capSQLiteOptions): Promise<capSQLiteResult>{
-    let dbName = options.database
-    if (dbName == null) {
-      return Promise.reject({result:false,message:"Must provide a Database Name"});
-    }
-    dbName = `${options.database}SQLite.db`;
-    if(typeof this.mDb === 'undefined' || this.mDb === null) this.mDb = new DatabaseSQLiteHelper(dbName);
-    const ret = await this.mDb.deleteDB(dbName);
-    this.mDb = null;
-    return Promise.resolve({result:ret});
-  }
-
+  
 }
 
 const CapacitorSQLiteElectron = new CapacitorSQLitePluginElectron();

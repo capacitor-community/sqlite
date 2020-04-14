@@ -45,6 +45,12 @@ export interface CapacitorSQLitePlugin {
      * @returns {Promise<capSQLiteResult>} {result:boolean}
      */
     deleteDatabase(options: capSQLiteOptions): Promise<capSQLiteResult>;
+    /**
+     * Import from Json Object
+     * @param {capSQLiteOptions} options {jsonstring: string}
+     * @returns {Promise<capSQLiteResult>} {changes:number}
+     */
+    importFromJson(options: capSQLiteOptions): Promise<capSQLiteResult>;
 }
 export interface capSQLiteOptions {
     /**
@@ -72,6 +78,11 @@ export interface capSQLiteOptions {
      * ["encryption", "secret","newsecret"]
      */
     mode?: string;
+    /***
+     * Set the JSON object to import
+     *
+     */
+    jsonstring?: string;
 }
 export interface capSQLiteResult {
     /**

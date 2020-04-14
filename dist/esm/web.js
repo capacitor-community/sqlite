@@ -57,6 +57,12 @@ export class CapacitorSQLiteWeb extends WebPlugin {
             return Promise.reject("Not implemented");
         });
     }
+    importFromJson(options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log('deleteDatabase', options);
+            return Promise.reject("Not implemented");
+        });
+    }
 }
 const CapacitorSQLite = new CapacitorSQLiteWeb();
 export { CapacitorSQLite };

@@ -3,8 +3,10 @@ Capacitor SQlite  Plugin is a custom Native Capacitor plugin to create SQLite da
 It is then available only for IOS and Android platforms.
 Databases can be or not encrypted using SQLCipher module.
 
-  **A pre-release is now available for Electron platform with no database encryption**
+  ***A pre-release is now available for Electron platform with no database encryption since 1.5.3***
 
+  ***A pre-release of the method importFromJson is now available for Android and Electron platforms since 2.0.0-3***
+  [importFromJson_Documentation] (https://github.com/jepiqueau/capacitor-sqlite/blob/master/importFromJson.md)
 
 If an error occurs:
 
@@ -85,6 +87,15 @@ Delete a database
 
 Type: `Promise<{result:boolean,message:string}>`
 
+### `importFomJson({jsonstring:fooJSONString}) => Promise<{changes:number,message:string}>`
+
+Import Stringify JSON Object describing a database with Schemas, Indexes and Tables Data
+
+#### Returns
+
+Type: `Promise<{changes:number,message:string}>`
+
+
 ## Methods available for encrypted database in IOS and Android
 
 ### `openStore({database:"fooDB",encrypted:true,mode:"encryption"}) => Promise<{result:boolean,message:string}>`
@@ -132,7 +143,7 @@ Type: `Promise<{result:boolean,message:string}>`
 
 ## Using the Plugin in your App
 
- - [see capacitor documentation](https://capacitor.ionicframework.com/docs/getting-started/with-ionic)
+ - [see capacitor documentation] (https://capacitor.ionicframework.com/docs/getting-started/with-ionic)
 
  - Plugin installation
 

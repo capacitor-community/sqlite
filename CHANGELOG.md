@@ -1,3 +1,10 @@
+## 2.0.0-3 (2020-04-14)
+
+### Added Features
+
+* add importFromJson method to Android Platform
+* add importFromJson method to Electron Platform
+
 ## 2.0.0-2 (2020-04-10)
 
 ### Bug Fixes

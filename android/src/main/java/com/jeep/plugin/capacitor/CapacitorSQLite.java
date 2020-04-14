@@ -10,6 +10,7 @@ import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 
+import com.jeep.plugin.capacitor.cdssUtils.JsonSQLite;
 import com.jeep.plugin.capacitor.cdssUtils.SQLiteDatabaseHelper;
 import com.jeep.plugin.capacitor.cdssUtils.GlobalSQLite;
 
@@ -224,6 +225,56 @@ public class CapacitorSQLite extends Plugin {
 
         }
     }
+    @PluginMethod()
+    public void importFromJson(PluginCall call) {
+        String parsingData = null;
+        parsingData = call.getString("jsonstring");
+        if (parsingData == null) {
+            retChanges(call,-1,
+                "importFromJson command failed: Must provide a Stringify Json Object");
+            return;
+        }
+        try {
+            JSObject jsonObject = new JSObject(parsingData);
+            JsonSQLite jsonSQL = new JsonSQLite();
+            Boolean isValid = jsonSQL.isJsonSQLite(jsonObject);
+            if(!isValid) {
+                retChanges(call,-1,
+                    "importFromJson command failed: Stringify Json Object not Valid");
+                return;
+            }
+            String dbName = new StringBuilder(jsonSQL.getDatabase()).append("SQLite.db").toString();
+//            jsonSQL.print();
+            Boolean encrypted = jsonSQL.getEncrypted();
+            String secret = null;
+            String inMode = "no-encryption";
+            if(encrypted) {
+                inMode = "secret";
+                secret = globalData.secret;
+            }
+            mDb = new SQLiteDatabaseHelper(context,dbName,encrypted,
+                    inMode,secret, null,1);
+
+            if (!mDb.isOpen) {
+                retChanges(call,-1,"importFromJson command failed: Database " + dbName +
+                        "SQLite.db not opened");
+            } else {
+                int res = mDb.importFromJson(jsonSQL);
+                if (res == -1) {
+                    retChanges(call, res, "importFromJson command failed: " +
+                    "import JsonObject not successful");
+                } else {
+                    retChanges(call, res, null);
+                }
+            }
+        }
+        catch (Exception e){
+            retChanges(call,-1,
+                    "importFromJson command failed: " + e.getMessage());
+            return;
+        }
+    }
+
     private void retResult(PluginCall call, Boolean res, String message) {
         JSObject ret = new JSObject();
         ret.put("result", res);

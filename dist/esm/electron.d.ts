@@ -15,6 +15,7 @@ export declare class CapacitorSQLitePluginElectron extends WebPlugin implements 
     run(options: capSQLiteOptions): Promise<capSQLiteResult>;
     query(options: capSQLiteOptions): Promise<capSQLiteResult>;
     deleteDatabase(options: capSQLiteOptions): Promise<capSQLiteResult>;
+    importFromJson(options: capSQLiteOptions): Promise<capSQLiteResult>;
 }
 declare const CapacitorSQLiteElectron: CapacitorSQLitePluginElectron;
 export { CapacitorSQLiteElectron };
