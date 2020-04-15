@@ -1,3 +1,9 @@
+## 2.0.0-4 (2020-04-15)
+
+### Added Features
+
+* add importFromJson method to IOS Platform
+
 ## 2.0.0-3 (2020-04-14)
 
 ### Added Features

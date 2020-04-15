@@ -215,6 +215,51 @@ public class CapacitorSQLite: CAPPlugin {
                         
         }
     }
+    @objc func importFromJson(_ call: CAPPluginCall) {
+        guard let parsingData = call.options["jsonstring"] as? String else {
+            retChanges(call:call,ret:-1,message:"ImportFromJson command failed : Must provide a Stringify Json Object")
+            return
+        }
+        
+        let data = ("["+parsingData+"]").data(using: .utf8)!
+        
+        do {
+            let jsonSQLite = try JSONDecoder().decode([JsonSQLite].self, from: data)
+            jsonSQLite[0].show()
+            let dbName: String = jsonSQLite[0].database + "SQLite.db"
+            let encrypted: Bool = jsonSQLite[0].encrypted
+            var secret:String = "";
+            var inMode:String = "no-encryption";
+            if(encrypted) {
+                inMode = "secret";
+                secret = globalData.secret;
+            }
+            do {
+               mDb = try DatabaseHelper(databaseName:dbName, encrypted: encrypted, mode: inMode, secret:secret,newsecret:"")
+            } catch let error {
+                retChanges(call:call,ret:-1,message:"ImportFromJson command failed : " + error.localizedDescription)
+            }
+            if !mDb!.isOpen {
+                retChanges(call:call,ret:-1,message:"ImportFromJson command failed : Database \(dbName)SQLite.db not opened")
+            } else {
+                do {
+                    let res: Int = try (mDb?.importFromJson(jsonSQLite: jsonSQLite[0]))!
+                    if(res == -1) {
+                        retChanges(call:call,ret:-1,message:"ImportFromJson command failed : import JsonObject not successful")
+                    } else {
+                        retChanges(call:call,ret:res)
+                    }
+                } catch DatabaseHelperError.importFromJson(let message) {
+                    retChanges(call:call,ret:-1,message:"ImportFromJson command failed : \(message)")
+                } catch DatabaseHelperError.tableNotExists(let message) {
+                    retChanges(call:call,ret:-1,message:message)
+                }
+            }
+        } catch let error {
+            retChanges(call:call,ret:-1,message:"ImportFromJson command failed : Stringify Json Object not Valid " + error.localizedDescription)
+        }
+    }
+    
     func retResult(call: CAPPluginCall, ret: Bool, message: String? = nil) {
         if(message != nil) {
             call.success([
@@ -223,7 +268,8 @@ public class CapacitorSQLite: CAPPlugin {
             ])
         } else {
             call.success([
-                "result": ret            ])
+                "result": ret
+            ])
         }
     }
     func retChanges(call: CAPPluginCall, ret: Int, message: String? = nil) {

@@ -5,8 +5,9 @@ Databases can be or not encrypted using SQLCipher module.
 
   ***A pre-release is now available for Electron platform with no database encryption since 1.5.3***
 
-  ***A pre-release of the method importFromJson is now available for Android and Electron platforms since 2.0.0-3***
-  [importFromJson_Documentation] (https://github.com/jepiqueau/capacitor-sqlite/blob/master/importFromJson.md)
+  ***A pre-release of the method importFromJson is now available for Android and Electron platforms since 2.0.0-3 and IOS since 2.0.0-4***
+
+   [importFromJson_Documentation] (https://github.com/jepiqueau/capacitor-sqlite/blob/master/importFromJson.md)
 
 If an error occurs:
 

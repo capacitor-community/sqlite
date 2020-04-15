@@ -17,6 +17,11 @@ enum DatabaseHelperError: Error {
     case selectSql(message:String)
     case deleteDB(message:String)
     case close(message:String)
+    case importFromJson(message:String)
+    case tableNotExists(message:String)
+    case isIdExists(message:String)
+    case valuesToStringNull(message:String)
+    case setToStringNull(message:String)
 }
 class DatabaseHelper {
     public var isOpen: Bool = false;
@@ -246,4 +251,323 @@ class DatabaseHelper {
         return ret
     }
     
+    func importFromJson(jsonSQLite:JsonSQLite) throws -> Int {
+        var success: Bool = true
+        var changes: Int = -1
+        // Create the Database Schema
+        var statements: Array<String> = []
+        statements.append("BEGIN TRANSACTION;")
+        // Loop through Tables
+        for i in 0..<jsonSQLite.tables.count {
+ 
+            if( jsonSQLite.tables[i].schema != nil && jsonSQLite.tables[i].schema!.count > 0) {
+                var stmt: String
+                if(jsonSQLite.mode == "full") {
+                    stmt = "DROP TABLE IF EXISTS "
+                    stmt.append(jsonSQLite.tables[i].name)
+                    stmt.append(";")
+                    statements.append(stmt)
+                }
+
+                stmt = "CREATE TABLE IF NOT EXISTS "
+                stmt.append(jsonSQLite.tables[i].name)
+                stmt.append(" (")
+                for j in 0..<jsonSQLite.tables[i].schema!.count {
+                    stmt.append(jsonSQLite.tables[i].schema![j].column)
+                    stmt.append(" ")
+                    stmt.append(jsonSQLite.tables[i].schema![j].value)
+                    if (j != jsonSQLite.tables[i].schema!.count - 1) {
+                        stmt.append(",")
+                    }
+                }
+                stmt.append(");")
+                statements.append(stmt);
+            }
+
+            if(jsonSQLite.tables[i].indexes != nil && jsonSQLite.tables[i].indexes!.count > 0) {
+                for j in 0..<jsonSQLite.tables[i].indexes!.count {
+                    var stmt: String
+                    stmt = "CREATE INDEX IF NOT EXISTS "
+                    stmt.append(jsonSQLite.tables[i].indexes![j].name)
+                        
+                    stmt.append(" ON ")
+                    stmt.append(jsonSQLite.tables[i].name)
+                    stmt.append(" (")
+                    stmt.append(jsonSQLite.tables[i].indexes![j].column)
+                    stmt.append(");")
+                    statements.append(stmt);
+                }
+            }
+
+        }
+        if(statements.count > 1) {
+            statements.append("PRAGMA user_version = 1;");
+            statements.append("COMMIT TRANSACTION;");
+            let joined = statements.joined(separator: "\n")
+            do {
+                changes = try execSQL(sql: joined)
+                if (changes == -1) {
+                    success = false
+                }
+            } catch DatabaseHelperError.execSql(let message) {
+                throw DatabaseHelperError.importFromJson(message: message)
+            }
+        } else {
+            success = false
+        }
+
+        // create the table's data
+        if(success) {
+            var statements: Array<String> = []
+            statements.append("BEGIN TRANSACTION;")
+            for i in 0..<jsonSQLite.tables.count {
+    
+                if( jsonSQLite.tables[i].values != nil && jsonSQLite.tables[i].values!.count > 0) {
+                    // Check if table exists
+                    do {
+                        let isTab: Bool = try isTable(tableName: jsonSQLite.tables[i].name)
+
+                        if(!isTab) {
+                            let message: String = "importFromJson: Table " +
+                            jsonSQLite.tables[i].name + " does not exist"
+                            throw DatabaseHelperError.tableNotExists(message: message)
+                        }
+                    } catch DatabaseHelperError.selectSql(let message) {
+                        throw DatabaseHelperError.importFromJson(message: message)
+                    }
+
+                    // Get the Column's Name and Type
+                    var jsonNamesTypes: JsonNamesTypes = JsonNamesTypes(names:[],types:[])
+                    do {
+                        jsonNamesTypes = try getTableColumnNamesTypes(tableName: jsonSQLite.tables[i].name)
+                    } catch DatabaseHelperError.selectSql(let message) {
+                       throw DatabaseHelperError.importFromJson(message: message)
+                    }
+                    // Loop on Table's Values
+                    for j in 0..<jsonSQLite.tables[i].values!.count {
+                        // Check the row number of columns
+                        let row: Array<UncertainValue<String,Int,Float>> = jsonSQLite.tables[i].values![j]
+
+                        if(jsonNamesTypes.names.count != row.count) {
+                            let message: String = """
+                            importFromJson: Table \(jsonSQLite.tables[i].name) values row \(j
+                            ) not correct length
+                            """
+                            throw DatabaseHelperError.importFromJson(message: message)
+                        }
+                        // Check the column's type before proceeding
+                        let retTypes:Bool = checkColumnTypes (
+                            types: jsonNamesTypes.types,values: row);
+                        if(!retTypes) {
+                            let message: String = """
+                            importFromJson: Table \(jsonSQLite.tables[i].name) values row \(j
+                            ) not correct types
+                            """
+                            throw DatabaseHelperError.importFromJson(message: message)
+                        }
+                        // Create INSERT or UPDATE Statements
+                        var retisIdExists: Bool
+                        do {
+                            retisIdExists = try isIdExists(tableName:jsonSQLite.tables[i].name,
+                            firstColumnName:jsonNamesTypes.names[0],key:row[0].value!)
+                            
+                        } catch DatabaseHelperError.isIdExists(let message) {
+                           throw DatabaseHelperError.importFromJson(message: message)
+                        }
+                        if(jsonSQLite.mode == "full" || (jsonSQLite.mode == "partial"
+                            && !retisIdExists)) {
+                            // Insert
+                            var valuesString: String
+                            do {
+                                valuesString = try valuesToString(types:jsonNamesTypes.types,rowValues:row)
+                                if(valuesString.count == 0) {
+                                    let message: String = """
+                                    importFromJson: Table  \(jsonSQLite.tables[i].name) values row \(j
+                                    ) not convert to String
+                                    """
+                                    throw DatabaseHelperError.importFromJson(message: message)
+                                }
+                            } catch DatabaseHelperError.valuesToStringNull(let message) {
+                                throw DatabaseHelperError.importFromJson(message: message)
+                            }
+                            let nameString: String = jsonNamesTypes.names.joined(separator:",")
+                            var stmt: String = "INSERT INTO \(jsonSQLite.tables[i].name) (\(nameString)) "
+                            stmt += "VALUES (\(valuesString));"
+                            statements.append(stmt);
+                        } else {
+                            // Update
+                            var setString: String
+                            do {
+                                setString = try setToString(types: jsonNamesTypes.types,
+                                                        names: jsonNamesTypes.names,rowValues: row);
+                                if(setString.count == 0) {
+                                    let message: String = """
+                                    importFromJson: Table  \(jsonSQLite.tables[i].name) values row \(j
+                                    ) not set to String
+                                    """
+                                    throw DatabaseHelperError.importFromJson(message: message)
+                                }
+
+                            } catch DatabaseHelperError.setToStringNull(let message) {
+                                throw DatabaseHelperError.importFromJson(message: message)
+                            }
+                            var stmt: String = "UPDATE \(jsonSQLite.tables[i].name)  SET \(setString) WHERE "
+                            stmt += "\(jsonNamesTypes.names[0]) = \(row[0].value!);"
+                            
+                            statements.append(stmt);
+
+                        }
+                    }
+
+                }
+            }
+
+            if(statements.count > 1) {
+                statements.append("PRAGMA user_version = 1;");
+                statements.append("COMMIT TRANSACTION;");
+                let joined = statements.joined(separator: "\n")
+                do {
+                    changes = try execSQL(sql: joined)
+                    if (changes == -1) {
+                        success = false
+                    }
+                } catch DatabaseHelperError.execSql(let message) {
+                    throw DatabaseHelperError.importFromJson(message: message)
+                }
+            } else {
+                success = true // to be changed to false after testing
+            }
+
+        }
+        
+        if(!success) {
+            changes = -1
+        }
+        return changes
+    }
+    
+    private func isTable(tableName: String) throws -> Bool {
+        var ret: Bool = false
+        var query = "SELECT name FROM sqlite_master WHERE type='table' AND name='"
+        query.append(tableName)
+        query.append("';")
+        do {
+            let resQuery: Array<Any> = try selectSQL(sql: query,values: []);
+            if(resQuery.count > 0) {ret = true}
+        } catch DatabaseHelperError.selectSql(let message) {
+            throw DatabaseHelperError.selectSql(message: message)
+        }
+        return ret
+    }
+    
+    private func getTableColumnNamesTypes(tableName: String) throws -> JsonNamesTypes {
+        
+        var ret: JsonNamesTypes = JsonNamesTypes(names:[],types:[])
+        var query: String = "PRAGMA table_info("
+        query.append(tableName)
+        query.append(");")
+        do {
+            let resQuery =  try selectSQL(sql:query,values:[]);
+            if(resQuery.count > 0) {
+                var names: Array<String> = []
+                var types: Array<String> = []
+                for i in 0..<resQuery.count {
+                    names.append(resQuery[i]["name"] as! String)
+                    types.append(resQuery[i]["type"] as! String)
+                }
+                ret.names.append(contentsOf: names)
+                ret.types.append(contentsOf: types)
+            }
+        } catch DatabaseHelperError.selectSql(let message) {
+            throw DatabaseHelperError.selectSql(message: message)
+        }
+
+        return ret
+    }
+    private func checkColumnTypes (types:Array <String>, values: Array<UncertainValue<String,Int,Float>>) -> Bool {
+        var isRetType: Bool = true
+        for i in 0..<values.count {
+            isRetType = isType(stype: types[i],avalue: values[i])
+            if(!isRetType) {break}
+        }
+        return isRetType
+    }
+    private func isType(stype:String, avalue:UncertainValue<String,Int,Float>) -> Bool {
+        var ret: Bool = false
+        if(stype == "NULL" && type(of: avalue.tValue!) == String.self) { ret = true }
+        if(stype == "TEXT" && type(of: avalue.tValue!) == String.self) { ret = true }
+        if(stype == "INTEGER" && type(of: avalue.uValue!) == Int.self) { ret = true }
+        if(stype == "REAL" && type(of: avalue.vValue!) == Float.self) { ret = true }
+        if(stype == "BLOB" && type(of: avalue.tValue!) == String.self) { ret = true }
+        return ret
+    }
+    private func isIdExists(tableName: String,firstColumnName: String,key: Any) throws -> Bool {
+        var ret: Bool = false
+        var query: String = "SELECT \(firstColumnName) FROM \(tableName) WHERE \(firstColumnName) = "
+        query.append("\(key);")
+        do {
+            let resQuery =  try selectSQL(sql:query,values:[]);
+            if(resQuery.count == 1) {
+                ret = true
+            }
+        } catch DatabaseHelperError.selectSql(let message) {
+            throw DatabaseHelperError.isIdExists(message: "isIdExists: \(message)")
+        }
+        return ret
+    }
+    private func valuesToString(types: Array<String> ,rowValues: Array<UncertainValue<String,Int,Float>>) throws -> String {
+        var retString: String = ""
+        for i in 0..<rowValues.count {
+            if(types[i] == "TEXT") {
+                retString += "'\(rowValues[i].tValue!)',"
+
+             } else if(types[i] == "NULL") {
+                if(rowValues[i].tValue!.prefix(4).uppercased() == "NULL") {
+                    retString += "NULL,"
+                } else {
+                    throw DatabaseHelperError.valuesToStringNull(message:"Value should be of type NULL")
+                }
+                
+            } else if(types[i] == "BLOB") {
+                let data = Data(base64Encoded: rowValues[i].tValue!, options: .ignoreUnknownCharacters)
+                retString += "\(data!),"
+            } else {
+                if(rowValues[i].tValue != nil && rowValues[i].tValue!.prefix(4).uppercased() == "NULL") {
+                    retString += "NULL,"
+                } else {
+                    retString += "\(rowValues[i].value!),"
+                }
+            }
+        }
+        retString = String(retString.dropLast())
+        return retString
+    }
+    private func setToString(types: Array<String> ,names: Array<String>,rowValues: Array<UncertainValue<String,Int,Float>>) throws -> String {
+        var retString: String = ""
+        for i in 0..<rowValues.count {
+            if(types[i] == "TEXT") {
+                retString += "\(names[i]) = '\(rowValues[i].tValue!)',"
+
+             } else if(types[i] == "NULL") {
+                if(rowValues[i].tValue!.prefix(4).uppercased() == "NULL") {
+                    retString += "\(names[i]) = NULL,"
+                } else {
+                    throw DatabaseHelperError.setToStringNull(message:"Value should be of type NULL")
+                }
+                
+            } else if(types[i] == "BLOB") {
+                let data = Data(base64Encoded: rowValues[i].tValue!, options: .ignoreUnknownCharacters)
+                retString += "\(names[i]) = \(data!),"
+            } else {
+                if(rowValues[i].tValue != nil && rowValues[i].tValue!.prefix(4).uppercased() == "NULL") {
+                    retString += "\(names[i]) = NULL,"
+                } else {
+                    retString += "\(names[i]) = \(rowValues[i].value!),"
+                }
+            }
+        }
+        retString = String(retString.dropLast())
+        return retString
+    }
 }
+

@@ -360,6 +360,8 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
 
             int changes = this.execSQL(statements.toArray(new String[statements.size()]));
             if (changes == -1) success = false;
+        } else {
+            success = false;
         }
 
         // create the table's data
@@ -465,6 +467,8 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
 
                 int changes = this.execSQL(statements.toArray(new String[statements.size()]));
                 if (changes == -1) success = false;
+            } else {
+                success = false;
             }
         }
 
@@ -519,10 +523,10 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         if(type.equals("BLOB") && value instanceof Blob) ret = true;
         return ret;
     }
-    private boolean isIdExists(String dbName,String firstColumnName,Object key) {
+    private boolean isIdExists(String tableName,String firstColumnName,Object key) {
         boolean ret = false;
         String query = new StringBuilder("SELECT ").append(firstColumnName).append(" FROM ")
-            .append(dbName).append(" WHERE ").append(firstColumnName).append(" = ")
+            .append(tableName).append(" WHERE ").append(firstColumnName).append(" = ")
             .append(key).append(";").toString();
         JSArray resQuery = this.querySQL(query,new ArrayList<String>());
         if (resQuery.length() == 1) ret = true;
