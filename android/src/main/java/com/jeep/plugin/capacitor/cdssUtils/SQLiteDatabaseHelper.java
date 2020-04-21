@@ -10,6 +10,7 @@ import android.content.Context;
 import android.database.Cursor;
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteOpenHelper;
+import net.sqlcipher.database.SQLiteStatement;
 import android.util.Log;
 
 import com.getcapacitor.JSArray;
@@ -147,10 +148,10 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         }
     }
     // execute sql raw statements
-    public int execSQL(String[] statements) {
+    public JSObject execSQL(String[] statements) {
         // Open the database for writing
         Log.d(TAG, "*** in execSQL: ");
-
+        JSObject retObj = new JSObject();
         SQLiteDatabase db = null;        
         boolean success = true;
         try {
@@ -163,111 +164,143 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
             Log.d(TAG, "Error: execSQL failed: ",e);
             success = false;            
         } finally {
-            if(db != null) db.close();
             if(!success) {
-                return Integer.valueOf(-1);
+                retObj.put("changes",Integer.valueOf(-1));
             } else {
-                return dbChanges();
+                retObj.put("changes",dbChanges(db));
             }
+            if(db != null) db.close();
+            return retObj;
         }
 
     }
     // run one statement with or without values
-    public int runSQL(String statement, ArrayList values) {
+    public JSObject runSQL(String statement, JSArray values) {
+        JSObject retObj = new JSObject();
         // Open the database for writing
         SQLiteDatabase db = null;        
         boolean success = true;
-        try {
-            db = getWritableDatabase(secret);
-            if(values != null && !values.isEmpty()) {
-                // with value
-                Object[] bindings = new Object[values.size()];
-                for (int i = 0 ; i < values.size() ; i++) {
-                    bindings[i] = values.get(i);
-
+        long lastId = Long.valueOf(-1);
+        if(statement.length() > 6) {
+            try {
+                db = getWritableDatabase(secret);
+                db.beginTransaction();
+                lastId = prepareSQL(db, statement, values );
+                if (lastId != -1) db.setTransactionSuccessful();
+            } catch (Exception e) {
+                Log.d(TAG, "Error: runSQL failed: ",e);
+                success = false;
+            } finally {
+                db.endTransaction();
+                if(!success) {
+                    retObj.put("changes",Integer.valueOf(-1));
+                } else {
+                    retObj.put("changes",dbChanges(db));
+                    retObj.put("lastId",lastId);
                 }
-                db.execSQL(statement,bindings);
-            } else {
-                // without values
-                db.execSQL(statement);
+                if(db != null) db.close();
             }
-        } catch (Exception e) {
-            Log.d(TAG, "Error: runSQL failed: ",e);
-            success = false;            
-        } finally {
-            if(db != null) db.close();
-            if(!success) {
-                return Integer.valueOf(-1);
-            } else {
-                return dbChanges();
+        } else {
+            retObj.put("changes",Integer.valueOf(-1));
+        }
+        return retObj;
+    }
+
+    private long prepareSQL(SQLiteDatabase db,String statement, JSArray values ) {
+        boolean success = true;
+        String stmtType = "";
+        long lastId = Long.valueOf(-1);
+        stmtType = statement.substring(0,6).toUpperCase();
+        SQLiteStatement stmt = db.compileStatement(statement);
+        if(values != null && values.length() > 0) {
+            // bind the values if any
+            stmt.clearBindings();
+            try {
+                bindValues(stmt,values);
+            } catch (JSONException e) {
+                Log.d(TAG, "Error: prepareSQL failed: "+ e.getMessage());
+                success = false;
             }
         }
-
+        if(success) {
+            if (stmtType.equals("INSERT")) {
+                lastId = stmt.executeInsert();
+            } else {
+                lastId = Long.valueOf(stmt.executeUpdateDelete());
+            }
+        }
+        return lastId;
     }
     public JSArray querySQL(String statement, ArrayList<String> values) {
         JSArray  retArray = new JSArray();
         // Open the database for reading
         SQLiteDatabase db = null;
         Boolean success = true;
-        Cursor c = null;
         try {
             db = getReadableDatabase(secret);
-            if(values != null && !values.isEmpty()) {
-                // with values
-                String[] bindings = new String[values.size()];
-                for (int i = 0; i < values.size(); i++) {
-                    bindings[i] = values.get(i);
-                }
-                c = db.rawQuery(statement, bindings);
-            } else {
-                // without values
-                c = db.rawQuery(statement, null);
-            }
-            if(c.getCount() > 0) {
-                if (c.moveToFirst()) {
-                    do {
-
-                        JSObject row = new JSObject();
-
-                        for (int i = 0; i< c.getColumnCount(); i++) {
-                            int type = c.getType(i);
-                            switch (type ) {
-                                case FIELD_TYPE_STRING :
-                                    row.put(c.getColumnName(i),c.getString(c.getColumnIndex(c.getColumnName(i))));
-                                    break;
-                                case FIELD_TYPE_INTEGER :
-                                    row.put(c.getColumnName(i),c.getLong(c.getColumnIndex(c.getColumnName(i))));
-                                    break;
-                                case FIELD_TYPE_FLOAT :
-                                    row.put(c.getColumnName(i),c.getFloat(c.getColumnIndex(c.getColumnName(i))));
-                                    break;
-                                case FIELD_TYPE_BLOB :
-                                    row.put(c.getColumnName(i),c.getBlob(c.getColumnIndex(c.getColumnName(i))));
-                                    break;
-                                case FIELD_TYPE_NULL :
-                                    break;
-                                default :
-                                    break;
-                            }
-                        }
-                        retArray.put(row);
-                    } while (c.moveToNext());
-                }
-            }
+            retArray = selectSQL(db,statement,values);
+            if(retArray.length() == 0) success = false;
         } catch (Exception e) {
             Log.d(TAG, "Error: querySQL failed: ",e);
             success = false;
         } finally {
             if(db != null) db.close();
-            if (c != null && !c.isClosed()) {
-                c.close();
-            }
             if(!success) {
                 return new JSArray();
             } else {
                 return retArray;
             }
          }
+    }
+    private JSArray selectSQL(SQLiteDatabase db, String statement, ArrayList<String> values) {
+        JSArray  retArray = new JSArray();
+        Cursor c = null;
+        if(values != null && !values.isEmpty()) {
+            // with values
+            String[] bindings = new String[values.size()];
+            for (int i = 0; i < values.size(); i++) {
+                bindings[i] = values.get(i);
+            }
+            c = db.rawQuery(statement, bindings);
+        } else {
+            // without values
+            c = db.rawQuery(statement, null);
+        }
+        if(c.getCount() > 0) {
+            if (c.moveToFirst()) {
+                do {
+
+                    JSObject row = new JSObject();
+
+                    for (int i = 0; i< c.getColumnCount(); i++) {
+                        int type = c.getType(i);
+                        switch (type ) {
+                            case FIELD_TYPE_STRING :
+                                row.put(c.getColumnName(i),c.getString(c.getColumnIndex(c.getColumnName(i))));
+                                break;
+                            case FIELD_TYPE_INTEGER :
+                                row.put(c.getColumnName(i),c.getLong(c.getColumnIndex(c.getColumnName(i))));
+                                break;
+                            case FIELD_TYPE_FLOAT :
+                                row.put(c.getColumnName(i),c.getFloat(c.getColumnIndex(c.getColumnName(i))));
+                                break;
+                            case FIELD_TYPE_BLOB :
+                                row.put(c.getColumnName(i),c.getBlob(c.getColumnIndex(c.getColumnName(i))));
+                                break;
+                            case FIELD_TYPE_NULL :
+                                break;
+                            default :
+                                break;
+                        }
+                    }
+                    retArray.put(row);
+                } while (c.moveToNext());
+            }
+        }
+        if (c != null && !c.isClosed()) {
+            c.close();
+        }
+        return retArray;
     }
     public boolean closeDB(String databaseName) {
         boolean success = true;
@@ -305,16 +338,27 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         }
 
     }
-    public int importFromJson(JsonSQLite jsonSQL) throws JSONException {
+    public JSObject importFromJson(JsonSQLite jsonSQL) throws JSONException {
         Log.d(TAG, "importFromJson:  ");
-        boolean success = true;
+        JSObject retObj = new JSObject();
+        int changes = Integer.valueOf(-1);
+        // create the database schema
+        changes = createDatabaseSchema(jsonSQL);
+        if (changes != -1) {
+            changes = createTableData(jsonSQL);
+        }
+        retObj.put("changes", changes);
+        return retObj;
+    }
+    private Integer createDatabaseSchema(JsonSQLite jsonSQL) {
+        int changes = Integer.valueOf(-1);
         // create the database schema
         ArrayList<String> statements = new ArrayList<String>();
         statements.add("BEGIN TRANSACTION;");
 
-        for( int i = 0; i< jsonSQL.getTables().size(); i++) {
+        for (int i = 0; i < jsonSQL.getTables().size(); i++) {
 
-            if(jsonSQL.getTables().get(i).getSchema().size() > 0) {
+            if (jsonSQL.getTables().get(i).getSchema().size() > 0) {
 
                 if (jsonSQL.getMode().equals("full")) {
                     String stmt = new StringBuilder("DROP TABLE IF EXISTS ")
@@ -341,38 +385,44 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                 stmt = new StringBuilder(stmt).append(");").toString();
                 statements.add(stmt);
             }
-            if(jsonSQL.getTables().get(i).getIndexes().size() > 0) {
+            if (jsonSQL.getTables().get(i).getIndexes().size() > 0) {
                 for (int j = 0; j < jsonSQL.getTables().get(i).getIndexes().size(); j++) {
                     String stmt = new StringBuilder("CREATE INDEX IF NOT EXISTS ")
                             .append(jsonSQL.getTables().get(i).getIndexes().get(j).getName())
                             .append(" ON ").append(jsonSQL.getTables().get(i).getName())
                             .append(" (").append(jsonSQL.getTables().get(i).getIndexes()
-                            .get(j).getColumn()).append(");").toString();
+                                    .get(j).getColumn()).append(");").toString();
                     statements.add(stmt);
                 }
             }
 
         }
 
-        if(statements.size() > 1) {
+        if (statements.size() > 1) {
             statements.add("PRAGMA user_version = 1;");
             statements.add("COMMIT TRANSACTION;");
 
-            int changes = this.execSQL(statements.toArray(new String[statements.size()]));
-            if (changes == -1) success = false;
-        } else {
-            success = false;
+            JSObject result = this.execSQL(statements.toArray(new String[statements.size()]));
+            changes = result.getInteger("changes");
         }
+        return changes;
+    }
+    private Integer createTableData(JsonSQLite jsonSQL) {
+        boolean success = true;
+        int changes = Integer.valueOf(-1);
+        SQLiteDatabase db = null;
 
         // create the table's data
-        if(success) {
-            statements = new ArrayList<String>();
-            statements.add("BEGIN TRANSACTION;");
+        ArrayList<String> statements = new ArrayList<String>();
+        statements.add("BEGIN TRANSACTION;");
+        try {
+            db = getWritableDatabase(secret);
+            db.beginTransaction();
 
             for( int i = 0; i< jsonSQL.getTables().size(); i++) {
                 if(jsonSQL.getTables().get(i).getValues().size() > 0) {
                     // Check if table exists
-                    boolean isTable = this.isTable(jsonSQL.getTables().get(i).getName());
+                    boolean isTable = this.isTable(db, jsonSQL.getTables().get(i).getName());
                     if(!isTable) {
                         Log.d(TAG, "importFromJson: Table " +
                                 jsonSQL.getTables().get(i).getName() +
@@ -382,7 +432,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                     }
                     // Get the Column's Name and Type
                     try {
-                        JSObject tableNamesTypes = this.getTableColumnNamesTypes(
+                        JSObject tableNamesTypes = this.getTableColumnNamesTypes(db,
                                 jsonSQL.getTables().get(i).getName());
                         if(tableNamesTypes.length() == 0) {
                             success = false;
@@ -407,9 +457,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                             }
 
                             // Check the column's type before proceeding
-                            boolean retTypes = this.checkColumnTypes(
-                                    tableColumnTypes,
-                                    jsonSQL.getTables().get(i).getValues().get(j));
+                            boolean retTypes = this.checkColumnTypes(tableColumnTypes, row);
                             if(!retTypes) {
                                 Log.d(TAG, "importFromJson: Table " +
                                         jsonSQL.getTables().get(i).getName() +
@@ -417,39 +465,51 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                                 success = false;
                                 break;
                             }
+                            boolean retIdExists = this.isIdExists(db,
+                                    jsonSQL.getTables().get(i).getName(),
+                                    tableColumnNames.get(0),row.get(0));
+                            String stmt = "";
                             // Create INSERT or UPDATE Statements
                             if(jsonSQL.getMode().equals("full") ||
-                                    (jsonSQL.getMode().equals("partial")
-                                    && !(this.isIdExists(jsonSQL.getTables().get(i).getName(),
-                                    tableColumnNames.get(0),row.get(0))))) {
+                                    (jsonSQL.getMode().equals("partial") && !retIdExists)) {
                                 // Insert
-                                String valuesString = this.valuesToString(tableColumnTypes,row);
-                                if(valuesString.length() == 0) {
-                                    Log.d(TAG, "importFromJson: Table " +
-                                            jsonSQL.getTables().get(i).getName() +
-                                            " values row " + j + " not convert to String");
+                                String namesString = this.convertToString(tableColumnNames,
+                                        ',');
+                                String questionMarkString = this.createQuestionMarkString(
+                                        tableColumnNames.size());
+                                StringBuilder strB = new StringBuilder();
+
+                                stmt = new StringBuilder("INSERT INTO ")
+                                    .append(jsonSQL.getTables().get(i).getName())
+                                    .append("(").append(namesString).append(")")
+                                    .append(" VALUES (").append(questionMarkString)
+                                    .append(");").toString();
+
+                            } else {
+                                // Update
+                                String setString  = this.setNameForUpdate(tableColumnNames);
+                                if(setString.length() == 0) {
+                                    String message = new StringBuilder("importFromJson: Table ")
+                                        .append(jsonSQL.getTables().get(i).getName())
+                                        .append(" values row ").append(j)
+                                        .append(" not set to String").toString();
                                     success = false;
                                     break;
                                 }
-                                String namesString = this.convertToString(tableColumnNames,
-                                        ',');
-                                String stmt = new StringBuilder("INSERT INTO ")
-                                    .append(jsonSQL.getTables().get(i).getName())
-                                    .append(" (").append(namesString).append(") VALUES (")
-                                    .append(valuesString).append(");").toString();
-                                statements.add(stmt);
-                            } else {
-                                // Update
-                                String setString = this.setToString(tableColumnTypes,
-                                        tableColumnNames,row);
-                                String stmt = new StringBuilder("UPDATE ")
-                                    .append(jsonSQL.getTables().get(i).getName())
-                                    .append(" SET ").append(setString).append(" WHERE ")
-                                    .append(tableColumnNames.get(0)).append(" = ")
-                                    .append(row.get(0)).append(";").toString();
-                                statements.add(stmt);
+                                stmt = new StringBuilder("UPDATE ")
+                                        .append(jsonSQL.getTables().get(i).getName())
+                                        .append(" SET ").append(setString).append(" WHERE ")
+                                        .append(tableColumnNames.get(0)).append(" = ")
+                                        .append(row.get(0)).append(";").toString();
                             }
-                        }
+                            JSArray jsRow = this.convertToJSArray(row);
+                            long lastId = this.prepareSQL(db,stmt,jsRow);
+                            if(lastId == -1) {
+                                Log.d(TAG, "createTableData: Error in INSERT/UPDATE");
+                                success = false;
+                                break;
+                            }
+                         }
                     }
                     catch (JSONException e) {
                         Log.d(TAG, "get Table Values: Error ", e);
@@ -460,41 +520,60 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                     success = false;
                 }
             }
+            if(success) db.setTransactionSuccessful();
 
-            if(success && statements.size() > 1) {
-                statements.add("PRAGMA user_version = 1;");
-                statements.add("COMMIT TRANSACTION;");
+        } catch (Exception e){
 
-                int changes = this.execSQL(statements.toArray(new String[statements.size()]));
-                if (changes == -1) success = false;
+        } finally {
+            db.endTransaction();
+            if(success) changes = dbChanges(db);
+            if(db != null) db.close();
+        }
+
+        return changes;
+    }
+    private void bindValues(SQLiteStatement stmt, JSArray values) throws JSONException {
+        for (int i = 0 ; i < values.length() ; i++) {
+            if (values.get(i) instanceof Float || values.get(i) instanceof Double) {
+                stmt.bindDouble(i + 1, values.getDouble(i));
+            } else if (values.get(i) instanceof Number) {
+                stmt.bindLong(i + 1, values.getLong(i));
+            } else if (values.isNull(i)) {
+                stmt.bindNull(i + 1);
             } else {
-                success = false;
+                String str = values.getString(i);
+                if (str.toUpperCase().equals("NULL")) {
+                    stmt.bindNull(i + 1);
+                } else {
+                    stmt.bindString(i + 1, str);
+                }
             }
         }
-
-        if(!success) {
-            return Integer.valueOf(-1);
-        } else {
-            return dbChanges();
-        }
     }
-    private boolean isTable(String tableName) {
+    private JSArray convertToJSArray(ArrayList<Object> row) {
+        JSArray jsArray = new JSArray();
+        for (int i = 0; i < row.size(); i++) {
+            jsArray.put(row.get(i));
+        }
+        return jsArray;
+    }
+    private boolean isTable(SQLiteDatabase db,String tableName) {
         boolean ret = false;
         String query =
             new StringBuilder("SELECT name FROM sqlite_master WHERE type='table' AND name='")
                 .append(tableName).append("';").toString();
-        JSArray resQuery = this.querySQL(query,new ArrayList<String>());
+        JSArray resQuery = this.selectSQL(db, query, new ArrayList<String>());
         if(resQuery.length() > 0) ret = true;
         return ret;
     }
-    private JSObject getTableColumnNamesTypes(String tableName) throws JSONException {
+    private JSObject getTableColumnNamesTypes(SQLiteDatabase db, String tableName) throws JSONException {
         JSObject ret = new JSObject();
         ArrayList<String> names = new ArrayList<String>();
         ArrayList<String> types = new ArrayList<String>();
         String query =
                 new StringBuilder("PRAGMA table_info(").append(tableName)
                 .append(");").toString();
-        JSArray resQuery = this.querySQL(query,new ArrayList<String>());
+        JSArray resQuery = this.selectSQL(db, query, new ArrayList<String>());
         List<JSObject> lQuery = resQuery.toList();
         if(resQuery.length() > 0) {
             for(JSObject obj : lQuery) {
@@ -509,60 +588,55 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
     private boolean checkColumnTypes(ArrayList<String> types,ArrayList<Object> values) {
         boolean isType = true;
         for(int i =0; i < values.size(); i++) {
-            isType = this.isType(types.get(i),values.get(i));
-            if(!isType) break;
+            isType = this.isType(types.get(i), values.get(i));
+            if (!isType) break;
         }
         return isType;
     }
     private boolean isType(String type, Object value) {
         boolean ret = false;
-        if(type.equals("NULL") && value instanceof JSONObject) ret = true;
-        if(type.equals("TEXT") && value instanceof String) ret = true;
-        if(type.equals("INTEGER") && value instanceof Integer) ret = true;
-        if(type.equals("REAL") && value instanceof Float) ret = true;
-        if(type.equals("BLOB") && value instanceof Blob) ret = true;
+        String val = String.valueOf(value).toUpperCase();
+        if(val.equals("NULL")) {
+            ret = true;
+        } else if( val.contains("BASE64")) {
+            ret = true;
+        } else {
+            if (type.equals("NULL") && value instanceof JSONObject) ret = true;
+            if (type.equals("TEXT") && value instanceof String) ret = true;
+            if (type.equals("INTEGER") && value instanceof Integer) ret = true;
+            if (type.equals("REAL") && value instanceof Float) ret = true;
+            if (type.equals("BLOB") && value instanceof Blob) ret = true;
+        }
         return ret;
     }
-    private boolean isIdExists(String tableName,String firstColumnName,Object key) {
+    private boolean isIdExists(SQLiteDatabase db, String tableName,String firstColumnName,Object key) {
         boolean ret = false;
         String query = new StringBuilder("SELECT ").append(firstColumnName).append(" FROM ")
             .append(tableName).append(" WHERE ").append(firstColumnName).append(" = ")
             .append(key).append(";").toString();
-        JSArray resQuery = this.querySQL(query,new ArrayList<String>());
+        JSArray resQuery = this.selectSQL(db, query, new ArrayList<String>());
         if (resQuery.length() == 1) ret = true;
         return ret;
     }
-    private String valuesToString(ArrayList<String> types,ArrayList<Object> rowValues) {
+
+    private String createQuestionMarkString(Integer length) {
         String retString = "";
         StringBuilder strB = new StringBuilder();
-        for (int i = 0; i < rowValues.size(); i++) {
-            if(types.get(i).equals("TEXT")) {
-                strB.append("'").append(rowValues.get(i)).append("',");
-            } else {
-                strB.append(rowValues.get(i)).append(",");
-            }
+        for(int i =0; i < length; i++) {
+            strB.append("?,");
         }
-        if(strB.length() > 1) {
-            strB.deleteCharAt(strB.length() - 1);
-            retString = strB.toString();
-        }
+        strB.deleteCharAt(strB.length() - 1);
+        retString = strB.toString();
         return retString;
     }
-    private String setToString(ArrayList<String> types, ArrayList<String> names,
-                               ArrayList<Object> row) {
+    private String setNameForUpdate(ArrayList<String> names ) {
         String retString = "";
         StringBuilder strB = new StringBuilder();
-        for (int i = 0; i < names.size(); i++) {
-            if(types.get(i).equals("TEXT")) {
-                strB.append(names.get(i)).append(" = '").append(row.get(i)).append("',");
-            } else {
-                strB.append(names.get(i)).append(" = ").append(row.get(i)).append(",");
-            }
+        for(int i =0; i < names.size(); i++) {
+            strB.append("("+ names.get(i) + ") = ? ,");
         }
-        if(strB.length() > 1) {
-            strB.deleteCharAt(strB.length() - 1);
-            retString = strB.toString();
-        }
+        strB.deleteCharAt(strB.length() - 1);
+        retString = strB.toString();
         return retString;
     }
 
@@ -592,24 +666,27 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    private int dbChanges() {
-        String SELECT_CHANGE = "SELECT changes()";
+    private int dbChanges(SQLiteDatabase db) {
+        String SELECT_CHANGE = "SELECT total_changes()";
         Boolean success = true;
-        SQLiteDatabase db = null;
         int ret = Integer.valueOf(-1);
         try {
-            db = getReadableDatabase(secret);
             Cursor cursor = db.rawQuery(SELECT_CHANGE, null);
-            ret = cursor.getCount();
-            cursor.close();   
+            if(cursor != null) {
+                if (cursor.moveToFirst()) {
+                    ret = Integer.parseInt(cursor.getString(0));
+                }
+
+            }
+            cursor.close();
         }
         catch (Exception e) {
             Log.d(TAG, "Error: dbChanges failed: ",e);
         }
         finally {
-            if(db != null) db.close();
-             return ret;
+            return ret;
         }
+
     }
     private String convertToString(ArrayList<String> arr,char sep) {
         StringBuilder builder = new StringBuilder();
@@ -623,5 +700,6 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         builder.setLength(builder.length() - 1);
         return builder.toString();
     }
+
 
 }

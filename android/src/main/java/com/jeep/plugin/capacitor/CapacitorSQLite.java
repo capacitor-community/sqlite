@@ -117,9 +117,11 @@ public class CapacitorSQLite extends Plugin {
     }
     @PluginMethod()
     public void execute(PluginCall call) {
+        JSObject retRes = new JSObject();
+        retRes.put("changes",Integer.valueOf(-1));
         String statements = call.getString("statements");
         if (statements == null) {
-            retChanges(call,-1,"Execute command failed : Must provide raw SQL statements");
+            retChanges(call,retRes,"Execute command failed : Must provide raw SQL statements");
           call.reject("Must provide raw SQL statements");
             return;
         }
@@ -137,37 +139,37 @@ public class CapacitorSQLite extends Plugin {
         if(sqlCmdArray[sqlCmdArray.length-1] == "") {
             sqlCmdArray = Arrays.copyOf(sqlCmdArray, sqlCmdArray.length-1);
         }
-        int res = mDb.execSQL(sqlCmdArray);
-        if (res == -1) {
-            retChanges(call, res, "Execute command failed");
+        JSObject res = mDb.execSQL(sqlCmdArray);
+        if (res.getInteger("changes") == Integer.valueOf(-1)) {
+            retChanges(call, retRes, "Execute command failed");
         } else {
             retChanges(call, res, null);
         }
     }
     @PluginMethod()
     public void run(PluginCall call) throws JSONException {
+        JSObject retRes = new JSObject();
+        retRes.put("changes",Integer.valueOf(-1));
         String statement = call.getString("statement");
         if (statement == null) {
-            call.reject("Must provide a SQL statement");
+            retChanges(call,retRes,
+                    "Run command failed: Must provide a SQL statement");
             return;
         }
         JSArray values = call.getArray("values");
         if(values == null) {
-            call.reject("Must provide an Array of values");
+            retChanges(call,retRes,
+                    "Run command failed: Must provide an Array of values");
             return;
         }
-        int res;
+        JSObject res;
         if(values.length() > 0) {
-            ArrayList<Object> vals = new ArrayList<Object>();
-            for (int i = 0; i < values.length(); i++) {
-               vals.add(values.get(i));
-             }
-            res = mDb.runSQL(statement,vals);
+            res = mDb.runSQL(statement,values);
         } else {
             res = mDb.runSQL(statement,null);
         }
-        if (res == -1) {
-            retChanges(call, res, "Run command failed");
+        if (res.getInteger("changes") == Integer.valueOf(-1)) {
+            retChanges(call, retRes, "Run command failed");
         } else {
             retChanges(call, res, null);
         }
@@ -176,12 +178,12 @@ public class CapacitorSQLite extends Plugin {
     public void query(PluginCall call) throws JSONException {
         String statement = call.getString("statement");
         if (statement == null) {
-            call.reject("Must provide a query statement");
+            retValues(call, new JSArray(), "Must provide a query statement");
             return;
         }
         JSArray values = call.getArray("values");
         if(values == null) {
-            call.reject("Must provide an Array of values");
+            retValues(call, new JSArray(), "Must provide an Array of values");
             return;
         }
         JSArray res;
@@ -229,8 +231,10 @@ public class CapacitorSQLite extends Plugin {
     public void importFromJson(PluginCall call) {
         String parsingData = null;
         parsingData = call.getString("jsonstring");
+        JSObject retRes = new JSObject();
+        retRes.put("changes",Integer.valueOf(-1));
         if (parsingData == null) {
-            retChanges(call,-1,
+            retChanges(call,retRes,
                 "importFromJson command failed: Must provide a Stringify Json Object");
             return;
         }
@@ -239,7 +243,7 @@ public class CapacitorSQLite extends Plugin {
             JsonSQLite jsonSQL = new JsonSQLite();
             Boolean isValid = jsonSQL.isJsonSQLite(jsonObject);
             if(!isValid) {
-                retChanges(call,-1,
+                retChanges(call,retRes,
                     "importFromJson command failed: Stringify Json Object not Valid");
                 return;
             }
@@ -256,12 +260,12 @@ public class CapacitorSQLite extends Plugin {
                     inMode,secret, null,1);
 
             if (!mDb.isOpen) {
-                retChanges(call,-1,"importFromJson command failed: Database " + dbName +
+                retChanges(call,retRes,"importFromJson command failed: Database " + dbName +
                         "SQLite.db not opened");
             } else {
-                int res = mDb.importFromJson(jsonSQL);
-                if (res == -1) {
-                    retChanges(call, res, "importFromJson command failed: " +
+                JSObject res = mDb.importFromJson(jsonSQL);
+                if (res.getInteger("changes") == Integer.valueOf(-1)) {
+                    retChanges(call, retRes, "importFromJson command failed: " +
                     "import JsonObject not successful");
                 } else {
                     retChanges(call, res, null);
@@ -269,7 +273,7 @@ public class CapacitorSQLite extends Plugin {
             }
         }
         catch (Exception e){
-            retChanges(call,-1,
+            retChanges(call,retRes,
                     "importFromJson command failed: " + e.getMessage());
             return;
         }
@@ -281,7 +285,7 @@ public class CapacitorSQLite extends Plugin {
         if(message != null) ret.put("message",message);
         call.resolve(ret);
     }
-    private void retChanges(PluginCall call, Integer res, String message) {
+    private void retChanges(PluginCall call, JSObject res, String message) {
         JSObject ret = new JSObject();
         ret.put("changes", res);
         if(message != null) ret.put("message",message);

@@ -11,12 +11,17 @@ public class CapacitorSQLite: CAPPlugin {
     var mDb: DatabaseHelper?
     var globalData: GlobalSQLite = GlobalSQLite()
     
+    // MARK: - Echo
+
     @objc func echo(_ call: CAPPluginCall) {
         let value = call.getString("value") ?? ""
         call.success([
             "value": value
         ])
     }
+    
+    // MARK: - Open
+    
     @objc func open(_ call: CAPPluginCall) {
         guard let dbName = call.options["database"] as? String else {
             retResult(call:call,ret:false,message:"Must provide a database name")
@@ -65,6 +70,8 @@ public class CapacitorSQLite: CAPPlugin {
         }
     }
     
+    // MARK: - Close
+    
     @objc func close(_ call: CAPPluginCall) {
         guard let dbName = call.options["database"] as? String else {
             retResult(call:call,ret:false,message:"Close command failed: Must provide a database name")
@@ -86,41 +93,45 @@ public class CapacitorSQLite: CAPPlugin {
            retResult(call:call,ret:false,message:"Close command failed: No database connection")
         }
     }
-
-    @objc func execute(_ call: CAPPluginCall) {
+    
+    // MARK: - Execute
+    
+        @objc func execute(_ call: CAPPluginCall) {
         guard let statements = call.options["statements"] as? String else {
-            retChanges(call:call,ret:-1,message:"Execute command failed : Must provide raw SQL statements")
+            retChanges(call:call,ret:["changes":-1],message:"Execute command failed : Must provide raw SQL statements")
             return
         }
         if(mDb != nil) {
             do {
                 let res: Int? = try (mDb?.execSQL(sql:statements))
-                retChanges(call:call,ret:res!)
+                retChanges(call:call,ret:["changes":res!])
             } catch DatabaseHelperError.dbConnection(let message) {
-                retChanges(call:call,ret:-1,message:"Execute command failed : \(message)")
+                retChanges(call:call,ret:["changes":-1],message:"Execute command failed : \(message)")
             } catch DatabaseHelperError.execSql(let message){
-                retChanges(call:call,ret:-1,message:"Execute command failed : \(message)")
+                retChanges(call:call,ret:["changes":-1],message:"Execute command failed : \(message)")
             } catch let error {
-                retChanges(call:call,ret:-1,message:"Execute command failed : \(error)")
+                retChanges(call:call,ret:["changes":-1],message:"Execute command failed : \(error)")
             }
 
         } else {
-            retChanges(call:call,ret:-1,message:"Execute command failed : No database connection")
+            retChanges(call:call,ret:["changes":-1],message:"Execute command failed : No database connection")
         }
     }
     
+    // MARK: - Run
+    
     @objc func run(_ call: CAPPluginCall) {
         guard let statement = call.options["statement"] as? String else {
-            retChanges(call:call,ret:-1,message:"Run command failed : Must provide a SQL statement")
+            retChanges(call:call,ret:["changes":-1],message:"Run command failed : Must provide a SQL statement")
             return
         }
         guard let values = call.options["values"] as? Array<Any> else {
-            retChanges(call:call,ret:-1,message:"Run command failed : Values should be an Array of values")
+            retChanges(call:call,ret:["changes":-1],message:"Run command failed : Values should be an Array of values")
             return
         }
         if(mDb != nil) {
             do {
-                var res: Int?
+                var res: [String:Int]?
                 if(values.count > 0 ) {
                     var val: Array<Any> = []
                     for value in values {
@@ -131,10 +142,8 @@ public class CapacitorSQLite: CAPPlugin {
                             val.append(obj)
                         } else if let obj = value as? Float {
                             val.append(obj)
-                        } else if let obj = value as? Blob {
-                            val.append(obj)
                         } else {
-                            retChanges(call:call,ret:-1,message:"Run command failed : Not a SQL type")
+                            retChanges(call:call,ret:["changes":-1],message:"Run command failed : Not a SQL type")
                         }
                     }
                      res = try (mDb?.runSQL(sql:statement,values: val))
@@ -143,17 +152,19 @@ public class CapacitorSQLite: CAPPlugin {
                 }
                 retChanges(call:call,ret:res!)
             } catch DatabaseHelperError.dbConnection(let message) {
-                retChanges(call:call,ret:-1,message:"Run command failed : \(message)")
+                retChanges(call:call,ret:["changes":-1],message:"Run command failed : \(message)")
             } catch DatabaseHelperError.runSql(let message) {
-                retChanges(call:call,ret:-1,message:"Run command failed : \(message)")
+                retChanges(call:call,ret:["changes":-1],message:"Run command failed : \(message)")
             } catch let error {
-                retChanges(call:call,ret:-1,message:"Run command failed : \(error)")
+                retChanges(call:call,ret:["changes":-1],message:"Run command failed : \(error)")
             }
 
         } else {
-            retChanges(call:call,ret:-1,message:"Run command failed : No database connection")
+            retChanges(call:call,ret:["changes":-1],message:"Run command failed : No database connection")
         }
     }
+    
+    // MARK: - Query
     
     @objc func query(_ call: CAPPluginCall) {
         guard let statement = call.options["statement"] as? String else {
@@ -186,6 +197,8 @@ public class CapacitorSQLite: CAPPlugin {
         }
     }
     
+    // MARK: - DeleteDatabase
+    
     @objc func deleteDatabase(_ call: CAPPluginCall) {
         guard let dbName = call.options["database"] as? String else {
             retResult(call:call,ret:false,message:"DeleteDatabase command failed: Must provide a database name")
@@ -215,9 +228,12 @@ public class CapacitorSQLite: CAPPlugin {
                         
         }
     }
+    
+    // MARK: - ImportFromJson
+    
     @objc func importFromJson(_ call: CAPPluginCall) {
         guard let parsingData = call.options["jsonstring"] as? String else {
-            retChanges(call:call,ret:-1,message:"ImportFromJson command failed : Must provide a Stringify Json Object")
+            retChanges(call:call,ret:["changes":-1],message:"ImportFromJson command failed : Must provide a Stringify Json Object")
             return
         }
         
@@ -225,7 +241,7 @@ public class CapacitorSQLite: CAPPlugin {
         
         do {
             let jsonSQLite = try JSONDecoder().decode([JsonSQLite].self, from: data)
-            jsonSQLite[0].show()
+//            jsonSQLite[0].show()
             let dbName: String = jsonSQLite[0].database + "SQLite.db"
             let encrypted: Bool = jsonSQLite[0].encrypted
             var secret:String = "";
@@ -237,28 +253,30 @@ public class CapacitorSQLite: CAPPlugin {
             do {
                mDb = try DatabaseHelper(databaseName:dbName, encrypted: encrypted, mode: inMode, secret:secret,newsecret:"")
             } catch let error {
-                retChanges(call:call,ret:-1,message:"ImportFromJson command failed : " + error.localizedDescription)
+                retChanges(call:call,ret:["changes":-1],message:"ImportFromJson command failed : " + error.localizedDescription)
             }
             if !mDb!.isOpen {
-                retChanges(call:call,ret:-1,message:"ImportFromJson command failed : Database \(dbName)SQLite.db not opened")
+                retChanges(call:call,ret:["changes":-1],message:"ImportFromJson command failed : Database \(dbName)SQLite.db not opened")
             } else {
                 do {
-                    let res: Int = try (mDb?.importFromJson(jsonSQLite: jsonSQLite[0]))!
-                    if(res == -1) {
-                        retChanges(call:call,ret:-1,message:"ImportFromJson command failed : import JsonObject not successful")
+                    let res: [String:Int] = try (mDb?.importFromJson(jsonSQLite: jsonSQLite[0]))!
+                    if(res["changes"] == -1) {
+                        retChanges(call:call,ret:["changes":-1],message:"ImportFromJson command failed : import JsonObject not successful")
                     } else {
                         retChanges(call:call,ret:res)
                     }
                 } catch DatabaseHelperError.importFromJson(let message) {
-                    retChanges(call:call,ret:-1,message:"ImportFromJson command failed : \(message)")
+                    retChanges(call:call,ret:["changes":-1],message:"ImportFromJson command failed : \(message)")
                 } catch DatabaseHelperError.tableNotExists(let message) {
-                    retChanges(call:call,ret:-1,message:message)
+                    retChanges(call:call,ret:["changes":-1],message:message)
                 }
             }
         } catch let error {
-            retChanges(call:call,ret:-1,message:"ImportFromJson command failed : Stringify Json Object not Valid " + error.localizedDescription)
+            retChanges(call:call,ret:["changes":-1],message:"ImportFromJson command failed : Stringify Json Object not Valid " + error.localizedDescription)
         }
     }
+    
+    // MARK: - RetResult
     
     func retResult(call: CAPPluginCall, ret: Bool, message: String? = nil) {
         if(message != nil) {
@@ -272,7 +290,10 @@ public class CapacitorSQLite: CAPPlugin {
             ])
         }
     }
-    func retChanges(call: CAPPluginCall, ret: Int, message: String? = nil) {
+    
+    // MARK: - RetChanges
+    
+    func retChanges(call: CAPPluginCall, ret: [String:Int], message: String? = nil) {
         if(message != nil) {
             call.success([
                 "changes": ret,
@@ -280,9 +301,13 @@ public class CapacitorSQLite: CAPPlugin {
             ])
         } else {
             call.success([
-                "changes": ret            ])
+                "changes": ret
+            ])
         }
     }
+    
+    // MARK: - RetValues
+    
     func retValues(call: CAPPluginCall, ret: Array<[String: Any]>, message: String? = nil) {
         if(message != nil) {
             call.success([

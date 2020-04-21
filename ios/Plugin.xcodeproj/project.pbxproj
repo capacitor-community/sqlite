@@ -11,7 +11,6 @@
 		20C0B05DCFC8E3958A738AF2 /* Pods_PluginTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F6753A823D3815DB436415E3 /* Pods_PluginTests.framework */; };
 		2C6C636D2447835200EED166 /* JsonSQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6C636C2447835200EED166 /* JsonSQLite.swift */; };
 		2C77B2E52421082E0059C80C /* UtilsSQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C77B2E32421082E0059C80C /* UtilsSQLite.swift */; };
-		2C77B2E62421082E0059C80C /* Blob.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C77B2E42421082E0059C80C /* Blob.swift */; };
 		2C77B2E9242108480059C80C /* GlobalSQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C77B2E7242108480059C80C /* GlobalSQLite.swift */; };
 		2C77B2EA242108480059C80C /* DatabaseSQLiteHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C77B2E8242108480059C80C /* DatabaseSQLiteHelper.swift */; };
 		50ADFF92201F53D600D50D53 /* Plugin.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50ADFF88201F53D600D50D53 /* Plugin.framework */; };
@@ -35,7 +34,6 @@
 /* Begin PBXFileReference section */
 		2C6C636C2447835200EED166 /* JsonSQLite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JsonSQLite.swift; sourceTree = "<group>"; };
 		2C77B2E32421082E0059C80C /* UtilsSQLite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilsSQLite.swift; sourceTree = "<group>"; };
-		2C77B2E42421082E0059C80C /* Blob.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Blob.swift; sourceTree = "<group>"; };
 		2C77B2E7242108480059C80C /* GlobalSQLite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GlobalSQLite.swift; sourceTree = "<group>"; };
 		2C77B2E8242108480059C80C /* DatabaseSQLiteHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatabaseSQLiteHelper.swift; sourceTree = "<group>"; };
 		3B2A61DA5A1F2DD4F959604D /* Pods_Plugin.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Plugin.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -81,7 +79,6 @@
 			isa = PBXGroup;
 			children = (
 				2C77B2E32421082E0059C80C /* UtilsSQLite.swift */,
-				2C77B2E42421082E0059C80C /* Blob.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -329,7 +326,6 @@
 			files = (
 				2C77B2EA242108480059C80C /* DatabaseSQLiteHelper.swift in Sources */,
 				2C6C636D2447835200EED166 /* JsonSQLite.swift in Sources */,
-				2C77B2E62421082E0059C80C /* Blob.swift in Sources */,
 				50E1A94820377CB70090CE1A /* Plugin.swift in Sources */,
 				2C77B2E9242108480059C80C /* GlobalSQLite.swift in Sources */,
 				50ADFFA82020EE4F00D50D53 /* Plugin.m in Sources */,

@@ -53,88 +53,140 @@ export class DatabaseSQLiteHelper {
             });
         });
     }
-    public exec(statements:string): Promise<number> {
+    public exec(statements:string): Promise<any> {
         return new Promise(  (resolve) => {
+            let retRes = {changes:-1};
             const db = this._utils.connection(this._databaseName,false/*,this._secret*/);
             if (db === null) {
                 this.isOpen = false;
                 console.log("exec: Error Database connection failed");
-                resolve(-1);
+                resolve(retRes);
             }
-            db.exec(statements,(err:Error)=> {
-                if(err) {
-                    console.log(`exec: Error Execute command failed : ${err.message}`);
-                    db.close();
-                    resolve(-1);    
-                } else {
-                    db.close();
-                    resolve(1);
-                }
+            db.serialize(() => {
+                db.exec(statements,async (err:Error) => {
+                    if(err) {
+                        console.log(`exec: Error Execute command failed : ${err.message}`);
+                        db.close();
+                        resolve(retRes);
+                    } else {
+                        const changes:number =  await this.dbChanges(db);
+                        console.log('in exec afterdb.exec changes ',changes)
+                        retRes = {changes:changes};
+                        db.close();
+                        resolve(retRes);
+                    }
+                });
             });
         });
     }
-    public run(statement:string,values: Array<any>): Promise<number> {
-        return new Promise(  (resolve) => {
+    public run(statement:string,values: Array<any>): Promise<any> {
+        return new Promise(  async (resolve) => {
+            let lastId: number = -1;
+            let retRes: any = {changes:-1,lastId:lastId};
             const db = this._utils.connection(this._databaseName,false/*,this._secret*/);
             if (db === null) {
                 this.isOpen = false;
                 console.log("run: Error Database connection failed");
-                resolve(-1);
+                resolve(retRes);
             }
+            let retB: boolean = await this.beginTransaction(db);
+            if(!retB) {
+                db.close();
+                resolve(retRes);
+            }
+            lastId = await this.prepare(db,statement,values);
+            if(lastId === -1) {
+                console.log("run: Error return lastId= -1");
+                db.close();
+                resolve(retRes);
+            }
+            retB = await this.endTransaction(db);
+            if(!retB) {
+                db.close();
+                resolve(retRes);
+            }
+            const changes = await this.dbChanges(db);
+            retRes.changes = changes;
+            retRes.lastId = lastId;
+            db.close();
+            resolve(retRes);
+        });
+    }    
+    public prepare(db:any, statement:string,values: Array<any>): Promise<number> {
+        return new Promise(  async (resolve) => {
+            let retRes: number = -1;
+
             if(values && values.length >= 1) {
-                db.run(statement,values,(err:Error)=> {
-                    if(err) {
-                        console.log(`run: Error Run command failed : ${err.message}`);
-                        db.close();
-                        resolve(-1);    
-                    } else {
-                        db.close();
-                        resolve(1);
-                    }
+                db.serialize(() => {
+                    const stmt = db.prepare(statement);
+                    stmt.run(values,async (err:Error)=> {
+                        if(err) {
+                            console.log(`prepare: Error Prepare command failed : ${err.message}`);
+                            resolve(retRes);    
+                        } else {
+                            const lastId:number =  await this.getLastId(db);
+                            if(lastId != -1) retRes = lastId;
+                            stmt.finalize();
+                            resolve(retRes);    
+                        }
+                    });
                 });
             } else {
-                db.run(statement,(err:Error)=> {
-                    if(err) {
-                        console.log(`run: Error Run command failed : ${err.message}`);
-                        db.close();
-                        resolve(-1);    
-                    } else {
-                        db.close();
-                        resolve(1);
-                    }
+                db.serialize(() => {
+                    db.run(statement,async (err:Error)=> {
+                        if(err) {
+                            console.log(`prepare: Error Prepare command failed : ${err.message}`);
+                            resolve(retRes)
+                        } else {
+                            const lastId:number =  await this.getLastId(db);
+                            if(lastId != -1) retRes = lastId;
+                            resolve(retRes)
+                        }
+                    });
                 });
             }
         });
     }
     public query(statement:string,values: Array<any>): Promise<Array<any>> {
-        return new Promise(  (resolve) => {
+        return new Promise( async  (resolve) => {
             const db = this._utils.connection(this._databaseName,true/*,this._secret*/);
             if (db === null) {
                 this.isOpen = false;
                 console.log("query: Error Database connection failed");
                 resolve(null);
             }
+            const retRows: Array<any> = await this.select(db,statement,values);
+            db.close();
+            resolve(retRows);
+        });
+    }
+
+    private select(db: any,statement:string,values: Array<any>): Promise<Array<any>> {
+        return new Promise(  (resolve) => {
+            let retRows: Array<any> = null;
             if(values && values.length >= 1) {
-                db.all(statement,values,(err:Error,rows:Array<any>)=> {
-                    if(err) {
-                        console.log(`query: Error Query command failed : ${err.message}`);
-                        db.close();
-                        resolve(null);    
-                    } else {
-                        db.close();
-                        resolve(rows);
-                    }
+                db.serialize(() => {
+                    db.all(statement,values,(err:Error,rows:Array<any>)=> {
+                        if(err) {
+                            console.log(`select: Error Query command failed : ${err.message}`);
+                            resolve(retRows)
+                        } else {
+                            retRows = rows;
+                            resolve(retRows)
+                        }
+                    });
                 });
             } else {
-                db.all(statement,(err:Error,rows:Array<any>)=> {
-                    if(err) {
-                        console.log(`query: Error Query command failed : ${err.message}`);
-                        db.close();
-                        resolve(null);    
-                    } else {
-                        db.close();
-                        resolve(rows);
-                    }
+                db.serialize(() => {
+                    db.all(statement,(err:Error,rows:Array<any>)=> {
+                        if(err) {
+                            console.log(`select: Error Query command failed : ${err.message}`);
+                            resolve(retRows)
+                        } else {
+                            retRows = rows;
+                            resolve(retRows)
+                        }
+                    });
                 });
             } 
         });
@@ -153,10 +205,23 @@ export class DatabaseSQLiteHelper {
             resolve(ret); 
         });
     }
-    public importJson(jsonData:jsonSQLite): Promise<number> {
-        return new Promise( async (resolve) => {
-            let success: boolean = true;
 
+    public importJson(jsonData:jsonSQLite): Promise<any> {
+        return new Promise( async (resolve) => {
+            console.log("importFromJson:  ");
+            let changes:number = -1;
+            // create the database schema
+            changes = await this.createDatabaseSchema(jsonData);
+            if (changes != -1) {
+                changes = await this.createTableData(jsonData);
+            }
+            resolve({changes: changes});
+        });
+    }
+
+    private createDatabaseSchema(jsonData:jsonSQLite): Promise<number> {
+        return new Promise( async (resolve) => {
+            let changes: number = -1;
             // create the database schema
             let statements: Array<string> = [];
             statements.push("BEGIN TRANSACTION;");
@@ -183,97 +248,129 @@ export class DatabaseSQLiteHelper {
                 statements.push("PRAGMA user_version = 1;");
                 statements.push("COMMIT TRANSACTION;");
                 const schemaStmt: string = statements.join('\n');
-                const changes = await this.exec(schemaStmt); 
-                if (changes === -1) success = false; 
+                changes = await this.exec(schemaStmt); 
             }
-            if(success) {
-                // Create the table's data
-                let statements: Array<string> = [];
-                statements.push("BEGIN TRANSACTION;");
-                for (let i:number = 0; i < jsonData.tables.length; i++) {
-                    if(jsonData.tables[i].values && jsonData.tables[i].values.length >= 1) {
-                        // Check if the table exists
-                        const tableExists = await this.isTable(jsonData.tables[i].name);
-                        if(!tableExists) {
-                            console.log(`Error: Table ${jsonData.tables[i].name} does not exist`);
+            resolve(changes);
+        });
+    }
+    private createTableData(jsonData:jsonSQLite): Promise<number> {
+        return new Promise( async (resolve) => {
+            let success: boolean = true;
+            let changes: number = -1;
+            const db = this._utils.connection(this._databaseName,false/*,this._secret*/);
+            if (db === null) {
+                this.isOpen = false;
+                console.log("createTableData: Error Database connection failed");
+                resolve(changes);
+            }
+            let retB: boolean = await this.beginTransaction(db);
+            if(!retB) {
+                db.close();
+                resolve(changes);
+            }
+
+
+            // Create the table's data
+            for (let i:number = 0; i < jsonData.tables.length; i++) {
+                if(jsonData.tables[i].values && jsonData.tables[i].values.length >= 1) {
+                    // Check if the table exists
+                    const tableExists = await this.isTable(db,jsonData.tables[i].name);
+                    if(!tableExists) {
+                        console.log(`Error: Table ${jsonData.tables[i].name} does not exist`);
+                        success = false;
+                        break;
+                    } else {
+                    // Get the column names and types
+                        const tableNamesTypes: any = await this.getTableColumnNamesTypes(db,jsonData.tables[i].name);
+                        const tableColumnTypes: Array<string> = tableNamesTypes.types;
+                        const tableColumnNames: Array<string> = tableNamesTypes.names;
+                        if(tableColumnTypes.length === 0) {
+                            console.log(`Error: Table ${jsonData.tables[i].name} info does not exist`);
                             success = false;
                             break;
                         } else {
-                        // Get the column names and types
-                            const tableNamesTypes: any = await this.getTableColumnNamesTypes(jsonData.tables[i].name);
-                            const tableColumnTypes: Array<string> = tableNamesTypes.types;
-                            const tableColumnNames: Array<string> = tableNamesTypes.names;
-                            if(tableColumnTypes.length === 0) {
-                                console.log(`Error: Table ${jsonData.tables[i].name} info does not exist`);
-                                success = false;
-                                break;
-                            } else {
-                                // Loop on Table Values
-                                for (let j:number =0; j < jsonData.tables[i].values.length; j++) {
-                                    // Check the row number of columns
-                                    if(jsonData.tables[i].values[j].length != tableColumnTypes.length) {
-                                        console.log(`Error: Table ${jsonData.tables[i].name} values row ${j} not correct length`);
-                                        success = false;
-                                        break;    
-                                    }
-                                    // Check the column's type before proceeding
-                                    const isColumnTypes: boolean = await this.checkColumnTypes(tableColumnTypes,jsonData.tables[i].values[j]);
-                                    if(!isColumnTypes) {
-                                        console.log(`Error: Table ${jsonData.tables[i].name} values row ${j} not correct types`);
-                                        success = false;
-                                        break;    
-                                    }
-                                    if(jsonData.mode === 'full' || (jsonData.mode === 'partial' 
-                                    && !(await this.isIdExists(jsonData.tables[i].name,tableColumnNames[0],jsonData.tables[i].values[j][0]))) ) {
-                                        const valueString: string = await this.valuesToString(tableColumnTypes,jsonData.tables[i].values[j]);
-                                        if(valueString.length === 0) {
-                                            console.log(`Error: Table ${jsonData.tables[i].name} values row ${j} not convert to string`);
-                                            success = false;
-                                            break;    
-                                        }
-                                        statements.push(`INSERT INTO ${jsonData.tables[i].name} (${tableColumnNames.toString()}) VALUES (${valueString});`);
-                                    } else {
-                                        // update
-                                        const setString: string = await this.setToString(tableColumnTypes,tableColumnNames,jsonData.tables[i].values[j]);
-                                        statements.push(`UPDATE ${jsonData.tables[i].name} SET ${setString} WHERE ${tableColumnNames[0]} = ${jsonData.tables[i].values[j][0]};`);
-                                    }
+                            // Loop on Table Values
+                            for (let j:number =0; j < jsonData.tables[i].values.length; j++) {
+                                // Check the row number of columns
+                                if(jsonData.tables[i].values[j].length != tableColumnTypes.length) {
+                                    console.log(`Error: Table ${jsonData.tables[i].name} values row ${j} not correct length`);
+                                    success = false;
+                                    break;    
                                 }
+                                // Check the column's type before proceeding
+                                const isColumnTypes: boolean = await this.checkColumnTypes(tableColumnTypes,jsonData.tables[i].values[j]);
+                                if(!isColumnTypes) {
+                                    console.log(`Error: Table ${jsonData.tables[i].name} values row ${j} not correct types`);
+                                    success = false;
+                                    break;    
+                                }
+                                const retisIdExists: boolean = await this.isIdExists(db,jsonData.tables[i].name,tableColumnNames[0],
+                                                    jsonData.tables[i].values[j][0]);
+                                let stmt: string;
+                                if(jsonData.mode === 'full' || (jsonData.mode === 'partial' 
+                                && !retisIdExists) ) {
+
+                                    // Insert
+                                    const nameString:string = tableColumnNames.join();
+                                    const questionMarkString = await this.createQuestionMarkString(
+                                    tableColumnNames.length);
+                                    stmt = `INSERT INTO ${jsonData.tables[i].name} (${nameString}) VALUES (` 
+                                    stmt += `${questionMarkString});`;
+                                } else {
+                                    // Update
+                                    const setString: string = await this.setNameForUpdate(tableColumnNames);
+                                    if(setString.length === 0) {
+                                        console.log(`Error: Table ${jsonData.tables[i].name} values row ${j} not set to String`);
+                                        success = false;
+                                        break;    
+                                    }
+                                    stmt = `UPDATE ${jsonData.tables[i].name} SET ${setString} WHERE `
+                                    stmt += `${tableColumnNames[0]} = ${jsonData.tables[i].values[j][0]};`;
+                                }
+                                const lastId: number = await this.prepare(db,stmt,jsonData.tables[i].values[j]);
+                                if(lastId === -1) {
+                                    console.log("run: Error return lastId= -1");
+                                    success = false;
+                                    break;    
+                                }
+                    
                             }
                         }
-                    } else {
-                        success = false;
                     }
+                } else {
+                    success = false;
                 }
-                if(success && statements.length > 1) {
-                    statements.push("COMMIT TRANSACTION;");
-                    const dataStmt: string = statements.join('\n');
-                    const changes = await this.exec(dataStmt);
-                    if(changes === -1) success = false;
-                }
-            } 
-            if(!success) {
-                resolve(-1); 
-            } else {
-                resolve(1);
             }
+
+
+            if(success) {
+                retB = await this.endTransaction(db);
+                if(!retB) {
+                    db.close();
+                    resolve(changes);
+                }
+                changes = await this.dbChanges(db);
+            }
+            db.close();
+            resolve(changes);        
         });
     }
-    private isTable(tableName:string) : Promise<boolean> {
+    private isTable(db:any, tableName:string) : Promise<boolean> {
         return new Promise (async (resolve) => {
             // Check if the table exists
             let ret: boolean = false;
             const query: string = `SELECT name FROM sqlite_master WHERE type='table' AND name='${tableName}';`;
-            const resQuery:Array<any> = await this.query(query,[]);
+            const resQuery:Array<any> = await this.select(db,query,[]);
             if(resQuery.length > 0) ret = true;
             resolve(ret);
         });
     }
-    private getTableColumnNamesTypes(tableName:string): Promise<any> {
+    private getTableColumnNamesTypes(db:any,tableName:string): Promise<any> {
         return new Promise(async (resolve) => {
             let retTypes: Array<string> = [];
             let retNames: Array<string> = [];
             const query = `PRAGMA table_info(${tableName});`;
-            const resQuery:Array<any> = await this.query(query,[]);
+            const resQuery:Array<any> = await this.select(db,query,[]);
             if (resQuery.length > 0) {
                 for(let i:number = 0; i<resQuery.length; i++) {
                     retNames.push(resQuery[i].name);
@@ -283,27 +380,34 @@ export class DatabaseSQLiteHelper {
             resolve({names:retNames,types:retTypes});
         });
     }
-    private valuesToString(tableTypes:Array<any>,rowValues:Array<any>) : Promise<string> {
-        return new Promise(async (resolve) => {
-            let retString: string = "";
-            for (let i:number = 0; i < rowValues.length; i++) {
-                    if(tableTypes[i] === "TEXT") {
-                        retString += `"${rowValues[i]}",`;
-                    } else {
-                        retString += `${rowValues[i]},`;
-                    }
+    private createQuestionMarkString(length: number): Promise<string> {
+        return new Promise( (resolve) => {
+            var retString: string = ""
+            for (let i:number =0; i<length;i++) {
+                retString += "?,"
             }
             if(retString.length > 1 )retString = retString.slice(0, -1);
             resolve(retString);
         });
     }
-
+    private setNameForUpdate(names: String[]): Promise<string> {
+        return new Promise( (resolve) => {
+            var retString: string = ""
+            for (let i:number =0; i< names.length;i++) {
+                retString += `${names[i]} = ? ,`
+            }
+            if(retString.length > 1 )retString = retString.slice(0, -1);
+            resolve(retString);
+        });
+    }
     private checkColumnTypes(tableTypes:Array<any>,rowValues:Array<any>) : Promise<boolean> {
         return new Promise(async (resolve) => {
             let isType: boolean = true;
             for (let i:number = 0; i < rowValues.length; i++) {
-                isType = await this.isType(tableTypes[i],rowValues[i]);
-                if(!isType) break;
+                if(rowValues[i].toString().toUpperCase() != "NULL") {
+                    isType = await this.isType(tableTypes[i],rowValues[i]);
+                    if(!isType) break;
+                }
             }
             resolve(isType);
         });
@@ -315,31 +419,78 @@ export class DatabaseSQLiteHelper {
             if(type === "TEXT" && typeof value === 'string') ret = true;
             if(type === "INTEGER" && typeof value === 'number') ret = true;
             if(type === "REAL" && typeof value === 'number') ret = true;
-            if(type === "BLOB" && typeof value === 'object') ret = true;
+            if(type === "BLOB" && typeof value === 'string') ret = true;
             resolve(ret);
         });
     }
-    private isIdExists(dbName:string,firstColumnName:string,key:any): Promise<boolean> {
+    private isIdExists(db:any,dbName:string,firstColumnName:string,key:any): Promise<boolean> {
         return new Promise(async (resolve) => {
             let ret: boolean = false;
             const query:string = `SELECT ${firstColumnName} FROM ${dbName} WHERE ${firstColumnName} = ${key};`;
-            const resQuery:Array<any> = await this.query(query,[]);
+            const resQuery:Array<any> = await this.select(db,query,[]);
             if (resQuery.length === 1) ret = true;
             resolve(ret);
         });
     }
-    private setToString(tableTypes:Array<any>, names:Array<string>, values:Array<any>): Promise<string> {
-        return new Promise(async (resolve) => {
-            let retString: string = "";
-            for (let i:number = 0; i < names.length; i++) {
-                if(tableTypes[i] === "TEXT") {
-                    retString += `${names[i]} = "${values[i]}",`;
+    private dbChanges(db: any ): Promise<number> {
+        return new Promise(  (resolve) => {
+            const SELECT_CHANGE: string = "SELECT total_changes()";
+            let ret: number = -1;
+            
+            db.get(SELECT_CHANGE, (err:Error, row: any) => {
+                // process the row here 
+                if(err) {
+                    console.log(`"Error: dbChanges failed: " : ${err.message}`);
+                    resolve(ret);    
                 } else {
-                    retString += `${names[i]} = ${values[i]},`;
+                    const key:any = Object.keys(row)[0];
+                    const changes:number = row[key];
+                    resolve(changes);
                 }
-            }
-            if(retString.length > 1 )retString = retString.slice(0, -1);
-            resolve(retString);
+            }); 
+        });       
+    }
+    private getLastId(db: any ): Promise<number> {
+        return new Promise(  (resolve) => {
+            const SELECT_LAST_ID: string = "SELECT last_insert_rowid()";
+            let ret: number = -1;
+            db.get(SELECT_LAST_ID, (err:Error, row: any) => {
+                // process the row here 
+                if(err) {
+                    console.log(`"Error: getLastId failed: " : ${err.message}`);
+                    resolve(ret);    
+                } else {
+                    const key:any = Object.keys(row)[0];
+                    const lastId:number = row[key];
+                    resolve(lastId);
+                }
+            }); 
+        });       
+    }
+    private beginTransaction(db:any): Promise<boolean> {
+        return new Promise(  (resolve) => {
+            const stmt = "BEGIN TRANSACTION";
+            db.exec(stmt,(err:Error) => {
+                if(err) {
+                    console.log(`exec: Error Begin Transaction failed : ${err.message}`);
+                    resolve(false);    
+                } else {
+                    resolve(true);
+                }
+            });
+        });
+    }
+    private endTransaction(db:any): Promise<boolean> {
+        return new Promise(  (resolve) => {
+            const stmt = "COMMIT TRANSACTION";
+            db.exec(stmt,(err:Error) => {
+                if(err) {
+                    console.log(`exec: Error End Transaction failed : ${err.message}`);
+                    resolve(false);    
+                } else {
+                    resolve(true);
+                }
+            });
         });
     }
 }

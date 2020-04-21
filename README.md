@@ -9,6 +9,8 @@ Databases can be or not encrypted using SQLCipher module.
 
    [importFromJson_Documentation] (https://github.com/jepiqueau/capacitor-sqlite/blob/master/importFromJson.md)
 
+  ***The run method has been modified to use the transaction(BEGIN & COMMIT) and to return the lastId and the upload of images (as Base64 string) are now available since 2.0.0***
+
 If an error occurs:
 
 - For all methods, a message containing the error message will be returned
@@ -38,30 +40,30 @@ Close a database
 Type: `Promise<{result:boolean,message:string}>`
 
 
-### `execute({statements:"fooStatements"}) => Promise<{changes:number,message:string}>`
+### `execute({statements:"fooStatements"}) => Promise<{changes:{changes:number},message:string}>`
 
 Execute a batch of raw SQL statements
 
 #### Returns
 
-Type: `Promise<{changes:number,message:string}>`
+Type: `Promise<{changes:{changes:number},message:string}>`
 
-### `run({statement:"fooStatement",values:[]}) => Promise<{changes:number,message:string}>`
+### `run({statement:"fooStatement",values:[]}) => Promise<{changes:{changes:number,lastId:number},message:string}>`
 
 Run a SQL statement
 
 #### Returns
 
-Type: `Promise<{changes:number,message:string}>`
+Type: `Promise<{changes:{changes:number,lastId:number},message:string}>`
 
 
-### `run({statement:"fooStatement VALUES (?,?,?)",values:[1,"foo1","foo2"]}) => Promise<{changes:number,message:string}>`
+### `run({statement:"fooStatement VALUES (?,?,?)",values:[1,"foo1","foo2"]}) => Promise<{changes:{changes:number,lastId:number},message:string}>`
 
 Run a SQL statement with given values
 
 #### Returns
 
-Type: `Promise<{changes:number,message:string}>`
+Type: `Promise<{changes:{changes:number,lastId:number},message:string}>`
 
 ### `query({statement:"fooStatement",values:[]}) => Promise<{values:Array<any>,message:string}>`
 
@@ -192,7 +194,7 @@ Type: `Promise<{result:boolean,message:string}>`
             COMMIT TRANSACTION;
             `;
             var retExe: any = await this._sqlite.execute({statements:sqlcmd});
-            console.log('retExe ',retExe.changes);
+            console.log('retExe ',retExe.changes.changes);
             // Insert some Users
             sqlcmd = `
             BEGIN TRANSACTION;
@@ -202,7 +204,8 @@ Type: `Promise<{result:boolean,message:string}>`
             COMMIT TRANSACTION;
             `;
             retExe = await this._sqlite.execute({statements:sqlcmd});
-            console.log('retExe ',retExe.changes);
+            // will print the changes  2 in that case
+            console.log('retExe ',retExe.changes.changes);
             // Select all Users
             sqlcmd = "SELECT * FROM users";
             const retSelect: any = await this._sqlite.query({statement:sqlcmd,values:[]});
@@ -217,7 +220,7 @@ Type: `Promise<{result:boolean,message:string}>`
             sqlcmd = "INSERT INTO users (name,email,age) VALUES (?,?,?)";
             let values: Array<any>  = ["Simpson","Simpson@example.com",69];
             var retRun: any = await this._sqlite.run({statement:sqlcmd,values:values});
-            console.log('retRun ',retRun.changes);
+            console.log('retRun ',retRun.changes.changes,retRun.changes.lastId);
 
             // Select Users with age > 35
             sqlcmd = "SELECT name,email,age FROM users WHERE age > ?";

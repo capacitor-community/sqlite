@@ -7,7 +7,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6e88f079-a2ee-4b39-b18a-7f3d94c38f19" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/../ios/Plugin/JsonSQLite.swift" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/../CHANGELOG.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/4.10.1/fileHashes/fileHashes.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/4.10.1/fileHashes/fileHashes.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/4.10.1/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/4.10.1/fileHashes/fileHashes.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/4.10.1/fileHashes/resourceHashesCache.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/4.10.1/fileHashes/resourceHashesCache.bin" afterDir="false" />
@@ -21,17 +22,29 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/intermediates/compile_only_not_namespaced_r_class_jar/debug/generateDebugRFile/R.jar" beforeDir="false" afterPath="$PROJECT_DIR$/build/intermediates/compile_only_not_namespaced_r_class_jar/debug/generateDebugRFile/R.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/intermediates/incremental/packageDebugResources/compile-file-map.properties" beforeDir="false" afterPath="$PROJECT_DIR$/build/intermediates/incremental/packageDebugResources/compile-file-map.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/jeep/plugin/capacitor/CapacitorSQLite.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/jeep/plugin/capacitor/CapacitorSQLite.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/jeep/plugin/capacitor/cdssUtils/SQLiteDatabaseHelper.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/jeep/plugin/capacitor/cdssUtils/SQLiteDatabaseHelper.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/intermediates/packaged-classes/debug/classes.jar" beforeDir="false" afterPath="$PROJECT_DIR$/build/intermediates/packaged-classes/debug/classes.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/outputs/aar/android-debug.aar" beforeDir="false" afterPath="$PROJECT_DIR$/build/outputs/aar/android-debug.aar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/jeep/plugin/capacitor/CapacitorSQLite.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jeep/plugin/capacitor/CapacitorSQLite.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/jeep/plugin/capacitor/cdssUtils/SQLiteDatabaseHelper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jeep/plugin/capacitor/cdssUtils/SQLiteDatabaseHelper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../dist/esm/definitions.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../dist/esm/definitions.d.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../dist/esm/electron-utils/DatabaseSQLiteHelper.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../dist/esm/electron-utils/DatabaseSQLiteHelper.d.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../dist/esm/electron-utils/DatabaseSQLiteHelper.js" beforeDir="false" afterPath="$PROJECT_DIR$/../dist/esm/electron-utils/DatabaseSQLiteHelper.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../dist/esm/electron-utils/DatabaseSQLiteHelper.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/../dist/esm/electron-utils/DatabaseSQLiteHelper.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../dist/esm/electron.js" beforeDir="false" afterPath="$PROJECT_DIR$/../dist/esm/electron.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../dist/esm/electron.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/../dist/esm/electron.js.map" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../ios/Plugin.xcodeproj/project.pbxproj" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin.xcodeproj/project.pbxproj" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../ios/Plugin.xcworkspace/xcuserdata/queaujeanpierre.xcuserdatad/UserInterfaceState.xcuserstate" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin.xcworkspace/xcuserdata/queaujeanpierre.xcuserdatad/UserInterfaceState.xcuserstate" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../ios/Plugin/DatabaseSQLiteHelper.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/DatabaseSQLiteHelper.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/Plugin.m" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/Plugin.m" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../ios/Plugin/Plugin.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/Plugin.swift" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ios/Plugin/Utils/Blob.swift" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsSQLite.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsSQLite.swift" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../node_modules/@capacitor/android/capacitor/build/intermediates/compile_only_not_namespaced_r_class_jar/debug/generateDebugRFile/R.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../node_modules/@capacitor/android/capacitor/build/intermediates/compile_only_not_namespaced_r_class_jar/debug/generateDebugRFile/R.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../node_modules/@capacitor/android/capacitor/build/intermediates/incremental/packageDebugResources/compile-file-map.properties" beforeDir="false" afterPath="$PROJECT_DIR$/../node_modules/@capacitor/android/capacitor/build/intermediates/incremental/packageDebugResources/compile-file-map.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/definitions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../src/definitions.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/electron-utils/DatabaseSQLiteHelper.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../src/electron-utils/DatabaseSQLiteHelper.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/electron.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../src/electron.ts" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />

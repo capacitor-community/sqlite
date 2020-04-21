@@ -92,7 +92,7 @@ export interface capSQLiteResult {
     /**
      * the number of changes from an execute or run command
      */
-    changes?: number;
+    changes?: any;
     /**
      * the data values list as an Array
      */

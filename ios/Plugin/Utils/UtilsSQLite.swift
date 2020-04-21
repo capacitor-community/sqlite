@@ -80,14 +80,22 @@ class UtilsSQLite {
 
         if value == nil {
             sqlite3_bind_null(handle, Int32(idx))
-        } else if let value = value as? Blob {
-            sqlite3_bind_blob(handle, Int32(idx), value.bytes, Int32(value.bytes.count), SQLITE_TRANSIENT)
         } else if let value = value as? Double {
             sqlite3_bind_double(handle, Int32(idx), value)
         } else if let value = value as? Int64 {
             sqlite3_bind_int64(handle, Int32(idx), value)
         } else if let value = value as? String {
-            sqlite3_bind_text(handle, Int32(idx), value, -1, SQLITE_TRANSIENT)
+            if(value.contains("base64")) {
+                // case Base64 string as Blob
+//                sqlite3_bind_blob(handle, Int32(idx), [value], Int32(value.count), SQLITE_TRANSIENT)
+                sqlite3_bind_text(handle, Int32(idx), value, -1, SQLITE_TRANSIENT)
+
+            } else if (value.uppercased() == "NULL") {
+                // case NULL
+                sqlite3_bind_null(handle, Int32(idx))
+            } else {
+                sqlite3_bind_text(handle, Int32(idx), value, -1, SQLITE_TRANSIENT)
+            }
         } else if let value = value as? Int {
             sqlite3_bind_int(handle,Int32(idx), Int32(value))
          } else if let value = value as? Bool {
@@ -159,10 +167,17 @@ class UtilsSQLite {
             let data = sqlite3_column_blob(stmt, index)
             let size = sqlite3_column_bytes(stmt, index)
             let val = NSData(bytes:data, length: Int(size))
-            return val
+            // Convert to string
+            let strVal: String = String(decoding: val, as: UTF8.self)
+            return strVal
         case SQLITE_TEXT:
             let buffer = sqlite3_column_text(stmt, index)
-            let val = String(cString:buffer!)
+            var val: String
+            if(buffer != nil) {
+                val = String(cString:buffer!)
+            } else {
+                val = ""
+            }
             return val
         default:
             return nil

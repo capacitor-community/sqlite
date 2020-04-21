@@ -56,21 +56,25 @@ export class CapacitorSQLitePluginElectron extends WebPlugin {
     }
     execute(options) {
         return __awaiter(this, void 0, void 0, function* () {
+            const retRes = { changes: -1 };
             if (typeof options.statements === 'undefined') {
-                return Promise.reject({ changes: -1, message: "Execute command failed : Must provide raw SQL statements" });
+                return Promise.reject({ changes: retRes, message: "Execute command failed : Must provide raw SQL statements" });
             }
             const statements = options.statements;
+            console.log('in execute prior call mDB.exec');
             const ret = yield this.mDb.exec(statements);
+            console.log('in execute after call mDB.exec ret ', ret);
             return Promise.resolve({ changes: ret });
         });
     }
     run(options) {
         return __awaiter(this, void 0, void 0, function* () {
+            const retRes = { changes: -1 };
             if (typeof options.statement === 'undefined') {
-                return Promise.reject({ changes: -1, message: "Run command failed : Must provide a SQL statement" });
+                return Promise.reject({ changes: retRes, message: "Run command failed : Must provide a SQL statement" });
             }
             if (typeof options.values === 'undefined') {
-                return Promise.reject({ changes: -1, message: "Run command failed : Values should be an Array of values" });
+                return Promise.reject({ changes: retRes, message: "Run command failed : Values should be an Array of values" });
             }
             const statement = options.statement;
             const values = options.values;
@@ -120,15 +124,16 @@ export class CapacitorSQLitePluginElectron extends WebPlugin {
     }
     importFromJson(options) {
         return __awaiter(this, void 0, void 0, function* () {
+            const retRes = { changes: -1 };
             const jsonStrObj = options.jsonstring;
             if (typeof jsonStrObj != "string" || jsonStrObj == null || jsonStrObj.length === 0) {
-                return Promise.reject({ changes: -1, message: "Must provide a json object" });
+                return Promise.reject({ changes: retRes, message: "Must provide a json object" });
             }
             const jsonObj = JSON.parse(jsonStrObj);
             const isValid = isJsonSQLite(jsonObj);
             if (!isValid)
-                return Promise.reject({ changes: -1, message: "Must provide a jsonSQLite object" });
-            //      const importData: jsonSQLite = jsonObj;
+                return Promise.reject({ changes: retRes, message: "Must provide a jsonSQLite object" });
+            //      console.log("jsonObj ",jsonObj)
             const dbName = `${jsonObj.database}SQLite.db`;
             this.mDb = new DatabaseSQLiteHelper(dbName);
             const ret = yield this.mDb.importJson(jsonObj);

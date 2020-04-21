@@ -55,93 +55,145 @@ export class DatabaseSQLiteHelper {
     }
     exec(statements) {
         return new Promise((resolve) => {
+            let retRes = { changes: -1 };
             const db = this._utils.connection(this._databaseName, false /*,this._secret*/);
             if (db === null) {
                 this.isOpen = false;
                 console.log("exec: Error Database connection failed");
-                resolve(-1);
+                resolve(retRes);
             }
-            db.exec(statements, (err) => {
-                if (err) {
-                    console.log(`exec: Error Execute command failed : ${err.message}`);
-                    db.close();
-                    resolve(-1);
-                }
-                else {
-                    db.close();
-                    resolve(1);
-                }
+            db.serialize(() => {
+                db.exec(statements, (err) => __awaiter(this, void 0, void 0, function* () {
+                    if (err) {
+                        console.log(`exec: Error Execute command failed : ${err.message}`);
+                        db.close();
+                        resolve(retRes);
+                    }
+                    else {
+                        const changes = yield this.dbChanges(db);
+                        console.log('in exec afterdb.exec changes ', changes);
+                        retRes = { changes: changes };
+                        db.close();
+                        resolve(retRes);
+                    }
+                }));
             });
         });
     }
     run(statement, values) {
-        return new Promise((resolve) => {
+        return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
+            let lastId = -1;
+            let retRes = { changes: -1, lastId: lastId };
             const db = this._utils.connection(this._databaseName, false /*,this._secret*/);
             if (db === null) {
                 this.isOpen = false;
                 console.log("run: Error Database connection failed");
-                resolve(-1);
+                resolve(retRes);
             }
+            let retB = yield this.beginTransaction(db);
+            if (!retB) {
+                db.close();
+                resolve(retRes);
+            }
+            lastId = yield this.prepare(db, statement, values);
+            if (lastId === -1) {
+                console.log("run: Error return lastId= -1");
+                db.close();
+                resolve(retRes);
+            }
+            retB = yield this.endTransaction(db);
+            if (!retB) {
+                db.close();
+                resolve(retRes);
+            }
+            const changes = yield this.dbChanges(db);
+            retRes.changes = changes;
+            retRes.lastId = lastId;
+            db.close();
+            resolve(retRes);
+        }));
+    }
+    prepare(db, statement, values) {
+        return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
+            let retRes = -1;
             if (values && values.length >= 1) {
-                db.run(statement, values, (err) => {
-                    if (err) {
-                        console.log(`run: Error Run command failed : ${err.message}`);
-                        db.close();
-                        resolve(-1);
-                    }
-                    else {
-                        db.close();
-                        resolve(1);
-                    }
+                db.serialize(() => {
+                    const stmt = db.prepare(statement);
+                    stmt.run(values, (err) => __awaiter(this, void 0, void 0, function* () {
+                        if (err) {
+                            console.log(`prepare: Error Prepare command failed : ${err.message}`);
+                            resolve(retRes);
+                        }
+                        else {
+                            const lastId = yield this.getLastId(db);
+                            if (lastId != -1)
+                                retRes = lastId;
+                            stmt.finalize();
+                            resolve(retRes);
+                        }
+                    }));
                 });
             }
             else {
-                db.run(statement, (err) => {
-                    if (err) {
-                        console.log(`run: Error Run command failed : ${err.message}`);
-                        db.close();
-                        resolve(-1);
-                    }
-                    else {
-                        db.close();
-                        resolve(1);
-                    }
+                db.serialize(() => {
+                    db.run(statement, (err) => __awaiter(this, void 0, void 0, function* () {
+                        if (err) {
+                            console.log(`prepare: Error Prepare command failed : ${err.message}`);
+                            resolve(retRes);
+                        }
+                        else {
+                            const lastId = yield this.getLastId(db);
+                            if (lastId != -1)
+                                retRes = lastId;
+                            resolve(retRes);
+                        }
+                    }));
                 });
             }
-        });
+        }));
     }
     query(statement, values) {
-        return new Promise((resolve) => {
+        return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
             const db = this._utils.connection(this._databaseName, true /*,this._secret*/);
             if (db === null) {
                 this.isOpen = false;
                 console.log("query: Error Database connection failed");
                 resolve(null);
             }
+            const retRows = yield this.select(db, statement, values);
+            db.close();
+            resolve(retRows);
+        }));
+    }
+    select(db, statement, values) {
+        return new Promise((resolve) => {
+            let retRows = null;
             if (values && values.length >= 1) {
-                db.all(statement, values, (err, rows) => {
-                    if (err) {
-                        console.log(`query: Error Query command failed : ${err.message}`);
-                        db.close();
-                        resolve(null);
-                    }
-                    else {
-                        db.close();
-                        resolve(rows);
-                    }
+                db.serialize(() => {
+                    db.all(statement, values, (err, rows) => {
+                        if (err) {
+                            console.log(`select: Error Query command failed : ${err.message}`);
+                            resolve(retRows);
+                        }
+                        else {
+                            retRows = rows;
+                            resolve(retRows);
+                        }
+                    });
                 });
             }
             else {
-                db.all(statement, (err, rows) => {
-                    if (err) {
-                        console.log(`query: Error Query command failed : ${err.message}`);
-                        db.close();
-                        resolve(null);
-                    }
-                    else {
-                        db.close();
-                        resolve(rows);
-                    }
+                db.serialize(() => {
+                    db.all(statement, (err, rows) => {
+                        if (err) {
+                            console.log(`select: Error Query command failed : ${err.message}`);
+                            resolve(retRows);
+                        }
+                        else {
+                            retRows = rows;
+                            resolve(retRows);
+                        }
+                    });
                 });
             }
         });
@@ -163,7 +215,19 @@ export class DatabaseSQLiteHelper {
     }
     importJson(jsonData) {
         return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
-            let success = true;
+            console.log("importFromJson:  ");
+            let changes = -1;
+            // create the database schema
+            changes = yield this.createDatabaseSchema(jsonData);
+            if (changes != -1) {
+                changes = yield this.createTableData(jsonData);
+            }
+            resolve({ changes: changes });
+        }));
+    }
+    createDatabaseSchema(jsonData) {
+        return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
+            let changes = -1;
             // create the database schema
             let statements = [];
             statements.push("BEGIN TRANSACTION;");
@@ -192,105 +256,126 @@ export class DatabaseSQLiteHelper {
                 statements.push("PRAGMA user_version = 1;");
                 statements.push("COMMIT TRANSACTION;");
                 const schemaStmt = statements.join('\n');
-                const changes = yield this.exec(schemaStmt);
-                if (changes === -1)
-                    success = false;
+                changes = yield this.exec(schemaStmt);
             }
-            if (success) {
-                // Create the table's data
-                let statements = [];
-                statements.push("BEGIN TRANSACTION;");
-                for (let i = 0; i < jsonData.tables.length; i++) {
-                    if (jsonData.tables[i].values && jsonData.tables[i].values.length >= 1) {
-                        // Check if the table exists
-                        const tableExists = yield this.isTable(jsonData.tables[i].name);
-                        if (!tableExists) {
-                            console.log(`Error: Table ${jsonData.tables[i].name} does not exist`);
+            resolve(changes);
+        }));
+    }
+    createTableData(jsonData) {
+        return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
+            let success = true;
+            let changes = -1;
+            const db = this._utils.connection(this._databaseName, false /*,this._secret*/);
+            if (db === null) {
+                this.isOpen = false;
+                console.log("createTableData: Error Database connection failed");
+                resolve(changes);
+            }
+            let retB = yield this.beginTransaction(db);
+            if (!retB) {
+                db.close();
+                resolve(changes);
+            }
+            // Create the table's data
+            for (let i = 0; i < jsonData.tables.length; i++) {
+                if (jsonData.tables[i].values && jsonData.tables[i].values.length >= 1) {
+                    // Check if the table exists
+                    const tableExists = yield this.isTable(db, jsonData.tables[i].name);
+                    if (!tableExists) {
+                        console.log(`Error: Table ${jsonData.tables[i].name} does not exist`);
+                        success = false;
+                        break;
+                    }
+                    else {
+                        // Get the column names and types
+                        const tableNamesTypes = yield this.getTableColumnNamesTypes(db, jsonData.tables[i].name);
+                        const tableColumnTypes = tableNamesTypes.types;
+                        const tableColumnNames = tableNamesTypes.names;
+                        if (tableColumnTypes.length === 0) {
+                            console.log(`Error: Table ${jsonData.tables[i].name} info does not exist`);
                             success = false;
                             break;
                         }
                         else {
-                            // Get the column names and types
-                            const tableNamesTypes = yield this.getTableColumnNamesTypes(jsonData.tables[i].name);
-                            const tableColumnTypes = tableNamesTypes.types;
-                            const tableColumnNames = tableNamesTypes.names;
-                            if (tableColumnTypes.length === 0) {
-                                console.log(`Error: Table ${jsonData.tables[i].name} info does not exist`);
-                                success = false;
-                                break;
-                            }
-                            else {
-                                // Loop on Table Values
-                                for (let j = 0; j < jsonData.tables[i].values.length; j++) {
-                                    // Check the row number of columns
-                                    if (jsonData.tables[i].values[j].length != tableColumnTypes.length) {
-                                        console.log(`Error: Table ${jsonData.tables[i].name} values row ${j} not correct length`);
+                            // Loop on Table Values
+                            for (let j = 0; j < jsonData.tables[i].values.length; j++) {
+                                // Check the row number of columns
+                                if (jsonData.tables[i].values[j].length != tableColumnTypes.length) {
+                                    console.log(`Error: Table ${jsonData.tables[i].name} values row ${j} not correct length`);
+                                    success = false;
+                                    break;
+                                }
+                                // Check the column's type before proceeding
+                                const isColumnTypes = yield this.checkColumnTypes(tableColumnTypes, jsonData.tables[i].values[j]);
+                                if (!isColumnTypes) {
+                                    console.log(`Error: Table ${jsonData.tables[i].name} values row ${j} not correct types`);
+                                    success = false;
+                                    break;
+                                }
+                                const retisIdExists = yield this.isIdExists(db, jsonData.tables[i].name, tableColumnNames[0], jsonData.tables[i].values[j][0]);
+                                let stmt;
+                                if (jsonData.mode === 'full' || (jsonData.mode === 'partial'
+                                    && !retisIdExists)) {
+                                    // Insert
+                                    const nameString = tableColumnNames.join();
+                                    const questionMarkString = yield this.createQuestionMarkString(tableColumnNames.length);
+                                    stmt = `INSERT INTO ${jsonData.tables[i].name} (${nameString}) VALUES (`;
+                                    stmt += `${questionMarkString});`;
+                                }
+                                else {
+                                    // Update
+                                    const setString = yield this.setNameForUpdate(tableColumnNames);
+                                    if (setString.length === 0) {
+                                        console.log(`Error: Table ${jsonData.tables[i].name} values row ${j} not set to String`);
                                         success = false;
                                         break;
                                     }
-                                    // Check the column's type before proceeding
-                                    const isColumnTypes = yield this.checkColumnTypes(tableColumnTypes, jsonData.tables[i].values[j]);
-                                    if (!isColumnTypes) {
-                                        console.log(`Error: Table ${jsonData.tables[i].name} values row ${j} not correct types`);
-                                        success = false;
-                                        break;
-                                    }
-                                    if (jsonData.mode === 'full' || (jsonData.mode === 'partial'
-                                        && !(yield this.isIdExists(jsonData.tables[i].name, tableColumnNames[0], jsonData.tables[i].values[j][0])))) {
-                                        const valueString = yield this.valuesToString(tableColumnTypes, jsonData.tables[i].values[j]);
-                                        if (valueString.length === 0) {
-                                            console.log(`Error: Table ${jsonData.tables[i].name} values row ${j} not convert to string`);
-                                            success = false;
-                                            break;
-                                        }
-                                        statements.push(`INSERT INTO ${jsonData.tables[i].name} (${tableColumnNames.toString()}) VALUES (${valueString});`);
-                                    }
-                                    else {
-                                        // update
-                                        const setString = yield this.setToString(tableColumnTypes, tableColumnNames, jsonData.tables[i].values[j]);
-                                        statements.push(`UPDATE ${jsonData.tables[i].name} SET ${setString} WHERE ${tableColumnNames[0]} = ${jsonData.tables[i].values[j][0]};`);
-                                    }
+                                    stmt = `UPDATE ${jsonData.tables[i].name} SET ${setString} WHERE `;
+                                    stmt += `${tableColumnNames[0]} = ${jsonData.tables[i].values[j][0]};`;
+                                }
+                                const lastId = yield this.prepare(db, stmt, jsonData.tables[i].values[j]);
+                                if (lastId === -1) {
+                                    console.log("run: Error return lastId= -1");
+                                    success = false;
+                                    break;
                                 }
                             }
                         }
                     }
-                    else {
-                        success = false;
-                    }
                 }
-                if (success && statements.length > 1) {
-                    statements.push("COMMIT TRANSACTION;");
-                    const dataStmt = statements.join('\n');
-                    const changes = yield this.exec(dataStmt);
-                    if (changes === -1)
-                        success = false;
+                else {
+                    success = false;
                 }
             }
-            if (!success) {
-                resolve(-1);
+            if (success) {
+                retB = yield this.endTransaction(db);
+                if (!retB) {
+                    db.close();
+                    resolve(changes);
+                }
+                changes = yield this.dbChanges(db);
             }
-            else {
-                resolve(1);
-            }
+            db.close();
+            resolve(changes);
         }));
     }
-    isTable(tableName) {
+    isTable(db, tableName) {
         return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
             // Check if the table exists
             let ret = false;
             const query = `SELECT name FROM sqlite_master WHERE type='table' AND name='${tableName}';`;
-            const resQuery = yield this.query(query, []);
+            const resQuery = yield this.select(db, query, []);
             if (resQuery.length > 0)
                 ret = true;
             resolve(ret);
         }));
     }
-    getTableColumnNamesTypes(tableName) {
+    getTableColumnNamesTypes(db, tableName) {
         return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
             let retTypes = [];
             let retNames = [];
             const query = `PRAGMA table_info(${tableName});`;
-            const resQuery = yield this.query(query, []);
+            const resQuery = yield this.select(db, query, []);
             if (resQuery.length > 0) {
                 for (let i = 0; i < resQuery.length; i++) {
                     retNames.push(resQuery[i].name);
@@ -300,29 +385,37 @@ export class DatabaseSQLiteHelper {
             resolve({ names: retNames, types: retTypes });
         }));
     }
-    valuesToString(tableTypes, rowValues) {
-        return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
-            let retString = "";
-            for (let i = 0; i < rowValues.length; i++) {
-                if (tableTypes[i] === "TEXT") {
-                    retString += `"${rowValues[i]}",`;
-                }
-                else {
-                    retString += `${rowValues[i]},`;
-                }
+    createQuestionMarkString(length) {
+        return new Promise((resolve) => {
+            var retString = "";
+            for (let i = 0; i < length; i++) {
+                retString += "?,";
             }
             if (retString.length > 1)
                 retString = retString.slice(0, -1);
             resolve(retString);
-        }));
+        });
+    }
+    setNameForUpdate(names) {
+        return new Promise((resolve) => {
+            var retString = "";
+            for (let i = 0; i < names.length; i++) {
+                retString += `${names[i]} = ? ,`;
+            }
+            if (retString.length > 1)
+                retString = retString.slice(0, -1);
+            resolve(retString);
+        });
     }
     checkColumnTypes(tableTypes, rowValues) {
         return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
             let isType = true;
             for (let i = 0; i < rowValues.length; i++) {
-                isType = yield this.isType(tableTypes[i], rowValues[i]);
-                if (!isType)
-                    break;
+                if (rowValues[i].toString().toUpperCase() != "NULL") {
+                    isType = yield this.isType(tableTypes[i], rowValues[i]);
+                    if (!isType)
+                        break;
+                }
             }
             resolve(isType);
         }));
@@ -338,36 +431,84 @@ export class DatabaseSQLiteHelper {
                 ret = true;
             if (type === "REAL" && typeof value === 'number')
                 ret = true;
-            if (type === "BLOB" && typeof value === 'object')
+            if (type === "BLOB" && typeof value === 'string')
                 ret = true;
             resolve(ret);
         });
     }
-    isIdExists(dbName, firstColumnName, key) {
+    isIdExists(db, dbName, firstColumnName, key) {
         return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
             let ret = false;
             const query = `SELECT ${firstColumnName} FROM ${dbName} WHERE ${firstColumnName} = ${key};`;
-            const resQuery = yield this.query(query, []);
+            const resQuery = yield this.select(db, query, []);
             if (resQuery.length === 1)
                 ret = true;
             resolve(ret);
         }));
     }
-    setToString(tableTypes, names, values) {
-        return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
-            let retString = "";
-            for (let i = 0; i < names.length; i++) {
-                if (tableTypes[i] === "TEXT") {
-                    retString += `${names[i]} = "${values[i]}",`;
+    dbChanges(db) {
+        return new Promise((resolve) => {
+            const SELECT_CHANGE = "SELECT total_changes()";
+            let ret = -1;
+            db.get(SELECT_CHANGE, (err, row) => {
+                // process the row here 
+                if (err) {
+                    console.log(`"Error: dbChanges failed: " : ${err.message}`);
+                    resolve(ret);
                 }
                 else {
-                    retString += `${names[i]} = ${values[i]},`;
+                    const key = Object.keys(row)[0];
+                    const changes = row[key];
+                    resolve(changes);
                 }
-            }
-            if (retString.length > 1)
-                retString = retString.slice(0, -1);
-            resolve(retString);
-        }));
+            });
+        });
+    }
+    getLastId(db) {
+        return new Promise((resolve) => {
+            const SELECT_LAST_ID = "SELECT last_insert_rowid()";
+            let ret = -1;
+            db.get(SELECT_LAST_ID, (err, row) => {
+                // process the row here 
+                if (err) {
+                    console.log(`"Error: getLastId failed: " : ${err.message}`);
+                    resolve(ret);
+                }
+                else {
+                    const key = Object.keys(row)[0];
+                    const lastId = row[key];
+                    resolve(lastId);
+                }
+            });
+        });
+    }
+    beginTransaction(db) {
+        return new Promise((resolve) => {
+            const stmt = "BEGIN TRANSACTION";
+            db.exec(stmt, (err) => {
+                if (err) {
+                    console.log(`exec: Error Begin Transaction failed : ${err.message}`);
+                    resolve(false);
+                }
+                else {
+                    resolve(true);
+                }
+            });
+        });
+    }
+    endTransaction(db) {
+        return new Promise((resolve) => {
+            const stmt = "COMMIT TRANSACTION";
+            db.exec(stmt, (err) => {
+                if (err) {
+                    console.log(`exec: Error End Transaction failed : ${err.message}`);
+                    resolve(false);
+                }
+                else {
+                    resolve(true);
+                }
+            });
+        });
     }
 }
 //# sourceMappingURL=DatabaseSQLiteHelper.js.map

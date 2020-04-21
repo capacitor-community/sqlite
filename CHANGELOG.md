@@ -1,3 +1,18 @@
+## 2.0.0 (2020-04-21)
+
+### Added Features
+
+* add upload of image (base64 string) to the database
+* add the management of NULL in the importFromJson method
+  a NULL value as to be given with the "NULL" string
+* add the lastId returned by the run method
+  changes is now a JSON object {changes:number,lastId:number}
+* add the transaction (begin and commit) to the run method
+
+### Bug Fixes
+
+* fix the changes return by the execute method
+
 ## 2.0.0-4 (2020-04-15)
 
 ### Added Features
