@@ -2,6 +2,11 @@ import { WebPlugin } from '@capacitor/core';
 import { CapacitorSQLitePlugin, capSQLiteOptions, capSQLiteResult/*, jsonSQLite*/} from './definitions';
 import { DatabaseSQLiteHelper } from './electron-utils/DatabaseSQLiteHelper';
 import { isJsonSQLite } from './electron-utils/JsonUtils';
+import { UtilsSQLite } from './electron-utils/UtilsSQLite';
+
+const fs: any = window['fs' as any];
+const path: any = window['path' as any];
+
 
 export class CapacitorSQLitePluginElectron extends WebPlugin implements CapacitorSQLitePlugin {
     mDb:DatabaseSQLiteHelper;
@@ -49,9 +54,7 @@ export class CapacitorSQLitePluginElectron extends WebPlugin implements Capacito
         return Promise.reject({changes:retRes, message:"Execute command failed : Must provide raw SQL statements"});
       }
       const statements:string = options.statements;
-      console.log('in execute prior call mDB.exec')
       const ret: any = await this.mDb.exec(statements);    
-      console.log('in execute after call mDB.exec ret ',ret)
       return Promise.resolve({changes:ret});    
     }
     async run(options: capSQLiteOptions): Promise<capSQLiteResult>{
@@ -89,16 +92,63 @@ export class CapacitorSQLitePluginElectron extends WebPlugin implements Capacito
       }
       return Promise.resolve({values:ret});    
     }
+    async isDBExists(options: capSQLiteOptions): Promise<capSQLiteResult>{
+      let dbName = options.database;
+      if (dbName == null) {
+        return Promise.reject({result:false,message:"Must provide a Database Name"});
+      }
+      dbName = `${options.database}SQLite.db`;
+      const utils: UtilsSQLite = new UtilsSQLite();
+      let sep: string = "/";
+      const idx : number = __dirname.indexOf("\\");
+      if(idx != -1) sep="\\";
+      const dir: string = __dirname.substring(0, __dirname.lastIndexOf(sep)+1 );
+      const dbPath = path.join(dir,utils.pathDB,dbName);
+      console.log("in isDBExists dbPath ", dbPath)
+      let message: string = "";
+      let ret: boolean = false;
+      try {
+        if (fs.existsSync(dbPath)) {
+          //file exists
+          ret = true;
+        }
+      } catch(err) {
+        ret = false;
+        message = err.message;
+      } finally {
+        console.log("in isDBExists ret ",ret)
+        if(ret) {
+          return Promise.resolve({result:ret});
+        } else {
+          return Promise.resolve({result:ret,message:message});
+        }
+      }
+  
+    }
     async deleteDatabase(options: capSQLiteOptions): Promise<capSQLiteResult>{
       let dbName = options.database;
       if (dbName == null) {
         return Promise.reject({result:false,message:"Must provide a Database Name"});
       }
       dbName = `${options.database}SQLite.db`;
-      if(typeof this.mDb === 'undefined' || this.mDb === null) this.mDb = new DatabaseSQLiteHelper(dbName);
+      if(typeof this.mDb === 'undefined' || this.mDb === null) {
+        return Promise.reject({result:false,message:"The database is not opened"});
+      } 
       const ret = await this.mDb.deleteDB(dbName);
-      this.mDb = null;
       return Promise.resolve({result:ret});
+    }
+    async isJsonValid(options: capSQLiteOptions): Promise<capSQLiteResult>{
+      const jsonStrObj = options.jsonstring;
+      if(typeof jsonStrObj != "string" || jsonStrObj == null || jsonStrObj.length === 0) {
+        return Promise.reject({result:false,message:"Must provide a json object"});
+      }
+      const jsonObj = JSON.parse(jsonStrObj)
+      const isValid = isJsonSQLite(jsonObj);
+      if(!isValid) {
+        return Promise.reject({result:false,message:"Stringify Json Object not Valid"});
+      } else {
+        return Promise.resolve({result:true});
+      }
     }
     async importFromJson(options: capSQLiteOptions): Promise<capSQLiteResult>{
       const retRes = {changes:-1};
@@ -117,7 +167,30 @@ export class CapacitorSQLitePluginElectron extends WebPlugin implements Capacito
       this.mDb = null;
       return Promise.resolve({changes:ret});    
     }
-  
+    async exportToJson(options: capSQLiteOptions): Promise<capSQLiteResult> {
+      const retRes = {};
+      if(typeof options.jsonexportmode === 'undefined') {
+        return Promise.reject({export:retRes, message:"Must provide a json export mode"});
+      }
+      if(options.jsonexportmode != "full" && options.jsonexportmode != "partial") {
+        return Promise.reject({export:retRes, message:"Json export mode should be 'full' or 'partial'"});
+      }
+      const exportMode: string = options.jsonexportmode;
+      const ret: any = await this.mDb.exportJson(exportMode);
+      return Promise.resolve({export:ret});    
+    }
+    async createSyncTable(): Promise<capSQLiteResult> {
+      const ret:any = await this.mDb.createSyncTable();
+      return Promise.resolve({changes:ret});    
+    }
+    async setSyncDate(options: capSQLiteOptions): Promise<capSQLiteResult> {
+      if(typeof options.syncdate === 'undefined' || typeof options.syncdate != "string") {
+        return Promise.reject({result:false, message:"Must provide a synchronization date"});
+      }
+      const syncDate: string = options.syncdate;
+      const ret:boolean = await this.mDb.setSyncDate(syncDate);
+      return Promise.resolve({result:ret});
+    }     
 }
 
 const CapacitorSQLiteElectron = new CapacitorSQLitePluginElectron();

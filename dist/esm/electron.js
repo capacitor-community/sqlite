@@ -10,6 +10,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import { WebPlugin } from '@capacitor/core';
 import { DatabaseSQLiteHelper } from './electron-utils/DatabaseSQLiteHelper';
 import { isJsonSQLite } from './electron-utils/JsonUtils';
+import { UtilsSQLite } from './electron-utils/UtilsSQLite';
+const fs = window['fs'];
+const path = window['path'];
 export class CapacitorSQLitePluginElectron extends WebPlugin {
     constructor() {
         super({
@@ -61,9 +64,7 @@ export class CapacitorSQLitePluginElectron extends WebPlugin {
                 return Promise.reject({ changes: retRes, message: "Execute command failed : Must provide raw SQL statements" });
             }
             const statements = options.statements;
-            console.log('in execute prior call mDB.exec');
             const ret = yield this.mDb.exec(statements);
-            console.log('in execute after call mDB.exec ret ', ret);
             return Promise.resolve({ changes: ret });
         });
     }
@@ -108,6 +109,44 @@ export class CapacitorSQLitePluginElectron extends WebPlugin {
             return Promise.resolve({ values: ret });
         });
     }
+    isDBExists(options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let dbName = options.database;
+            if (dbName == null) {
+                return Promise.reject({ result: false, message: "Must provide a Database Name" });
+            }
+            dbName = `${options.database}SQLite.db`;
+            const utils = new UtilsSQLite();
+            let sep = "/";
+            const idx = __dirname.indexOf("\\");
+            if (idx != -1)
+                sep = "\\";
+            const dir = __dirname.substring(0, __dirname.lastIndexOf(sep) + 1);
+            const dbPath = path.join(dir, utils.pathDB, dbName);
+            console.log("in isDBExists dbPath ", dbPath);
+            let message = "";
+            let ret = false;
+            try {
+                if (fs.existsSync(dbPath)) {
+                    //file exists
+                    ret = true;
+                }
+            }
+            catch (err) {
+                ret = false;
+                message = err.message;
+            }
+            finally {
+                console.log("in isDBExists ret ", ret);
+                if (ret) {
+                    return Promise.resolve({ result: ret });
+                }
+                else {
+                    return Promise.resolve({ result: ret, message: message });
+                }
+            }
+        });
+    }
     deleteDatabase(options) {
         return __awaiter(this, void 0, void 0, function* () {
             let dbName = options.database;
@@ -115,11 +154,27 @@ export class CapacitorSQLitePluginElectron extends WebPlugin {
                 return Promise.reject({ result: false, message: "Must provide a Database Name" });
             }
             dbName = `${options.database}SQLite.db`;
-            if (typeof this.mDb === 'undefined' || this.mDb === null)
-                this.mDb = new DatabaseSQLiteHelper(dbName);
+            if (typeof this.mDb === 'undefined' || this.mDb === null) {
+                return Promise.reject({ result: false, message: "The database is not opened" });
+            }
             const ret = yield this.mDb.deleteDB(dbName);
-            this.mDb = null;
             return Promise.resolve({ result: ret });
+        });
+    }
+    isJsonValid(options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const jsonStrObj = options.jsonstring;
+            if (typeof jsonStrObj != "string" || jsonStrObj == null || jsonStrObj.length === 0) {
+                return Promise.reject({ result: false, message: "Must provide a json object" });
+            }
+            const jsonObj = JSON.parse(jsonStrObj);
+            const isValid = isJsonSQLite(jsonObj);
+            if (!isValid) {
+                return Promise.reject({ result: false, message: "Stringify Json Object not Valid" });
+            }
+            else {
+                return Promise.resolve({ result: true });
+            }
         });
     }
     importFromJson(options) {
@@ -140,6 +195,36 @@ export class CapacitorSQLitePluginElectron extends WebPlugin {
             this.mDb.close(dbName);
             this.mDb = null;
             return Promise.resolve({ changes: ret });
+        });
+    }
+    exportToJson(options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const retRes = {};
+            if (typeof options.jsonexportmode === 'undefined') {
+                return Promise.reject({ export: retRes, message: "Must provide a json export mode" });
+            }
+            if (options.jsonexportmode != "full" && options.jsonexportmode != "partial") {
+                return Promise.reject({ export: retRes, message: "Json export mode should be 'full' or 'partial'" });
+            }
+            const exportMode = options.jsonexportmode;
+            const ret = yield this.mDb.exportJson(exportMode);
+            return Promise.resolve({ export: ret });
+        });
+    }
+    createSyncTable() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const ret = yield this.mDb.createSyncTable();
+            return Promise.resolve({ changes: ret });
+        });
+    }
+    setSyncDate(options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (typeof options.syncdate === 'undefined' || typeof options.syncdate != "string") {
+                return Promise.reject({ result: false, message: "Must provide a synchronization date" });
+            }
+            const syncDate = options.syncdate;
+            const ret = yield this.mDb.setSyncDate(syncDate);
+            return Promise.resolve({ result: ret });
         });
     }
 }

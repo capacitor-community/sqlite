@@ -51,15 +51,45 @@ export class CapacitorSQLiteWeb extends WebPlugin {
             return Promise.reject("Not implemented");
         });
     }
+    isDBExists(options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log('isDBExists', options);
+            return Promise.reject("Not implemented");
+        });
+    }
     deleteDatabase(options) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('deleteDatabase', options);
             return Promise.reject("Not implemented");
         });
     }
+    isJsonValid(options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log('isJsonValid', options);
+            return Promise.reject("Not implemented");
+        });
+    }
     importFromJson(options) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('deleteDatabase', options);
+            console.log('importFromJson', options);
+            return Promise.reject("Not implemented");
+        });
+    }
+    exportToJson(options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log('exportToJson', options);
+            return Promise.reject("Not implemented");
+        });
+    }
+    createSyncTable() {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log('createSyncTable');
+            return Promise.reject("Not implemented");
+        });
+    }
+    setSyncDate(options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log('setSyncDate', options);
             return Promise.reject("Not implemented");
         });
     }

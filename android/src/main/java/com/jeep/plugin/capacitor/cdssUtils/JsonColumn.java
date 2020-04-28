@@ -2,6 +2,8 @@ package com.jeep.plugin.capacitor.cdssUtils;
 
 import android.util.Log;
 
+import com.getcapacitor.JSObject;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -23,6 +25,21 @@ public class JsonColumn {
     public String getValue() {
         return value;
     }
+    // Setter
+    public void setColumn(String newColumn) {
+        this.column = newColumn;
+    }
+    public void setValue(String newValue) {
+        this.value = newValue;
+    }
+
+    public ArrayList<String> getKeys() {
+        ArrayList<String> retArray = new ArrayList<String>();
+        if(getColumn().length() > 0) retArray.add("column");
+        if(getValue().length() > 0) retArray.add("value");
+        return retArray;
+    }
+
     public boolean isSchema(JSONObject jsObj) {
         if(jsObj == null || jsObj.length() == 0) return false;
         Iterator<String> keys = jsObj.keys();
@@ -58,6 +75,13 @@ public class JsonColumn {
     public void print() {
         Log.d(TAG, "column: " + this.getColumn());
         Log.d(TAG, "value: " + this.getValue());
+    }
+
+    public JSObject getColumnAsJSObject() {
+        JSObject retObj = new JSObject();
+        retObj.put("column", this.column);
+        retObj.put("value", this.value);
+        return retObj;
     }
 
 }

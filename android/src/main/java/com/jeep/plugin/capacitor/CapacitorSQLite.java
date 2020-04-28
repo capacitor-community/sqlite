@@ -46,7 +46,6 @@ public class CapacitorSQLite extends Plugin {
     @PluginMethod()
     public void open(PluginCall call) {
         String dbName = null;
-        Boolean encrypted = null;
         String secret = null;
         String newsecret = null;
         String inMode = null;
@@ -58,7 +57,7 @@ public class CapacitorSQLite extends Plugin {
             call.reject("Must provide a database name");
             return;
         }
-        encrypted = call.getBoolean("encrypted", false);
+        boolean encrypted = call.getBoolean("encrypted", false);
         if (encrypted) {
             inMode = call.getString("mode","no-encryption");
             if (!inMode.equals("no-encryption") && !inMode.equals("encryption") &&
@@ -69,11 +68,12 @@ public class CapacitorSQLite extends Plugin {
             }
             if (inMode.equals("encryption")  || inMode.equals("secret")) {
                 secret = globalData.secret;
+                // this is only done for testing multiples runs
+                newsecret = globalData.newsecret;
 
             } else if (inMode.equals("newsecret")) {
                 secret = globalData.secret;
                 newsecret = globalData.newsecret;
-                globalData.secret = newsecret;
             } else if (inMode.equals("wrongsecret")) {
                 // for test purpose only
                 secret = "wrongsecret";
@@ -204,11 +204,28 @@ public class CapacitorSQLite extends Plugin {
         }
     }
     @PluginMethod()
+    public void isDBExists(PluginCall call) {
+        String dbName = null;
+        dbName = call.getString("database");
+        if (dbName == null) {
+            retResult(call,false,"isDBExists command failed: Must provide a database name");
+            return;
+        }
+        File databaseFile = context.getDatabasePath(dbName + "SQLite.db");
+        if (databaseFile.exists()) {
+            retResult(call,true,null);
+        } else {
+            retResult(call,false,null);
+        }
+
+    }
+    @PluginMethod()
     public void deleteDatabase(PluginCall call) {
         String dbName = null;
         dbName = call.getString("database");
         if (dbName == null) {
-            retResult(call,false,"DeleteDatabase command failed: Must provide a database name");
+            retResult(call,false,
+                    "DeleteDatabase command failed: Must provide a database name");
             return;
         }
 
@@ -216,15 +233,38 @@ public class CapacitorSQLite extends Plugin {
             boolean res = mDb.deleteDB(dbName + "SQLite.db");
             retResult(call,true,null);
         } else {
-            context.deleteDatabase(dbName + "SQLite.db");
-            context.deleteFile(dbName + "SQLite.db");
-            File databaseFile = context.getDatabasePath(dbName + "SQLite.db");
-            if (databaseFile.exists()) {
-                retResult(call,false,"DeleteDatabase command failed");
+            retResult(call,false,
+                    "DeleteDatabase command failed: The database is not opened");
+            return;
+
+        }
+    }
+    @PluginMethod()
+    public void isJsonValid(PluginCall call) {
+        String parsingData = null;
+        parsingData = call.getString("jsonstring");
+        if (parsingData == null) {
+            retResult(call,false,
+                "isJsonValid command failed: Must provide a Stringify Json Object");
+            return;
+        }
+
+        try {
+            JSObject jsonObject = new JSObject(parsingData);
+            JsonSQLite jsonSQL = new JsonSQLite();
+            Boolean isValid = jsonSQL.isJsonSQLite(jsonObject);
+            if(!isValid) {
+                retResult(call,false,
+                    "isJsonValid command failed: Stringify Json Object not Valid");
+                return;
             } else {
                 retResult(call,true,null);
             }
-
+        }
+        catch (Exception e){
+            retResult(call,false,
+                    "isJsonValid command failed: " + e.getMessage());
+            return;
         }
     }
     @PluginMethod()
@@ -278,7 +318,61 @@ public class CapacitorSQLite extends Plugin {
             return;
         }
     }
+    @PluginMethod()
+    public void exportToJson(PluginCall call) {
+        String expMode = null;
+        JSObject retObj = new JSObject();
+        JsonSQLite retJson = new JsonSQLite();
+        expMode = call.getString("jsonexportmode");
+        if (expMode == null) {
+            retJSObject(call,retObj,
+                    "exportToJson: Must provide an export mode");
+            return;
+        }
+        if(!expMode.equals("full") && !expMode.equals("partial")) {
+            retJSObject(call,retObj,
+                "exportToJson: Json export mode should be 'full' or 'partial'");
+            return;
+        }
+        JSObject ret = mDb.exportToJson(expMode);
 
+        if(ret.length() == 4) {
+            retJSObject(call,ret,null);
+            return;
+
+        } else {
+            retJSObject(call,retObj,
+                    "exportToJson: return Obj is not a JsonSQLite Obj");
+            return;
+        }
+    }
+    @PluginMethod()
+    public void createSyncTable(PluginCall call) {
+        JSObject retRes = new JSObject();
+        retRes.put("changes",Integer.valueOf(-1));
+        JSObject res = mDb.createSyncTable();
+        if (res.getInteger("changes") == Integer.valueOf(-1)) {
+            retChanges(call, retRes, "createSyncTable command failed");
+        } else {
+            retChanges(call, res, null);
+        }
+    }
+    @PluginMethod()
+    public void setSyncDate(PluginCall call) {
+        String syncDate = null;
+        syncDate = call.getString("syncdate");
+        if (syncDate == null) {
+            retResult(call,false,"SetSyncDate command failed: Must provide a sync date");
+            return;
+        }
+        boolean res = mDb.setSyncDate(syncDate);
+        if (!res) {
+            retResult(call,false,"setSyncDate command failed");
+        } else {
+            retResult(call,true,null);
+        }
+
+    }
     private void retResult(PluginCall call, Boolean res, String message) {
         JSObject ret = new JSObject();
         ret.put("result", res);
@@ -294,6 +388,12 @@ public class CapacitorSQLite extends Plugin {
     private void retValues(PluginCall call, JSArray res, String message) {
         JSObject ret = new JSObject();
         ret.put("values", res);
+        if(message != null) ret.put("message",message);
+        call.resolve(ret);
+    }
+    private void retJSObject(PluginCall call, JSObject res, String message) {
+        JSObject ret = new JSObject();
+        ret.put("export", res);
         if(message != null) ret.put("message",message);
         call.resolve(ret);
     }

@@ -1,4 +1,7 @@
-# importFromJson method
+# JSON Import/Export
+
+## Mehods
+### importFromJson method
 
 This method allow to create a database from a JSON Object.
 The created database can be encrypted or not based on the value of the name ***encrypted***" of the JSON Object.
@@ -21,12 +24,32 @@ Internally the ```importFromJson```method is splitted into two SQL Transactions:
     - transaction building the schema (Tables, Indexes)
     - transaction creating the Table's Data (Insert, Update)
 
+### exportToJson method
+
+This method allow to download a database to a Json object.
+
+The export mode can be selected either **full** or **partial**
+
+To use the **partial** mode, it is mandatory to add a field **last_modified** to the schema of all tables in your database.
+The export to Json will take all the schema, indexes or data which have been modified **after** the synchronization date.
+
+### isJsonValid
+
+this method allow to check if the Json Object is valid before processing an import or validating the resulting Json Object from an export.
+
+### createSyncTable
+
+Should be use once to create the table where the synchronization date is stored.
+
+### setSyncDate
+Allow for updating the synchronization date.
+
 ## JSON Object
 
 The JSON object is built up using the following types
 
-It is **mandatory** that the first column in your database schema is a primary key of the table. 
-This is requested to identify if the value given is an INSERT or an UPDATE SQL command to be executed
+It is **mandatory** that the first column in your database schema for all the tables is a primary key. 
+This is requested to identify if the value given is an INSERT or an UPDATE SQL command to be executed.
 
 ```js
 export type jsonSQLite = {

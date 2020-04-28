@@ -1,12 +1,11 @@
 import { UtilsSQLite } from './UtilsSQLite';
-import { jsonSQLite } from './JsonUtils';
+import { JsonSQLite,JsonTable,JsonIndex,JsonColumn,isJsonSQLite,isTable } from './JsonUtils';
 
 const fs: any = window['fs' as any];
 const path: any = window['path' as any];
 
 export class DatabaseSQLiteHelper {
     public isOpen: boolean = false;
-    private _db: any;
     private _databaseName: string;
 //    private _encrypted: boolean;
 //    private _mode: string;
@@ -25,14 +24,63 @@ export class DatabaseSQLiteHelper {
         this._openDB();
     }
     private _openDB() {
-        this._db = this._utils.connection(this._databaseName,false/*,this._secret*/);
-        if(this._db !== null) {
+
+        const db = this._utils.connection(this._databaseName,false/*,this._secret*/);
+        if(db !== null) {
             this.isOpen = true;
+            db.close();
         } else {
             this.isOpen = false;
             console.log("openDB: Error Database connection failed");
         }
     }
+    public createSyncTable(): Promise<any> {
+        return new Promise( async  (resolve) => {
+            let retRes = {changes:-1};
+            const db = this._utils.connection(this._databaseName,false/*,this._secret*/);
+            if (db === null) {
+                this.isOpen = false;
+                console.log("exec: Error Database connection failed");
+                resolve(retRes);
+            }
+            // check if the table has already been created
+            const isExists = await this.isTableExists(db,'sync_table');
+            if( !isExists ) {
+
+                const date: number = Math.round((new Date()).getTime()/1000);            
+                const stmts = `
+                BEGIN TRANSACTION;
+                CREATE TABLE IF NOT EXISTS sync_table (
+                    id INTEGER PRIMARY KEY NOT NULL,
+                    sync_date INTEGER
+                    );
+                INSERT INTO sync_table (sync_date) VALUES ("${date}");
+                COMMIT TRANSACTION;
+                `;
+                retRes = await this.execute(db,stmts);
+            }
+            db.close();
+            resolve(retRes);
+        });
+    }
+    public setSyncDate(syncDate:string) : Promise<boolean> {
+        return new Promise( async  (resolve) => {
+            let ret: boolean = false;
+            const db = this._utils.connection(this._databaseName,false/*,this._secret*/);
+            if (db === null) {
+                this.isOpen = false;
+                console.log("exec: Error Database connection failed");
+                resolve(ret);
+            }
+            const sDate: number = Math.round((new Date(syncDate)).getTime()/1000);
+            const stmt: string = `UPDATE sync_table SET sync_date = ${sDate} WHERE id = 1;`;
+            const retRes = await this.execute(db,stmt);
+            if (retRes.changes != -1) ret = true;
+            db.close();
+            resolve(ret);
+        });
+    }
+
     public close(databaseName:string): Promise<boolean> {
         return new Promise(  (resolve) => {
             const db = this._utils.connection(databaseName,false/*,this._secret*/);
@@ -54,7 +102,7 @@ export class DatabaseSQLiteHelper {
         });
     }
     public exec(statements:string): Promise<any> {
-        return new Promise(  (resolve) => {
+        return new Promise( async (resolve) => {
             let retRes = {changes:-1};
             const db = this._utils.connection(this._databaseName,false/*,this._secret*/);
             if (db === null) {
@@ -62,17 +110,22 @@ export class DatabaseSQLiteHelper {
                 console.log("exec: Error Database connection failed");
                 resolve(retRes);
             }
+            retRes = await this.execute(db,statements);
+            db.close();
+            resolve(retRes);
+        });
+    }
+    private execute(db:any,statements:string): Promise<any> {
+        return new Promise(  (resolve) => {
+            let retRes = {changes:-1};
             db.serialize(() => {
                 db.exec(statements,async (err:Error) => {
                     if(err) {
                         console.log(`exec: Error Execute command failed : ${err.message}`);
-                        db.close();
                         resolve(retRes);
                     } else {
                         const changes:number =  await this.dbChanges(db);
-                        console.log('in exec afterdb.exec changes ',changes)
                         retRes = {changes:changes};
-                        db.close();
                         resolve(retRes);
                     }
                 });
@@ -112,7 +165,7 @@ export class DatabaseSQLiteHelper {
             resolve(retRes);
         });
     }    
-    public prepare(db:any, statement:string,values: Array<any>): Promise<number> {
+    private prepare(db:any, statement:string,values: Array<any>): Promise<number> {
         return new Promise(  async (resolve) => {
             let retRes: number = -1;
 
@@ -206,20 +259,40 @@ export class DatabaseSQLiteHelper {
         });
     }
 
-    public importJson(jsonData:jsonSQLite): Promise<any> {
+    public importJson(jsonData:JsonSQLite): Promise<any> {
         return new Promise( async (resolve) => {
-            console.log("importFromJson:  ");
             let changes:number = -1;
             // create the database schema
             changes = await this.createDatabaseSchema(jsonData);
             if (changes != -1) {
+                // create the tables data
                 changes = await this.createTableData(jsonData);
             }
             resolve({changes: changes});
         });
     }
+    public exportJson(mode: string): Promise<any> {
+        return new Promise( async (resolve) => {
+            let retJson: JsonSQLite = {} as JsonSQLite;
+            let success: boolean = false;
+            retJson.database = this._databaseName.slice(0,-9);
+            retJson.encrypted = false;
+            retJson.mode = mode;
+            success = await this.createJsonTables(retJson);
+            if(success) {
+                const isValid = isJsonSQLite(retJson);
+                if(isValid) {
+                    resolve(retJson);
+                } else {
+                    resolve({});
+                }
+            } else {
+                resolve({});
+            }
+        });
+    }
 
-    private createDatabaseSchema(jsonData:jsonSQLite): Promise<number> {
+    private createDatabaseSchema(jsonData: JsonSQLite): Promise<number> {
         return new Promise( async (resolve) => {
             let changes: number = -1;
             // create the database schema
@@ -253,7 +326,7 @@ export class DatabaseSQLiteHelper {
             resolve(changes);
         });
     }
-    private createTableData(jsonData:jsonSQLite): Promise<number> {
+    private createTableData(jsonData: JsonSQLite): Promise<number> {
         return new Promise( async (resolve) => {
             let success: boolean = true;
             let changes: number = -1;
@@ -274,7 +347,7 @@ export class DatabaseSQLiteHelper {
             for (let i:number = 0; i < jsonData.tables.length; i++) {
                 if(jsonData.tables[i].values && jsonData.tables[i].values.length >= 1) {
                     // Check if the table exists
-                    const tableExists = await this.isTable(db,jsonData.tables[i].name);
+                    const tableExists = await this.isTableExists(db,jsonData.tables[i].name);
                     if(!tableExists) {
                         console.log(`Error: Table ${jsonData.tables[i].name} does not exist`);
                         success = false;
@@ -355,7 +428,7 @@ export class DatabaseSQLiteHelper {
             resolve(changes);        
         });
     }
-    private isTable(db:any, tableName:string) : Promise<boolean> {
+    private isTableExists(db:any, tableName:string) : Promise<boolean> {
         return new Promise (async (resolve) => {
             // Check if the table exists
             let ret: boolean = false;
@@ -491,6 +564,164 @@ export class DatabaseSQLiteHelper {
                     resolve(true);
                 }
             });
+        });
+    }
+    private createJsonTables(retJson: JsonSQLite): Promise<boolean> {
+        return new Promise( async (resolve) => {
+            let success:boolean = true;
+            const databaseName: string = `${retJson.database}SQLite.db`;
+            const db = this._utils.connection(databaseName,false/*,this._secret*/);
+            if (db === null) {
+                this.isOpen = false;
+                console.log("createJsonTables: Error Database connection failed");
+                resolve(false);
+            }
+            // get the table's names
+            let stmt: string = "SELECT name,sql FROM sqlite_master WHERE type = 'table' ";
+            stmt += "AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'sync_table';";
+            let tables: Array<any> = await this.select(db,stmt,[]);
+            if( tables.length === 0 ) {
+                console.log("createJsonTables: Error get table's names failed");
+                resolve(false);
+            }
+            let modTables: any = {};
+            let syncDate: number
+            if(retJson.mode === "partial") {
+                syncDate = await this.getSyncDate(db);
+                if(syncDate != -1) {
+                    // take the tables which have been modified or created since last sync
+                    modTables = await this.getTableModified(db,tables,syncDate);
+                } else {
+                    console.log("createJsonTables: Error did not find a sync_date");
+                    resolve(false);
+                }
+            }
+
+            let jsonTables: Array<JsonTable> = [];
+            for(let i:number = 0;i< tables.length; i++) {
+                if(retJson.mode === "partial" && (Object.keys(modTables).length === 0 ||
+                    Object.keys(modTables).indexOf(tables[i].name) === -1 ||
+                    modTables[tables[i].name] == "No")) {
+                    continue;
+                }
+                let table: JsonTable =  {} as JsonTable;
+                let isSchema: boolean = false;
+                let isIndexes: boolean = false;
+                let isValues: boolean = false;
+                table.name = tables[i].name;
+                if(retJson.mode === "full" || 
+                    (retJson.mode === "partial" && modTables[table.name] === "Create")) {
+
+                    // create the schema
+                    let schema: Array<JsonColumn> = [];
+                    // take the substring between parenthesis
+                    let openPar: number = tables[i].sql.indexOf("(");
+                    let closePar: number = tables[i].sql.indexOf(")");
+                    let sstr: String = tables[i].sql.substring(openPar + 1,closePar);
+                    let sch: Array<string> = sstr.replace(/\n/g, "").split(",");
+                    for(let j:number = 0;j<sch.length;j++) {
+                        let idx = sch[j].indexOf(" ");
+                        //find the index of the first 
+                        let row: Array<string> = [sch[j].slice(0, idx), sch[j].slice(idx+1)];
+                        if(row.length != 2) resolve(false);
+                        schema.push({column: row[0],value:row[1]});
+                    }
+                    table.schema = schema;
+                    isSchema = true;
+                
+                    // create the indexes
+                    stmt = "SELECT name,tbl_name FROM sqlite_master WHERE ";
+                    stmt += `type = 'index' AND tbl_name = '${table.name}' AND sql NOTNULL;`;
+                    const retIndexes: Array<any> = await this.select(db,stmt,[]);
+                    if(retIndexes.length > 0) {
+                        let indexes: Array<JsonIndex> = [];
+                        for(let j:number = 0;j<retIndexes.length;j++) {
+                            indexes.push({name:retIndexes[j]["tbl_name"],
+                                            column:retIndexes[j]["name"]});
+                        }
+                        table.indexes = indexes;
+                        isIndexes = true;
+                    }
+                }
+
+                const tableNamesTypes: any = await this.getTableColumnNamesTypes(db,table.name);
+                const rowNames: Array<string> = tableNamesTypes.names
+                // create the data
+                if(retJson.mode === "full" || 
+                (retJson.mode === "partial" && modTables[table.name] === "Create")) {
+                    stmt = `SELECT * FROM ${table.name};`;
+                } else {
+                    stmt = `SELECT * FROM ${table.name} WHERE last_modified > ${syncDate};`;
+                }
+                const retValues: Array<any> = await this.select(db,stmt,[]);
+                let values: Array<Array<any>> = [];
+                for(let j:number = 0;j<retValues.length;j++) {
+                    let row: Array<any> = [];
+                    for( let k:number = 0; k<rowNames.length; k++) {
+                        row.push(retValues[j][rowNames[k]]);
+                    }
+                    values.push(row);
+                }
+                table.values = values;
+                isValues = true;
+                if(Object.keys(table).length < 1 || !isTable(table) || 
+                        (!isSchema && !isIndexes && !isValues)) {
+                    console.log('createJsonTables: Error table is not a jsonTable');
+                    success = false;
+                    break;  
+                } 
+                jsonTables.push(table);
+            }
+            if(!success) {
+                retJson = {} as JsonSQLite;
+            } else {
+                retJson.tables = jsonTables;
+            }
+            resolve(success);
+        });
+    }
+
+    private getTableModified(db: any,tables: Array<any>,syncDate:number): Promise<any> {
+        return new Promise( async (resolve) => {
+            let retModified: any = {};
+            for(let i:number = 0;i< tables.length; i++) {
+                let mode: string;
+                // get total count of the table
+                let stmt: string = `SELECT count(*) FROM ${tables[i].name};`;
+                let retQuery: Array<any> = await this.select(db,stmt,[]);
+                if(retQuery.length != 1) break;
+                const totalCount : number = retQuery[0]["count(*)"];
+                // get total count of modified since last sync
+                stmt = `SELECT count(*) FROM ${tables[i].name} WHERE last_modified > ${syncDate};`;
+                retQuery = await this.select(db,stmt,[]);
+                if(retQuery.length != 1) break;
+                const totalModifiedCount: number = retQuery[0]["count(*)"];
+
+                if(totalModifiedCount === 0 ) {
+                    mode = "No";
+                } else if (totalCount === totalModifiedCount) {
+                    mode = "Create";
+                } else {
+                    mode = "Modified";
+                }
+                const key: string = tables[i].name;
+                retModified[key] = mode;
+                if(i === tables.length - 1) resolve(retModified);
+            } 
+            resolve(retModified);                   
+        });
+    }
+    private getSyncDate(db:any): Promise<number> {
+        return new Promise( async (resolve) => {
+            let ret: number = -1;
+            // get the last sync date
+            let stmt = `SELECT sync_date FROM sync_table;`
+            let retQuery: Array<any> = await this.select(db,stmt,[]);
+            if(retQuery.length === 1) {
+                const syncDate: number = retQuery[0]["sync_date"];
+                if(syncDate > 0) ret = syncDate;
+            }
+            resolve(ret);
         });
     }
 }

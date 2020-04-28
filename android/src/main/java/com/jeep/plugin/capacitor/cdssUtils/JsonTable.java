@@ -2,6 +2,9 @@ package com.jeep.plugin.capacitor.cdssUtils;
 
 import android.util.Log;
 
+import com.getcapacitor.JSArray;
+import com.getcapacitor.JSObject;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,7 +19,7 @@ public class JsonTable {
     private static final List<String> keyTableLevel = new ArrayList<String>(
             Arrays.asList("name","schema","indexes","values"));
 
-    private String name;
+    private String name = "";
     private ArrayList<JsonColumn> schema = new ArrayList<JsonColumn>();
     private ArrayList<JsonIndex> indexes = new ArrayList<JsonIndex>();
     private ArrayList<ArrayList<Object>> values = new ArrayList<ArrayList<Object>>();
@@ -27,15 +30,33 @@ public class JsonTable {
     public ArrayList<JsonColumn> getSchema() {
         return schema;
     }
-    public ArrayList<JsonIndex> getIndexes() {
-        return indexes;
-    }
+    public ArrayList<JsonIndex> getIndexes() { return indexes;}
     public ArrayList<ArrayList<Object>> getValues() {
         return values;
     }
+    // Setter
+    public void setName(String newName) {
+        this.name = newName;
+    }
+    public void setSchema(ArrayList<JsonColumn> newSchema) {
+        this.schema = newSchema;
+    }
+    public void setIndexes(ArrayList<JsonIndex> newIndexes) {
+        this.indexes= newIndexes;
+    }
+    public void setValues(ArrayList<ArrayList<Object>> newValues) {
+        this.values = newValues;
+    }
 
 
-
+    public ArrayList<String> getKeys() {
+        ArrayList<String> retArray = new ArrayList<String>();
+        if(getName().length() > 0) retArray.add("names");
+        if(getSchema().size() > 0) retArray.add("schema");
+        if(getIndexes().size() > 0) retArray.add("indexes");
+        if(getValues().size() > 0) retArray.add("values");
+        return retArray;
+    }
     public boolean isTable(JSONObject jsObj) {
         if(jsObj == null || jsObj.length() == 0) return false;
         int nbColumn = 0;
@@ -54,7 +75,7 @@ public class JsonTable {
                     }
                 }
                 if (key.equals("schema")) {
-                    if(!(value instanceof JSONArray)) {
+                    if(!(value instanceof JSONArray) && !(value instanceof ArrayList)) {
                         return false;
                     } else {
                         schema = new ArrayList<JsonColumn>();
@@ -69,7 +90,7 @@ public class JsonTable {
                     }
                 }
                 if (key.equals("indexes")) {
-                    if(!(value instanceof JSONArray)) {
+                    if(!(value instanceof JSONArray) && !(value instanceof ArrayList)) {
                         return false;
                     } else {
                         indexes = new ArrayList<JsonIndex>();
@@ -83,7 +104,7 @@ public class JsonTable {
                     }
                 }
                 if (key.equals("values")) {
-                    if(!(value instanceof JSONArray)) {
+                    if(!(value instanceof JSONArray) && !(value instanceof ArrayList)) {
                         return false;
                     } else {
                         values = new ArrayList<ArrayList<Object>>();
@@ -121,6 +142,40 @@ public class JsonTable {
         for(ArrayList<Object> row : this.getValues()) {
             Log.d(TAG, "row: " + row);
         }
+    }
+    public JSObject getTableAsJSObject() {
+        JSObject retObj = new JSObject();
+        retObj.put("name",getName());
+        JSONArray JSSchema = new JSONArray();
+        if(this.schema.size() > 0) {
+            for(JsonColumn sch : this.schema) {
+                JSSchema.put(sch.getColumnAsJSObject());
+            }
+            retObj.put("schema",JSSchema);
+        }
+        JSONArray JSIndexes = new JSONArray();
+        if(this.indexes.size() > 0) {
+            for(JsonIndex idx : this.indexes) {
+                JSIndexes.put(idx.getIndexAsJSObject());
+            }
+            retObj.put("indexes",JSIndexes);
+        }
+        JSONArray JSValues = new JSONArray();
+        if(this.values.size() > 0) {
+            for(ArrayList<Object> row : this.values) {
+                JSONArray JSRow = new JSONArray();
+                for( Object val: row)  {
+                    if(val instanceof String ) {
+                        JSRow.put(val.toString());
+                    } else {
+                        JSRow.put(val);
+                    }
+                }
+                JSValues.put(JSRow);
+            }
+            retObj.put("values", JSValues);
+        }
 
+        return retObj;
     }
 }

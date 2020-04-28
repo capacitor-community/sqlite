@@ -27,9 +27,10 @@ public struct JsonSQLite: Codable {
 
 struct JsonTable: Codable {
     let name: String
-    let schema: [JsonColumn]?
-    let indexes: [JsonIndex]?
-    let values: [[UncertainValue<String,Int,Float>]]?
+    var schema: [JsonColumn]?
+    var indexes: [JsonIndex]?
+    var values: [[UncertainValue<String,Int,Float>]]?
+    
  
     public func show() {
         print("name: \(name) ")
@@ -106,3 +107,4 @@ public struct JsonNamesTypes {
     var names: Array<String>
     var types: Array<String>
 }
+

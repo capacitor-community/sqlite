@@ -2,6 +2,8 @@ package com.jeep.plugin.capacitor.cdssUtils;
 
 import android.util.Log;
 
+import com.getcapacitor.JSObject;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -23,6 +25,21 @@ public class JsonIndex {
     public String getColumn() {
         return column;
     }
+    // Setter
+    public void setName(String newName) {
+        this.name = newName;
+    }
+    public void setColumn(String newColumn) {
+        this.column = newColumn;
+    }
+
+    public ArrayList<String> getKeys() {
+        ArrayList<String> retArray = new ArrayList<String>();
+        if(getName().length() > 0) retArray.add("name");
+        if(getColumn().length() > 0) retArray.add("column");
+        return retArray;
+    }
+
     public boolean isIndexes(JSONObject jsObj) {
         if(jsObj == null || jsObj.length() == 0) return false;
          Iterator<String> keys = jsObj.keys();
@@ -57,4 +74,11 @@ public class JsonIndex {
         Log.d(TAG, "name: " + this.getName());
         Log.d(TAG, "column: " + this.getColumn());
     }
+    public JSObject getIndexAsJSObject() {
+        JSObject retObj = new JSObject();
+        retObj.put("name", this.name);
+        retObj.put("column", this.column);
+        return retObj;
+    }
+
 }

@@ -8,6 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { UtilsSQLite } from './UtilsSQLite';
+import { isJsonSQLite, isTable } from './JsonUtils';
 const fs = window['fs'];
 const path = window['path'];
 export class DatabaseSQLiteHelper {
@@ -23,14 +24,61 @@ export class DatabaseSQLiteHelper {
         this._openDB();
     }
     _openDB() {
-        this._db = this._utils.connection(this._databaseName, false /*,this._secret*/);
-        if (this._db !== null) {
+        const db = this._utils.connection(this._databaseName, false /*,this._secret*/);
+        if (db !== null) {
             this.isOpen = true;
+            db.close();
         }
         else {
             this.isOpen = false;
             console.log("openDB: Error Database connection failed");
         }
+    }
+    createSyncTable() {
+        return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
+            let retRes = { changes: -1 };
+            const db = this._utils.connection(this._databaseName, false /*,this._secret*/);
+            if (db === null) {
+                this.isOpen = false;
+                console.log("exec: Error Database connection failed");
+                resolve(retRes);
+            }
+            // check if the table has already been created
+            const isExists = yield this.isTableExists(db, 'sync_table');
+            if (!isExists) {
+                const date = Math.round((new Date()).getTime() / 1000);
+                const stmts = `
+                BEGIN TRANSACTION;
+                CREATE TABLE IF NOT EXISTS sync_table (
+                    id INTEGER PRIMARY KEY NOT NULL,
+                    sync_date INTEGER
+                    );
+                INSERT INTO sync_table (sync_date) VALUES ("${date}");
+                COMMIT TRANSACTION;
+                `;
+                retRes = yield this.execute(db, stmts);
+            }
+            db.close();
+            resolve(retRes);
+        }));
+    }
+    setSyncDate(syncDate) {
+        return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
+            let ret = false;
+            const db = this._utils.connection(this._databaseName, false /*,this._secret*/);
+            if (db === null) {
+                this.isOpen = false;
+                console.log("exec: Error Database connection failed");
+                resolve(ret);
+            }
+            const sDate = Math.round((new Date(syncDate)).getTime() / 1000);
+            const stmt = `UPDATE sync_table SET sync_date = ${sDate} WHERE id = 1;`;
+            const retRes = yield this.execute(db, stmt);
+            if (retRes.changes != -1)
+                ret = true;
+            db.close();
+            resolve(ret);
+        }));
     }
     close(databaseName) {
         return new Promise((resolve) => {
@@ -54,7 +102,7 @@ export class DatabaseSQLiteHelper {
         });
     }
     exec(statements) {
-        return new Promise((resolve) => {
+        return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
             let retRes = { changes: -1 };
             const db = this._utils.connection(this._databaseName, false /*,this._secret*/);
             if (db === null) {
@@ -62,18 +110,23 @@ export class DatabaseSQLiteHelper {
                 console.log("exec: Error Database connection failed");
                 resolve(retRes);
             }
+            retRes = yield this.execute(db, statements);
+            db.close();
+            resolve(retRes);
+        }));
+    }
+    execute(db, statements) {
+        return new Promise((resolve) => {
+            let retRes = { changes: -1 };
             db.serialize(() => {
                 db.exec(statements, (err) => __awaiter(this, void 0, void 0, function* () {
                     if (err) {
                         console.log(`exec: Error Execute command failed : ${err.message}`);
-                        db.close();
                         resolve(retRes);
                     }
                     else {
                         const changes = yield this.dbChanges(db);
-                        console.log('in exec afterdb.exec changes ', changes);
                         retRes = { changes: changes };
-                        db.close();
                         resolve(retRes);
                     }
                 }));
@@ -215,14 +268,36 @@ export class DatabaseSQLiteHelper {
     }
     importJson(jsonData) {
         return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
-            console.log("importFromJson:  ");
             let changes = -1;
             // create the database schema
             changes = yield this.createDatabaseSchema(jsonData);
             if (changes != -1) {
+                // create the tables data
                 changes = yield this.createTableData(jsonData);
             }
             resolve({ changes: changes });
+        }));
+    }
+    exportJson(mode) {
+        return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
+            let retJson = {};
+            let success = false;
+            retJson.database = this._databaseName.slice(0, -9);
+            retJson.encrypted = false;
+            retJson.mode = mode;
+            success = yield this.createJsonTables(retJson);
+            if (success) {
+                const isValid = isJsonSQLite(retJson);
+                if (isValid) {
+                    resolve(retJson);
+                }
+                else {
+                    resolve({});
+                }
+            }
+            else {
+                resolve({});
+            }
         }));
     }
     createDatabaseSchema(jsonData) {
@@ -280,7 +355,7 @@ export class DatabaseSQLiteHelper {
             for (let i = 0; i < jsonData.tables.length; i++) {
                 if (jsonData.tables[i].values && jsonData.tables[i].values.length >= 1) {
                     // Check if the table exists
-                    const tableExists = yield this.isTable(db, jsonData.tables[i].name);
+                    const tableExists = yield this.isTableExists(db, jsonData.tables[i].name);
                     if (!tableExists) {
                         console.log(`Error: Table ${jsonData.tables[i].name} does not exist`);
                         success = false;
@@ -359,7 +434,7 @@ export class DatabaseSQLiteHelper {
             resolve(changes);
         }));
     }
-    isTable(db, tableName) {
+    isTableExists(db, tableName) {
         return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
             // Check if the table exists
             let ret = false;
@@ -509,6 +584,168 @@ export class DatabaseSQLiteHelper {
                 }
             });
         });
+    }
+    createJsonTables(retJson) {
+        return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
+            let success = true;
+            const databaseName = `${retJson.database}SQLite.db`;
+            const db = this._utils.connection(databaseName, false /*,this._secret*/);
+            if (db === null) {
+                this.isOpen = false;
+                console.log("createJsonTables: Error Database connection failed");
+                resolve(false);
+            }
+            // get the table's names
+            let stmt = "SELECT name,sql FROM sqlite_master WHERE type = 'table' ";
+            stmt += "AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'sync_table';";
+            let tables = yield this.select(db, stmt, []);
+            if (tables.length === 0) {
+                console.log("createJsonTables: Error get table's names failed");
+                resolve(false);
+            }
+            let modTables = {};
+            let syncDate;
+            if (retJson.mode === "partial") {
+                syncDate = yield this.getSyncDate(db);
+                if (syncDate != -1) {
+                    // take the tables which have been modified or created since last sync
+                    modTables = yield this.getTableModified(db, tables, syncDate);
+                }
+                else {
+                    console.log("createJsonTables: Error did not find a sync_date");
+                    resolve(false);
+                }
+            }
+            let jsonTables = [];
+            for (let i = 0; i < tables.length; i++) {
+                if (retJson.mode === "partial" && (Object.keys(modTables).length === 0 ||
+                    Object.keys(modTables).indexOf(tables[i].name) === -1 ||
+                    modTables[tables[i].name] == "No")) {
+                    continue;
+                }
+                let table = {};
+                let isSchema = false;
+                let isIndexes = false;
+                let isValues = false;
+                table.name = tables[i].name;
+                if (retJson.mode === "full" ||
+                    (retJson.mode === "partial" && modTables[table.name] === "Create")) {
+                    // create the schema
+                    let schema = [];
+                    // take the substring between parenthesis
+                    let openPar = tables[i].sql.indexOf("(");
+                    let closePar = tables[i].sql.indexOf(")");
+                    let sstr = tables[i].sql.substring(openPar + 1, closePar);
+                    let sch = sstr.replace(/\n/g, "").split(",");
+                    for (let j = 0; j < sch.length; j++) {
+                        let idx = sch[j].indexOf(" ");
+                        //find the index of the first 
+                        let row = [sch[j].slice(0, idx), sch[j].slice(idx + 1)];
+                        if (row.length != 2)
+                            resolve(false);
+                        schema.push({ column: row[0], value: row[1] });
+                    }
+                    table.schema = schema;
+                    isSchema = true;
+                    // create the indexes
+                    stmt = "SELECT name,tbl_name FROM sqlite_master WHERE ";
+                    stmt += `type = 'index' AND tbl_name = '${table.name}' AND sql NOTNULL;`;
+                    const retIndexes = yield this.select(db, stmt, []);
+                    if (retIndexes.length > 0) {
+                        let indexes = [];
+                        for (let j = 0; j < retIndexes.length; j++) {
+                            indexes.push({ name: retIndexes[j]["tbl_name"],
+                                column: retIndexes[j]["name"] });
+                        }
+                        table.indexes = indexes;
+                        isIndexes = true;
+                    }
+                }
+                const tableNamesTypes = yield this.getTableColumnNamesTypes(db, table.name);
+                const rowNames = tableNamesTypes.names;
+                // create the data
+                if (retJson.mode === "full" ||
+                    (retJson.mode === "partial" && modTables[table.name] === "Create")) {
+                    stmt = `SELECT * FROM ${table.name};`;
+                }
+                else {
+                    stmt = `SELECT * FROM ${table.name} WHERE last_modified > ${syncDate};`;
+                }
+                const retValues = yield this.select(db, stmt, []);
+                let values = [];
+                for (let j = 0; j < retValues.length; j++) {
+                    let row = [];
+                    for (let k = 0; k < rowNames.length; k++) {
+                        row.push(retValues[j][rowNames[k]]);
+                    }
+                    values.push(row);
+                }
+                table.values = values;
+                isValues = true;
+                if (Object.keys(table).length < 1 || !isTable(table) ||
+                    (!isSchema && !isIndexes && !isValues)) {
+                    console.log('createJsonTables: Error table is not a jsonTable');
+                    success = false;
+                    break;
+                }
+                jsonTables.push(table);
+            }
+            if (!success) {
+                retJson = {};
+            }
+            else {
+                retJson.tables = jsonTables;
+            }
+            resolve(success);
+        }));
+    }
+    getTableModified(db, tables, syncDate) {
+        return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
+            let retModified = {};
+            for (let i = 0; i < tables.length; i++) {
+                let mode;
+                // get total count of the table
+                let stmt = `SELECT count(*) FROM ${tables[i].name};`;
+                let retQuery = yield this.select(db, stmt, []);
+                if (retQuery.length != 1)
+                    break;
+                const totalCount = retQuery[0]["count(*)"];
+                // get total count of modified since last sync
+                stmt = `SELECT count(*) FROM ${tables[i].name} WHERE last_modified > ${syncDate};`;
+                retQuery = yield this.select(db, stmt, []);
+                if (retQuery.length != 1)
+                    break;
+                const totalModifiedCount = retQuery[0]["count(*)"];
+                if (totalModifiedCount === 0) {
+                    mode = "No";
+                }
+                else if (totalCount === totalModifiedCount) {
+                    mode = "Create";
+                }
+                else {
+                    mode = "Modified";
+                }
+                const key = tables[i].name;
+                retModified[key] = mode;
+                if (i === tables.length - 1)
+                    resolve(retModified);
+            }
+            resolve(retModified);
+        }));
+    }
+    getSyncDate(db) {
+        return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
+            let ret = -1;
+            // get the last sync date
+            let stmt = `SELECT sync_date FROM sync_table;`;
+            let retQuery = yield this.select(db, stmt, []);
+            if (retQuery.length === 1) {
+                const syncDate = retQuery[0]["sync_date"];
+                if (syncDate > 0)
+                    ret = syncDate;
+            }
+            resolve(ret);
+        }));
     }
 }
 //# sourceMappingURL=DatabaseSQLiteHelper.js.map

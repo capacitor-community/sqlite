@@ -1,22 +1,25 @@
-import { jsonSQLite } from './JsonUtils';
+import { JsonSQLite } from './JsonUtils';
 export declare class DatabaseSQLiteHelper {
     isOpen: boolean;
-    private _db;
     private _databaseName;
     private _utils;
     constructor(dbName: string);
     private _openDB;
+    createSyncTable(): Promise<any>;
+    setSyncDate(syncDate: string): Promise<boolean>;
     close(databaseName: string): Promise<boolean>;
     exec(statements: string): Promise<any>;
+    private execute;
     run(statement: string, values: Array<any>): Promise<any>;
-    prepare(db: any, statement: string, values: Array<any>): Promise<number>;
+    private prepare;
     query(statement: string, values: Array<any>): Promise<Array<any>>;
     private select;
     deleteDB(dbName: string): Promise<boolean>;
-    importJson(jsonData: jsonSQLite): Promise<any>;
+    importJson(jsonData: JsonSQLite): Promise<any>;
+    exportJson(mode: string): Promise<any>;
     private createDatabaseSchema;
     private createTableData;
-    private isTable;
+    private isTableExists;
     private getTableColumnNamesTypes;
     private createQuestionMarkString;
     private setNameForUpdate;
@@ -27,4 +30,7 @@ export declare class DatabaseSQLiteHelper {
     private getLastId;
     private beginTransaction;
     private endTransaction;
+    private createJsonTables;
+    private getTableModified;
+    private getSyncDate;
 }

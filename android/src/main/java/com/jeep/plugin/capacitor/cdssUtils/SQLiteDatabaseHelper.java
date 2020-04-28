@@ -21,7 +21,12 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.sql.Blob;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.io.File;
 
@@ -44,6 +49,16 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
     private final String newsecret;
     private final int dbVersion;
 
+    /**
+     * SQLite Database Helper
+     * @param _context
+     * @param _dbName
+     * @param _encrypted
+     * @param _mode
+     * @param _secret
+     * @param _newsecret
+     * @param _vNumber
+     */
     public SQLiteDatabaseHelper(Context _context, String _dbName,
         Boolean _encrypted, String _mode, String _secret,
         String _newsecret, int _vNumber) {
@@ -58,6 +73,10 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
 
         InitializeSQLCipher();
     }
+
+    /**
+     * Initialize SQLCipher
+     */
     private void InitializeSQLCipher() {
         Log.d(TAG, " in InitializeSQLCipher: ");
 
@@ -81,8 +100,16 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                 database = SQLiteDatabase.openOrCreateDatabase(databaseFile, secret, null);
                 isOpen = true;
             } catch (Exception e) {
-                Log.d(TAG, "InitializeSQLCipher: Wrong Secret " );
-                database = null;
+                // test if you can open it with the new secret in case of multiple runs
+                try {
+                    database = SQLiteDatabase.openOrCreateDatabase(databaseFile,
+                                newsecret, null);
+                    secret = newsecret;
+                    isOpen = true;
+                } catch (Exception e1) {
+                    Log.d(TAG, "InitializeSQLCipher: Wrong Secret ");
+                    database = null;
+                }
             }
         } else if(encrypted && mode.equals("newsecret") && secret.length() > 0
                 && newsecret.length() > 0) {
@@ -116,6 +143,12 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         if(database != null) database.close();
 
     }
+
+    /**
+     *  Encrypt the database
+     * @param passphrase
+     * @throws IOException
+     */
     private void encryptDataBase(String passphrase) throws IOException {
 
         File originalFile = context.getDatabasePath(dbName);
@@ -147,22 +180,46 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
             onCreate(db);
         }
     }
-    // execute sql raw statements
+
+    /**
+     * execute sql raw statements after opening the db
+     * @param statements
+     * @return
+     */
     public JSObject execSQL(String[] statements) {
         // Open the database for writing
-        Log.d(TAG, "*** in execSQL: ");
+//        Log.d(TAG, "*** in execSQL: ");
         JSObject retObj = new JSObject();
         SQLiteDatabase db = null;        
-        boolean success = true;
         try {
             db = getWritableDatabase(secret);
+            retObj = execute(db,statements);
+        } catch (Exception e) {
+            Log.d(TAG, "Error: execSQL failed: ",e);
+        } finally {
+            if(db != null) db.close();
+            return retObj;
+        }
+    }
+
+    /**
+     * execute sql raw statements
+     * @param db
+     * @param statements
+     * @return
+     * @throws Exception
+     */
+    public JSObject execute(SQLiteDatabase db, String[] statements) throws Exception {
+        JSObject retObj = new JSObject();
+        boolean success = true;
+        try {
             for (String cmd : statements ) {
                 if (!cmd.endsWith(";")) cmd += ";";
                 db.execSQL(cmd);
             }
         } catch (Exception e) {
-            Log.d(TAG, "Error: execSQL failed: ",e);
-            success = false;            
+            success = false;
+            throw new Exception("Execute failed");
         } finally {
             if(!success) {
                 retObj.put("changes",Integer.valueOf(-1));
@@ -174,7 +231,13 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         }
 
     }
-    // run one statement with or without values
+
+    /**
+     * Run one statement with or without values after opening the db
+     * @param statement
+     * @param values
+     * @return
+     */
     public JSObject runSQL(String statement, JSArray values) {
         JSObject retObj = new JSObject();
         // Open the database for writing
@@ -206,6 +269,13 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         return retObj;
     }
 
+    /**
+     * Run one statement with or without values
+     * @param db
+     * @param statement
+     * @param values
+     * @return
+     */
     private long prepareSQL(SQLiteDatabase db,String statement, JSArray values ) {
         boolean success = true;
         String stmtType = "";
@@ -231,6 +301,13 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         }
         return lastId;
     }
+
+    /**
+     * Query a statement after opening the db
+     * @param statement
+     * @param values
+     * @return
+     */
     public JSArray querySQL(String statement, ArrayList<String> values) {
         JSArray  retArray = new JSArray();
         // Open the database for reading
@@ -252,6 +329,14 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
             }
          }
     }
+
+    /**
+     * Query a statement
+     * @param db
+     * @param statement
+     * @param values
+     * @return
+     */
     private JSArray selectSQL(SQLiteDatabase db, String statement, ArrayList<String> values) {
         JSArray  retArray = new JSArray();
         Cursor c = null;
@@ -302,6 +387,12 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         }
         return retArray;
     }
+
+    /**
+     * Close the database
+     * @param databaseName
+     * @return
+     */
     public boolean closeDB(String databaseName) {
         boolean success = true;
         Log.d(TAG, "closeDB: databaseName " + databaseName);
@@ -323,6 +414,12 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
             }
         }
     }
+
+    /**
+     * Delete the database
+     * @param databaseName
+     * @return
+     */
     public boolean deleteDB(String databaseName) {
         Log.d(TAG, "deleteDB: databaseName " + databaseName);
 
@@ -338,6 +435,13 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         }
 
     }
+
+    /**
+     * Import from Json object
+     * @param jsonSQL
+     * @return
+     * @throws JSONException
+     */
     public JSObject importFromJson(JsonSQLite jsonSQL) throws JSONException {
         Log.d(TAG, "importFromJson:  ");
         JSObject retObj = new JSObject();
@@ -350,6 +454,95 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         retObj.put("changes", changes);
         return retObj;
     }
+
+    /**
+     * Export to JSON Object
+     * @param mode
+     * @return
+     */
+    public JSObject exportToJson(String mode ) {
+        JsonSQLite inJson = new JsonSQLite();
+        JSObject retObj = new JSObject();
+        inJson.setDatabase(dbName.substring(0,dbName.length()-9));
+        inJson.setEncrypted(encrypted);
+        inJson.setMode(mode);
+        JsonSQLite retJson = createJsonTables(inJson);
+        ArrayList<String> keys = retJson.getKeys();
+        if(keys.contains("tables")) {
+            retObj.put("database",retJson.getDatabase());
+            retObj.put("encrypted",retJson.getEncrypted());
+            retObj.put("mode",retJson.getMode());
+            retObj.put("tables",retJson.getTablesAsJSObject());
+        }
+        return retObj;
+    }
+
+    /**
+     * Create the synchronization table
+     * @return
+     */
+    public JSObject createSyncTable() {
+        // Open the database for writing
+        JSObject retObj = new JSObject();
+        SQLiteDatabase db = null;
+        try {
+            db = getWritableDatabase(secret);
+            // check if the table has already been created
+            boolean isExists = isTableExists(db,"sync_table");
+            if( !isExists ) {
+                Date date = new Date();
+                long syncTime = date.getTime() / 1000L;
+                String[] statements = {"BEGIN TRANSACTION;",
+                    "CREATE TABLE IF NOT EXISTS sync_table (" +
+                    "id INTEGER PRIMARY KEY NOT NULL," +
+                    "sync_date INTEGER);",
+                    "INSERT INTO sync_table (sync_date) VALUES ('" +
+                    syncTime + "');",
+                    "COMMIT TRANSACTION;"
+                };
+                retObj = execute(db,statements);
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "Error: createSyncTable failed: ",e);
+        } finally {
+            if(db != null) db.close();
+            return retObj;
+        }
+    }
+
+    /**
+     * Set the synchronization date
+     * @param syncDate
+     * @return
+     */
+    public boolean setSyncDate(String syncDate) {
+        boolean ret = false;
+        SQLiteDatabase db = null;
+        JSObject retObj = new JSObject();
+
+        try {
+            db = getWritableDatabase(secret);
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+            Date date = formatter.parse(syncDate.replaceAll("Z$", "+0000"));
+            long syncTime = date.getTime() / 1000L;
+            String[] statements = {"UPDATE sync_table SET sync_date = " +
+                    syncTime + " WHERE id = 1;"};
+            retObj = execute(db,statements);
+        } catch (Exception e) {
+            Log.d(TAG, "Error: setSyncDate failed: ", e);
+        } finally {
+            if(db != null) db.close();
+            if(retObj.getInteger("changes") != Integer.valueOf(-1)) ret = true;
+            return ret;
+        }
+
+    }
+
+    /**
+     * Create the database schema for import from Json
+     * @param jsonSQL
+     * @return
+     */
     private Integer createDatabaseSchema(JsonSQLite jsonSQL) {
         int changes = Integer.valueOf(-1);
         // create the database schema
@@ -407,6 +600,12 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         }
         return changes;
     }
+
+    /**
+     * Create the database table data for import from Json
+     * @param jsonSQL
+     * @return
+     */
     private Integer createTableData(JsonSQLite jsonSQL) {
         boolean success = true;
         int changes = Integer.valueOf(-1);
@@ -422,7 +621,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
             for( int i = 0; i< jsonSQL.getTables().size(); i++) {
                 if(jsonSQL.getTables().get(i).getValues().size() > 0) {
                     // Check if table exists
-                    boolean isTable = this.isTable(db, jsonSQL.getTables().get(i).getName());
+                    boolean isTable = this.isTableExists(db, jsonSQL.getTables().get(i).getName());
                     if(!isTable) {
                         Log.d(TAG, "importFromJson: Table " +
                                 jsonSQL.getTables().get(i).getName() +
@@ -532,6 +731,13 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
 
         return changes;
     }
+
+    /**
+     * Bind Values to Statement
+     * @param stmt
+     * @param values
+     * @throws JSONException
+     */
     private void bindValues(SQLiteStatement stmt, JSArray values) throws JSONException {
         for (int i = 0 ; i < values.length() ; i++) {
             if (values.get(i) instanceof Float || values.get(i) instanceof Double) {
@@ -550,6 +756,12 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
             }
         }
     }
+
+    /**
+     * Convert ArrayList to JSArray
+     * @param row
+     * @return
+     */
     private JSArray convertToJSArray(ArrayList<Object> row) {
         JSArray jsArray = new JSArray();
         for (int i = 0; i < row.size(); i++) {
@@ -557,7 +769,14 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         }
         return jsArray;
     }
-    private boolean isTable(SQLiteDatabase db,String tableName) {
+
+    /**
+     * Check if a table exists
+     * @param db
+     * @param tableName
+     * @return
+     */
+    private boolean isTableExists(SQLiteDatabase db,String tableName) {
         boolean ret = false;
         String query =
             new StringBuilder("SELECT name FROM sqlite_master WHERE type='table' AND name='")
@@ -566,6 +785,14 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         if(resQuery.length() > 0) ret = true;
         return ret;
     }
+
+    /**
+     * Get Field's type and name for a given table
+     * @param db
+     * @param tableName
+     * @return
+     * @throws JSONException
+     */
     private JSObject getTableColumnNamesTypes(SQLiteDatabase db, String tableName) throws JSONException {
         JSObject ret = new JSObject();
         ArrayList<String> names = new ArrayList<String>();
@@ -585,6 +812,13 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         }
         return ret;
     }
+
+    /**
+     * Check the values type from fields type
+     * @param types
+     * @param values
+     * @return
+     */
     private boolean checkColumnTypes(ArrayList<String> types,ArrayList<Object> values) {
         boolean isType = true;
         for(int i =0; i < values.size(); i++) {
@@ -593,6 +827,13 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         }
         return isType;
     }
+
+    /**
+     * Check if the the value type is the same than the field type
+     * @param type
+     * @param value
+     * @return
+     */
     private boolean isType(String type, Object value) {
         boolean ret = false;
         String val = String.valueOf(value).toUpperCase();
@@ -609,6 +850,15 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         }
         return ret;
     }
+
+    /**
+     * Check if the Id already exsists
+     * @param db
+     * @param tableName
+     * @param firstColumnName
+     * @param key
+     * @return
+     */
     private boolean isIdExists(SQLiteDatabase db, String tableName,String firstColumnName,Object key) {
         boolean ret = false;
         String query = new StringBuilder("SELECT ").append(firstColumnName).append(" FROM ")
@@ -619,6 +869,11 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         return ret;
     }
 
+    /**
+     * Create the ? string for a given values length
+     * @param length
+     * @return
+     */
     private String createQuestionMarkString(Integer length) {
         String retString = "";
         StringBuilder strB = new StringBuilder();
@@ -629,6 +884,12 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         retString = strB.toString();
         return retString;
     }
+
+    /**
+     * Create the Name string from a given Names array
+     * @param names
+     * @return
+     */
     private String setNameForUpdate(ArrayList<String> names ) {
         String retString = "";
         StringBuilder strB = new StringBuilder();
@@ -640,6 +901,11 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         return retString;
     }
 
+    /**
+     * Drop all Tables
+     * @param db
+     * @return
+     */
     private boolean dropAllTables(SQLiteDatabase db) {
         boolean ret = true;
         List<String> tables = new ArrayList<String>();
@@ -666,6 +932,11 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    /**
+     * Return the total number of changes in the DB from the last command
+     * @param db
+     * @return
+     */
     private int dbChanges(SQLiteDatabase db) {
         String SELECT_CHANGE = "SELECT total_changes()";
         Boolean success = true;
@@ -688,6 +959,13 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         }
 
     }
+
+    /**
+     * Create a String from a given Array of Strings with a given separator
+     * @param arr
+     * @param sep
+     * @return
+     */
     private String convertToString(ArrayList<String> arr,char sep) {
         StringBuilder builder = new StringBuilder();
         // Append all Integers in StringBuilder to the StringBuilder.
@@ -696,10 +974,224 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
             builder.append(sep);
         }
         // Remove last delimiter with setLength.
-
         builder.setLength(builder.length() - 1);
         return builder.toString();
     }
 
+    /**
+     * Create Json Tables for the export to Json
+     * @param sqlObj
+     * @return
+     */
+    private JsonSQLite createJsonTables(JsonSQLite sqlObj) {
+        boolean success = true;
+        JsonSQLite retObj = new JsonSQLite();
+        SQLiteDatabase db = null;
+        ArrayList<JsonTable> jsonTables = new ArrayList<>();
+        long syncDate = 0;
+
+        try {
+            db = getReadableDatabase(secret);
+            String stmt= "SELECT name,sql FROM sqlite_master WHERE type = 'table' ";
+            stmt += "AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'sync_table';";
+            JSArray tables = selectSQL(db,stmt,new ArrayList<String>());
+            if(tables.length() == 0 ) {
+                throw new Exception("Error get table's names failed");
+            }
+            JSObject modTables = new JSObject();
+            ArrayList<String> modTablesKeys = new ArrayList<>();
+            if (sqlObj.getMode().equals("partial")) {
+                syncDate = getSyncDate(db);
+                if(syncDate == -1 ) {
+                    throw new Exception("Error did not find a sync_date");
+                }
+                modTables = getTablesModified(db,tables,syncDate);
+                modTablesKeys = getJSObjectKeys(modTables);
+            }
+            List<JSObject> lTables = tables.toList();
+            for(int i = 0; i< lTables.size(); i++) {
+                String tableName = lTables.get(i).getString("name");
+                String sqlStmt = lTables.get(i).getString("sql");
+                if(sqlObj.getMode().equals("partial") && (modTablesKeys.size() == 0 ||
+                        modTablesKeys.indexOf(tableName) == -1 ||
+                        modTables.getString(tableName).equals("No"))) {
+                    continue;
+                }
+                JsonTable table =  new JsonTable();
+                boolean isSchema  = false;
+                boolean isIndexes = false;
+                boolean isValues = false;
+                table.setName(tableName);
+                if(sqlObj.getMode().equals("full") ||
+                    (sqlObj.getMode().equals("partial") &&
+                    modTables.getString(tableName).equals("Create"))) {
+
+                    // create the schema
+                    ArrayList<JsonColumn> schema = new ArrayList<JsonColumn>();
+                    // get the sqlStmt between the parenthesis sqlStmt
+                    sqlStmt = sqlStmt.substring(sqlStmt.indexOf("(")+1,sqlStmt.indexOf(")"));
+                    String[] sch = sqlStmt.split(",");
+                    // for each element of the array split the first word as key
+                    for(int j = 0;j<sch.length;j++) {
+                        String [] row = sch[j].split(" ", 2);
+                        JsonColumn jsonRow = new JsonColumn();
+                        jsonRow.setColumn(row[0]);
+                        jsonRow.setValue(row[1]);
+                        schema.add(jsonRow);
+                    }
+                    table.setSchema(schema);
+                    isSchema = true;
+
+                    // create the indexes
+                    stmt = "SELECT name,tbl_name FROM sqlite_master WHERE ";
+                    stmt += "type = 'index' AND tbl_name = '" + tableName + "' AND sql NOTNULL;";
+                    JSArray retIndexes = selectSQL(db,stmt,new ArrayList<String>());
+                    List<JSObject> lIndexes = retIndexes.toList();
+                    if(lIndexes.size() > 0) {
+                        ArrayList<JsonIndex> indexes = new ArrayList<JsonIndex>();
+                        for(int j = 0;j<lIndexes.size();j++) {
+                            JsonIndex jsonRow = new JsonIndex();
+                            jsonRow.setName(lIndexes.get(j).getString("tbl_name"));
+                            jsonRow.setColumn(lIndexes.get(j).getString("name"));
+                            indexes.add(jsonRow);
+                        }
+                        table.setIndexes(indexes);
+                        isIndexes = true;
+                    }
+                }
+
+                JSObject tableNamesTypes= getTableColumnNamesTypes(db,tableName);
+                ArrayList<String> rowNames = (ArrayList<String>)tableNamesTypes.get("names");
+                ArrayList<String> rowTypes = (ArrayList<String>)tableNamesTypes.get("types");
+                // create the data
+                if(sqlObj.getMode().equals("full") ||
+                                (sqlObj.getMode().equals("partial") &&
+                                modTables.getString(tableName).equals("Create"))) {
+                    stmt = "SELECT * FROM " + tableName + ";";
+                } else {
+                    stmt = "SELECT * FROM " + tableName + " WHERE last_modified > " + syncDate + ";";
+                }
+                JSArray retValues = selectSQL(db,stmt,new ArrayList<String>());
+                List<JSObject> lValues = retValues.toList();
+                if(lValues.size() > 0) {
+                    ArrayList<ArrayList<Object>> values = new ArrayList<>();
+                    for(int j = 0;j<lValues.size();j++) {
+                        ArrayList<Object> row = new ArrayList<>();
+                        for (int k = 0; k < rowNames.size(); k++) {
+                            if (rowTypes.get(k).equals("INTEGER")) {
+                                row.add(lValues.get(j).getInteger(rowNames.get(k)));
+                            } else if (rowTypes.get(k).equals("REAL")) {
+                                row.add(lValues.get(j).getDouble(rowNames.get(k)));
+                            } else {
+                                row.add(lValues.get(j).getString(rowNames.get(k)));
+                            }
+                        }
+                        values.add(row);
+                    }
+                    table.setValues(values);
+                    isValues = true;
+                }
+                if(table.getKeys().size() < 1 ||
+                        (!isSchema && !isIndexes && !isValues)) {
+                    success = false;
+                    throw new Exception("Error table is not a jsonTable");
+                }
+                jsonTables.add(table);
+            }
+
+        } catch (Exception e){
+                success = false;
+                Log.d(TAG, "Error: createJsonTables failed: ", e);
+        } finally {
+            if(db != null) db.close();
+            if(success) {
+                retObj.setDatabase(sqlObj.getDatabase());
+                retObj.setMode(sqlObj.getMode());
+                retObj.setEncrypted(sqlObj.getEncrypted());
+                retObj.setTables(jsonTables);
+            }
+            Log.d(TAG, "*** in createJsonTables: ");
+//            retObj.print();
+
+            return retObj;
+        }
+    }
+
+    /**
+     * Get JSObject keys
+     * @param jsonObject
+     * @return
+     */
+    private ArrayList<String> getJSObjectKeys(JSObject jsonObject) {
+        // one level JSObject keys
+        ArrayList<String> retArray = new ArrayList<>();
+        Iterator<String> keys = jsonObject.keys();
+        while(keys.hasNext()) {
+            String key = keys.next();
+            retArray.add(key);
+        }
+        return retArray;
+    }
+
+    /**
+     * Get the Tables which have been modified since the last synchronization
+     * @param db
+     * @param tables
+     * @param syncDate
+     * @return
+     * @throws JSONException
+     */
+    private JSObject getTablesModified(SQLiteDatabase db,JSArray tables,
+                              long syncDate) throws JSONException {
+        JSObject retModified = new JSObject();
+        if(tables.length() > 0) {
+            List<JSObject> lTables = tables.toList();
+
+            for(int i = 0; i< lTables.size(); i++) {
+                String mode;
+                // get total count of the table
+                String tableName = lTables.get(i).getString("name");
+                String stmt = "SELECT count(*) FROM " + tableName + ";";
+                JSArray retQuery = selectSQL(db, stmt,new ArrayList<String>());
+                List<JSObject> lQuery = retQuery.toList();
+                if(lQuery.size() != 1) break;
+                long totalCount = lQuery.get(0).getLong("count(*)");
+                // get total count of modified since last sync
+                stmt = "SELECT count(*) FROM " + tableName + " WHERE last_modified > " +
+                        syncDate + ";";
+                retQuery = selectSQL(db, stmt, new ArrayList<String>());
+                lQuery = retQuery.toList();
+                if(lQuery.size() != 1) break;
+                long totalModifiedCount = lQuery.get(0).getLong("count(*)");
+                if (totalModifiedCount == 0) {
+                    mode = "No";
+                } else if (totalCount == totalModifiedCount) {
+                    mode = "Create";
+                } else {
+                    mode = "Modified";
+                }
+                retModified.put(tableName, mode);
+            }
+        }
+        return retModified;
+    }
+
+    /**
+     * Get the current synchronization date from the sync_table
+     * @param db
+     * @return
+     * @throws JSONException
+     */
+    private long getSyncDate(SQLiteDatabase db) throws JSONException {
+        long ret = -1;
+        String stmt = "SELECT sync_date FROM sync_table;";
+        JSArray retQuery = selectSQL(db, stmt,new ArrayList<String>());
+        List<JSObject> lQuery = retQuery.toList();
+        if(lQuery.size() == 1) {
+            long syncDate = lQuery.get(0).getLong("sync_date");
+            if(syncDate > 0 ) ret = syncDate;
+        }
+        return ret;
+    }
 
 }

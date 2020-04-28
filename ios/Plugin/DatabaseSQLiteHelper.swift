@@ -13,6 +13,7 @@ import SQLCipher
 enum DatabaseHelperError: Error {
     case dbConnection(message:String)
     case execSql(message:String)
+    case execute(message:String)
     case runSql(message:String)
     case prepareSql(message:String)
     case selectSql(message:String)
@@ -28,6 +29,16 @@ enum DatabaseHelperError: Error {
     case endTransaction(message:String)
     case createTableData(message:String)
     case createDatabaseSchema(message:String)
+    case createSyncTable(message:String)
+    case createSyncDate(message:String)
+    case createExportObject(message:String)
+    case exportToJson(message:String)
+    case getSyncDate(message:String)
+    case getTablesModified(message:String)
+    case createSchema(message:String)
+    case createIndexes(message:String)
+    case createValues(message:String)
+
 }
 class DatabaseHelper {
     public var isOpen: Bool = false;
@@ -39,6 +50,7 @@ class DatabaseHelper {
     var secret: String
     var newsecret: String
     var encrypted: Bool
+    var mode: String
     
     // MARK: - Init
     
@@ -49,10 +61,12 @@ class DatabaseHelper {
         self.newsecret = newsecret
         self.encrypted = encrypted
         self.databaseName = databaseName
+        self.mode = mode
+
         // connect to the database (create if doesn't exist)
         
         var db: OpaquePointer?
-        if !self.encrypted && mode == "no-encryption" {
+        if !self.encrypted && self.mode == "no-encryption" {
 
             do {
                 try db = UtilsSQLite.connection(filename: "\(path)/\(self.databaseName)")
@@ -62,23 +76,38 @@ class DatabaseHelper {
                 print(error)
                 throw UtilsSQLiteError.connectionFailed
             }
-        } else if encrypted && mode == "secret" && secret.count > 0 {
+        } else if self.encrypted && self.mode == "secret" && self.secret.count > 0 {
             do {
-                try db = UtilsSQLite.connection(filename: "\(path)/\(self.databaseName)",readonly: false,key: secret)
+                try db = UtilsSQLite.connection(filename: "\(path)/\(self.databaseName)",readonly: false,key: self.secret)
                 self.isOpen = true
             } catch {
-                let error:String = "init: Error Database connection failed wrong secret"
-                print(error)
-                self.isOpen = false
-                throw UtilsSQLiteError.connectionFailed
+                if(self.secret == "wrongsecret") {
+                    let error:String = "init: Error Database connection failed wrong secret"
+                    print(error)
+                    self.isOpen = false
+                    throw UtilsSQLiteError.connectionFailed
+                } else {
+                    // test if you can open it with the new secret in case of multiple runs
+                    do {
+                        try db = UtilsSQLite.connection(filename: "\(path)/\(self.databaseName)",readonly: false,key: self.newsecret)
+                        self.secret = self.newsecret
+                        self.isOpen = true
+
+                    } catch {
+                        let error:String = "init: Error Database connection failed wrong secret"
+                        print(error)
+                        self.isOpen = false
+                        throw UtilsSQLiteError.connectionFailed
+                    }
+                }
             }
 
-        } else if encrypted && mode == "newsecret" && secret.count > 0 && newsecret.count > 0 {
+        } else if self.encrypted && self.mode == "newsecret" && self.secret.count > 0 && self.newsecret.count > 0 {
                 do {
-                    try db = UtilsSQLite.connection(filename: "\(path)/\(self.databaseName)",readonly: false,key: secret)
+                    try db = UtilsSQLite.connection(filename: "\(path)/\(self.databaseName)",readonly: false,key: self.secret)
                     
                     let keyStatementString = """
-                    PRAGMA rekey = '\(newsecret)';
+                    PRAGMA rekey = '\(self.newsecret)';
                     """
                     if sqlite3_exec(db, keyStatementString, nil,nil,nil) != SQLITE_OK  {
                         print("connection: Unable to open a connection to database at \(path)/\(self.databaseName)")
@@ -92,7 +121,7 @@ class DatabaseHelper {
                         throw StorageDatabaseHelperError.wrongNewSecret
                     }
                     */
-                    self.secret = newsecret
+                    self.secret = self.newsecret
                     self.isOpen = true
 
                 } catch {
@@ -100,10 +129,10 @@ class DatabaseHelper {
                     print(error)
                     throw UtilsSQLiteError.wrongSecret
                 }
-        } else if encrypted && mode == "encryption" && secret.count > 0 {
+        } else if self.encrypted && self.mode == "encryption" && self.secret.count > 0 {
             var res: Bool = false
             do {
-                try res = UtilsSQLite.encryptDatabase(fileName: self.databaseName,secret:secret)
+                try res = UtilsSQLite.encryptDatabase(fileName: self.databaseName,secret:self.secret)
                 if res {
                     self.encrypted = true
                     self.isOpen = true
@@ -148,14 +177,26 @@ class DatabaseHelper {
                     secret:secret) else {
             throw DatabaseHelperError.dbConnection(message:"Error: DB connection")
         }
-        if sqlite3_exec(db,sql, nil, nil, nil) != SQLITE_OK {
-            throw DatabaseHelperError.execSql(message: "Error: execSQL failed")
+        var changes: Int
+        do {
+            changes = try execute(db: db,sql: sql)
+        } catch DatabaseHelperError.execute(let message) {
+            throw DatabaseHelperError.execSql(message: "Error: execSQL \(message)")
         }
-        let changes: Int = Int(sqlite3_total_changes(db))
-
+ 
         if sqlite3_close_v2(db) != SQLITE_OK {
             throw DatabaseHelperError.execSql(message: "Error: execSQL closing the database")
         }
+        return changes
+    }
+    
+    // MARK: - Execute
+    
+    func execute(db: OpaquePointer,sql:String) throws -> Int {
+        if sqlite3_exec(db,sql, nil, nil, nil) != SQLITE_OK {
+            throw DatabaseHelperError.execute(message: "Error: execute failed")
+        }
+        let changes: Int = Int(sqlite3_total_changes(db))
         return changes
     }
     
@@ -315,6 +356,7 @@ class DatabaseHelper {
         }
         return ret
     }
+    
     // MARK: - ImportFromJson
     
     func importFromJson(jsonSQLite:JsonSQLite) throws -> [String:Int] {
@@ -353,7 +395,88 @@ class DatabaseHelper {
         }
         return ["changes":changes]
     }
+    
+    // MARK: - ExportToJson
+    
+    func exportToJson(expMode: String) throws -> [String:Any] {
+        var retObj: [String:Any] = [:]
+        
+        do {
+            retObj = try createExportObject(expMode:expMode)
+        } catch DatabaseHelperError.createExportObject(let message) {
+           throw DatabaseHelperError.exportToJson(message: message)
+        }
+        return retObj
+    }
+    
+    
+    // MARK: - CreateSyncTable
+    
+    func createSyncTable() throws -> Int {
+        var retObj: Int = -1
+        // Open the database for writing
+        guard let db: OpaquePointer = try UtilsSQLite.getWritableDatabase(filename: "\(path)/\(databaseName)",
+                    secret:secret) else {
+            throw DatabaseHelperError.dbConnection(message:"Error: DB connection")
+        }
+        // check if the table has already been created
+        do {
+            let isExists: Bool = try isTableExists(db: db,tableName: "sync_table");
+            if(!isExists) {
+                let date = Date()
+                let syncTime: Int = Int(date.timeIntervalSince1970)
+                let stmt: String = """
+                BEGIN TRANSACTION;
+                CREATE TABLE IF NOT EXISTS sync_table (
+                id INTEGER PRIMARY KEY NOT NULL,
+                sync_date INTEGER);
+                INSERT INTO sync_table (sync_date) VALUES ('\(syncTime)');
+                COMMIT TRANSACTION;
+                """
+                retObj = try execute(db: db,sql: stmt)
+            } else {
+                retObj = 0
+            }
+        } catch DatabaseHelperError.tableNotExists(let message) {
+            throw DatabaseHelperError.createSyncTable(message: message)
+        } catch DatabaseHelperError.prepareSql(let message) {
+            throw DatabaseHelperError.createSyncTable(message: message)
+        }
+        if sqlite3_close_v2(db) != SQLITE_OK {
+            throw DatabaseHelperError.selectSql(message: "Error: createSyncTable closing the database")
+        }
+        return retObj
+    }
+    
+    // MARK: - SetSyncDate
+    
+    func setSyncDate(syncDate: String ) throws -> Bool {
+        var retBool: Bool = false;
+        // Open the database for writing
+        guard let db: OpaquePointer = try UtilsSQLite.getWritableDatabase(filename: "\(path)/\(databaseName)",
+                    secret:secret) else {
+            throw DatabaseHelperError.dbConnection(message:"Error: DB connection")
+        }
+        do {
+//            let dateFormatter : DateFormatter = DateFormatter()
+//            dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+            let date = Date()
+//            let dateString = dateFormatter.string(from: date)
+            let syncTime: Int = Int(date.timeIntervalSince1970)
+            let stmt: String = "UPDATE sync_table SET sync_date = \(syncTime) WHERE id = 1;"
+            let changes: Int = try prepareSQL(db: db,sql: stmt, values: [])
+            if(changes != -1) {retBool = true}
 
+        } catch DatabaseHelperError.prepareSql(let message) {
+            throw DatabaseHelperError.createSyncDate(message: message)
+        }
+        if sqlite3_close_v2(db) != SQLITE_OK {
+            throw DatabaseHelperError.selectSql(message: "Error: createSyncTable closing the database")
+        }
+
+        return retBool
+    }
+    
     // MARK: - ImportFromJson - CreateDatabaseSchema
     
     private func createDatabaseSchema(jsonSQLite:JsonSQLite) throws -> Int {
@@ -447,14 +570,14 @@ class DatabaseHelper {
             if( jsonSQLite.tables[i].values != nil && jsonSQLite.tables[i].values!.count > 0) {
                 // Check if table exists
                 do {
-                    let isTab: Bool = try isTable(db: db, tableName: jsonSQLite.tables[i].name)
+                    let isTab: Bool = try isTableExists(db: db, tableName: jsonSQLite.tables[i].name)
 
                     if(!isTab) {
                         let message: String = "createTableData: Table " +
                         jsonSQLite.tables[i].name + " does not exist"
                         throw DatabaseHelperError.createTableData(message: message)
                     }
-                } catch DatabaseHelperError.querySql(let message) {
+                } catch DatabaseHelperError.tableNotExists(let message) {
                     throw DatabaseHelperError.createTableData(message: message)
                 }
 
@@ -544,9 +667,9 @@ class DatabaseHelper {
         return changes
     }
 
-    // MARK: - ImportFromJson - IsTable
+    // MARK: - ImportFromJson - IsTableExists
     
-    private func isTable(db: OpaquePointer, tableName: String) throws -> Bool {
+    private func isTableExists(db: OpaquePointer, tableName: String) throws -> Bool {
         var ret: Bool = false
         var query = "SELECT name FROM sqlite_master WHERE type='table' AND name='"
         query.append(tableName)
@@ -555,7 +678,7 @@ class DatabaseHelper {
             let resQuery: Array<Any> = try querySQL(db: db,sql: query,values: []);
             if(resQuery.count > 0) {ret = true}
         } catch DatabaseHelperError.querySql(let message) {
-            throw DatabaseHelperError.querySql(message: message)
+            throw DatabaseHelperError.tableNotExists(message: message)
         }
         return ret
     }
@@ -663,5 +786,271 @@ class DatabaseHelper {
         }
         retString = String(retString.dropLast())
         return retString
+    }
+    
+    // MARK: - ExportToJson - CreateExportObject
+    
+    private func createExportObject(expMode: String) throws -> [String:Any] {
+        var retObj: [String:Any] = [:]
+        guard let db: OpaquePointer = try UtilsSQLite.getReadableDatabase(filename: "\(path)/\(databaseName)",
+                    secret:secret) else {
+            throw DatabaseHelperError.createExportObject(message:"Error: DB connection")
+        }
+        retObj["database"] = self.databaseName.dropLast(9)
+        retObj["encrypted"] = self.encrypted
+        retObj["mode"] = expMode
+        var tables: Array<[String: Any]> = []
+        var syncDate: Int = 0
+        // get the table's name
+        var query: String = "SELECT name,sql FROM sqlite_master WHERE type = 'table' ";
+        query.append("AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'sync_table';");
+        do {
+            let resTables =  try querySQL(db: db,sql:query,values:[]);
+            if(resTables.count > 0) {
+                var modTables: [String:String] = [:]
+                var modTablesKeys: [String] = []
+                // get the sync date if expMode = "partial"
+                if(expMode == "partial") {
+                    syncDate = try getSyncDate(db: db)
+                    if(syncDate == -1 ) {
+                        throw DatabaseHelperError.createExportObject(message:"Error did not find a sync_date")
+                    }
+                    // TODO Get Modified Tables
+                    modTables = try getTablesModified(db: db,tables: resTables,syncDate: syncDate);
+                    modTablesKeys.append(contentsOf: modTables.keys)
+
+                }
+                for i in 0..<resTables.count {
+
+                    let tableName: String = resTables[i]["name"] as! String
+                    let sqlStmt: String = resTables[i]["sql"] as! String
+                    
+                    if(expMode == "partial" && (modTablesKeys.count == 0 ||
+                        !modTablesKeys.contains(tableName) ||
+                            modTables[tableName] == "No")) {
+                        continue;
+                    }
+                    var table: [String:Any] = [:]
+                    table["name"] = tableName
+                    var isSchema: Bool  = false;
+                    var isIndexes: Bool = false;
+                    var isValues: Bool = false;
+                    if(expMode == "full" ||
+                        (expMode == "partial" && modTables[tableName] == "Create")) {
+                        
+                        // create schema
+                        let schema: Array<[String: String]> = try createSchema(stmt: sqlStmt)
+                        if schema.count > 0  {
+                            let eSchema = try! JSONEncoder().encode(schema)
+                            var eSchemaString: String { return String(data: eSchema, encoding: .utf8)! }
+                            if(eSchemaString.count > 0 ) {
+                                table["schema"] = schema
+                                isSchema = true
+                            }
+                        }
+
+                        // create indexes
+                        let indexes: Array<[String: String]> = try createIndexes(db:db,tableName:tableName)
+                        if indexes.count > 0  {
+                           let eIndexes = try! JSONEncoder().encode(indexes)
+                           var eIndexesString: String { return String(data: eIndexes, encoding: .utf8)! }
+                           if(eIndexesString.count > 0 ) {
+                               table["indexes"] = indexes
+                               isIndexes = true
+                           }
+                        }
+                    }
+ 
+                    let jsonNamesTypes: JsonNamesTypes = try getTableColumnNamesTypes(db: db,tableName: tableName);
+                    
+                    let rowNames = jsonNamesTypes.names
+                    let rowTypes = jsonNamesTypes.types
+                    
+                    // create the table data
+                    var query: String
+                    if(expMode == "full" ||
+                                    (expMode == "partial" &&
+                                    modTables[tableName] == "Create")) {
+                        query = "SELECT * FROM \(tableName);";
+                    } else {
+                        query = "SELECT * FROM \(tableName) WHERE last_modified > \(syncDate);";
+                    }
+
+                    let values : Array<Array<Any>> = try createValues(db:db, query:query, names:rowNames, types:rowTypes)
+                    if values.count > 0  {
+                        table["values"] = values
+                        isValues = true
+                    }
+
+                    table["values"] = values
+                    
+                    // check the table object validity
+                    var tableKeys: [String] = []
+                    tableKeys.append(contentsOf: table.keys)
+
+                    if(tableKeys.count < 1 ||
+                            (!isSchema && !isIndexes && !isValues)) {
+                        throw DatabaseHelperError.createExportObject(message:"Error table is not a jsonTable")
+                    }
+
+                    tables.append(table)
+                }
+            }
+        } catch DatabaseHelperError.querySql(let message) {
+            throw DatabaseHelperError.createExportObject(message: "Error get table's names failed : \(message)")
+        } catch DatabaseHelperError.getTablesModified(let message) {
+            throw DatabaseHelperError.createExportObject(message: "Error get table's modified failed : \(message)")
+        } catch DatabaseHelperError.createSchema(let message) {
+            throw DatabaseHelperError.createExportObject(message: "Error create schema failed : \(message)")
+        } catch DatabaseHelperError.createValues(let message) {
+            throw DatabaseHelperError.createExportObject(message: "Error create values failed : \(message)")
+        } catch DatabaseHelperError.createIndexes(let message) {
+            throw DatabaseHelperError.createExportObject(message: "Error create indexes failed : \(message)")
+               }
+
+        retObj["tables"] = tables
+        
+        return retObj
+    }
+    
+    // MARK: - ExportToJson - GetSyncDate
+    
+    private func getSyncDate(db: OpaquePointer) throws -> Int {
+        var ret: Int = -1
+        let query: String = "SELECT sync_date FROM sync_table;"
+        do {
+            let resSyncDate =  try querySQL(db: db,sql:query,values:[]);
+            if(resSyncDate.count > 0) {
+                let res: Int = resSyncDate[0]["sync_date"]  as! Int
+                if(res > 0) {ret = res}
+            }
+
+        } catch DatabaseHelperError.querySql(let message) {
+            throw DatabaseHelperError.getSyncDate(message: "Error get sync date failed : \(message)")
+        }
+        
+        return ret
+    }
+    
+    // MARK: - ExportToJson - GetTablesModified
+    
+    private func getTablesModified(db:OpaquePointer, tables: [[String:Any]], syncDate: Int) throws -> [String:String] {
+        var retObj: [String:String] = [:]
+        if (tables.count > 0) {
+            for i in 0..<tables.count {
+                var mode: String
+                // get total count of the table
+                let tableName: String = tables[i]["name"] as! String
+                var query: String = "SELECT count(*) FROM " + tableName + ";";
+                do {
+                    var resQuery =  try querySQL(db: db,sql:query,values:[]);
+                    if(resQuery.count != 1) {
+                        break;
+                    } else {
+                        let totalCount: Int = resQuery[0]["count(*)"]  as! Int
+                        query = "SELECT count(*) FROM \(tableName) WHERE last_modified > "
+                        query.append("\(syncDate);");
+                        resQuery =  try querySQL(db: db,sql:query,values:[]);
+                        if(resQuery.count != 1) {
+                            break;
+                        } else {
+                            let totalModifiedCount: Int = (resQuery[0]["count(*)"]  as? Int)!
+                            if (totalModifiedCount == 0) {
+                                mode = "No";
+                            } else if (totalCount == totalModifiedCount) {
+                                mode = "Create";
+                            } else {
+                                mode = "Modified";
+                            }
+                            retObj[tableName] = mode
+                        }
+                    }
+                } catch DatabaseHelperError.querySql(let message) {
+                    throw DatabaseHelperError.getTablesModified(message: "Error get modified tables failed : \(message)")
+                }
+            }
+        }
+        return retObj
+    }
+    
+    // MARK: - ExportToJson - CreateSchema
+    
+    private func createSchema(stmt: String) throws -> Array<[String: String]> {
+        var retSchema: Array<[String: String]> = []
+        // get the sqlStmt between the parenthesis sqlStmt
+        if let openPar = stmt.firstIndex(of: "(") {
+            if let closePar = stmt.firstIndex(of: ")") {
+                let sqlStmt: String = String(stmt[stmt.index(after: openPar)..<closePar])
+                let sch: [String] = sqlStmt.components(separatedBy: ",")
+                for i in 0..<sch.count {
+                    let row = sch[i].split(separator: " ",maxSplits: 1)
+                    if( row.count == 2) {
+                        var columns: [String:String] = [:]
+                        columns["column"] =  String(row[0])
+                        columns["value"] = String(row[1])
+                        retSchema.append(columns)
+                    } else {
+                        throw DatabaseHelperError.createSchema(message: "Query result not well formatted")
+                    }
+                }
+            } else {
+                throw DatabaseHelperError.createSchema(message: "No ')' in the query result")
+            }
+        } else {
+            throw DatabaseHelperError.createSchema(message: "No '(' in the query result")
+        }
+        return retSchema
+    }
+    
+    // MARK: - ExportToJson - CreateIndexes
+    
+    private func createIndexes(db:OpaquePointer,tableName:String) throws -> Array<[String: String]> {
+        var retIndexes: Array<[String: String]> = []
+        var query = "SELECT name,tbl_name FROM sqlite_master WHERE ";
+        query.append("type = 'index' AND tbl_name = '\(tableName)' AND sql NOTNULL;");
+        do {
+            let resIndexes =  try querySQL(db: db,sql:query,values:[]);
+            if(resIndexes.count > 0) {
+                for i in 0..<resIndexes.count {
+                    var row: [String:String] = [:]
+                    row["name"] = resIndexes[i]["tbl_name"] as? String
+                    row["column"] = resIndexes[i]["name"] as? String
+                    retIndexes.append(row)
+                }
+            }
+        } catch DatabaseHelperError.querySql(let message) {
+            throw DatabaseHelperError.createIndexes(message: "Error query indexes failed : \(message)")
+        }
+    
+        return retIndexes
+    }
+    
+    // MARK: - ExportToJson - CreateValues
+    
+    private func createValues(db:OpaquePointer, query: String, names:Array<String>, types:Array<String>) throws -> Array<Array<Any>> {
+        var retValues: Array<Array<Any>> = []
+ 
+        do {
+            let resValues =  try querySQL(db: db,sql:query,values:[]);
+            if(resValues.count > 0) {
+                for i in 0..<resValues.count {
+                    var row: Array<Any> = []
+                    for j in 0..<names.count {
+                        if types[j] == "INTEGER" {
+                            row.append(resValues[i][names[j]] as! Int )
+                        } else if types[j] == "REAL" {
+                            row.append(resValues[i][names[j]] as! Float )
+                        } else {
+                            row.append(resValues[i][names[j]] as! String )
+                        }
+                    }
+                    retValues.append(row)
+                }
+            }
+        } catch DatabaseHelperError.querySql(let message) {
+            throw DatabaseHelperError.createValues(message: "Error query values failed : \(message)")
+        }
+
+        return retValues
     }
 }

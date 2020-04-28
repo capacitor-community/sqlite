@@ -34,11 +34,9 @@ class UtilsSQLite {
                 """
                 if sqlite3_exec(db, keyStatementString, nil,nil,nil) == SQLITE_OK  {
                     if (sqlite3_exec(db!, "SELECT count(*) FROM sqlite_master;", nil, nil, nil) != SQLITE_OK) {
-                        print("Unable to open a connection to database at \(filename)")
                         throw UtilsSQLiteError.wrongSecret
                     }
                 } else {
-                    print("connection: Unable to open a connection to database at \(filename)")
                     throw UtilsSQLiteError.wrongSecret
                 }
             }
@@ -59,7 +57,6 @@ class UtilsSQLite {
             */
             return db!
         } else {
-            print("connection: Unable to open a connection to database at \(filename)")
             throw UtilsSQLiteError.connectionFailed
         }
     }

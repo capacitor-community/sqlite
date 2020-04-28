@@ -38,11 +38,13 @@ public class CapacitorSQLite: CAPPlugin {
             }
             if inMode == "encryption" || inMode == "secret" {
                 secretKey = globalData.secret
+                // this is only done for testing multiples runs
+                newsecretKey = globalData.newsecret;
             } else if inMode == "newsecret" {
                 secretKey = globalData.secret
                 newsecretKey = globalData.newsecret
-                globalData.secret = newsecretKey
             } else if inMode == "wrongsecret" {
+                // for test purpose only
                 secretKey = "wrongsecret"
                 inMode = "secret"
             } else {
@@ -52,18 +54,12 @@ public class CapacitorSQLite: CAPPlugin {
         } else {
             inMode = "no-encryption"
         }
-        
-        print("in openStore: dbName \(dbName)")
-        print("in openStore: encrypted \(encrypted)")
-        print("in openStore: mode \(inMode)")
-
-        /* !!!! TODO encrypted and mode */
         do {
            mDb = try DatabaseHelper(databaseName:"\(dbName)SQLite.db", encrypted: encrypted, mode: inMode, secret:secretKey,newsecret:newsecretKey)
         } catch let error {
             retResult(call:call,ret:false,message:"Open command failed: \(error)")
         }
-        if !mDb!.isOpen {
+        if mDb != nil && !mDb!.isOpen {
             retResult(call:call,ret:false,message:"Open command failed: Database \(dbName)SQLite.db not opened")
         } else {
             retResult(call:call,ret:true)
@@ -197,6 +193,27 @@ public class CapacitorSQLite: CAPPlugin {
         }
     }
     
+    // MARK: - isDBExists
+    
+    @objc func isDBExists(_ call: CAPPluginCall) {
+        guard let dbName = call.options["database"] as? String else {
+            retResult(call:call,ret:false,message:"idDBExists command failed: Must provide a database name")
+            return
+        }
+        do {
+            let filePath: String = try UtilsSQLite.getFilePath(fileName: "\(dbName)SQLite.db")
+            let res: Bool = UtilsSQLite.isFileExist(filePath: filePath)
+            if res {
+                retResult(call:call,ret:true)
+            } else {
+                retResult(call:call,ret:false,message:"Database \(dbName)SQLite.db does not exist")
+            }
+        } catch UtilsSQLiteError.filePathFailed {
+            retResult(call:call,ret:false,message:"isDBExists command failed : file path failed")
+        } catch let error {
+            retResult(call:call,ret:false,message:"isDBExists command failed : \(error)")
+        }
+    }
     // MARK: - DeleteDatabase
     
     @objc func deleteDatabase(_ call: CAPPluginCall) {
@@ -219,16 +236,27 @@ public class CapacitorSQLite: CAPPlugin {
                 retResult(call:call,ret:false,message:"DeleteDatabase command failed: \(error)")
             }
         } else {
-            do {
-                res = try UtilsSQLite.deleteFile(fileName: "\(dbName)SQLite.db")
-                retResult(call:call,ret:res,message:"DeleteDatabase command failed: in UtilsSQLite.deleteFile")
-            } catch let error {
-                retResult(call:call,ret:false,message:"DeleteDatabase command failed: \(error)")
-            }
-                        
+                retResult(call:call,ret:false,message:"DeleteDatabase command failed: The database is not opened")
         }
     }
     
+    // MARK: - IsJsonValid
+    
+    @objc func isJsonValid(_ call: CAPPluginCall) {
+        guard let parsingData = call.options["jsonstring"] as? String else {
+            retResult(call:call,ret:false,message:"IsJsonValid command failed : Must provide a Stringify Json Object")
+            return
+        }
+        
+        let data = ("["+parsingData+"]").data(using: .utf8)!
+        
+        do {
+            _ = try JSONDecoder().decode([JsonSQLite].self, from: data)
+            retResult(call:call,ret:true)
+        }  catch let error {
+           retResult(call:call,ret:false,message:"IsJsonValid command failed : Stringify Json Object not Valid " + error.localizedDescription)
+        }
+    }
     // MARK: - ImportFromJson
     
     @objc func importFromJson(_ call: CAPPluginCall) {
@@ -276,7 +304,86 @@ public class CapacitorSQLite: CAPPlugin {
         }
     }
     
+    // MARK: - ExportToJson
+    
+    @objc func exportToJson(_ call: CAPPluginCall) {
+        guard let expMode = call.options["jsonexportmode"] as? String else {
+            retJsonSQLite(call:call,ret:[:] ,message:"ExportToJson command failed : Must provide an export mode")
+            return
+        }
+        if expMode != "full" && expMode != "partial" {
+            retJsonSQLite(call:call,ret:[:] ,message:"ExportToJson command failed : Json export mode should be 'full' or 'partial'")
+            return
+        }
+        if(mDb != nil) {
+            let res:[String: Any]
+            do {
+                res = try (mDb?.exportToJson(expMode: expMode))!;
+                if(res.count == 4) {
+                   retJsonSQLite(call:call,ret:res)
+                } else {
+                    retJsonSQLite(call:call,ret:[:],message:"ExportToJson command failed :return Obj is not a JsonSQLite Obj")
+                }
+            } catch let error {
+                retJsonSQLite(call:call,ret:[:],message:"ExportToJson command failed : \(error)")
+            }
+
+        } else {
+            retJsonSQLite(call:call,ret:[:] ,message:"ExportToJson command failed: No database connection ")
+        }
+    }
+    
+    // MARK: - CreateSyncTable
+    
+    @objc func createSyncTable(_ call: CAPPluginCall) {
+        if(mDb != nil) {
+            do {
+                let res: Int = try (mDb?.createSyncTable())!;
+                if(res == -1) {
+                    retChanges(call:call,ret:["changes":-1],message:"createSyncTable command failed")
+                } else {
+                    retChanges(call:call,ret:["changes":res])
+                }
+            } catch DatabaseHelperError.createSyncTable(let message)  {
+                retChanges(call:call,ret:["changes":-1],message:"createSyncTable command failed : \(message)")
+            } catch let error {
+                retChanges(call:call,ret:["changes":-1],message:"createSyncTable command failed: \(error)")
+            }
+
+        } else {
+            retChanges(call:call,ret:["changes":-1] ,message:"createSyncTable command failed: No database connection ")
+        }
+    }
+    
+    // MARK: - SetSyncDate
+    
+    @objc func setSyncDate(_ call: CAPPluginCall) {
+        guard let syncDate = call.options["syncdate"] as? String else {
+            retResult(call:call,ret:false,message:"setSyncDate command failed: Must provide a sync date")
+            return
+        }
+        if(mDb != nil) {
+            do {
+                let res: Bool = try (mDb?.setSyncDate(syncDate:syncDate))!;
+                if(res) {
+                    retResult(call:call,ret:true)
+                } else {
+                   retResult(call:call,ret:false,message:"setSyncDate command failed")
+                }
+                
+            } catch DatabaseHelperError.createSyncDate(let message) {
+                retResult(call:call,ret:false,message:"setSyncDate command failed: \(message)")
+            } catch let error {
+                retResult(call:call,ret:false,message:"setSyncDate command failed: \(error)")
+           }
+
+        } else {
+            retChanges(call:call,ret:["changes":-1] ,message:"setSyncDate command failed: No database connection ")
+        }
+
+    }
     // MARK: - RetResult
+    
     
     func retResult(call: CAPPluginCall, ret: Bool, message: String? = nil) {
         if(message != nil) {
@@ -320,5 +427,20 @@ public class CapacitorSQLite: CAPPlugin {
             ])
         }
     }
-
+    
+    // MARK: - RetJsonSQLite
+    
+    func retJsonSQLite(call: CAPPluginCall, ret: [String: Any], message: String? = nil) {
+        if(message != nil) {
+            call.success([
+                "export": ret,
+                "message": message!
+            ])
+        } else {
+            call.success([
+                "export": ret
+            ])
+        }
+    }
+    
 }

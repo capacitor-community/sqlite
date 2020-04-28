@@ -21,13 +21,13 @@ export interface CapacitorSQLitePlugin {
   /**
    * Execute a Set of Raw Statements
    * @param {capSQLiteOptions} options {statements: string}
-   * @returns {Promise<capSQLiteResult>} {changes:number}
+   * @returns {Promise<capSQLiteResult>} {changes:{changes:number}}
    */
   execute(options: capSQLiteOptions): Promise<capSQLiteResult>;
   /**
    * Execute a Single Statement
    * @param {capSQLiteOptions} options {statement: string, values:Array<any> }
-   * @returns {Promise<capSQLiteResult>} {changes:number}
+   * @returns {Promise<capSQLiteResult>} {changes:{changes:number,lastId:number}}
    */
   run(options: capSQLiteOptions): Promise<capSQLiteResult>;
   /**
@@ -37,17 +37,46 @@ export interface CapacitorSQLitePlugin {
    */
   query(options: capSQLiteOptions): Promise<capSQLiteResult>;
   /**
+   * Check is a SQLite database exists
+   * @param {capSQLiteOptions} options {database: string}
+   * @returns {Promise<capSQLiteResult>} {result:boolean}
+   */
+  isDBExists(options: capSQLiteOptions): Promise<capSQLiteResult>;
+  /**
    * Delete a SQLite database
    * @param {capSQLiteOptions} options {database: string}
    * @returns {Promise<capSQLiteResult>} {result:boolean}
    */
   deleteDatabase(options: capSQLiteOptions): Promise<capSQLiteResult>;
   /**
+   * Is Json Object Valid
+   * @param {capSQLiteOptions} options {jsonstring: string}
+   * @returns {Promise<capSQLiteResult>} {result:boolean}
+   */
+  isJsonValid(options: capSQLiteOptions): Promise<capSQLiteResult>;
+  /**
    * Import from Json Object
    * @param {capSQLiteOptions} options {jsonstring: string}
-   * @returns {Promise<capSQLiteResult>} {changes:number}
+   * @returns {Promise<capSQLiteResult>} {changes:{changes:number}}
    */
   importFromJson(options: capSQLiteOptions): Promise<capSQLiteResult>;
+  /**
+   * Export to Json Object
+   * @param {capSQLiteOptions} options {jsonexportmode: string}
+   * @returns {Promise<capSQLiteResult>} {export:any}
+   */
+  exportToJson(options: capSQLiteOptions): Promise<capSQLiteResult>;
+  /**
+   * Create a synchronization table
+   * @returns {Promise<capSQLiteResult>} {changes:{changes:number}}
+   */
+  createSyncTable(): Promise<capSQLiteResult>; 
+  /**
+   * Set the synchronization date
+   * @param {capSQLiteOptions} options {syncdate: string}
+   * @returns {Promise<capSQLiteResult>} {result:boolean}
+   */
+  setSyncDate(options: capSQLiteOptions): Promise<capSQLiteResult>; 
 
 }
  
@@ -82,6 +111,17 @@ export interface capSQLiteOptions {
    *
    */
   jsonstring?: string;
+  /***
+   * Set the mode to export JSON Object
+   * "full", "partial"
+   *
+   */
+  jsonexportmode?: string; 
+  /***
+   * Set the synchronization date
+   *
+   */
+  syncdate?: string; 
 
 }
 
@@ -102,6 +142,10 @@ export interface capSQLiteResult {
    * a message
    */
   message?: string;
+  /**
+   * an export JSON object
+   */
+  export?: any
 }
 
 

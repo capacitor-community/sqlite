@@ -3,7 +3,7 @@ const fs: any = window['fs' as any];
 const path: any = window['path' as any];
 
 export class UtilsSQLite {
-    public pathDB: string = "./Databases";
+    public pathDB: string = "Databases";
     constructor() {
     }
     public connection(dbName:string,readOnly?:boolean/*,key?:string*/): any {

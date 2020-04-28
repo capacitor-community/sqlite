@@ -3,19 +3,26 @@ Capacitor SQlite  Plugin is a custom Native Capacitor plugin to create SQLite da
 It is then available only for IOS and Android platforms.
 Databases can be or not encrypted using SQLCipher module.
 
-  ***A pre-release is now available for Electron platform with no database encryption since 1.5.3***
 
-  ***A pre-release of the method importFromJson is now available for Android and Electron platforms since 2.0.0-3 and IOS since 2.0.0-4***
+  *** available since 2.0.0 ***
+    - *** The run method has been modified to use the transaction(BEGIN & COMMIT) and also to return the lastId ***
+    - *** Upload of images (as Base64 string) ***
 
-   [importFromJson_Documentation] (https://github.com/jepiqueau/capacitor-sqlite/blob/master/importFromJson.md)
+  *** available since 2.0.1-1 ***
+    - *** exportToJson has been added with two modes "full" or "partial". To use the "partial", it is mandatory to add a "last_modified" field as Integer (Date as a Unix timestamp) ***
+    - *** createSyncTable has also been added and is required only once, it will create a table to store the synchronization date ***
+    - *** setSyncDate allow for updating the synchronization date ***
 
-  ***The run method has been modified to use the transaction(BEGIN & COMMIT) and to return the lastId and the upload of images (as Base64 string) are now available since 2.0.0***
+All these new features give you all the bits and pieces to manage in your application the synchronization of SQL databases between a remote server and the mobile device. It can also be used for upgrading the schema of databases by exporting the current database to json, make the schema modifications in the json object and importing it back. 
+
+   [ImportExportJson_Documentation] (https://github.com/jepiqueau/capacitor-sqlite/blob/master/ImportExportJson.md)
+
 
 If an error occurs:
 
 - For all methods, a message containing the error message will be returned
 
-- For execute and run commands, -1 will be returned in changes
+- For execute and run commands, {changes: -1} will be returned in changes
   
 - For query command, an empty array will be returned in values
 
@@ -84,19 +91,59 @@ Type: `Promise<{values:Array<any>,message:string}>`
 
 ### `deleteDatabase({database:"fooDB"}) => Promise<{result:boolean,message:string}>`
 
-Delete a database
+Delete a database, require to have open the database first
 
 #### Returns
 
 Type: `Promise<{result:boolean,message:string}>`
 
-### `importFomJson({jsonstring:fooJSONString}) => Promise<{changes:number,message:string}>`
+### `importFomJson({jsonstring:fooJSONString}) => Promise<{changes:{changes:number},message:string}>`
 
 Import Stringify JSON Object describing a database with Schemas, Indexes and Tables Data
 
 #### Returns
 
-Type: `Promise<{changes:number,message:string}>`
+Type: `Promise<{changes:{changes:number},message:string}>`
+
+### `exportToJson({jsonexportmode:fooModeString}) => Promise<{export:any,message:string}>`
+
+Export a JSON Object describing a database with Schemas, Indexes and Tables Data with two modes "full" or "partial"
+
+#### Returns
+
+Type: `Promise<{export:any,message:string}>`
+
+### `createSyncTable() => Promise<{changes:{changes:number},message:string}>`
+
+Create a synchronization table in the database
+
+#### Returns
+
+Type: `Promise<{changes:{changes:number},message:string}>`
+
+### `setSyncDate({syncdate:fooDateString}) => Promise<{result:boolean,message:string}>`
+
+Set a new synchronization date in the database
+
+#### Returns
+
+Type: `Promise<{result:boolean,message:string}>`
+
+### `isJsonValid({jsonstring:fooJSONString}) => Promise<{result:boolean,message:string}>`
+
+Check the validity of a Json Object
+
+#### Returns
+
+Type: `Promise<{result:boolean,message:string}>`
+
+### `isDBExists({database:"fooDB"}) => Promise<{result:boolean,message:string}>`
+
+Check if a database exists
+
+#### Returns
+
+Type: `Promise<{result:boolean,message:string}>`
 
 
 ## Methods available for encrypted database in IOS and Android

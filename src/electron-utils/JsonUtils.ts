@@ -1,21 +1,21 @@
 /* JSON Types */
-export type jsonSQLite = {
+export type JsonSQLite = {
   database : string,
   encrypted : boolean,
   mode: string,
-  tables : Array<jsonTable>
+  tables : Array<JsonTable>
 }
-export type jsonTable = {
+export type JsonTable = {
   name: string,
-  schema?: Array<jsonColumn>,
-  indexes?: Array<jsonIndex>,
+  schema?: Array<JsonColumn>,
+  indexes?: Array<JsonIndex>,
   values?: Array<Array<any>>
 }
-export type jsonColumn = {
+export type JsonColumn = {
   column: string,
   value: string
 }
-export type jsonIndex = {
+export type JsonIndex = {
   name: string,
   column: string
 }
@@ -39,7 +39,7 @@ export function isJsonSQLite(obj:any): boolean {
       }
       return true;
   }
-  function isTable(obj:any): boolean {
+  export function isTable(obj:any): boolean {
     const keyTableLevel: Array<string> = ["name","schema","indexes","values"];
     let nbColumn: number = 0;
     if(obj == null || 

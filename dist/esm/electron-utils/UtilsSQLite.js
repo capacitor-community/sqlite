@@ -3,7 +3,7 @@ const fs = window['fs'];
 const path = window['path'];
 export class UtilsSQLite {
     constructor() {
-        this.pathDB = "./Databases";
+        this.pathDB = "Databases";
     }
     connection(dbName, readOnly /*,key?:string*/) {
         const flags = readOnly ? sqlite3.OPEN_READONLY : sqlite3.OPEN_CREATE | sqlite3.OPEN_READWRITE;

@@ -33,14 +33,36 @@ export class CapacitorSQLiteWeb extends WebPlugin implements CapacitorSQLitePlug
     console.log('query', options);
     return Promise.reject("Not implemented");    
   }
+  async isDBExists(options: capSQLiteOptions): Promise<capSQLiteResult>{
+    console.log('isDBExists', options);
+    return Promise.reject("Not implemented");    
+  }
   async deleteDatabase(options: capSQLiteOptions): Promise<capSQLiteResult>{
     console.log('deleteDatabase', options);
     return Promise.reject("Not implemented");    
   }
-  async importFromJson(options: capSQLiteOptions): Promise<capSQLiteResult>{
-    console.log('deleteDatabase', options);
+  async isJsonValid(options: capSQLiteOptions): Promise<capSQLiteResult>{
+    console.log('isJsonValid', options);
     return Promise.reject("Not implemented");    
   }
+
+  async importFromJson(options: capSQLiteOptions): Promise<capSQLiteResult>{
+    console.log('importFromJson', options);
+    return Promise.reject("Not implemented");    
+  }
+  async exportToJson(options: capSQLiteOptions): Promise<capSQLiteResult> {
+    console.log('exportToJson', options);
+    return Promise.reject("Not implemented");    
+  }
+  async createSyncTable(): Promise<capSQLiteResult> {
+    console.log('createSyncTable');
+    return Promise.reject("Not implemented");    
+  }
+  async setSyncDate(options: capSQLiteOptions): Promise<capSQLiteResult> {
+    console.log('setSyncDate', options);
+    return Promise.reject("Not implemented");    
+  }
+
 }
 
 const CapacitorSQLite = new CapacitorSQLiteWeb();

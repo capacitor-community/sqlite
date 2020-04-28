@@ -1,3 +1,22 @@
+## 2.0.1-1 (2020-04-28)
+
+### Chores
+
+* capacitor: update to capacitor 2.0.1
+
+### Added Features
+
+* add method IsDBExists to check if a database already exists
+* add method IsJsonValid to validate the Json Object before proceeding
+* add method exportToJson to download a database full or partial
+* add method createSyncTable to create a synchronization table
+* add method setSyncDate to store a syncronization date for partial export
+
+### Bug Fixes
+
+* the delete database for safety issue requires now to open the database first
+
+
 ## 2.0.0 (2020-04-21)
 
 ### Added Features
