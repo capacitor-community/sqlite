@@ -17,7 +17,7 @@ Databases can be or not encrypted using SQLCipher module.
 
 All these new features give you all the bits and pieces to manage in your application the synchronization of SQL databases between a remote server and the mobile device. It can also be used for upgrading the schema of databases by exporting the current database to json, make the schema modifications in the json object and importing it back with the mode "full". 
 
-   [ImportExportJson_Documentation] (https://github.com/jepiqueau/capacitor-sqlite/blob/master/ImportExportJson.md)
+   [ImportExportJson_Documentation](https://github.com/jepiqueau/capacitor-sqlite/blob/master/ImportExportJson.md)
 
 
 If an error occurs:
