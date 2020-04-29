@@ -4,12 +4,12 @@ It is then available only for IOS and Android platforms.
 Databases can be or not encrypted using SQLCipher module.
 
 
-**available since 2.0.0**
+### available since 2.0.0
 
   - The run method has been modified to use the transaction(BEGIN & COMMIT) and also to return the lastId
   - Upload of images (as Base64 string)
 
-**available since 2.0.1-1**
+### available since 2.0.1-1
 
   - exportToJson has been added with two modes "full" or "partial". To use the "partial", it is mandatory to add a "last_modified" field as Integer (Date as a Unix timestamp)
   - createSyncTable has also been added and is required only once, it will create a table to store the synchronization date
