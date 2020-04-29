@@ -4,16 +4,16 @@ It is then available only for IOS and Android platforms.
 Databases can be or not encrypted using SQLCipher module.
 
 
-  ***available since 2.0.0***
+**available since 2.0.0**
 
-    - The run method has been modified to use the transaction(BEGIN & COMMIT) and also to return the lastId
-    - Upload of images (as Base64 string)
+  - The run method has been modified to use the transaction(BEGIN & COMMIT) and also to return the lastId
+  - Upload of images (as Base64 string)
 
-  ***available since 2.0.1-1***
+**available since 2.0.1-1**
 
-    - exportToJson has been added with two modes "full" or "partial". To use the "partial", it is mandatory to add a "last_modified" field as Integer (Date as a Unix timestamp)
-    - createSyncTable has also been added and is required only once, it will create a table to store the synchronization date
-    - setSyncDate is allowing the update of the synchronization date
+  - exportToJson has been added with two modes "full" or "partial". To use the "partial", it is mandatory to add a "last_modified" field as Integer (Date as a Unix timestamp)
+  - createSyncTable has also been added and is required only once, it will create a table to store the synchronization date
+  - setSyncDate is allowing the update of the synchronization date
 
 All these new features give you all the bits and pieces to manage in your application the synchronization of SQL databases between a remote server and the mobile device. It can also be used for upgrading the schema of databases by exporting the current database to json, make the schema modifications in the json object and importing it back with the mode "full". 
 
