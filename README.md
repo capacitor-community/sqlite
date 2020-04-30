@@ -186,7 +186,7 @@ Type: `Promise<{result:boolean,message:string}>`
 
   - [angular-sqlite-app-starter] (https://github.com/jepiqueau/angular-sqlite-app-starter)
 
-  - [test-angular-jeep-capacitor-plugins] (https://github.com/jepiqueau/capacitor-apps/IonicAngular/jeep-test-app)
+  - [test-angular-jeep-capacitor-plugins] (https://github.com/jepiqueau/capacitor-apps/tree/master/IonicAngular/jeep-test-app)
 
 ### Ionic/React
 
