@@ -184,18 +184,18 @@ Type: `Promise<{result:boolean,message:string}>`
 
 ### Ionic/Angular
 
-  - [angular-sqlite-app-starter] (https://github.com/jepiqueau/angular-sqlite-app-starter)
+  - [angular-sqlite-app-starter](https://github.com/jepiqueau/angular-sqlite-app-starter)
 
-  - [test-angular-jeep-capacitor-plugins] (https://github.com/jepiqueau/capacitor-apps/tree/master/IonicAngular/jeep-test-app)
+  - [test-angular-jeep-capacitor-plugins](https://github.com/jepiqueau/capacitor-apps/tree/master/IonicAngular/jeep-test-app)
 
 ### Ionic/React
 
-  - [react-sqlite-app-starter] (https://github.com/jepiqueau/react-sqlite-app-starter)
+  - [react-sqlite-app-starter](https://github.com/jepiqueau/react-sqlite-app-starter)
 
 
 ## Using the Plugin in your App
 
- - [see capacitor documentation] (https://capacitor.ionicframework.com/docs/getting-started/with-ionic)
+ - [see capacitor documentation](https://capacitor.ionicframework.com/docs/getting-started/with-ionic)
 
  - Plugin installation
 
