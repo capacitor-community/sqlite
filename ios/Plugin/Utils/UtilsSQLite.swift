@@ -94,10 +94,10 @@ class UtilsSQLite {
                 sqlite3_bind_text(handle, Int32(idx), value, -1, SQLITE_TRANSIENT)
             }
         } else if let value = value as? Int {
-            sqlite3_bind_int(handle,Int32(idx), Int32(value))
+            sqlite3_bind_int64(handle,Int32(idx), Int64(value))
          } else if let value = value as? Bool {
-            var bInt: Int = 0
-            if(value) {bInt = 1}
+            var bInt: Int32 = Int32(0)
+            if(value) {bInt = Int32(1)}
             sqlite3_bind_int(handle,Int32(idx), Int32(bInt))
         } else {
             throw UtilsSQLiteError.bindFailed
