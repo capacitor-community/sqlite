@@ -2,7 +2,6 @@ import { UtilsSQLite } from './UtilsSQLite';
 import { JsonSQLite,JsonTable,JsonIndex,JsonColumn,isJsonSQLite,isTable } from './JsonUtils';
 
 const fs: any = window['fs' as any];
-const path: any = window['path' as any];
 
 export class DatabaseSQLiteHelper {
     public isOpen: boolean = false;
@@ -247,7 +246,7 @@ export class DatabaseSQLiteHelper {
     public deleteDB(dbName:string): Promise<boolean> {
         return new Promise( (resolve) => {
             let ret: boolean = false;
-            const dbPath = path.join(this._utils.pathDB,dbName);
+            const dbPath = this._utils.getDBPath(dbName);
             try {
                 fs.unlinkSync(dbPath);
                 //file removed

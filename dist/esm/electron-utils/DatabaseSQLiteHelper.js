@@ -10,7 +10,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import { UtilsSQLite } from './UtilsSQLite';
 import { isJsonSQLite, isTable } from './JsonUtils';
 const fs = window['fs'];
-const path = window['path'];
 export class DatabaseSQLiteHelper {
     constructor(dbName /*, encrypted:boolean = false, mode:string = "no-encryption",
         secret:string = "",newsecret:string=""*/) {
@@ -254,7 +253,7 @@ export class DatabaseSQLiteHelper {
     deleteDB(dbName) {
         return new Promise((resolve) => {
             let ret = false;
-            const dbPath = path.join(this._utils.pathDB, dbName);
+            const dbPath = this._utils.getDBPath(dbName);
             try {
                 fs.unlinkSync(dbPath);
                 //file removed

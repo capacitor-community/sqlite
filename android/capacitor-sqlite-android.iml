@@ -115,6 +115,6 @@
     <orderEntry type="library" name="Gradle: androidx.core:core:1.2.0@aar" level="project" />
     <orderEntry type="library" name="Gradle: androidx.versionedparcelable:versionedparcelable:1.1.0@aar" level="project" />
     <orderEntry type="library" name="Gradle: androidx.lifecycle:lifecycle-runtime:2.1.0@aar" level="project" />
-    <orderEntry type="module" module-name="capacitor-sqlite-node_modules-@capacitor-capacitor-android" />
+    <orderEntry type="module" module-name="capacitor-sqlite-node_modules-@capacitor-capacitor-android~1" />
   </component>
 </module>

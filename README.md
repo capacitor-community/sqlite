@@ -19,6 +19,10 @@ All these new features give you all the bits and pieces to manage in your applic
 
    [ImportExportJson_Documentation](https://github.com/jepiqueau/capacitor-sqlite/blob/master/ImportExportJson.md)
 
+### `available since 2.1.0-1`
+
+ - Electron Plugin: the location of the databases has been modified to not loose them when updating the application. They are now under User/Databases/APP_NAME/. This implies a modication of the index.html file to define the APP_NAME parameter (see below `Running on Electron`). So you have to copy your old databases under this new location.
+
 
 If an error occurs:
 
@@ -389,9 +393,12 @@ Add a script in the index.html file of your application in the body tag
         const sqlite3 = require('sqlite3');
         const fs = require('fs');
         const path = require('path');
+        const homeDir = require('os').homedir();
         window.sqlite3 = sqlite3;
         window.fs = fs;
         window.path = path;
+        window.appName = "YOUR_APP_NAME";
+        window.homeDir = homeDir;
       }
     }
     catch {

@@ -12,7 +12,7 @@ import { DatabaseSQLiteHelper } from './electron-utils/DatabaseSQLiteHelper';
 import { isJsonSQLite } from './electron-utils/JsonUtils';
 import { UtilsSQLite } from './electron-utils/UtilsSQLite';
 const fs = window['fs'];
-const path = window['path'];
+//const path: any = window['path' as any];
 export class CapacitorSQLitePluginElectron extends WebPlugin {
     constructor() {
         super({
@@ -117,13 +117,7 @@ export class CapacitorSQLitePluginElectron extends WebPlugin {
             }
             dbName = `${options.database}SQLite.db`;
             const utils = new UtilsSQLite();
-            let sep = "/";
-            const idx = __dirname.indexOf("\\");
-            if (idx != -1)
-                sep = "\\";
-            const dir = __dirname.substring(0, __dirname.lastIndexOf(sep) + 1);
-            const dbPath = path.join(dir, utils.pathDB, dbName);
-            console.log("in isDBExists dbPath ", dbPath);
+            const dbPath = utils.getDBPath(dbName);
             let message = "";
             let ret = false;
             try {
@@ -137,7 +131,6 @@ export class CapacitorSQLitePluginElectron extends WebPlugin {
                 message = err.message;
             }
             finally {
-                console.log("in isDBExists ret ", ret);
                 if (ret) {
                     return Promise.resolve({ result: ret });
                 }
@@ -188,7 +181,6 @@ export class CapacitorSQLitePluginElectron extends WebPlugin {
             const isValid = isJsonSQLite(jsonObj);
             if (!isValid)
                 return Promise.reject({ changes: retRes, message: "Must provide a jsonSQLite object" });
-            //      console.log("jsonObj ",jsonObj)
             const dbName = `${jsonObj.database}SQLite.db`;
             this.mDb = new DatabaseSQLiteHelper(dbName);
             const ret = yield this.mDb.importJson(jsonObj);

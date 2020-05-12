@@ -1,3 +1,13 @@
+## 2.1.0-1 (2020-05-12)
+
+### Chores
+
+* capacitor: update to capacitor 2.1.0
+
+### Bug Fixes
+
+* fix issue#16: Electron Databases get deleted with app update
+
 ## 2.0.1-3 (2020-05-05)
 
 ### Bug Fixes
