@@ -23,7 +23,7 @@ All these new features give you all the bits and pieces to manage in your applic
 
 Electron Plugin: the location of the databases could nw be selected: 
   - the previous one **YourApplication/Electron/Databases**
-  - under **User/Databases/APP_NAME/** to not loose them when updating the application. This is manage in the index.(see below `Running on Electron`).
+  - under **User/Databases/APP_NAME/** to not loose them when updating the application. This is manage in the index.html file of the application (see below `Running on Electron`).
 
 
 If an error occurs:
