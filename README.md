@@ -26,11 +26,11 @@ Electron Plugin: the location of the databases could nw be selected:
   - under **User/Databases/APP_NAME/** to not loose them when updating the application. This is manage in the index.html file of the application (see below `Running on Electron`).
 
 
-If an error occurs:
+## Error Return values
 
 - For all methods, a message containing the error message will be returned
 
-- For execute and run commands, {changes: -1} will be returned in changes
+- For execute and run commands, {changes:{changes: -1}} will be returned in changes
   
 - For query command, an empty array will be returned in values
 
@@ -386,7 +386,7 @@ npm run postinstall
 Go back in the main folder of your application
 Add a script in the index.html file of your application in the body tag
 
-  - case databases under **YourApplication/Electron/**
+  - case databases under `YourApplication/Electron/`
   ```html
 <body>
   <app-root></app-root>
@@ -408,7 +408,7 @@ Add a script in the index.html file of your application in the body tag
 </body>
 ```
 
-  - case databases under **User/Databases/APP_NAME/**
+  - case databases under `User/Databases/APP_NAME/`
 ```html
 <body>
   <app-root></app-root>
