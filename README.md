@@ -21,7 +21,9 @@ All these new features give you all the bits and pieces to manage in your applic
 
 ### `available since 2.1.0-1`
 
- - Electron Plugin: the location of the databases has been modified to not loose them when updating the application. They are now under User/Databases/APP_NAME/. This implies a modication of the index.html file to define the APP_NAME parameter (see below `Running on Electron`). So you have to copy your old databases under this new location.
+Electron Plugin: the location of the databases could nw be selected: 
+  - the previous one **YourApplication/Electron/Databases**
+  - under **User/Databases/APP_NAME/** to not loose them when updating the application. This is manage in the index.(see below `Running on Electron`).
 
 
 If an error occurs:
@@ -384,6 +386,29 @@ npm run postinstall
 Go back in the main folder of your application
 Add a script in the index.html file of your application in the body tag
 
+  - case databases under **YourApplication/Electron/**
+  ```html
+<body>
+  <app-root></app-root>
+  <script>
+    try {
+      if (process && typeof (process.versions.electron) === 'string' && process.versions.hasOwnProperty('electron')) {
+        const sqlite3 = require('sqlite3');
+        const fs = require('fs');
+        const path = require('path');
+        window.sqlite3 = sqlite3;
+        window.fs = fs;
+        window.path = path;
+      }
+    }
+    catch {
+      console.log("process doesn't exists");
+    }
+  </script>
+</body>
+```
+
+  - case databases under **User/Databases/APP_NAME/**
 ```html
 <body>
   <app-root></app-root>
@@ -416,7 +441,6 @@ and then build the application
  npx cap open electron
 ```
 
-The databases created are under **YourApplication/Electron/Databases**
 
 ## Dependencies
 The IOS  and Android codes are using SQLCipher allowing for database encryption
