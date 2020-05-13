@@ -107,7 +107,13 @@ Type: `Promise<{result:boolean,message:string}>`
 
 ### `importFomJson({jsonstring:fooJSONString}) => Promise<{changes:{changes:number},message:string}>`
 
-Import Stringify JSON Object describing a database with Schemas, Indexes and Tables Data
+Import Stringify JSON Object describing a database with Schemas, Indexes and Tables Data.
+
+**Mandatory** For each tables, the schema must have as first column an id described as 
+` schema: [
+    {column:"id", value: "INTEGER PRIMARY KEY NOT NULL"},
+    ...,
+  ]`
 
 #### Returns
 
