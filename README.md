@@ -109,8 +109,8 @@ Type: `Promise<{result:boolean,message:string}>`
 
 Import Stringify JSON Object describing a database with Schemas, Indexes and Tables Data.
 
-  **Mandatory**
-   
+  **`Mandatory`**
+
   For each tables, the schema must have as first column an id described as
 
   ` schema: [
