@@ -1,3 +1,13 @@
+## 2.1.0-3 (2020-05-14)
+
+### Chores
+
+* SQLCipher: update 4.4.0
+
+### Bug Fixes
+
+* fix issue#17 Android importFromJson inserting a large amount of data
+
 ## 2.1.0-2 (2020-05-13)
 
 ### Bug Fixes

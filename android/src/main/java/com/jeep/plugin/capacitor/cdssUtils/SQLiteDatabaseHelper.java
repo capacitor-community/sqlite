@@ -724,9 +724,11 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         } catch (Exception e){
 
         } finally {
-            db.endTransaction();
-            if(success) changes = dbChanges(db);
-            if(db != null) db.close();
+            if(db != null) {
+                db.endTransaction();
+                if (success) changes = dbChanges(db);
+//                db.close();
+            }
         }
 
         return changes;
