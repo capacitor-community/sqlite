@@ -80,10 +80,11 @@ public class JsonTable {
                     } else {
                         schema = new ArrayList<JsonColumn>();
                         JSONArray arr = jsObj.getJSONArray(key);
-                        nbColumn = arr.length();
+                        nbColumn = 0;
                         for (int i = 0; i< arr.length() ;i++) {
                             JsonColumn sch = new JsonColumn();
                             boolean retSchema = sch.isSchema(arr.getJSONObject(i));
+                            if (sch.getColumn() != null) nbColumn ++;
                             if(!retSchema) return false;
                             schema.add(sch);
                         }

@@ -302,6 +302,15 @@ export class DatabaseSQLiteHelper {
     createDatabaseSchema(jsonData) {
         return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
             let changes = -1;
+            // set PRAGMA
+            let pragmas = `
+            PRAGMA user_version = 1;
+            PRAGMA foreign_keys = ON;            
+            `;
+            const pchanges = yield this.exec(pragmas);
+            console.log('*** pchanges ', pchanges);
+            if (pchanges === -1)
+                resolve(-1);
             // create the database schema
             let statements = [];
             statements.push("BEGIN TRANSACTION;");
@@ -312,10 +321,20 @@ export class DatabaseSQLiteHelper {
                     statements.push(`CREATE TABLE IF NOT EXISTS ${jsonData.tables[i].name} (`);
                     for (let j = 0; j < jsonData.tables[i].schema.length; j++) {
                         if (j === jsonData.tables[i].schema.length - 1) {
-                            statements.push(`${jsonData.tables[i].schema[j].column} ${jsonData.tables[i].schema[j].value}`);
+                            if (jsonData.tables[i].schema[j].column) {
+                                statements.push(`${jsonData.tables[i].schema[j].column} ${jsonData.tables[i].schema[j].value}`);
+                            }
+                            else if (jsonData.tables[i].schema[j].foreignkey) {
+                                statements.push(`FOREIGN KEY (${jsonData.tables[i].schema[j].foreignkey}) ${jsonData.tables[i].schema[j].value}`);
+                            }
                         }
                         else {
-                            statements.push(`${jsonData.tables[i].schema[j].column} ${jsonData.tables[i].schema[j].value},`);
+                            if (jsonData.tables[i].schema[j].column) {
+                                statements.push(`${jsonData.tables[i].schema[j].column} ${jsonData.tables[i].schema[j].value},`);
+                            }
+                            else if (jsonData.tables[i].schema[j].foreignkey) {
+                                statements.push(`FOREIGN KEY (${jsonData.tables[i].schema[j].foreignkey}) ${jsonData.tables[i].schema[j].value},`);
+                            }
                         }
                     }
                     statements.push(");");
@@ -327,11 +346,13 @@ export class DatabaseSQLiteHelper {
                 }
             }
             if (statements.length > 1) {
-                statements.push("PRAGMA user_version = 1;");
                 statements.push("COMMIT TRANSACTION;");
+                console.log('**statements ', statements);
                 const schemaStmt = statements.join('\n');
+                console.log('schemaStmt ', schemaStmt);
                 changes = yield this.exec(schemaStmt);
             }
+            console.log('in createDatabaseSchema changes ', changes);
             resolve(changes);
         }));
     }
@@ -425,11 +446,13 @@ export class DatabaseSQLiteHelper {
                 retB = yield this.endTransaction(db);
                 if (!retB) {
                     db.close();
+                    console.log('in createTableData not retB changes ', changes);
                     resolve(changes);
                 }
                 changes = yield this.dbChanges(db);
             }
             db.close();
+            console.log('in createTableData changes ', changes);
             resolve(changes);
         }));
     }
@@ -633,16 +656,29 @@ export class DatabaseSQLiteHelper {
                     let schema = [];
                     // take the substring between parenthesis
                     let openPar = tables[i].sql.indexOf("(");
-                    let closePar = tables[i].sql.indexOf(")");
+                    let closePar = tables[i].sql.lastIndexOf(")");
                     let sstr = tables[i].sql.substring(openPar + 1, closePar);
                     let sch = sstr.replace(/\n/g, "").split(",");
                     for (let j = 0; j < sch.length; j++) {
-                        let idx = sch[j].indexOf(" ");
+                        const rstr = sch[j].trim();
+                        let idx = rstr.indexOf(" ");
                         //find the index of the first 
-                        let row = [sch[j].slice(0, idx), sch[j].slice(idx + 1)];
+                        let row = [rstr.slice(0, idx), rstr.slice(idx + 1)];
                         if (row.length != 2)
                             resolve(false);
-                        schema.push({ column: row[0], value: row[1] });
+                        console.log('** row[0] ', row[0]);
+                        if (row[0].toUpperCase() != "FOREIGN") {
+                            schema.push({ column: row[0], value: row[1] });
+                        }
+                        else {
+                            const oPar = rstr.indexOf("(");
+                            const cPar = rstr.indexOf(")");
+                            row = [rstr.slice(oPar + 1, cPar), rstr.slice(cPar + 2)];
+                            console.log('** Foreign row[0] ', row[0]);
+                            if (row.length != 2)
+                                resolve(false);
+                            schema.push({ foreignkey: row[0], value: row[1] });
+                        }
                     }
                     table.schema = schema;
                     isSchema = true;
@@ -675,7 +711,12 @@ export class DatabaseSQLiteHelper {
                 for (let j = 0; j < retValues.length; j++) {
                     let row = [];
                     for (let k = 0; k < rowNames.length; k++) {
-                        row.push(retValues[j][rowNames[k]]);
+                        if (retValues[j][rowNames[k]] != null) {
+                            row.push(retValues[j][rowNames[k]]);
+                        }
+                        else {
+                            row.push("NULL");
+                        }
                     }
                     values.push(row);
                 }

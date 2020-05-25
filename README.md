@@ -25,6 +25,9 @@ Electron Plugin: the location of the databases could nw be selected:
   - the previous one **YourApplication/Electron/Databases**
   - under **User/Databases/APP_NAME/** to not loose them when updating the application. This is manage in the index.html file of the application (see below `Running on Electron`).
 
+### `available since 2.1.0-4`
+
+  - FOREIGN KEY support
 
 ## Error Return values
 

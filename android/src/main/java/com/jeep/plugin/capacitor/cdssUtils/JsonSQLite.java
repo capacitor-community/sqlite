@@ -78,8 +78,6 @@ public class JsonSQLite {
             try {
 
                 Object value = jsObj.get(key);
-                Log.d(TAG, "value: " +value );
-
 
                 if (key.equals("database")) {
                     if (!(value instanceof String)) {
@@ -109,20 +107,18 @@ public class JsonSQLite {
                         return false;
                     } else {
                         if (value instanceof JSONArray) {
-                            Log.d(TAG, "value: is instance of JSONArray 1" );
                             JSONArray arrJS = jsObj.getJSONArray(key);
                             tables = new ArrayList<>();
-                            Log.d(TAG, "arrJS.length() " + arrJS.length());
 
                             for (int i = 0; i < arrJS.length(); i++) {
                                 JsonTable table = new JsonTable();
                                 boolean retTable = table.isTable(arrJS.getJSONObject(i));
+
                                 if (!retTable) return false;
                                 tables.add(table);
                             }
                         } else {
                             Log.d(TAG, "value: not instance of JSONArray 2" );
-
                         }
                     }
                 }

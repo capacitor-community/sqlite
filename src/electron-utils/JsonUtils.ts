@@ -12,8 +12,9 @@ export type JsonTable = {
   values?: Array<Array<any>>
 }
 export type JsonColumn = {
-  column: string,
-  value: string
+  column?: string,
+  value: string,
+  foreignkey?:string
 }
 export type JsonIndex = {
   name: string,
@@ -33,6 +34,7 @@ export function isJsonSQLite(obj:any): boolean {
         if(key === "tables") {
           for (let i:number = 0; i< obj[key].length ;i++) {
             const retTable:boolean = isTable(obj[key][i]);
+            console.log('in isJsonSQLite retTable ',retTable)
             if(!retTable) return false;
           }
         }
@@ -51,15 +53,22 @@ export function isJsonSQLite(obj:any): boolean {
       if(key === "indexes" && typeof obj[key] != "object") return false;
       if(key === "values" && typeof obj[key] != "object") return false;
       if(key === "schema") {
-        nbColumn = obj[key].length;
+
+        obj["schema"].forEach((element: { column?: string;value:string;foreignkey?: string; }) => {
+          if (element.column) {
+            nbColumn++;
+          }
+        });
         for (let i:number = 0; i< nbColumn ;i++) {
           const retSchema:boolean = isSchema(obj[key][i]);
+          console.log('in isTable retSchema ',retSchema)
           if(!retSchema) return false;
         }
       }
       if(key === "indexes") {
         for (let i:number = 0; i< obj[key].length ;i++) {
           const retIndexes:boolean = isIndexes(obj[key][i]);
+          console.log('in isTable retIndexes ',retIndexes)
           if(!retIndexes) return false;
         }
       }
@@ -75,13 +84,14 @@ export function isJsonSQLite(obj:any): boolean {
     return true;
   }
   function isSchema(obj:any): boolean {
-    const keySchemaLevel: Array<string> = ["column","value"];
+    const keySchemaLevel: Array<string> = ["column","value","foreignkey"];
     if(obj == null || 
       (Object.keys(obj).length === 0 && obj.constructor === Object)) return false;
     for (var key of Object.keys(obj)) {
       if(keySchemaLevel.indexOf(key) === -1) return false;
       if(key === "column" && typeof obj[key] != "string") return false;
       if(key === "value" && typeof obj[key] != "string") return false;
+      if(key === "foreignkey" && typeof obj[key] != "string") return false;
     }
     return true;
   }

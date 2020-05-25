@@ -482,7 +482,18 @@ class DatabaseHelper {
     private func createDatabaseSchema(jsonSQLite:JsonSQLite) throws -> Int {
         var success: Bool = true
         var changes: Int = -1
-        
+        // Set PRAGMAS
+        let pragmas: String = "PRAGMA user_version = 1;\nPRAGMA foreign_keys = ON;"
+        do {
+            changes = try execSQL(sql: pragmas)
+            if (changes == -1) {
+                return changes
+            }
+        } catch DatabaseHelperError.execSql(let message) {
+            throw DatabaseHelperError.importFromJson(message: message)
+        }
+        print("*** PRAGMAS DONE ***")
+
         // Create the Database Schema
         var statements: Array<String> = []
         statements.append("BEGIN TRANSACTION;")
@@ -501,7 +512,11 @@ class DatabaseHelper {
                 stmt.append(jsonSQLite.tables[i].name)
                 stmt.append(" (")
                 for j in 0..<jsonSQLite.tables[i].schema!.count {
-                    stmt.append(jsonSQLite.tables[i].schema![j].column)
+                    if(jsonSQLite.tables[i].schema![j].column != nil) {
+                        stmt.append(jsonSQLite.tables[i].schema![j].column!)
+                    } else if(jsonSQLite.tables[i].schema![j].foreignkey != nil) {
+                        stmt.append("FOREIGN KEY (\( jsonSQLite.tables[i].schema![j].foreignkey!))")
+                    }
                     stmt.append(" ")
                     stmt.append(jsonSQLite.tables[i].schema![j].value)
                     if (j != jsonSQLite.tables[i].schema!.count - 1) {
@@ -529,7 +544,6 @@ class DatabaseHelper {
 
         }
         if(statements.count > 1) {
-            statements.append("PRAGMA user_version = 1;");
             statements.append("COMMIT TRANSACTION;");
             let joined = statements.joined(separator: "\n")
             do {
@@ -979,14 +993,24 @@ class DatabaseHelper {
         var retSchema: Array<[String: String]> = []
         // get the sqlStmt between the parenthesis sqlStmt
         if let openPar = stmt.firstIndex(of: "(") {
-            if let closePar = stmt.firstIndex(of: ")") {
+            if let closePar = stmt.lastIndex(of: ")") {
                 let sqlStmt: String = String(stmt[stmt.index(after: openPar)..<closePar])
                 let sch: [String] = sqlStmt.components(separatedBy: ",")
                 for i in 0..<sch.count {
-                    let row = sch[i].split(separator: " ",maxSplits: 1)
+                    let rstr: String = sch[i].trimmingCharacters(in: .whitespacesAndNewlines)
+                    var row = rstr.split(separator: " ",maxSplits: 1)
                     if( row.count == 2) {
                         var columns: [String:String] = [:]
-                        columns["column"] =  String(row[0])
+                        if(String(row[0]).uppercased() != "FOREIGN") {
+                            columns["column"] =  String(row[0])
+                        } else {
+                            let oPar = rstr.firstIndex(of: "(")
+                            let cPar = rstr.firstIndex(of: ")")
+                            row[0] = rstr[rstr.index(after: oPar!)..<cPar!]
+                            row[1] = rstr[rstr.index(cPar!,offsetBy:2)..<rstr.endIndex]
+                            print("row[0] \(row[0]) row[1] \(row[1]) ")
+                            columns["foreignkey"] = String(row[0])
+                        }
                         columns["value"] = String(row[1])
                         retSchema.append(columns)
                     } else {
@@ -1037,11 +1061,23 @@ class DatabaseHelper {
                     var row: Array<Any> = []
                     for j in 0..<names.count {
                         if types[j] == "INTEGER" {
-                            row.append(resValues[i][names[j]] as! Int )
+                            if((resValues[i][names[j]] as! Int) != 0) {
+                                row.append(resValues[i][names[j]] as! Int )
+                            } else {
+                                row.append("NULL")
+                            }
                         } else if types[j] == "REAL" {
-                            row.append(resValues[i][names[j]] as! Float )
+                                if((resValues[i][names[j]] as! Double) != 0) {
+                                row.append(resValues[i][names[j]] as! Double )
+                            } else {
+                                row.append("NULL")
+                            }
                         } else {
-                            row.append(resValues[i][names[j]] as! String )
+                            if((resValues[i][names[j]] as! String).count > 1) {
+                                row.append(resValues[i][names[j]] as! String )
+                            } else {
+                                row.append("NULL")
+                            }
                         }
                     }
                     retValues.append(row)

@@ -15,15 +15,19 @@ import java.util.List;
 public class JsonColumn {
     private static final String TAG = "JsonColumn";
     private static final List<String> keySchemaLevel = new ArrayList<String>(
-            Arrays.asList("column","value"));
-    private String column;
-    private String value;
+            Arrays.asList("column","value","foreignkey"));
+    private String column = null;
+    private String value = null;
+    private String foreignkey = null;
     // Getter
     public String getColumn() {
         return column;
     }
     public String getValue() {
         return value;
+    }
+    public String getForeignkey() {
+        return foreignkey;
     }
     // Setter
     public void setColumn(String newColumn) {
@@ -32,11 +36,15 @@ public class JsonColumn {
     public void setValue(String newValue) {
         this.value = newValue;
     }
+    public void setForeignkey(String newForeignkey) {
+        this.foreignkey = newForeignkey;
+    }
 
     public ArrayList<String> getKeys() {
         ArrayList<String> retArray = new ArrayList<String>();
-        if(getColumn().length() > 0) retArray.add("column");
-        if(getValue().length() > 0) retArray.add("value");
+        if(getColumn() != null && getColumn().length() > 0) retArray.add("column");
+        if(getValue() != null && getValue().length() > 0) retArray.add("value");
+        if(getForeignkey() != null && getForeignkey().length() > 0) retArray.add("foreignkey");
         return retArray;
     }
 
@@ -64,6 +72,13 @@ public class JsonColumn {
                         value = (String) val;
                     }
                 }
+                if (key.equals("foreignkey")) {
+                    if (!(val instanceof String)) {
+                        return false;
+                    } else {
+                        foreignkey = (String) val;
+                    }
+                }
 
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -73,14 +88,17 @@ public class JsonColumn {
         return true;
     }
     public void print() {
-        Log.d(TAG, "column: " + this.getColumn());
-        Log.d(TAG, "value: " + this.getValue());
+        String row = "";
+        if(this.getColumn() != null) row = "column: " + this.getColumn();
+        if(this.getForeignkey() != null) row = "foreignkey: " + this.getForeignkey();
+        Log.d(TAG, row + " value: " + this.getValue());
     }
 
     public JSObject getColumnAsJSObject() {
         JSObject retObj = new JSObject();
-        retObj.put("column", this.column);
+        if(this.column != null) retObj.put("column", this.column);
         retObj.put("value", this.value);
+        if(this.foreignkey != null) retObj.put("foreignkey", this.foreignkey);
         return retObj;
     }
 

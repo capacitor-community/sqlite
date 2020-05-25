@@ -42,7 +42,7 @@ public class JsonIndex {
 
     public boolean isIndexes(JSONObject jsObj) {
         if(jsObj == null || jsObj.length() == 0) return false;
-         Iterator<String> keys = jsObj.keys();
+        Iterator<String> keys = jsObj.keys();
         while(keys.hasNext()) {
             String key = keys.next();
             if(!keyIndexesLevel.contains(key)) return false;
@@ -71,8 +71,7 @@ public class JsonIndex {
         return true;
     }
     public void print() {
-        Log.d(TAG, "name: " + this.getName());
-        Log.d(TAG, "column: " + this.getColumn());
+        Log.d(TAG, "name: " + this.getName() + " column: " + this.getColumn());
     }
     public JSObject getIndexAsJSObject() {
         JSObject retObj = new JSObject();

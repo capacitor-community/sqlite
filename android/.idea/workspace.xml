@@ -7,47 +7,48 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6e88f079-a2ee-4b39-b18a-7f3d94c38f19" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/../CHANGELOG.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../CapacitorSqlite.podspec" beforeDir="false" afterPath="$PROJECT_DIR$/../CapacitorSqlite.podspec" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/4.10.1/fileHashes/fileHashes.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/4.10.1/fileHashes/fileHashes.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/4.10.1/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/4.10.1/fileHashes/fileHashes.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/4.10.1/fileHashes/resourceHashesCache.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/4.10.1/fileHashes/resourceHashesCache.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/4.10.1/javaCompile/classAnalysis.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/4.10.1/javaCompile/classAnalysis.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/4.10.1/javaCompile/jarAnalysis.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/4.10.1/javaCompile/jarAnalysis.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/4.10.1/javaCompile/javaCompile.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/4.10.1/javaCompile/javaCompile.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/4.10.1/javaCompile/taskHistory.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/4.10.1/javaCompile/taskHistory.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/4.10.1/taskHistory/taskHistory.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/4.10.1/taskHistory/taskHistory.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/4.10.1/taskHistory/taskHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/4.10.1/taskHistory/taskHistory.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/cache.properties" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/cache.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/caches/build_file_checksums.ser" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/build_file_checksums.ser" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__net_zetetic_android_database_sqlcipher_4_3_0_aar.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_documentfile_documentfile_1_0_0_aar.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_legacy_legacy_support_core_utils_1_0_0_aar.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_print_print_1_0_0_aar.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/intermediates/compile_only_not_namespaced_r_class_jar/debug/generateDebugRFile/R.jar" beforeDir="false" afterPath="$PROJECT_DIR$/build/intermediates/compile_only_not_namespaced_r_class_jar/debug/generateDebugRFile/R.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/intermediates/incremental/packageDebugResources/compile-file-map.properties" beforeDir="false" afterPath="$PROJECT_DIR$/build/intermediates/incremental/packageDebugResources/compile-file-map.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/jeep/plugin/capacitor/cdssUtils/SQLiteDatabaseHelper.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/jeep/plugin/capacitor/cdssUtils/SQLiteDatabaseHelper.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/intermediates/packaged-classes/debug/classes.jar" beforeDir="false" afterPath="$PROJECT_DIR$/build/intermediates/packaged-classes/debug/classes.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/outputs/aar/android-debug.aar" beforeDir="false" afterPath="$PROJECT_DIR$/build/outputs/aar/android-debug.aar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/capacitor-sqlite-android.iml" beforeDir="false" afterPath="$PROJECT_DIR$/capacitor-sqlite-android.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/jeep/plugin/capacitor/cdssUtils/JsonColumn.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jeep/plugin/capacitor/cdssUtils/JsonColumn.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/jeep/plugin/capacitor/cdssUtils/JsonIndex.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jeep/plugin/capacitor/cdssUtils/JsonIndex.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/jeep/plugin/capacitor/cdssUtils/JsonSQLite.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jeep/plugin/capacitor/cdssUtils/JsonSQLite.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/jeep/plugin/capacitor/cdssUtils/JsonTable.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jeep/plugin/capacitor/cdssUtils/JsonTable.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/jeep/plugin/capacitor/cdssUtils/SQLiteDatabaseHelper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jeep/plugin/capacitor/cdssUtils/SQLiteDatabaseHelper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../dist/esm/electron-utils/DatabaseSQLiteHelper.js" beforeDir="false" afterPath="$PROJECT_DIR$/../dist/esm/electron-utils/DatabaseSQLiteHelper.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../dist/esm/electron-utils/DatabaseSQLiteHelper.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/../dist/esm/electron-utils/DatabaseSQLiteHelper.js.map" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../ios/Plugin.xcworkspace/xcuserdata/queaujeanpierre.xcuserdatad/UserInterfaceState.xcuserstate" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin.xcworkspace/xcuserdata/queaujeanpierre.xcuserdatad/UserInterfaceState.xcuserstate" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Podfile" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Podfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Podfile.lock" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Podfile.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Manifest.lock" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Pods/Manifest.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/project.pbxproj" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/project.pbxproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/xcuserdata/queaujeanpierre.xcuserdatad/xcschemes/Capacitor.xcscheme" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/xcuserdata/queaujeanpierre.xcuserdatad/xcschemes/Capacitor.xcscheme" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/xcuserdata/queaujeanpierre.xcuserdatad/xcschemes/CapacitorCordova.xcscheme" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/xcuserdata/queaujeanpierre.xcuserdatad/xcschemes/CapacitorCordova.xcscheme" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/xcuserdata/queaujeanpierre.xcuserdatad/xcschemes/Pods-Plugin.xcscheme" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/xcuserdata/queaujeanpierre.xcuserdatad/xcschemes/Pods-Plugin.xcscheme" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/xcuserdata/queaujeanpierre.xcuserdatad/xcschemes/Pods-PluginTests.xcscheme" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/xcuserdata/queaujeanpierre.xcuserdatad/xcschemes/Pods-PluginTests.xcscheme" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/xcuserdata/queaujeanpierre.xcuserdatad/xcschemes/SQLCipher.xcscheme" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/xcuserdata/queaujeanpierre.xcuserdatad/xcschemes/SQLCipher.xcscheme" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/SQLCipher/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Pods/SQLCipher/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/SQLCipher/sqlite3.c" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Pods/SQLCipher/sqlite3.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/SQLCipher/sqlite3.h" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Pods/SQLCipher/sqlite3.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/SQLCipher/SQLCipher-Info.plist" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Pods/Target Support Files/SQLCipher/SQLCipher-Info.plist" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ios/Plugin/DatabaseSQLiteHelper.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/DatabaseSQLiteHelper.swift" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ios/Plugin/JsonSQLite.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/JsonSQLite.swift" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../node_modules/@capacitor/android/capacitor/build/intermediates/compile_only_not_namespaced_r_class_jar/debug/generateDebugRFile/R.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../node_modules/@capacitor/android/capacitor/build/intermediates/compile_only_not_namespaced_r_class_jar/debug/generateDebugRFile/R.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../node_modules/@capacitor/android/capacitor/build/intermediates/incremental/packageDebugResources/compile-file-map.properties" beforeDir="false" afterPath="$PROJECT_DIR$/../node_modules/@capacitor/android/capacitor/build/intermediates/incremental/packageDebugResources/compile-file-map.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/../package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../node_modules/@capacitor/android/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../node_modules/@capacitor/android/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../node_modules/@capacitor/core/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../node_modules/@capacitor/core/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../node_modules/@capacitor/ios/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../node_modules/@capacitor/ios/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../node_modules/tslib/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../node_modules/tslib/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../node_modules/typescript/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../node_modules/typescript/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/electron-utils/DatabaseSQLiteHelper.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../src/electron-utils/DatabaseSQLiteHelper.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/electron-utils/JsonUtils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../src/electron-utils/JsonUtils.ts" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />

@@ -61,11 +61,17 @@ struct JsonTable: Codable {
 }
 
 struct JsonColumn: Codable {
-    let column: String
+    var column: String?
     let value: String
+    var foreignkey: String?
     
     public func show() {
-        print("column: \(column) ")
+        if((column) != nil) {
+            print("column: \(String(describing: column)) ")
+        }
+        if((foreignkey) != nil) {
+            print("column: \(String(describing: column)) ")
+        }
         print("value: \(value) ")
     }
 }

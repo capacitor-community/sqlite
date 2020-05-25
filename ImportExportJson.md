@@ -65,8 +65,9 @@ export type jsonTable = {
   values?: Array<Array<any>>
 }
 export type jsonColumn = {
-  column: string,
-  value: string
+  column?: string,
+  foreignkey?: string,
+  value: string,
 }
 export type jsonIndex = {
   name: string,
@@ -108,12 +109,15 @@ const dataToImport: jsonSQLite = {
             name: "messages",
             schema: [
             {column:"id", value: "INTEGER PRIMARY KEY NOT NULL"},
+            {column: 'userid', value: 'INTEGER' },
             {column:"title", value:"TEXT NOT NULL"},
-            {column:"body", value:"TEXT NOT NULL"}
+            {column:"body", value:"TEXT NOT NULL"},
+            {foreignkey:'userid',value: 'REFERENCES users(id) ON DELETE CASCADE'},
             ],
             values: [
-                [1,"test post 1","content test post 1"],
-                [2,"test post 2","content test post 2"]
+                [1,1,"test post 1","content test post 1"],
+                [2,2,"test post 2","content test post 2"],
+                [3,1,"test post 3","content test post 3"],
             ]
         },
         {
@@ -167,8 +171,10 @@ const dataToImport1: jsonSQLite = {
             name: "messages",
             schema: [
             {column:"id", value: "INTEGER PRIMARY KEY NOT NULL"},
+            {column: 'userid', value: 'INTEGER' },
             {column:"title", value:"TEXT NOT NULL"},
-            {column:"body", value:"TEXT NOT NULL"}
+            {column:"body", value:"TEXT NOT NULL"},
+            {foreignkey:'userid',value: 'REFERENCES users(id) ON DELETE CASCADE'},
             ]
         }   
     ]
@@ -195,8 +201,9 @@ const dataToImport2: jsonSQLite = {
         {
             name: "messages",
             values: [
-                [1,"test post 1","content test post 1"],
-                [2,"test post 2","content test post 2"]
+                [1,1,"test post 1","content test post 1"],
+                [2,2,"test post 2","content test post 2"],
+                [3,1,"test post 3","content test post 3"],
             ]
         }
     
@@ -229,8 +236,8 @@ const partialImport1: any = {
                 }
             ],
             values: [
-                [3,"test post 3","content test post 3"],
-                [4,"test post 4","content test post 4"]
+                [4,1"test post 4","content test post 4"],
+                [5,6,"test post 5","content test post 5"]
             ]
         }
 

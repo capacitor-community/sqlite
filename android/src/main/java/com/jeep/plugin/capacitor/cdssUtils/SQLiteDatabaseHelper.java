@@ -60,8 +60,8 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
      * @param _vNumber
      */
     public SQLiteDatabaseHelper(Context _context, String _dbName,
-        Boolean _encrypted, String _mode, String _secret,
-        String _newsecret, int _vNumber) {
+                                Boolean _encrypted, String _mode, String _secret,
+                                String _newsecret, int _vNumber) {
         super(_context, _dbName, null, _vNumber);
         dbName = _dbName;
         dbVersion = _vNumber;
@@ -103,7 +103,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                 // test if you can open it with the new secret in case of multiple runs
                 try {
                     database = SQLiteDatabase.openOrCreateDatabase(databaseFile,
-                                newsecret, null);
+                            newsecret, null);
                     secret = newsecret;
                     isOpen = true;
                 } catch (Exception e1) {
@@ -137,7 +137,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
             } catch (Exception e) {
                 Log.d(TAG, "InitializeSQLCipher: Error while encrypting the database");
                 database = null;
-           }
+            }
         }
         Log.d(TAG, "InitializeSQLCipher isOpen: " + isOpen );
         if(database != null) database.close();
@@ -167,7 +167,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         newFile.renameTo(originalFile);
     }
 
-    
+
     @Override
     public void onCreate(SQLiteDatabase db) {
         Log.d(TAG, "onCreate: name: database created");
@@ -190,7 +190,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         // Open the database for writing
 //        Log.d(TAG, "*** in execSQL: ");
         JSObject retObj = new JSObject();
-        SQLiteDatabase db = null;        
+        SQLiteDatabase db = null;
         try {
             db = getWritableDatabase(secret);
             retObj = execute(db,statements);
@@ -241,7 +241,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
     public JSObject runSQL(String statement, JSArray values) {
         JSObject retObj = new JSObject();
         // Open the database for writing
-        SQLiteDatabase db = null;        
+        SQLiteDatabase db = null;
         boolean success = true;
         long lastId = Long.valueOf(-1);
         if(statement.length() > 6) {
@@ -327,7 +327,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
             } else {
                 return retArray;
             }
-         }
+        }
     }
 
     /**
@@ -400,7 +400,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         File databaseFile = context.getDatabasePath(databaseName);
         try {
             database = SQLiteDatabase.openOrCreateDatabase(databaseFile, secret,
-                    null);           
+                    null);
             database.close();
         } catch (Exception e) {
             Log.d(TAG, "Error: closeDB failed: ",e);
@@ -467,6 +467,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         inJson.setEncrypted(encrypted);
         inJson.setMode(mode);
         JsonSQLite retJson = createJsonTables(inJson);
+//        retJson.print();
         ArrayList<String> keys = retJson.getKeys();
         if(keys.contains("tables")) {
             retObj.put("database",retJson.getDatabase());
@@ -493,12 +494,12 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                 Date date = new Date();
                 long syncTime = date.getTime() / 1000L;
                 String[] statements = {"BEGIN TRANSACTION;",
-                    "CREATE TABLE IF NOT EXISTS sync_table (" +
-                    "id INTEGER PRIMARY KEY NOT NULL," +
-                    "sync_date INTEGER);",
-                    "INSERT INTO sync_table (sync_date) VALUES ('" +
-                    syncTime + "');",
-                    "COMMIT TRANSACTION;"
+                        "CREATE TABLE IF NOT EXISTS sync_table (" +
+                                "id INTEGER PRIMARY KEY NOT NULL," +
+                                "sync_date INTEGER);",
+                        "INSERT INTO sync_table (sync_date) VALUES ('" +
+                                syncTime + "');",
+                        "COMMIT TRANSACTION;"
                 };
                 retObj = execute(db,statements);
             }
@@ -545,6 +546,15 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
      */
     private Integer createDatabaseSchema(JsonSQLite jsonSQL) {
         int changes = Integer.valueOf(-1);
+        // create the PRAGMAS
+        ArrayList<String> pragmas = new ArrayList<String>();
+        pragmas.add("PRAGMA user_version = 1;");
+        pragmas.add("PRAGMA foreign_keys = ON;");
+
+        JSObject result1 = this.execSQL(pragmas.toArray(new String[pragmas.size()]));
+        changes = result1.getInteger("changes");
+        if(changes == -1) return changes;
+
         // create the database schema
         ArrayList<String> statements = new ArrayList<String>();
         statements.add("BEGIN TRANSACTION;");
@@ -564,15 +574,33 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                         .append(" (").toString();
                 for (int j = 0; j < jsonSQL.getTables().get(i).getSchema().size(); j++) {
                     if (j == jsonSQL.getTables().get(i).getSchema().size() - 1) {
-                        stmt = new StringBuilder(stmt).append(jsonSQL.getTables().get(i)
-                                .getSchema().get(j).getColumn())
-                                .append(" ").append(jsonSQL.getTables().get(i)
-                                        .getSchema().get(j).getValue()).toString();
+                        if(jsonSQL.getTables().get(i)
+                                .getSchema().get(j).getColumn() != null) {
+                            stmt = new StringBuilder(stmt).append(jsonSQL.getTables().get(i)
+                                    .getSchema().get(j).getColumn())
+                                    .append(" ").append(jsonSQL.getTables().get(i)
+                                            .getSchema().get(j).getValue()).toString();
+                        } else if (jsonSQL.getTables().get(i)
+                                .getSchema().get(j).getForeignkey() != null) {
+                            stmt = new StringBuilder(stmt).append("FOREIGN KEY (")
+                                    .append(jsonSQL.getTables().get(i).getSchema().get(j).getForeignkey())
+                                    .append(") ").append(jsonSQL.getTables().get(i)
+                                            .getSchema().get(j).getValue()).toString();
+                        }
                     } else {
-                        stmt = new StringBuilder(stmt).append(jsonSQL.getTables().get(i)
-                                .getSchema().get(j).getColumn())
-                                .append(" ").append(jsonSQL.getTables().get(i)
-                                        .getSchema().get(j).getValue()).append(",").toString();
+                        if(jsonSQL.getTables().get(i)
+                                .getSchema().get(j).getColumn() != null) {
+                            stmt = new StringBuilder(stmt).append(jsonSQL.getTables().get(i)
+                                    .getSchema().get(j).getColumn())
+                                    .append(" ").append(jsonSQL.getTables().get(i)
+                                            .getSchema().get(j).getValue()).append(",").toString();
+                        } else if (jsonSQL.getTables().get(i)
+                                .getSchema().get(j).getForeignkey() != null) {
+                            stmt = new StringBuilder(stmt).append("FOREIGN KEY (")
+                                    .append(jsonSQL.getTables().get(i).getSchema().get(j).getForeignkey())
+                                    .append(") ").append(jsonSQL.getTables().get(i)
+                                            .getSchema().get(j).getValue()).append(",").toString();
+                        }
                     }
                 }
                 stmt = new StringBuilder(stmt).append(");").toString();
@@ -592,7 +620,6 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         }
 
         if (statements.size() > 1) {
-            statements.add("PRAGMA user_version = 1;");
             statements.add("COMMIT TRANSACTION;");
 
             JSObject result = this.execSQL(statements.toArray(new String[statements.size()]));
@@ -679,19 +706,19 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                                 StringBuilder strB = new StringBuilder();
 
                                 stmt = new StringBuilder("INSERT INTO ")
-                                    .append(jsonSQL.getTables().get(i).getName())
-                                    .append("(").append(namesString).append(")")
-                                    .append(" VALUES (").append(questionMarkString)
-                                    .append(");").toString();
+                                        .append(jsonSQL.getTables().get(i).getName())
+                                        .append("(").append(namesString).append(")")
+                                        .append(" VALUES (").append(questionMarkString)
+                                        .append(");").toString();
 
                             } else {
                                 // Update
                                 String setString  = this.setNameForUpdate(tableColumnNames);
                                 if(setString.length() == 0) {
                                     String message = new StringBuilder("importFromJson: Table ")
-                                        .append(jsonSQL.getTables().get(i).getName())
-                                        .append(" values row ").append(j)
-                                        .append(" not set to String").toString();
+                                            .append(jsonSQL.getTables().get(i).getName())
+                                            .append(" values row ").append(j)
+                                            .append(" not set to String").toString();
                                     success = false;
                                     break;
                                 }
@@ -708,7 +735,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                                 success = false;
                                 break;
                             }
-                         }
+                        }
                     }
                     catch (JSONException e) {
                         Log.d(TAG, "get Table Values: Error ", e);
@@ -781,8 +808,8 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
     private boolean isTableExists(SQLiteDatabase db,String tableName) {
         boolean ret = false;
         String query =
-            new StringBuilder("SELECT name FROM sqlite_master WHERE type='table' AND name='")
-                .append(tableName).append("';").toString();
+                new StringBuilder("SELECT name FROM sqlite_master WHERE type='table' AND name='")
+                        .append(tableName).append("';").toString();
         JSArray resQuery = this.selectSQL(db, query, new ArrayList<String>());
         if(resQuery.length() > 0) ret = true;
         return ret;
@@ -801,7 +828,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         ArrayList<String> types = new ArrayList<String>();
         String query =
                 new StringBuilder("PRAGMA table_info(").append(tableName)
-                .append(");").toString();
+                        .append(");").toString();
         JSArray resQuery = this.selectSQL(db, query, new ArrayList<String>());
         List<JSObject> lQuery = resQuery.toList();
         if(resQuery.length() > 0) {
@@ -864,8 +891,8 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
     private boolean isIdExists(SQLiteDatabase db, String tableName,String firstColumnName,Object key) {
         boolean ret = false;
         String query = new StringBuilder("SELECT ").append(firstColumnName).append(" FROM ")
-            .append(tableName).append(" WHERE ").append(firstColumnName).append(" = ")
-            .append(key).append(";").toString();
+                .append(tableName).append(" WHERE ").append(firstColumnName).append(" = ")
+                .append(key).append(";").toString();
         JSArray resQuery = this.selectSQL(db, query, new ArrayList<String>());
         if (resQuery.length() == 1) ret = true;
         return ret;
@@ -1025,19 +1052,27 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                 boolean isValues = false;
                 table.setName(tableName);
                 if(sqlObj.getMode().equals("full") ||
-                    (sqlObj.getMode().equals("partial") &&
-                    modTables.getString(tableName).equals("Create"))) {
+                        (sqlObj.getMode().equals("partial") &&
+                                modTables.getString(tableName).equals("Create"))) {
 
                     // create the schema
                     ArrayList<JsonColumn> schema = new ArrayList<JsonColumn>();
                     // get the sqlStmt between the parenthesis sqlStmt
-                    sqlStmt = sqlStmt.substring(sqlStmt.indexOf("(")+1,sqlStmt.indexOf(")"));
+                    sqlStmt = sqlStmt.substring(sqlStmt.indexOf("(")+1,sqlStmt.lastIndexOf(")"));
                     String[] sch = sqlStmt.split(",");
                     // for each element of the array split the first word as key
                     for(int j = 0;j<sch.length;j++) {
                         String [] row = sch[j].split(" ", 2);
                         JsonColumn jsonRow = new JsonColumn();
-                        jsonRow.setColumn(row[0]);
+                        if(row[0].toUpperCase().equals("FOREIGN")) {
+                            Integer oPar = sch[j].indexOf("(");
+                            Integer cPar = sch[j].indexOf(")");
+                            row[0] = sch[j].substring(oPar+1,cPar);
+                            row[1] = sch[j].substring(cPar+2,sch[j].length());
+                            jsonRow.setForeignkey(row[0]);
+                        } else {
+                            jsonRow.setColumn(row[0]);
+                        }
                         jsonRow.setValue(row[1]);
                         schema.add(jsonRow);
                     }
@@ -1067,7 +1102,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                 ArrayList<String> rowTypes = (ArrayList<String>)tableNamesTypes.get("types");
                 // create the data
                 if(sqlObj.getMode().equals("full") ||
-                                (sqlObj.getMode().equals("partial") &&
+                        (sqlObj.getMode().equals("partial") &&
                                 modTables.getString(tableName).equals("Create"))) {
                     stmt = "SELECT * FROM " + tableName + ";";
                 } else {
@@ -1080,12 +1115,25 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                     for(int j = 0;j<lValues.size();j++) {
                         ArrayList<Object> row = new ArrayList<>();
                         for (int k = 0; k < rowNames.size(); k++) {
+
                             if (rowTypes.get(k).equals("INTEGER")) {
-                                row.add(lValues.get(j).getInteger(rowNames.get(k)));
+                                if(lValues.get(j).has(rowNames.get(k))) {
+                                    row.add(lValues.get(j).getInteger(rowNames.get(k)));
+                                } else {
+                                    row.add("NULL");
+                                }
                             } else if (rowTypes.get(k).equals("REAL")) {
-                                row.add(lValues.get(j).getDouble(rowNames.get(k)));
+                                if(lValues.get(j).has(rowNames.get(k))) {
+                                    row.add(lValues.get(j).getDouble(rowNames.get(k)));
+                                } else {
+                                    row.add("NULL");
+                                }
                             } else {
-                                row.add(lValues.get(j).getString(rowNames.get(k)));
+                                if(lValues.get(j).has(rowNames.get(k))) {
+                                    row.add(lValues.get(j).getString(rowNames.get(k)));
+                                } else {
+                                    row.add("NULL");
+                                }
                             }
                         }
                         values.add(row);
@@ -1102,8 +1150,8 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
             }
 
         } catch (Exception e){
-                success = false;
-                Log.d(TAG, "Error: createJsonTables failed: ", e);
+            success = false;
+            Log.d(TAG, "Error: createJsonTables failed: ", e);
         } finally {
             if(db != null) db.close();
             if(success) {
@@ -1112,8 +1160,6 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                 retObj.setEncrypted(sqlObj.getEncrypted());
                 retObj.setTables(jsonTables);
             }
-            Log.d(TAG, "*** in createJsonTables: ");
-//            retObj.print();
 
             return retObj;
         }
@@ -1144,7 +1190,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
      * @throws JSONException
      */
     private JSObject getTablesModified(SQLiteDatabase db,JSArray tables,
-                              long syncDate) throws JSONException {
+                                       long syncDate) throws JSONException {
         JSObject retModified = new JSObject();
         if(tables.length() > 0) {
             List<JSObject> lTables = tables.toList();

@@ -1,3 +1,14 @@
+## 2.1.0-4 (2020-05-24)
+
+### Added Features
+
+* add FOREIGN KEY support in importFrom & exportTo Json 
+
+### Bug Fixes
+
+* Fix issue#20
+* Fix issue#21
+
 ## 2.1.0-3 (2020-05-14)
 
 ### Chores
