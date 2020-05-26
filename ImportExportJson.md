@@ -265,7 +265,7 @@ const partialImport1: any = {
             schema: [
                 {column:"id", value: "INTEGER PRIMARY KEY NOT NULL"},
                 {column:"name", value:"TEXT UNIQUE NOT NULL"},
-                {column:"weight", value:"INTEGER"}
+                {column:"weight", value:"REAL"}
             ],
             indexes: [
                 {name: "index_fruits_on_name",
@@ -273,9 +273,9 @@ const partialImport1: any = {
                 }
             ],
             values: [
-                [1,"orange",200],
-                [2,"apple",450],
-                [2,"banana",120]
+                [1,"orange",200.3],
+                [2,"apple",450.0],
+                [2,"banana",120.5]
             ]
         }
 

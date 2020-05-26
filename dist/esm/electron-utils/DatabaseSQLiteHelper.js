@@ -360,6 +360,7 @@ export class DatabaseSQLiteHelper {
         return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
             let success = true;
             let changes = -1;
+            let isValue = false;
             const db = this._utils.connection(this._databaseName, false /*,this._secret*/);
             if (db === null) {
                 this.isOpen = false;
@@ -392,6 +393,7 @@ export class DatabaseSQLiteHelper {
                             break;
                         }
                         else {
+                            isValue = true;
                             // Loop on Table Values
                             for (let j = 0; j < jsonData.tables[i].values.length; j++) {
                                 // Check the row number of columns
@@ -450,6 +452,10 @@ export class DatabaseSQLiteHelper {
                     resolve(changes);
                 }
                 changes = yield this.dbChanges(db);
+            }
+            else {
+                if (!isValue)
+                    changes = 0;
             }
             db.close();
             console.log('in createTableData changes ', changes);
@@ -683,14 +689,17 @@ export class DatabaseSQLiteHelper {
                     table.schema = schema;
                     isSchema = true;
                     // create the indexes
-                    stmt = "SELECT name,tbl_name FROM sqlite_master WHERE ";
+                    stmt = "SELECT name FROM sqlite_master WHERE ";
                     stmt += `type = 'index' AND tbl_name = '${table.name}' AND sql NOTNULL;`;
                     const retIndexes = yield this.select(db, stmt, []);
                     if (retIndexes.length > 0) {
                         let indexes = [];
                         for (let j = 0; j < retIndexes.length; j++) {
-                            indexes.push({ name: retIndexes[j]["tbl_name"],
-                                column: retIndexes[j]["name"] });
+                            const keys = Object.keys(retIndexes[j]);
+                            if (keys.length === 1) {
+                                indexes.push({ name: retIndexes[j]["name"],
+                                    column: keys[0] });
+                            }
                         }
                         table.indexes = indexes;
                         isIndexes = true;

@@ -637,6 +637,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         boolean success = true;
         int changes = Integer.valueOf(-1);
         SQLiteDatabase db = null;
+        boolean isValue = false;
 
         // create the table's data
         ArrayList<String> statements = new ArrayList<String>();
@@ -668,7 +669,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                                 (ArrayList<String>)tableNamesTypes.get("names");
                         ArrayList<String> tableColumnTypes =
                                 (ArrayList<String>)tableNamesTypes.get("types");
-
+                        isValue = true;
                         // Loop on Table's Values
                         for(int j = 0; j< jsonSQL.getTables().get(i).getValues().size(); j++) {
                             // Check the row number of columns
@@ -754,6 +755,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
             if(db != null) {
                 db.endTransaction();
                 if (success) changes = dbChanges(db);
+                if(!isValue) changes = 0;
 //                db.close();
             }
         }
@@ -1080,7 +1082,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                     isSchema = true;
 
                     // create the indexes
-                    stmt = "SELECT name,tbl_name FROM sqlite_master WHERE ";
+                    stmt = "SELECT name FROM sqlite_master WHERE ";
                     stmt += "type = 'index' AND tbl_name = '" + tableName + "' AND sql NOTNULL;";
                     JSArray retIndexes = selectSQL(db,stmt,new ArrayList<String>());
                     List<JSObject> lIndexes = retIndexes.toList();
@@ -1088,9 +1090,12 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                         ArrayList<JsonIndex> indexes = new ArrayList<JsonIndex>();
                         for(int j = 0;j<lIndexes.size();j++) {
                             JsonIndex jsonRow = new JsonIndex();
-                            jsonRow.setName(lIndexes.get(j).getString("tbl_name"));
-                            jsonRow.setColumn(lIndexes.get(j).getString("name"));
-                            indexes.add(jsonRow);
+                            Iterator<String> keys  = lIndexes.get(j).keys();
+                            if(keys.hasNext()) {
+                                jsonRow.setName(lIndexes.get(j).getString("name"));
+                                jsonRow.setColumn(keys.next());
+                                indexes.add(jsonRow);
+                            }
                         }
                         table.setIndexes(indexes);
                         isIndexes = true;

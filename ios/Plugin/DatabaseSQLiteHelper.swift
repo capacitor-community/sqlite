@@ -568,6 +568,7 @@ class DatabaseHelper {
     private func createTableData(jsonSQLite: JsonSQLite) throws -> Int {
         var success: Bool = true
         var changes: Int = -1
+        var isValue: Bool = false;
         guard let db: OpaquePointer = try UtilsSQLite.getWritableDatabase(filename: "\(path)/\(databaseName)",
                     secret:secret) else {
             throw DatabaseHelperError.dbConnection(message:"Error: DB connection")
@@ -602,6 +603,7 @@ class DatabaseHelper {
                 } catch DatabaseHelperError.querySql(let message) {
                    throw DatabaseHelperError.importFromJson(message: message)
                 }
+                isValue = true;
                 // Loop on Table's Values
                 for j in 0..<jsonSQLite.tables[i].values!.count {
                     // Check the row number of columns
@@ -669,11 +671,16 @@ class DatabaseHelper {
         }
         if(success) {
             let sql: String = "COMMIT TRANSACTION;"
+            print("**** sql create table value \(sql)")
             if sqlite3_exec(db,sql, nil, nil, nil) != SQLITE_OK {
                 throw DatabaseHelperError.createTableData(message: "Error: Commit Transaction failed")
             }
         } else {
-            changes = -1
+            if(!isValue) {
+                changes = 0
+            } else {
+                changes = -1
+            }
         }
         if sqlite3_close_v2(db) != SQLITE_OK {
             throw DatabaseHelperError.createTableData(message: "Error: createTableData closing the database")
@@ -1030,16 +1037,21 @@ class DatabaseHelper {
     
     private func createIndexes(db:OpaquePointer,tableName:String) throws -> Array<[String: String]> {
         var retIndexes: Array<[String: String]> = []
-        var query = "SELECT name,tbl_name FROM sqlite_master WHERE ";
+        var query = "SELECT name FROM sqlite_master WHERE ";
         query.append("type = 'index' AND tbl_name = '\(tableName)' AND sql NOTNULL;");
         do {
             let resIndexes =  try querySQL(db: db,sql:query,values:[]);
             if(resIndexes.count > 0) {
                 for i in 0..<resIndexes.count {
                     var row: [String:String] = [:]
-                    row["name"] = resIndexes[i]["tbl_name"] as? String
-                    row["column"] = resIndexes[i]["name"] as? String
-                    retIndexes.append(row)
+                    let keys: [String] = Array(resIndexes[i].keys)
+                    if(keys.count == 1) {
+                        row["column"] = keys[0]
+                        row["name"] = resIndexes[i]["name"] as? String
+                        retIndexes.append(row)
+                    } else {
+                        throw DatabaseHelperError.createIndexes(message: "Error No indexes key found ")
+                    }
                 }
             }
         } catch DatabaseHelperError.querySql(let message) {
