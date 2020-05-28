@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.io.File;
+import java.util.stream.StreamSupport;
 
 
 import static android.database.Cursor.FIELD_TYPE_BLOB;
@@ -182,6 +183,27 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
     }
 
     /**
+     * get connection to the db
+     */
+    private SQLiteDatabase getConnection(Boolean readOnly, String secret) throws Exception {
+        SQLiteDatabase db = null;
+        if (readOnly) {
+            db = getReadableDatabase(secret);
+        } else {
+            db = getWritableDatabase(secret);
+        }
+        try {
+            String cmd = "PRAGMA foreign_keys = ON;";
+            db.execSQL(cmd);
+        } catch (Exception e) {
+            Log.d(TAG, "Error: getConnection PRAGMA FOREIGN KEY failed: ",e);
+            db = null;
+            throw new Exception("getConnection PRAGMA FOREIGN KEY failed");
+        } finally {
+            return db;
+        }
+    }
+    /**
      * execute sql raw statements after opening the db
      * @param statements
      * @return
@@ -192,7 +214,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         JSObject retObj = new JSObject();
         SQLiteDatabase db = null;
         try {
-            db = getWritableDatabase(secret);
+            db = getConnection(false,secret);
             retObj = execute(db,statements);
         } catch (Exception e) {
             Log.d(TAG, "Error: execSQL failed: ",e);
@@ -246,7 +268,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         long lastId = Long.valueOf(-1);
         if(statement.length() > 6) {
             try {
-                db = getWritableDatabase(secret);
+                db = getConnection(false,secret);
                 db.beginTransaction();
                 lastId = prepareSQL(db, statement, values );
                 if (lastId != -1) db.setTransactionSuccessful();
@@ -314,7 +336,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = null;
         Boolean success = true;
         try {
-            db = getReadableDatabase(secret);
+            db = getConnection(true,secret);
             retArray = selectSQL(db,statement,values);
             if(retArray.length() == 0) success = false;
         } catch (Exception e) {
@@ -487,7 +509,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         JSObject retObj = new JSObject();
         SQLiteDatabase db = null;
         try {
-            db = getWritableDatabase(secret);
+            db = getConnection(false,secret);
             // check if the table has already been created
             boolean isExists = isTableExists(db,"sync_table");
             if( !isExists ) {
@@ -522,7 +544,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         JSObject retObj = new JSObject();
 
         try {
-            db = getWritableDatabase(secret);
+            db = getConnection(false,secret);
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
             Date date = formatter.parse(syncDate.replaceAll("Z$", "+0000"));
             long syncTime = date.getTime() / 1000L;
@@ -643,7 +665,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         ArrayList<String> statements = new ArrayList<String>();
         statements.add("BEGIN TRANSACTION;");
         try {
-            db = getWritableDatabase(secret);
+            db = getConnection(false,secret);
             db.beginTransaction();
 
             for( int i = 0; i< jsonSQL.getTables().size(); i++) {
@@ -1022,7 +1044,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         long syncDate = 0;
 
         try {
-            db = getReadableDatabase(secret);
+            db = getConnection(true,secret);
             String stmt= "SELECT name,sql FROM sqlite_master WHERE type = 'table' ";
             stmt += "AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'sync_table';";
             JSArray tables = selectSQL(db,stmt,new ArrayList<String>());
@@ -1082,19 +1104,25 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                     isSchema = true;
 
                     // create the indexes
-                    stmt = "SELECT name FROM sqlite_master WHERE ";
+                    stmt = "SELECT name,tbl_name,sql FROM sqlite_master WHERE ";
                     stmt += "type = 'index' AND tbl_name = '" + tableName + "' AND sql NOTNULL;";
                     JSArray retIndexes = selectSQL(db,stmt,new ArrayList<String>());
                     List<JSObject> lIndexes = retIndexes.toList();
                     if(lIndexes.size() > 0) {
                         ArrayList<JsonIndex> indexes = new ArrayList<JsonIndex>();
-                        for(int j = 0;j<lIndexes.size();j++) {
+                        for (int j = 0; j < lIndexes.size(); j++) {
                             JsonIndex jsonRow = new JsonIndex();
-                            Iterator<String> keys  = lIndexes.get(j).keys();
-                            if(keys.hasNext()) {
+                            if(lIndexes.get(j).getString("tbl_name").equals(tableName)) {
                                 jsonRow.setName(lIndexes.get(j).getString("name"));
-                                jsonRow.setColumn(keys.next());
+                                String sql = lIndexes.get(j).getString("sql");
+                                Integer oPar = sql.lastIndexOf("(");
+                                Integer cPar = sql.lastIndexOf(")");
+                                jsonRow.setColumn(sql.substring(oPar+1,cPar));
                                 indexes.add(jsonRow);
+                            } else {
+                                success = false;
+                                throw new Exception(
+                                    "createJsonTables: Error indexes table name doesn't match");
                             }
                         }
                         table.setIndexes(indexes);

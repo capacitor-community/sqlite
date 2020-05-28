@@ -14,16 +14,29 @@ export class UtilsSQLite {
 
         // get the path for the database
         const dbPath = this.getDBPath(dbName);
-        let dbOpen: any;
+        let dbOpen: any = null;
 
         if(dbPath != null) {
             try {
                 dbOpen = new sqlite3.Database(dbPath,flags);
-                return dbOpen;
             }
             catch(e) {
                 console.log("Error: in UtilsSQLite.connection ",e);
-                return null;
+                dbOpen = null;
+            }
+            finally {
+                if(dbOpen != null) {
+                    const statements: string = "PRAGMA foreign_keys = ON;"
+                    dbOpen.serialize(() => {
+                        dbOpen.exec(statements,(err:Error) => {
+                            if(err) {
+                                console.log(`exec: Error PRAGMA foreign_keys failed : ${err.message}`);
+                                dbOpen = null;
+                            }                
+                        });
+                    });
+                }
+                return dbOpen;
             }
         }
     }

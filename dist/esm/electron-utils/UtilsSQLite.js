@@ -11,15 +11,28 @@ export class UtilsSQLite {
         const flags = readOnly ? sqlite3.OPEN_READONLY : sqlite3.OPEN_CREATE | sqlite3.OPEN_READWRITE;
         // get the path for the database
         const dbPath = this.getDBPath(dbName);
-        let dbOpen;
+        let dbOpen = null;
         if (dbPath != null) {
             try {
                 dbOpen = new sqlite3.Database(dbPath, flags);
-                return dbOpen;
             }
             catch (e) {
                 console.log("Error: in UtilsSQLite.connection ", e);
-                return null;
+                dbOpen = null;
+            }
+            finally {
+                if (dbOpen != null) {
+                    const statements = "PRAGMA foreign_keys = ON;";
+                    dbOpen.serialize(() => {
+                        dbOpen.exec(statements, (err) => {
+                            if (err) {
+                                console.log(`exec: Error PRAGMA foreign_keys failed : ${err.message}`);
+                                dbOpen = null;
+                            }
+                        });
+                    });
+                }
+                return dbOpen;
             }
         }
     }

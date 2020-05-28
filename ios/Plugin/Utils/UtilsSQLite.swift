@@ -55,6 +55,12 @@ class UtilsSQLite {
             }
             print("Successfully opened connection to database at \(filename)")
             */
+            // PRAGMA foreign_keys = ON;
+            let sqltr: String = "PRAGMA foreign_keys = ON;"
+            if sqlite3_exec(db,sqltr, nil, nil, nil) != SQLITE_OK {
+                throw UtilsSQLiteError.connectionFailed
+            }
+
             return db!
         } else {
             throw UtilsSQLiteError.connectionFailed

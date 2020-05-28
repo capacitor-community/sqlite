@@ -39,7 +39,7 @@ export class CapacitorSQLitePluginElectron extends WebPlugin {
             */
             this.mDb = new DatabaseSQLiteHelper(`${dbName}SQLite.db` /*,encrypted,inMode,secretKey,newsecretKey*/);
             if (!this.mDb.isOpen) {
-                return Promise.reject({ result: false, message: "Open command failed: Database \(dbName)SQLite.db not opened" });
+                return Promise.reject({ result: false, message: `Open command failed: Database ${dbName}SQLite.db not opened` });
             }
             return Promise.resolve({ result: true });
         });

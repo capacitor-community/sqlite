@@ -24,7 +24,7 @@ export class DatabaseSQLiteHelper {
     }
     _openDB() {
         const db = this._utils.connection(this._databaseName, false /*,this._secret*/);
-        if (db !== null) {
+        if (db != null) {
             this.isOpen = true;
             db.close();
         }
@@ -308,7 +308,6 @@ export class DatabaseSQLiteHelper {
             PRAGMA foreign_keys = ON;            
             `;
             const pchanges = yield this.exec(pragmas);
-            console.log('*** pchanges ', pchanges);
             if (pchanges === -1)
                 resolve(-1);
             // create the database schema
@@ -347,12 +346,9 @@ export class DatabaseSQLiteHelper {
             }
             if (statements.length > 1) {
                 statements.push("COMMIT TRANSACTION;");
-                console.log('**statements ', statements);
                 const schemaStmt = statements.join('\n');
-                console.log('schemaStmt ', schemaStmt);
                 changes = yield this.exec(schemaStmt);
             }
-            console.log('in createDatabaseSchema changes ', changes);
             resolve(changes);
         }));
     }
@@ -448,7 +444,6 @@ export class DatabaseSQLiteHelper {
                 retB = yield this.endTransaction(db);
                 if (!retB) {
                     db.close();
-                    console.log('in createTableData not retB changes ', changes);
                     resolve(changes);
                 }
                 changes = yield this.dbChanges(db);
@@ -458,7 +453,6 @@ export class DatabaseSQLiteHelper {
                     changes = 0;
             }
             db.close();
-            console.log('in createTableData changes ', changes);
             resolve(changes);
         }));
     }
@@ -672,7 +666,6 @@ export class DatabaseSQLiteHelper {
                         let row = [rstr.slice(0, idx), rstr.slice(idx + 1)];
                         if (row.length != 2)
                             resolve(false);
-                        console.log('** row[0] ', row[0]);
                         if (row[0].toUpperCase() != "FOREIGN") {
                             schema.push({ column: row[0], value: row[1] });
                         }
@@ -680,7 +673,6 @@ export class DatabaseSQLiteHelper {
                             const oPar = rstr.indexOf("(");
                             const cPar = rstr.indexOf(")");
                             row = [rstr.slice(oPar + 1, cPar), rstr.slice(cPar + 2)];
-                            console.log('** Foreign row[0] ', row[0]);
                             if (row.length != 2)
                                 resolve(false);
                             schema.push({ foreignkey: row[0], value: row[1] });
@@ -689,16 +681,31 @@ export class DatabaseSQLiteHelper {
                     table.schema = schema;
                     isSchema = true;
                     // create the indexes
-                    stmt = "SELECT name FROM sqlite_master WHERE ";
+                    stmt = "SELECT name,tbl_name,sql FROM sqlite_master WHERE ";
                     stmt += `type = 'index' AND tbl_name = '${table.name}' AND sql NOTNULL;`;
                     const retIndexes = yield this.select(db, stmt, []);
                     if (retIndexes.length > 0) {
                         let indexes = [];
                         for (let j = 0; j < retIndexes.length; j++) {
                             const keys = Object.keys(retIndexes[j]);
-                            if (keys.length === 1) {
-                                indexes.push({ name: retIndexes[j]["name"],
-                                    column: keys[0] });
+                            if (keys.length === 3) {
+                                if (retIndexes[j]["tbl_name"] === table.name) {
+                                    const sql = retIndexes[j]["sql"];
+                                    const oPar = sql.lastIndexOf("(");
+                                    const cPar = sql.lastIndexOf(")");
+                                    indexes.push({ name: retIndexes[j]["name"],
+                                        column: sql.slice(oPar + 1, cPar) });
+                                }
+                                else {
+                                    console.log("createJsonTables: Error indexes table name doesn't match");
+                                    success = false;
+                                    break;
+                                }
+                            }
+                            else {
+                                console.log('createJsonTables: Error in creating indexes');
+                                success = false;
+                                break;
                             }
                         }
                         table.indexes = indexes;

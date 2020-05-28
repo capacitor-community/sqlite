@@ -34,7 +34,6 @@ export function isJsonSQLite(obj:any): boolean {
         if(key === "tables") {
           for (let i:number = 0; i< obj[key].length ;i++) {
             const retTable:boolean = isTable(obj[key][i]);
-            console.log('in isJsonSQLite retTable ',retTable)
             if(!retTable) return false;
           }
         }
@@ -61,14 +60,12 @@ export function isJsonSQLite(obj:any): boolean {
         });
         for (let i:number = 0; i< nbColumn ;i++) {
           const retSchema:boolean = isSchema(obj[key][i]);
-          console.log('in isTable retSchema ',retSchema)
           if(!retSchema) return false;
         }
       }
       if(key === "indexes") {
         for (let i:number = 0; i< obj[key].length ;i++) {
           const retIndexes:boolean = isIndexes(obj[key][i]);
-          console.log('in isTable retIndexes ',retIndexes)
           if(!retIndexes) return false;
         }
       }

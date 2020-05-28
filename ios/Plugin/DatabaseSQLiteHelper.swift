@@ -1037,7 +1037,7 @@ class DatabaseHelper {
     
     private func createIndexes(db:OpaquePointer,tableName:String) throws -> Array<[String: String]> {
         var retIndexes: Array<[String: String]> = []
-        var query = "SELECT name FROM sqlite_master WHERE ";
+        var query = "SELECT name,tbl_name,sql FROM sqlite_master WHERE ";
         query.append("type = 'index' AND tbl_name = '\(tableName)' AND sql NOTNULL;");
         do {
             let resIndexes =  try querySQL(db: db,sql:query,values:[]);
@@ -1045,10 +1045,17 @@ class DatabaseHelper {
                 for i in 0..<resIndexes.count {
                     var row: [String:String] = [:]
                     let keys: [String] = Array(resIndexes[i].keys)
-                    if(keys.count == 1) {
-                        row["column"] = keys[0]
-                        row["name"] = resIndexes[i]["name"] as? String
-                        retIndexes.append(row)
+                    if(keys.count == 3) {
+                        if(resIndexes[i]["tbl_name"] as! String == tableName) {
+                            let sql: String = resIndexes[i]["sql"] as! String
+                            let oPar = sql.lastIndex(of:"(")
+                            let cPar = sql.lastIndex(of:")")
+                            row["column"] = String(sql[sql.index(after: oPar!)..<cPar!])
+                            row["name"] = (resIndexes[i]["name"] as! String)
+                            retIndexes.append(row)
+                        } else {
+                            throw DatabaseHelperError.createIndexes(message: "Error indexes table name doesn't match ")
+                        }
                     } else {
                         throw DatabaseHelperError.createIndexes(message: "Error No indexes key found ")
                     }

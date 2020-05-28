@@ -1,3 +1,10 @@
+## 2.1.0-6 (2020-05-28)
+
+### Bug Fixes
+
+* Fix issue#23
+* Fix issue#22 index column value
+
 ## 2.1.0-5 (2020-05-26)
 
 ### Bug Fixes
