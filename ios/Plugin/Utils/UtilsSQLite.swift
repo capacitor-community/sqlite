@@ -101,7 +101,7 @@ class UtilsSQLite {
             }
         } else if let value = value as? Int {
             sqlite3_bind_int64(handle,Int32(idx), Int64(value))
-         } else if let value = value as? Bool {
+        } else if let value = value as? Bool {
             var bInt: Int32 = Int32(0)
             if(value) {bInt = Int32(1)}
             sqlite3_bind_int(handle,Int32(idx), Int32(bInt))
@@ -161,8 +161,8 @@ class UtilsSQLite {
     class func getColumnValue(index: Int32, type: Int32, stmt: OpaquePointer) -> Any? {
         switch type {
         case SQLITE_INTEGER:
-            let val = sqlite3_column_int(stmt, index)
-            return Int(val)
+            let val = sqlite3_column_int64(stmt, index)
+            return Int64(val)
         case SQLITE_FLOAT:
             let val = sqlite3_column_double(stmt, index)
             return Double(val)

@@ -898,6 +898,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
             if (type.equals("NULL") && value instanceof JSONObject) ret = true;
             if (type.equals("TEXT") && value instanceof String) ret = true;
             if (type.equals("INTEGER") && value instanceof Integer) ret = true;
+            if (type.equals("INTEGER") && value instanceof Long) ret = true;
             if (type.equals("REAL") && value instanceof Float) ret = true;
             if (type.equals("BLOB") && value instanceof Blob) ret = true;
         }
@@ -1151,7 +1152,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
 
                             if (rowTypes.get(k).equals("INTEGER")) {
                                 if(lValues.get(j).has(rowNames.get(k))) {
-                                    row.add(lValues.get(j).getInteger(rowNames.get(k)));
+                                    row.add(lValues.get(j).getLong(rowNames.get(k)));
                                 } else {
                                     row.add("NULL");
                                 }

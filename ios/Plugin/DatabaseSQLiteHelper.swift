@@ -821,7 +821,7 @@ class DatabaseHelper {
         retObj["encrypted"] = self.encrypted
         retObj["mode"] = expMode
         var tables: Array<[String: Any]> = []
-        var syncDate: Int = 0
+        var syncDate: Int64 = 0
         // get the table's name
         var query: String = "SELECT name,sql FROM sqlite_master WHERE type = 'table' ";
         query.append("AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'sync_table';");
@@ -936,13 +936,13 @@ class DatabaseHelper {
     
     // MARK: - ExportToJson - GetSyncDate
     
-    private func getSyncDate(db: OpaquePointer) throws -> Int {
-        var ret: Int = -1
+    private func getSyncDate(db: OpaquePointer) throws -> Int64 {
+        var ret: Int64 = -1
         let query: String = "SELECT sync_date FROM sync_table;"
         do {
             let resSyncDate =  try querySQL(db: db,sql:query,values:[]);
             if(resSyncDate.count > 0) {
-                let res: Int = resSyncDate[0]["sync_date"]  as! Int
+                let res: Int64 = resSyncDate[0]["sync_date"]  as! Int64
                 if(res > 0) {ret = res}
             }
 
@@ -955,7 +955,7 @@ class DatabaseHelper {
     
     // MARK: - ExportToJson - GetTablesModified
     
-    private func getTablesModified(db:OpaquePointer, tables: [[String:Any]], syncDate: Int) throws -> [String:String] {
+    private func getTablesModified(db:OpaquePointer, tables: [[String:Any]], syncDate: Int64) throws -> [String:String] {
         var retObj: [String:String] = [:]
         if (tables.count > 0) {
             for i in 0..<tables.count {
@@ -1080,8 +1080,8 @@ class DatabaseHelper {
                     var row: Array<Any> = []
                     for j in 0..<names.count {
                         if types[j] == "INTEGER" {
-                            if((resValues[i][names[j]] as! Int) != 0) {
-                                row.append(resValues[i][names[j]] as! Int )
+                            if((resValues[i][names[j]] as! Int64) != 0) {
+                                row.append(resValues[i][names[j]] as! Int64 )
                             } else {
                                 row.append("NULL")
                             }
