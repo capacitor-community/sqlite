@@ -347,6 +347,8 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
             if(!success) {
                 return new JSArray();
             } else {
+                Log.d(TAG, "querySQL: " + retArray );
+
                 return retArray;
             }
         }
@@ -568,6 +570,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
      */
     private Integer createDatabaseSchema(JsonSQLite jsonSQL) {
         int changes = Integer.valueOf(-1);
+        boolean success = true;
         // create the PRAGMAS
         ArrayList<String> pragmas = new ArrayList<String>();
         pragmas.add("PRAGMA user_version = 1;");
@@ -584,7 +587,6 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         for (int i = 0; i < jsonSQL.getTables().size(); i++) {
 
             if (jsonSQL.getTables().get(i).getSchema().size() > 0) {
-
                 if (jsonSQL.getMode().equals("full")) {
                     String stmt = new StringBuilder("DROP TABLE IF EXISTS ")
                             .append(jsonSQL.getTables().get(i).getName())
@@ -643,9 +645,16 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
 
         if (statements.size() > 1) {
             statements.add("COMMIT TRANSACTION;");
-
             JSObject result = this.execSQL(statements.toArray(new String[statements.size()]));
             changes = result.getInteger("changes");
+            if (changes == -1) {
+                success = false;
+            }
+        } else {
+            changes = Integer.valueOf(0);
+        }
+        if(!success) {
+            changes = Integer.valueOf(-1);
         }
         return changes;
     }
@@ -765,19 +774,17 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                         success = false;
                         break;
                     }
-                } else {
-                    success = false;
                 }
             }
-            if(success) db.setTransactionSuccessful();
+            if(success && isValue) db.setTransactionSuccessful();
 
         } catch (Exception e){
 
         } finally {
             if(db != null) {
                 db.endTransaction();
-                if (success) changes = dbChanges(db);
-                if(!isValue) changes = 0;
+                if (success && isValue) changes = dbChanges(db);
+                if(!isValue) changes = Integer.valueOf(0);
 //                db.close();
             }
         }

@@ -273,6 +273,7 @@ class DatabaseHelper {
             if sqlite3_close_v2(db) != SQLITE_OK {
                 throw DatabaseHelperError.selectSql(message: "Error: selectSQL closing the database")
             }
+            print("selectSQL: \(result)")
             return result;
         } catch DatabaseHelperError.querySql(let message) {
             throw DatabaseHelperError.selectSql(message: message)
@@ -309,7 +310,7 @@ class DatabaseHelper {
 
                     for index in 0..<columnCount {
                         let name = sqlite3_column_name(selectSQLStatement, index)!
-                        columnNames.append(String(cString: name).lowercased())
+                        columnNames.append(String(cString: name))
                         columnTypes.append(UtilsSQLite.getColumnType(index: index, stmt: selectSQLStatement!))
                     }
                     fetchColumnInfo = false
@@ -378,7 +379,7 @@ class DatabaseHelper {
         
         // create the table's data
         if(success) {
-            
+            jsonSQLite.show();
             do {
                 changes = try createTableData(jsonSQLite:jsonSQLite)
                 if (changes == -1) {
@@ -555,7 +556,7 @@ class DatabaseHelper {
                 throw DatabaseHelperError.importFromJson(message: message)
             }
         } else {
-            success = false
+            changes = 0
         }
         if(!success) {
             changes = -1
@@ -665,11 +666,9 @@ class DatabaseHelper {
                         throw DatabaseHelperError.importFromJson(message: message)
                     }
                 }
-            } else {
-                success = false
             }
         }
-        if(success) {
+        if(success && isValue) {
             let sql: String = "COMMIT TRANSACTION;"
             print("**** sql create table value \(sql)")
             if sqlite3_exec(db,sql, nil, nil, nil) != SQLITE_OK {

@@ -302,6 +302,8 @@ export class DatabaseSQLiteHelper {
     createDatabaseSchema(jsonData) {
         return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
             let changes = -1;
+            let isSchema = false;
+            let isIndexes = false;
             // set PRAGMA
             let pragmas = `
             PRAGMA user_version = 1;
@@ -315,6 +317,7 @@ export class DatabaseSQLiteHelper {
             statements.push("BEGIN TRANSACTION;");
             for (let i = 0; i < jsonData.tables.length; i++) {
                 if (jsonData.tables[i].schema && jsonData.tables[i].schema.length >= 1) {
+                    isSchema = true;
                     if (jsonData.mode === 'full')
                         statements.push(`DROP TABLE IF EXISTS ${jsonData.tables[i].name};`);
                     statements.push(`CREATE TABLE IF NOT EXISTS ${jsonData.tables[i].name} (`);
@@ -339,6 +342,7 @@ export class DatabaseSQLiteHelper {
                     statements.push(");");
                 }
                 if (jsonData.tables[i].indexes && jsonData.tables[i].indexes.length >= 1) {
+                    isIndexes = true;
                     for (let j = 0; j < jsonData.tables[i].indexes.length; j++) {
                         statements.push(`CREATE INDEX IF NOT EXISTS ${jsonData.tables[i].indexes[j].name} ON ${jsonData.tables[i].name} (${jsonData.tables[i].indexes[j].column});`);
                     }
@@ -348,6 +352,9 @@ export class DatabaseSQLiteHelper {
                 statements.push("COMMIT TRANSACTION;");
                 const schemaStmt = statements.join('\n');
                 changes = yield this.exec(schemaStmt);
+            }
+            else if (!isSchema && !isIndexes) {
+                changes = 0;
             }
             resolve(changes);
         }));
@@ -435,9 +442,6 @@ export class DatabaseSQLiteHelper {
                             }
                         }
                     }
-                }
-                else {
-                    success = false;
                 }
             }
             if (success) {

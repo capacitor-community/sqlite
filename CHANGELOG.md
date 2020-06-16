@@ -1,3 +1,10 @@
+## 2.1.0 (2020-06-16)
+
+### Added Features
+
+* Add Capitalization characters in IOS table column names issue#25
+* Add import in two steps table schema & indexes and table data to importFromJson
+
 ## 2.1.0-7 (2020-06-01)
 
 ### Bug Fixes

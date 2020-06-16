@@ -29,6 +29,11 @@ Electron Plugin: the location of the databases could nw be selected:
 
   - FOREIGN KEY support
 
+### `available since 2.1.0``
+
+  - Capitalization characters in column names
+  - fix importFromJson to import Table Schema & Indexes an Table Data in two processes
+
 ## Error Return values
 
 - For all methods, a message containing the error message will be returned

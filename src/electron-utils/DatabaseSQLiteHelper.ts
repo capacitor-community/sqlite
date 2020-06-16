@@ -294,6 +294,8 @@ export class DatabaseSQLiteHelper {
     private createDatabaseSchema(jsonData: JsonSQLite): Promise<number> {
         return new Promise( async (resolve) => {
             let changes: number = -1;
+            let isSchema: boolean = false;
+            let isIndexes: boolean = false;
             // set PRAGMA
             let pragmas: string = `
             PRAGMA user_version = 1;
@@ -307,6 +309,7 @@ export class DatabaseSQLiteHelper {
             statements.push("BEGIN TRANSACTION;");
             for (let i:number = 0; i < jsonData.tables.length; i++) {
                 if(jsonData.tables[i].schema && jsonData.tables[i].schema.length >= 1) {
+                    isSchema = true;
                     if(jsonData.mode === 'full') statements.push(`DROP TABLE IF EXISTS ${jsonData.tables[i].name};`);
                     statements.push(`CREATE TABLE IF NOT EXISTS ${jsonData.tables[i].name} (`);
                     for (let j:number =0; j < jsonData.tables[i].schema.length; j++) {
@@ -327,6 +330,7 @@ export class DatabaseSQLiteHelper {
                     statements.push(");");
                 }
                 if(jsonData.tables[i].indexes && jsonData.tables[i].indexes.length >= 1) {
+                    isIndexes = true;
                     for (let j:number =0; j < jsonData.tables[i].indexes.length; j++) {
                         statements.push(`CREATE INDEX IF NOT EXISTS ${jsonData.tables[i].indexes[j].name} ON ${jsonData.tables[i].name} (${jsonData.tables[i].indexes[j].column});`);
                     }
@@ -337,7 +341,10 @@ export class DatabaseSQLiteHelper {
 
                 const schemaStmt: string = statements.join('\n');
                 changes = await this.exec(schemaStmt); 
+            } else if (!isSchema && !isIndexes) {
+                changes = 0;
             }
+            
             resolve(changes);
         });
     }
@@ -427,8 +434,6 @@ export class DatabaseSQLiteHelper {
                             }
                         }
                     }
-                } else {
-                    success = false;
                 }
             }
 
