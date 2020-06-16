@@ -967,14 +967,14 @@ class DatabaseHelper {
                     if(resQuery.count != 1) {
                         break;
                     } else {
-                        let totalCount: Int = resQuery[0]["count(*)"]  as! Int
+                        let totalCount: Int64 = resQuery[0]["count(*)"]  as! Int64
                         query = "SELECT count(*) FROM \(tableName) WHERE last_modified > "
                         query.append("\(syncDate);");
                         resQuery =  try querySQL(db: db,sql:query,values:[]);
                         if(resQuery.count != 1) {
                             break;
                         } else {
-                            let totalModifiedCount: Int = (resQuery[0]["count(*)"]  as? Int)!
+                            let totalModifiedCount: Int64 = (resQuery[0]["count(*)"]  as? Int64)!
                             if (totalModifiedCount == 0) {
                                 mode = "No";
                             } else if (totalCount == totalModifiedCount) {
