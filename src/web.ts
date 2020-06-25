@@ -25,6 +25,10 @@ export class CapacitorSQLiteWeb extends WebPlugin implements CapacitorSQLitePlug
     console.log('execute', options);
     return Promise.reject("Not implemented");    
   }
+  async executeSet(options: capSQLiteOptions): Promise<capSQLiteResult> {
+    console.log('execute', options);
+    return Promise.reject("Not implemented");    
+  }
   async run(options: capSQLiteOptions): Promise<capSQLiteResult>{
     console.log('run', options);
     return Promise.reject("Not implemented");    

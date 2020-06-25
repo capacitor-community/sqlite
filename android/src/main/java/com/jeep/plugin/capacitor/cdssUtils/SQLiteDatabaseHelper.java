@@ -16,6 +16,7 @@ import android.util.Log;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -222,6 +223,56 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
             if(db != null) db.close();
             return retObj;
         }
+    }
+    /**
+     * execute sql raw statements after opening the db
+     * @param set
+     * @return
+     */
+    public JSObject execSet(JSArray set) throws Exception {
+        JSObject retObj = new JSObject();
+        // Open the database for writing
+        SQLiteDatabase db = null;
+        boolean success = true;
+        long lastId = Long.valueOf(-1);
+        int changes = 0;
+        if(set.length() > 0) {
+            try {
+                db = getConnection(false,secret);
+                db.beginTransaction();
+                for(int i = 0; i < set.length();i++) {
+                    JSONObject row = set.getJSONObject(i);
+                    String statement = row.getString ("statement");
+                    JSONArray valuesJson = row.getJSONArray("values");
+                    JSArray values = new JSArray();
+                    for (int j = 0; j < valuesJson.length(); j++) {
+                        values.put(valuesJson.get(j));
+                    }
+                    lastId = prepareSQL(db, statement, values );
+                    if (lastId == -1) {
+                        throw new Exception("ExecSet failed");
+                    } else {
+                        changes += 1;
+                    }
+                }
+                if (changes > 0) db.setTransactionSuccessful();
+            } catch (Exception e) {
+                Log.d(TAG, "Error: ExecSet failed: ",e);
+                success = false;
+            } finally {
+                db.endTransaction();
+                if(!success) {
+                    retObj.put("changes",Integer.valueOf(-1));
+                } else {
+                    retObj.put("changes",dbChanges(db));
+                    retObj.put("lastId",lastId);
+                }
+                if(db != null) db.close();
+            }
+        } else {
+            retObj.put("changes",Integer.valueOf(-1));
+        }
+        return retObj;
     }
 
     /**

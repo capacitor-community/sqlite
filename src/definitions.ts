@@ -19,11 +19,17 @@ export interface CapacitorSQLitePlugin {
    */
   close(options: capSQLiteOptions): Promise<capSQLiteResult>;
   /**
-   * Execute a Set of Raw Statements
+   * Execute a Batch of Raw Statements as String
    * @param {capSQLiteOptions} options {statements: string}
    * @returns {Promise<capSQLiteResult>} {changes:{changes:number}}
    */
   execute(options: capSQLiteOptions): Promise<capSQLiteResult>;
+  /**
+   * Execute a Set of Raw Statements as Array of CapSQLiteSet
+   * @param {capSQLiteOptions} options {set: Array<CapSQLiteSet>}
+   * @returns {Promise<capSQLiteResult>} {changes:{changes:number}}
+   */
+  executeSet(options: capSQLiteOptions): Promise<capSQLiteResult>;
   /**
    * Execute a Single Statement
    * @param {capSQLiteOptions} options {statement: string, values:Array<any> }
@@ -86,9 +92,13 @@ export interface capSQLiteOptions {
    */
   database?: string;
   /**
-   * The batch of raw SQL statements
+   * The batch of raw SQL statements as string
    */
   statements?: string;
+  /**
+   * The batch of raw SQL statements as Array of capSQLLiteSet
+   */
+  set?: Array<capSQLiteSet>;
   /**
    * A statement
    */
@@ -146,6 +156,16 @@ export interface capSQLiteResult {
    * an export JSON object
    */
   export?: any
+}
+export interface capSQLiteSet {
+  /**
+   * A statement
+   */
+  statement?: String;
+  /**
+   * the data values list as an Array
+   */
+  values?: Array<any>;
 }
 
 

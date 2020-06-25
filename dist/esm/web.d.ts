@@ -10,6 +10,7 @@ export declare class CapacitorSQLiteWeb extends WebPlugin implements CapacitorSQ
     open(options: capSQLiteOptions): Promise<capSQLiteResult>;
     close(options: capSQLiteOptions): Promise<capSQLiteResult>;
     execute(options: capSQLiteOptions): Promise<capSQLiteResult>;
+    executeSet(options: capSQLiteOptions): Promise<capSQLiteResult>;
     run(options: capSQLiteOptions): Promise<capSQLiteResult>;
     query(options: capSQLiteOptions): Promise<capSQLiteResult>;
     isDBExists(options: capSQLiteOptions): Promise<capSQLiteResult>;

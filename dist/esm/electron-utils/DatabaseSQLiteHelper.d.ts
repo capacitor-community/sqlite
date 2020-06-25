@@ -10,6 +10,7 @@ export declare class DatabaseSQLiteHelper {
     close(databaseName: string): Promise<boolean>;
     exec(statements: string): Promise<any>;
     private execute;
+    execSet(set: Array<any>): Promise<any>;
     run(statement: string, values: Array<any>): Promise<any>;
     private prepare;
     query(statement: string, values: Array<any>): Promise<Array<any>>;

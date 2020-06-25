@@ -114,6 +114,40 @@ public class CapacitorSQLite: CAPPlugin {
         }
     }
     
+    // MARK: - ExecuteSet
+    
+    @objc func executeSet(_ call: CAPPluginCall) {
+        guard let set = call.options["set"] as? Array<Any> else {
+            retChanges(call:call,ret:["changes":-1],message:"ExecuteSet command failed : Must provide a set of SQL statements")
+            return
+        }
+        if(mDb != nil) {
+            if set.count == 0 {
+                retChanges(call:call,ret:["changes":-1],message:"ExecuteSet command failed : Must provide a non-empty set of SQL statements")
+            }
+            for dict  in set {
+                let row:NSMutableDictionary = dict as! NSMutableDictionary
+                let keys: [String] = row.allKeys as! [String]
+                if !(keys.contains("statement")) || !(keys.contains("values")) {
+                    retChanges(call:call,ret:["changes":-1],message:"ExecuteSet command failed : Must provide a set as Array of {statement,values}")
+                }
+            }
+            do {
+                let res: Int? = try (mDb?.execSet(set:set))
+                retChanges(call:call,ret:["changes":res!])
+            } catch DatabaseHelperError.dbConnection(let message) {
+                retChanges(call:call,ret:["changes":-1],message:"Execute command failed : \(message)")
+            } catch DatabaseHelperError.execSql(let message){
+                retChanges(call:call,ret:["changes":-1],message:"Execute command failed : \(message)")
+            } catch let error {
+                retChanges(call:call,ret:["changes":-1],message:"Execute command failed : \(error)")
+            }
+
+        } else {
+            retChanges(call:call,ret:["changes":-1],message:"ExecuteSet command failed : No database connection")
+        }
+    }
+    
     // MARK: - Run
     
     @objc func run(_ call: CAPPluginCall) {

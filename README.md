@@ -29,10 +29,14 @@ Electron Plugin: the location of the databases could nw be selected:
 
   - FOREIGN KEY support
 
-### `available since 2.1.0``
+### `available since 2.1.0`
 
   - Capitalization characters in column names
   - fix importFromJson to import Table Schema & Indexes an Table Data in two processes
+
+### `available since 2.2.0-2`
+
+  - Batch Execution with values (method `executeSet` )
 
 ## Error Return values
 
@@ -62,10 +66,18 @@ Close a database
 
 Type: `Promise<{result:boolean,message:string}>`
 
-
 ### `execute({statements:"fooStatements"}) => Promise<{changes:{changes:number},message:string}>`
 
-Execute a batch of raw SQL statements
+Execute a batch of raw SQL statements given in a string
+
+#### Returns
+
+Type: `Promise<{changes:{changes:number},message:string}>`
+
+### `executeSet({set:[{statement:"fooStatement",values:[1,"foo1","foo2"]}]}) => Promise<{changes:{changes:number},message:string}>`
+
+Execute a set of raw SQL statements given in an Array of 
+{statement: String , values: Array<Any>}
 
 #### Returns
 
@@ -73,7 +85,7 @@ Type: `Promise<{changes:{changes:number},message:string}>`
 
 ### `run({statement:"fooStatement",values:[]}) => Promise<{changes:{changes:number,lastId:number},message:string}>`
 
-Run a SQL statement
+Run a SQL statement (single statement)
 
 #### Returns
 
@@ -82,7 +94,7 @@ Type: `Promise<{changes:{changes:number,lastId:number},message:string}>`
 
 ### `run({statement:"fooStatement VALUES (?,?,?)",values:[1,"foo1","foo2"]}) => Promise<{changes:{changes:number,lastId:number},message:string}>`
 
-Run a SQL statement with given values
+Run a SQL statement with given values (single statement)
 
 #### Returns
 
@@ -90,7 +102,7 @@ Type: `Promise<{changes:{changes:number,lastId:number},message:string}>`
 
 ### `query({statement:"fooStatement",values:[]}) => Promise<{values:Array<any>,message:string}>`
 
-Query a SELECT SQL statement
+Query a SELECT SQL statement (single statement)
 
 #### Returns
 
@@ -99,7 +111,7 @@ Type: `Promise<{values:Array<any>,message:string}>`
 
 ### `query({statement:"fooStatement VALUES (?)",values:["foo1"]}) => Promise<{values:Array<any>,message:string}>`
 
-Query a SELECT SQL statement with given values
+Query a SELECT SQL statement with given values (single statement)
 
 #### Returns
 
@@ -173,9 +185,9 @@ Type: `Promise<{result:boolean,message:string}>`
 
 ## Methods available for encrypted database in IOS and Android
 
-### `openStore({database:"fooDB",encrypted:true,mode:"encryption"}) => Promise<{result:boolean,message:string}>`
+### `open({database:"fooDB",encrypted:true,mode:"encryption"}) => Promise<{result:boolean,message:string}>`
 
-Encrypt an existing store with a secret key and open the store with given database name.
+Encrypt an existing database with a secret key and open the database with given database name.
 
 To define your own "secret" and "newsecret" keys: 
  - in IOS, go to the Pod/Development Pods/capacitor-sqlite/GlobalSQLite.swift file 
@@ -186,17 +198,17 @@ and update the default values before building your app.
 
 Type: `Promise<{result:boolean,message:string}>`
 
-### `openStore({database:"fooDB",encrypted:true,mode:"secret"}) => Promise<{result:boolean,message:string}>`
+### `open({database:"fooDB",encrypted:true,mode:"secret"}) => Promise<{result:boolean,message:string}>`
 
-Open an encrypted store with given database and table names and secret key.
+Open an encrypted database with given database and table names and secret key.
 
 #### Returns
 
 Type: `Promise<{result:boolean,message:string}>`
 
-### `openStore({database:"fooDB",encrypted:true,mode:"newsecret"}) => Promise<{result:boolean,message:string}>`
+### `open({database:"fooDB",encrypted:true,mode:"newsecret"}) => Promise<{result:boolean,message:string}>`
 
-Modify the secret key with the newsecret key of an encrypted store and open it with given database and table names and newsecret key.
+Modify the secret key with the newsecret key of an encrypted database and open it with given database and table names and newsecret key.
 
 #### Returns
 
@@ -260,7 +272,9 @@ Type: `Promise<{result:boolean,message:string}>`
                 id INTEGER PRIMARY KEY NOT NULL,
                 email TEXT UNIQUE NOT NULL,
                 name TEXT,
-                age INTEGER
+                FirstName TEXT,
+                age INTEGER,
+                MobileNumber TEXT
             );
             PRAGMA user_version = 1;
             COMMIT TRANSACTION;
@@ -298,7 +312,30 @@ Type: `Promise<{result:boolean,message:string}>`
             sqlcmd = "SELECT name,email,age FROM users WHERE age > ?";
             retSelect = await this._sqlite.query({statement:sqlcmd,values:["35"]});
             console.log('retSelect ',retSelect.values.length);
-            
+
+            // Execute a Set of raw SQL Statements
+            let set: Array<any>  = [
+              { statement:"INSERT INTO users (name,FirstName,email,age,MobileNumber) VALUES (?,?,?,?,?);",
+                values:["Blackberry","Peter","Blackberry@example.com",69,"4405060708"]
+              },
+              { statement:"INSERT INTO users (name,FirstName,email,age,MobileNumber) VALUES (?,?,?,?,?);",
+                values:["Jones","Helen","HelenJones@example.com",42,"4404030201"]
+              },
+              { statement:"INSERT INTO users (name,FirstName,email,age,MobileNumber) VALUES (?,?,?,?,?);",
+                values:["Davison","Bill","Davison@example.com",45,"4405162732"]
+              },
+              { statement:"INSERT INTO users (name,FirstName,email,age,MobileNumber) VALUES (?,?,?,?,?);",
+                values:["Brown","John","Brown@example.com",35,"4405243853"]
+              },
+              { statement:"UPDATE users SET age = ? , MobileNumber = ? WHERE id = ?;",
+                values:[51,"4404030237",2]
+              }
+        ];
+        result = await this._sqlite.executeSet({set:set});
+        console.log("result.changes.changes ",result.changes.changes)
+        if(result.changes.changes != 5) resolve(false);
+
+
         ...
         }
     }

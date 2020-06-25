@@ -68,6 +68,25 @@ export class CapacitorSQLitePluginElectron extends WebPlugin {
             return Promise.resolve({ changes: ret });
         });
     }
+    executeSet(options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const retRes = { changes: -1 };
+            if (typeof options.set === 'undefined') {
+                return Promise.reject({ changes: retRes, message: "ExecuteSet command failed : Must provide a set of SQL statements" });
+            }
+            const setOfStatements = options.set;
+            if (setOfStatements.length === 0) {
+                return Promise.reject({ changes: retRes, message: "ExecuteSet command failed : Must provide a non-empty set of SQL statements" });
+            }
+            for (let i = 0; i < setOfStatements.length; i++) {
+                if (!("statement" in setOfStatements[i]) || !("values" in setOfStatements[i])) {
+                    return Promise.reject({ changes: retRes, message: "ExecuteSet command failed : Must provide a set as Array of {statement,values}" });
+                }
+            }
+            const ret = yield this.mDb.execSet(setOfStatements);
+            return Promise.resolve({ changes: ret });
+        });
+    }
     run(options) {
         return __awaiter(this, void 0, void 0, function* () {
             const retRes = { changes: -1 };

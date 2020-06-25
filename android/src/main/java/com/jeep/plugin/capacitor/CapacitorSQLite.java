@@ -14,7 +14,9 @@ import com.jeep.plugin.capacitor.cdssUtils.JsonSQLite;
 import com.jeep.plugin.capacitor.cdssUtils.SQLiteDatabaseHelper;
 import com.jeep.plugin.capacitor.cdssUtils.GlobalSQLite;
 
+import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -145,6 +147,42 @@ public class CapacitorSQLite extends Plugin {
         } else {
             retChanges(call, res, null);
         }
+    }
+    @PluginMethod()
+    public void executeSet(PluginCall call) throws Exception {
+        JSObject retRes = new JSObject();
+        retRes.put("changes", Integer.valueOf(-1));
+        JSArray set = call.getArray("set");
+        if (set == null) {
+            retChanges(call, retRes,
+                    "ExecuteSet command failed: Must provide a set of SQL statements");
+            return;
+        }
+        if(set.length() == 0) {
+            retChanges(call, retRes,
+                "ExecuteSet command failed: Must provide a non-empty set of SQL statements");
+            return;
+        }
+        for (int i = 0; i< set.length(); i ++) {
+            JSONArray keys = set.getJSONObject(i).names();
+            for (int j = 0; j < keys.length(); ++j) {
+                String key = keys.getString (j);
+                if(!(key.equals("statement")) && !(key.equals("values"))) {
+                    retChanges(call, retRes,
+                        "ExecuteSet command failed: Must provide a set as Array of {statement,values}");
+                    return;
+                }
+            }
+        }
+        JSObject res = mDb.execSet(set);
+        if (res.getInteger("changes") == Integer.valueOf(-1)) {
+            retChanges(call, retRes, "ExecuteSet command failed");
+        } else {
+            retChanges(call, res, null);
+        }
+
+
+
     }
     @PluginMethod()
     public void run(PluginCall call) throws JSONException {

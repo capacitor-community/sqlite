@@ -131,6 +131,50 @@ export class DatabaseSQLiteHelper {
             });
         });
     }
+    public execSet(set:Array<any>): Promise<any> {
+        return new Promise(  async (resolve) => {
+            let lastId: number = -1;
+            let retRes: any = {changes:-1,lastId:lastId};
+            const db = this._utils.connection(this._databaseName,false/*,this._secret*/);
+            if (db === null) {
+                this.isOpen = false;
+                console.log("run: Error Database connection failed");
+                resolve(retRes);
+            }
+            let retB: boolean = await this.beginTransaction(db);
+            if(!retB) {
+                db.close();
+                resolve(retRes);
+            }
+            for(let i=0; i< set.length; i++) {
+                const statement = "statement" in set[i] ? set[i].statement : null;
+                const values = "values" in set[i] && set[i].values.length > 0 ? set[i].values : null;
+                if(statement == null || values == null) {
+                    console.log("execSet: Error statement or values are null");
+                    db.close();
+                    resolve(retRes);
+                }
+                lastId = await this.prepare(db,statement,values);
+                if(lastId === -1) {
+                    console.log("execSet: Error return lastId= -1");
+                    db.close();
+                    resolve(retRes);
+                } 
+            }
+
+            retB = await this.endTransaction(db);
+            if(!retB) {
+                db.close();
+                resolve(retRes);
+            }
+            const changes = await this.dbChanges(db);
+            retRes.changes = changes;
+            retRes.lastId = lastId;
+            db.close();
+            resolve(retRes);
+        });
+
+    }
     public run(statement:string,values: Array<any>): Promise<any> {
         return new Promise(  async (resolve) => {
             let lastId: number = -1;

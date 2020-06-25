@@ -1,3 +1,9 @@
+## 2.2.0-2 (2020-06-24)
+
+### Added Features
+
+* add Batch Execution with values (method executeSet) 
+
 ## 2.2.0-1 (2020-06-16)
 
 ### Chores

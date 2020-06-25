@@ -57,6 +57,23 @@ export class CapacitorSQLitePluginElectron extends WebPlugin implements Capacito
       const ret: any = await this.mDb.exec(statements);    
       return Promise.resolve({changes:ret});    
     }
+    async executeSet(options: capSQLiteOptions): Promise<capSQLiteResult> {
+      const retRes = {changes:-1};
+      if(typeof options.set === 'undefined') {
+        return Promise.reject({changes:retRes, message:"ExecuteSet command failed : Must provide a set of SQL statements"});
+      }
+      const setOfStatements:Array<any> = options.set;
+      if(setOfStatements.length === 0) {
+        return Promise.reject({changes:retRes, message:"ExecuteSet command failed : Must provide a non-empty set of SQL statements"});
+      }
+      for( let i = 0; i< setOfStatements.length; i++ ) {
+        if( !("statement" in setOfStatements[i]) || !("values" in setOfStatements[i]) ) {
+          return Promise.reject({changes:retRes, message:"ExecuteSet command failed : Must provide a set as Array of {statement,values}"});
+        }
+      }
+      const ret: any = await this.mDb.execSet(setOfStatements);    
+      return Promise.resolve({changes:ret});    
+    }
     async run(options: capSQLiteOptions): Promise<capSQLiteResult>{
       const retRes = {changes:-1};
       if(typeof options.statement === 'undefined') {

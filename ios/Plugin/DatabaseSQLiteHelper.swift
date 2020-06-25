@@ -14,6 +14,7 @@ enum DatabaseHelperError: Error {
     case dbConnection(message:String)
     case execSql(message:String)
     case execute(message:String)
+    case execSet(message:String)
     case runSql(message:String)
     case prepareSql(message:String)
     case selectSql(message:String)
@@ -197,6 +198,45 @@ class DatabaseHelper {
             throw DatabaseHelperError.execute(message: "Error: execute failed")
         }
         let changes: Int = Int(sqlite3_total_changes(db))
+        return changes
+    }
+
+    // MARK: - execSet
+    
+    func execSet(set:Array<Any>) throws -> Int {
+        guard let db: OpaquePointer = try UtilsSQLite.getWritableDatabase(filename: "\(path)/\(databaseName)",
+                    secret:secret) else {
+            throw DatabaseHelperError.dbConnection(message:"Error: DB connection")
+        }
+        var changes: Int = 0
+        do {
+            // Start a transaction
+            var sqltr: String = "BEGIN TRANSACTION;"
+            if sqlite3_exec(db,sqltr, nil, nil, nil) != SQLITE_OK {
+                throw DatabaseHelperError.execSet(message: "Error: Begin Transaction failed")
+            }
+            for dict  in set {
+                let row:NSMutableDictionary = dict as! NSMutableDictionary
+                let sql: String = row["statement"] as! String
+                let values : Array<Any> = row["values"] as! Array<Any>
+                let rowChanges: Int = try prepareSQL(db: db,sql: sql,values: values)
+                if( rowChanges != 1) {
+                    throw DatabaseHelperError.execSet(message: "Error: prepareSQL failed")
+                } else {
+                    changes += rowChanges
+                }
+            }
+            sqltr = "COMMIT TRANSACTION;"
+            if sqlite3_exec(db,sqltr, nil, nil, nil) != SQLITE_OK {
+                throw DatabaseHelperError.execSet(message: "Error: Commit Transaction failed")
+            }
+            
+            if sqlite3_close_v2(db) != SQLITE_OK {
+                throw DatabaseHelperError.execSet(message: "Error: execSet closing the database")
+            }
+        } catch DatabaseHelperError.prepareSql(let message) {
+            throw DatabaseHelperError.execSet(message: message)
+        }
         return changes
     }
     
