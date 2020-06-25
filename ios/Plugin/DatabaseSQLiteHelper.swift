@@ -254,18 +254,19 @@ class DatabaseHelper {
             if sqlite3_exec(db,sqltr, nil, nil, nil) != SQLITE_OK {
                 throw DatabaseHelperError.runSql(message: "Error: Begin Transaction failed")
             }
-            let changes: Int = try prepareSQL(db: db,sql: sql,values: values)
+            let _: Int = try prepareSQL(db: db,sql: sql,values: values)
             let lastId: Int = Int(sqlite3_last_insert_rowid(db))
             
             sqltr = "COMMIT TRANSACTION;"
             if sqlite3_exec(db,sqltr, nil, nil, nil) != SQLITE_OK {
                 throw DatabaseHelperError.runSql(message: "Error: Commit Transaction failed")
             }
+            let totalchanges: Int = Int(sqlite3_total_changes(db))
             
             if sqlite3_close_v2(db) != SQLITE_OK {
                 throw DatabaseHelperError.runSql(message: "Error: runSQL closing the database")
             }
-            let result:[String:Int] = ["changes":changes, "lastId":lastId]
+            let result:[String:Int] = ["changes":totalchanges, "lastId":lastId]
             return result
         } catch DatabaseHelperError.prepareSql(let message) {
             throw DatabaseHelperError.runSql(message: message)

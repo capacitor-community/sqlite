@@ -1,3 +1,9 @@
+## 2.2.0-3 (2020-06-25)
+
+### Bug Fixes
+
+* Fix in IOS plugin the changes return in Run method (ON DELETE CASCADE)
+
 ## 2.2.0-2 (2020-06-24)
 
 ### Added Features
