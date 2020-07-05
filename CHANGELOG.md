@@ -1,3 +1,9 @@
+## 2.2.0-4 (2020-07-04)
+
+### Bug Fixes
+
+* Fix issue#26, issue#27 in IOS plugin If an insert query fails, all subsequent database commands fail
+
 ## 2.2.0-3 (2020-06-25)
 
 ### Bug Fixes

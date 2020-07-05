@@ -67,14 +67,17 @@ class DatabaseHelper {
         // connect to the database (create if doesn't exist)
         
         var db: OpaquePointer?
+        var message: String = ""
         if !self.encrypted && self.mode == "no-encryption" {
-
             do {
                 try db = UtilsSQLite.connection(filename: "\(path)/\(self.databaseName)")
                 isOpen = true
             } catch {
-                let error:String = "init: Error Database connection failed"
-                print(error)
+                message = "init: Error Database connection failed"
+                print(message)
+            }
+            closeDB(db: db,method: "init")
+            if(message.count > 0) {
                 throw UtilsSQLiteError.connectionFailed
             }
         } else if self.encrypted && self.mode == "secret" && self.secret.count > 0 {
@@ -83,10 +86,9 @@ class DatabaseHelper {
                 self.isOpen = true
             } catch {
                 if(self.secret == "wrongsecret") {
-                    let error:String = "init: Error Database connection failed wrong secret"
-                    print(error)
+                    message = "init: Error Database connection failed wrong secret"
+                    print(message)
                     self.isOpen = false
-                    throw UtilsSQLiteError.connectionFailed
                 } else {
                     // test if you can open it with the new secret in case of multiple runs
                     do {
@@ -95,41 +97,53 @@ class DatabaseHelper {
                         self.isOpen = true
 
                     } catch {
-                        let error:String = "init: Error Database connection failed wrong secret"
-                        print(error)
+                        message = "init: Error Database connection failed wrong secret"
+                        print(message)
                         self.isOpen = false
-                        throw UtilsSQLiteError.connectionFailed
                     }
                 }
             }
+            closeDB(db: db,method: "init")
+            if(message.count > 0) {
+                throw UtilsSQLiteError.connectionFailed
+            }
 
         } else if self.encrypted && self.mode == "newsecret" && self.secret.count > 0 && self.newsecret.count > 0 {
-                do {
-                    try db = UtilsSQLite.connection(filename: "\(path)/\(self.databaseName)",readonly: false,key: self.secret)
-                    
-                    let keyStatementString = """
-                    PRAGMA rekey = '\(self.newsecret)';
-                    """
-                    if sqlite3_exec(db, keyStatementString, nil,nil,nil) != SQLITE_OK  {
-                        print("connection: Unable to open a connection to database at \(path)/\(self.databaseName)")
-                        throw UtilsSQLiteError.wrongNewSecret
+            do {
+                try db = UtilsSQLite.connection(filename: "\(path)/\(self.databaseName)",readonly: false,key: self.secret)
+                
+                let keyStatementString = """
+                PRAGMA rekey = '\(self.newsecret)';
+                """
+                let returnCode: Int32 = sqlite3_exec(db, keyStatementString, nil,nil,nil)
+                if returnCode != SQLITE_OK  {
+                    message = "connection: Unable to open a connection to database at \(path)/\(self.databaseName)"
+                    print(message)
                     }
-                    /* this should work but does not sqlite3_rekey_v2 is not known
-                    if sqlite3_rekey_v2(db!, "\(path)/\(self.dbName)", newsecret, Int32(newsecret.count)) == SQLITE_OK {
-                        self.isOpen = true
-                    } else {
-                        print("Unable to open a connection to database at \(path)/\(self.dbName)")
-                        throw StorageDatabaseHelperError.wrongNewSecret
-                    }
-                    */
-                    self.secret = self.newsecret
+                /* this should work but does not sqlite3_rekey_v2 is not known
+                if sqlite3_rekey_v2(db!, "\(path)/\(self.dbName)", newsecret, Int32(newsecret.count)) == SQLITE_OK {
                     self.isOpen = true
+                } else {
+                    print("Unable to open a connection to database at \(path)/\(self.dbName)")
+                    throw StorageDatabaseHelperError.wrongNewSecret
+                }
+                */
+                self.secret = self.newsecret
+                self.isOpen = true
 
-                } catch {
-                    let error:String = "init: Error Database connection failed wrong secret"
-                    print(error)
+            } catch {
+                message = "init: Error Database connection failed wrong secret"
+                print(message)
+            }
+            closeDB(db: db,method: "init")
+            if(message.count > 0) {
+                if message.contains("connection:") {
+                    throw UtilsSQLiteError.wrongNewSecret
+                } else {
                     throw UtilsSQLiteError.wrongSecret
                 }
+            }
+
         } else if self.encrypted && self.mode == "encryption" && self.secret.count > 0 {
             var res: Bool = false
             do {
@@ -139,10 +153,25 @@ class DatabaseHelper {
                     self.isOpen = true
                 }
             } catch {
-                let error:String = "init: Error Database connection failed wrong secret"
-                print(error)
+                message = "init: Error Database connection failed wrong secret"
+            }
+            closeDB(db: db,method: "init")
+            if(message.count > 0) {
+                print(message)
                 throw UtilsSQLiteError.encryptionFailed
             }
+        }
+    }
+    
+    // MARK: - CloseDB
+    
+    private func closeDB(db: OpaquePointer?,method: String) {
+        var message: String = ""
+        let returnCode: Int32 = sqlite3_close_v2(db)
+        if returnCode != SQLITE_OK {
+            let errmsg: String = String(cString: sqlite3_errmsg(db))
+            message = "Error: \(method) closing the database rc: \(returnCode) message: \(errmsg)"
+            print(message)
         }
     }
     
@@ -154,10 +183,7 @@ class DatabaseHelper {
         do {
             try db = UtilsSQLite.connection(filename: "\(path)/\(self.databaseName)")
             isOpen = true
-            if sqlite3_close(db) != SQLITE_OK {
-                print("error closing database")
-                throw DatabaseHelperError.close(message:"Error: DB close")
-            }
+            closeDB(db: db,method: "init")
             isOpen = false
             db = nil
             ret = true
@@ -178,24 +204,30 @@ class DatabaseHelper {
                     secret:secret) else {
             throw DatabaseHelperError.dbConnection(message:"Error: DB connection")
         }
-        var changes: Int
+        var changes: Int = 0
+        var message: String = ""
         do {
             changes = try execute(db: db,sql: sql)
-        } catch DatabaseHelperError.execute(let message) {
-            throw DatabaseHelperError.execSql(message: "Error: execSQL \(message)")
+        } catch DatabaseHelperError.execute(let msg) {
+            message = "Error: execSQL \(msg)"
         }
  
-        if sqlite3_close_v2(db) != SQLITE_OK {
-            throw DatabaseHelperError.execSql(message: "Error: execSQL closing the database")
+        closeDB(db: db,method: "execSQL")
+        if(message.count > 0) {
+            throw DatabaseHelperError.execSql(message: message)
+        } else {
+            return changes
         }
-        return changes
     }
     
     // MARK: - Execute
     
     func execute(db: OpaquePointer,sql:String) throws -> Int {
-        if sqlite3_exec(db,sql, nil, nil, nil) != SQLITE_OK {
-            throw DatabaseHelperError.execute(message: "Error: execute failed")
+        let returnCode: Int32 = sqlite3_exec(db,sql, nil, nil, nil)
+        if returnCode != SQLITE_OK {
+            let errmsg: String = String(cString: sqlite3_errmsg(db))
+            throw DatabaseHelperError.execute(
+                message: "Error: execute failed rc: \(returnCode) message: \(errmsg)")
         }
         let changes: Int = Int(sqlite3_total_changes(db))
         return changes
@@ -209,35 +241,47 @@ class DatabaseHelper {
             throw DatabaseHelperError.dbConnection(message:"Error: DB connection")
         }
         var changes: Int = 0
+        var message: String = ""
+        // Start a transaction
+        var sqltr: String = "BEGIN TRANSACTION;"
+        var returnCode: Int32 = sqlite3_exec(db,sqltr, nil, nil, nil)
+        if returnCode != SQLITE_OK {
+            let errmsg: String = String(cString: sqlite3_errmsg(db))
+            throw DatabaseHelperError.execSet(
+                message: "Error: Begin Transaction failed rc: \(returnCode) message: \(errmsg)")
+        }
         do {
-            // Start a transaction
-            var sqltr: String = "BEGIN TRANSACTION;"
-            if sqlite3_exec(db,sqltr, nil, nil, nil) != SQLITE_OK {
-                throw DatabaseHelperError.execSet(message: "Error: Begin Transaction failed")
-            }
             for dict  in set {
                 let row:NSMutableDictionary = dict as! NSMutableDictionary
                 let sql: String = row["statement"] as! String
                 let values : Array<Any> = row["values"] as! Array<Any>
                 let rowChanges: Int = try prepareSQL(db: db,sql: sql,values: values)
                 if( rowChanges != 1) {
-                    throw DatabaseHelperError.execSet(message: "Error: prepareSQL failed")
+                    message = "Error: prepareSQL failed"
+                    break
                 } else {
                     changes += rowChanges
                 }
             }
-            sqltr = "COMMIT TRANSACTION;"
-            if sqlite3_exec(db,sqltr, nil, nil, nil) != SQLITE_OK {
-                throw DatabaseHelperError.execSet(message: "Error: Commit Transaction failed")
-            }
-            
-            if sqlite3_close_v2(db) != SQLITE_OK {
-                throw DatabaseHelperError.execSet(message: "Error: execSet closing the database")
-            }
-        } catch DatabaseHelperError.prepareSql(let message) {
-            throw DatabaseHelperError.execSet(message: message)
+        } catch DatabaseHelperError.prepareSql(let msg) {
+            message = msg
         }
-        return changes
+        if(changes > 0 && message.count == 0) {
+            // commit the transaction
+            sqltr = "COMMIT TRANSACTION;"
+            returnCode = sqlite3_exec(db,sqltr, nil, nil, nil)
+            if returnCode != SQLITE_OK {
+                let errmsg: String = String(cString: sqlite3_errmsg(db))
+                message = "Error: Commit Transaction failed rc: \(returnCode) message: \(errmsg)"
+            }
+            // close the db          
+            closeDB(db: db,method: "execSet")
+        }
+        if(message.count > 0) {
+            throw DatabaseHelperError.execSet(message: message)
+        } else {
+            return changes
+        }
     }
     
     // MARK: - RunSQL
@@ -247,38 +291,51 @@ class DatabaseHelper {
                     secret:secret) else {
             throw DatabaseHelperError.dbConnection(message:"Error: DB connection")
         }
-        do {
-            // Start a transaction
+        var message: String = "";
+        var lastId: Int = -1
+        var changes: Int = 0
+        // Start a transaction
 
-            var sqltr: String = "BEGIN TRANSACTION;"
-            if sqlite3_exec(db,sqltr, nil, nil, nil) != SQLITE_OK {
-                throw DatabaseHelperError.runSql(message: "Error: Begin Transaction failed")
+        var sqltr: String = "BEGIN TRANSACTION;"
+        var returnCode: Int32 = sqlite3_exec(db,sqltr, nil, nil, nil)
+        if returnCode != SQLITE_OK {
+            let errmsg: String = String(cString: sqlite3_errmsg(db))
+            throw DatabaseHelperError.runSql(
+                message: "Error: Begin Transaction failed rc: \(returnCode) message: \(errmsg)")
+        }
+        do {
+            changes = try prepareSQL(db: db,sql: sql,values: values)
+            if changes > 0 {
+                lastId = Int(sqlite3_last_insert_rowid(db))
             }
-            let _: Int = try prepareSQL(db: db,sql: sql,values: values)
-            let lastId: Int = Int(sqlite3_last_insert_rowid(db))
-            
+        } catch DatabaseHelperError.prepareSql(let msg) {
+            message = msg
+        }
+        if lastId != -1 {
             sqltr = "COMMIT TRANSACTION;"
-            if sqlite3_exec(db,sqltr, nil, nil, nil) != SQLITE_OK {
-                throw DatabaseHelperError.runSql(message: "Error: Commit Transaction failed")
+            returnCode = sqlite3_exec(db,sqltr, nil, nil, nil)
+            if returnCode != SQLITE_OK {
+                let errmsg: String = String(cString: sqlite3_errmsg(db))
+                message = "Error: Commit Transaction failed rc: \(returnCode) message: \(errmsg)"
             }
-            let totalchanges: Int = Int(sqlite3_total_changes(db))
-            
-            if sqlite3_close_v2(db) != SQLITE_OK {
-                throw DatabaseHelperError.runSql(message: "Error: runSQL closing the database")
-            }
-            let result:[String:Int] = ["changes":totalchanges, "lastId":lastId]
-            return result
-        } catch DatabaseHelperError.prepareSql(let message) {
+        }
+        closeDB(db: db,method: "runSQL")
+        if(message.count > 0) {
             throw DatabaseHelperError.runSql(message: message)
+        } else {
+            let result:[String:Int] = ["changes":changes, "lastId":lastId]
+            return result
         }
     }
-    
+   
     // MARK: - PrepareSQL
     
     func prepareSQL(db: OpaquePointer,sql: String,values: Array<Any>) throws -> Int {
         var runSQLStatement: OpaquePointer? = nil
+        var message: String = "";
 
-        if sqlite3_prepare_v2(db, sql, -1, &runSQLStatement, nil) == SQLITE_OK {
+        var returnCode: Int32 = sqlite3_prepare_v2(db, sql, -1, &runSQLStatement, nil)
+        if returnCode == SQLITE_OK {
             if !values.isEmpty {
             // do the binding of values
                 var idx: Int = 1
@@ -286,38 +343,53 @@ class DatabaseHelper {
                     do {
                         try UtilsSQLite.bind(handle: runSQLStatement!, value: value, idx: idx)
                         idx = idx + 1
-                    } catch {
-                        throw DatabaseHelperError.prepareSql(message: "Error: prepareSQL bind failed")
+                    } catch let error as NSError {
+                        message = "Error: prepareSQL bind failed " + error.localizedDescription
+                        break
                     }
                 }
             }
-            if sqlite3_step(runSQLStatement) != SQLITE_DONE {
-                throw DatabaseHelperError.prepareSql(message: "Error: prepareSQL step failed")
+            returnCode = sqlite3_step(runSQLStatement)
+            if returnCode != SQLITE_DONE {
+                let errmsg: String = String(cString: sqlite3_errmsg(db))
+                message = "Error: prepareSQL step failed rc: \(returnCode) message: \(errmsg)"
             }
         } else {
-            throw DatabaseHelperError.prepareSql(message: "Error: prepareSQL prepare failed")
+            let errmsg: String = String(cString: sqlite3_errmsg(db))
+            message = "Error: prepareSQL prepare failed rc: \(returnCode) message: \(errmsg)"
         }
-        sqlite3_finalize(runSQLStatement)
-        
-        let changes: Int = Int(sqlite3_changes(db))
-        return changes
+        returnCode = sqlite3_finalize(runSQLStatement)
+        if returnCode != SQLITE_OK {
+            let errmsg: String = String(cString: sqlite3_errmsg(db))
+            message = "Error: prepareSQL finalize failed rc: \(returnCode) message: \(errmsg)"
+        }
+        if(message.count > 0) {
+            throw DatabaseHelperError.prepareSql(message: message)
+        } else {
+            let changes: Int = Int(sqlite3_changes(db))
+            return changes
+        }
     }
+
     // MARK: - SelectSQL
     
     func selectSQL(sql:String,values: Array<String>) throws -> Array<[String: Any]> {
-        guard let db: OpaquePointer = try UtilsSQLite.getWritableDatabase(filename: "\(path)/\(databaseName)",
+        guard let db: OpaquePointer = try UtilsSQLite.getReadableDatabase(filename: "\(path)/\(databaseName)",
                     secret:secret) else {
             throw DatabaseHelperError.dbConnection(message:"Error: DB connection")
         }
+        var result: Array<[String: Any]> = []
+        var message: String = ""
         do {
-            let result: Array<[String: Any]> = try querySQL(db: db,sql: sql,values: values)
-            if sqlite3_close_v2(db) != SQLITE_OK {
-                throw DatabaseHelperError.selectSql(message: "Error: selectSQL closing the database")
-            }
-            print("selectSQL: \(result)")
-            return result;
-        } catch DatabaseHelperError.querySql(let message) {
+            result = try querySQL(db: db,sql: sql,values: values)
+        } catch DatabaseHelperError.querySql(let msg) {
+            message = msg
+        }
+        closeDB(db: db,method: "selectSQL")
+        if(message.count > 0) {
             throw DatabaseHelperError.selectSql(message: message)
+        } else {
+            return result
         }
     }
     
@@ -326,8 +398,9 @@ class DatabaseHelper {
     func querySQL(db: OpaquePointer,sql: String,values:Array<String>) throws -> Array<[String: Any]>{
         var selectSQLStatement: OpaquePointer? = nil
         var result: Array<[String: Any]> = []
-
-        if sqlite3_prepare_v2(db, sql, -1, &selectSQLStatement, nil) == SQLITE_OK {
+        var message: String = ""
+        var returnCode: Int32 = sqlite3_prepare_v2(db, sql, -1, &selectSQLStatement, nil)
+        if returnCode == SQLITE_OK {
             if !values.isEmpty {
             // do the binding of values
                 var idx: Int = 1
@@ -335,45 +408,56 @@ class DatabaseHelper {
                     do {
                         try UtilsSQLite.bind(handle: selectSQLStatement!, value: value, idx: idx)
                         idx = idx + 1
-                    } catch {
-                        throw DatabaseHelperError.querySql(message: "Error: querySQL bind failed")
+                    } catch let error as NSError {
+                        message = "Error: querySQL bind failed " + error.localizedDescription
+                        break
                     }
                 }
             }
-            var fetchColumnInfo = true
-            var columnCount: Int32 = 0
-            var columnNames = [String]()
-            var columnTypes = [Int32]()
+            if(message.count == 0) {
+                var fetchColumnInfo = true
+                var columnCount: Int32 = 0
+                var columnNames = [String]()
+                var columnTypes = [Int32]()
 
-            while (sqlite3_step(selectSQLStatement) == SQLITE_ROW ) {
-                if fetchColumnInfo {
-                    columnCount = sqlite3_column_count(selectSQLStatement)
+                while (sqlite3_step(selectSQLStatement) == SQLITE_ROW ) {
+                    if fetchColumnInfo {
+                        columnCount = sqlite3_column_count(selectSQLStatement)
 
+                        for index in 0..<columnCount {
+                            let name = sqlite3_column_name(selectSQLStatement, index)!
+                            columnNames.append(String(cString: name))
+                            columnTypes.append(UtilsSQLite.getColumnType(index: index, stmt: selectSQLStatement!))
+                        }
+                        fetchColumnInfo = false
+                    }
+
+                    var rowData: [String: Any] = [:]
                     for index in 0..<columnCount {
-                        let name = sqlite3_column_name(selectSQLStatement, index)!
-                        columnNames.append(String(cString: name))
-                        columnTypes.append(UtilsSQLite.getColumnType(index: index, stmt: selectSQLStatement!))
+                        let key = columnNames[Int(index)]
+                        let type = columnTypes[Int(index)]
+
+                        if let val = UtilsSQLite.getColumnValue(index: index, type: type, stmt: selectSQLStatement!) {
+                            rowData[key] = val
+                        }
                     }
-                    fetchColumnInfo = false
+                    result.append(rowData)
                 }
-
-                var rowData: [String: Any] = [:]
-                for index in 0..<columnCount {
-                    let key = columnNames[Int(index)]
-                    let type = columnTypes[Int(index)]
-
-                    if let val = UtilsSQLite.getColumnValue(index: index, type: type, stmt: selectSQLStatement!) {
-                        rowData[key] = val
-                    }
-                 }
-                result.append(rowData)
             }
-
         } else {
-            throw DatabaseHelperError.querySql(message: "Error: querySQL prepare failed")
+            let errmsg: String = String(cString: sqlite3_errmsg(db))
+            message = "Error: querySQL prepare failed rc: \(returnCode) message: \(errmsg)"
         }
-        sqlite3_finalize(selectSQLStatement)
-        return result;
+        returnCode = sqlite3_finalize(selectSQLStatement)
+        if returnCode != SQLITE_OK {
+            let errmsg: String = String(cString: sqlite3_errmsg(db))
+            message = "Error: querySQL finalize failed rc: \(returnCode) message: \(errmsg)"
+        }
+        if(message.count > 0) {
+            throw DatabaseHelperError.querySql(message: message)
+        } else {
+            return result
+        }
     }
     
     // MARK: - DeleteDB
@@ -484,9 +568,7 @@ class DatabaseHelper {
         } catch DatabaseHelperError.prepareSql(let message) {
             throw DatabaseHelperError.createSyncTable(message: message)
         }
-        if sqlite3_close_v2(db) != SQLITE_OK {
-            throw DatabaseHelperError.selectSql(message: "Error: createSyncTable closing the database")
-        }
+        closeDB(db: db,method: "createSyncTable")
         return retObj
     }
     
@@ -512,9 +594,7 @@ class DatabaseHelper {
         } catch DatabaseHelperError.prepareSql(let message) {
             throw DatabaseHelperError.createSyncDate(message: message)
         }
-        if sqlite3_close_v2(db) != SQLITE_OK {
-            throw DatabaseHelperError.selectSql(message: "Error: createSyncTable closing the database")
-        }
+        closeDB(db: db,method: "setSyncDate")
 
         return retBool
     }
@@ -524,21 +604,35 @@ class DatabaseHelper {
     private func createDatabaseSchema(jsonSQLite:JsonSQLite) throws -> Int {
         var success: Bool = true
         var changes: Int = -1
-        // Set PRAGMAS
-        let pragmas: String = "PRAGMA user_version = 1;\nPRAGMA foreign_keys = ON;"
-        do {
-            changes = try execSQL(sql: pragmas)
-            if (changes == -1) {
-                return changes
-            }
-        } catch DatabaseHelperError.execSql(let message) {
-            throw DatabaseHelperError.importFromJson(message: message)
+        var returnCode: Int32
+        guard let db: OpaquePointer = try UtilsSQLite.getWritableDatabase(filename: "\(path)/\(databaseName)",
+                    secret:secret) else {
+            throw DatabaseHelperError.dbConnection(message:"Error: DB connection")
         }
-        print("*** PRAGMAS DONE ***")
+        if(jsonSQLite.mode == "full") {
+            // Set PRAGMAS
+            let pragmas: String = "PRAGMA user_version = 1;"
+            returnCode = sqlite3_exec(db,pragmas, nil, nil, nil)
+            if returnCode != SQLITE_OK {
+                let errmsg: String = String(cString: sqlite3_errmsg(db))
+                throw DatabaseHelperError.createDatabaseSchema(
+                    message: "Error: PRAGMA failed rc: \(returnCode) message: \(errmsg)")
+            }
+        }
+
+        // Start a transaction
+
+        let sql: String = "BEGIN TRANSACTION;"
+        returnCode = sqlite3_exec(db,sql, nil, nil, nil)
+        if returnCode != SQLITE_OK {
+            let errmsg: String = String(cString: sqlite3_errmsg(db))
+            throw DatabaseHelperError.createDatabaseSchema(
+                message: "Error: Begin Transaction failed rc: \(returnCode) message: \(errmsg)")
+        }
+
 
         // Create the Database Schema
         var statements: Array<String> = []
-        statements.append("BEGIN TRANSACTION;")
         // Loop through Tables
         for i in 0..<jsonSQLite.tables.count {
              if( jsonSQLite.tables[i].schema != nil && jsonSQLite.tables[i].schema!.count > 0) {
@@ -585,15 +679,23 @@ class DatabaseHelper {
             }
 
         }
-        if(statements.count > 1) {
-            statements.append("COMMIT TRANSACTION;");
+        if(statements.count > 0) {
             let joined = statements.joined(separator: "\n")
             do {
-                changes = try execSQL(sql: joined)
+                changes = try execute(db: db,sql: joined)
                 if (changes == -1) {
                     success = false
+                } else {
+                    let sql: String = "COMMIT TRANSACTION;"
+                    print("**** sql create schemas & indexes \(sql)")
+                    returnCode = sqlite3_exec(db,sql, nil, nil, nil)
+                    if returnCode != SQLITE_OK {
+                        let errmsg: String = String(cString: sqlite3_errmsg(db))
+                        throw DatabaseHelperError.createDatabaseSchema(
+                            message: "Error: Commit Transaction failed rc: \(returnCode) message: \(errmsg)")
+                    }
                 }
-            } catch DatabaseHelperError.execSql(let message) {
+            } catch DatabaseHelperError.execute(let message) {
                 throw DatabaseHelperError.importFromJson(message: message)
             }
         } else {
@@ -602,6 +704,7 @@ class DatabaseHelper {
         if(!success) {
             changes = -1
         }
+        closeDB(db: db,method: "createDatabaseSchema")
         return changes
     }
 
@@ -618,8 +721,11 @@ class DatabaseHelper {
         // Start a transaction
 
         let sql: String = "BEGIN TRANSACTION;"
-        if sqlite3_exec(db,sql, nil, nil, nil) != SQLITE_OK {
-            throw DatabaseHelperError.createTableData(message: "Error: Begin Transaction failed")
+        var returnCode: Int32 = sqlite3_exec(db,sql, nil, nil, nil)
+        if returnCode != SQLITE_OK {
+            let errmsg: String = String(cString: sqlite3_errmsg(db))
+            throw DatabaseHelperError.createTableData(
+                message: "Error: Begin Transaction failed rc: \(returnCode) message: \(errmsg)")
         }
         // Loop on tables to create Data
         for i in 0..<jsonSQLite.tables.count {
@@ -712,8 +818,11 @@ class DatabaseHelper {
         if(success && isValue) {
             let sql: String = "COMMIT TRANSACTION;"
             print("**** sql create table value \(sql)")
-            if sqlite3_exec(db,sql, nil, nil, nil) != SQLITE_OK {
-                throw DatabaseHelperError.createTableData(message: "Error: Commit Transaction failed")
+            returnCode = sqlite3_exec(db,sql, nil, nil, nil)
+            if returnCode != SQLITE_OK {
+                let errmsg: String = String(cString: sqlite3_errmsg(db))
+                throw DatabaseHelperError.createTableData(
+                    message: "Error: Commit Transaction failed rc: \(returnCode) message: \(errmsg)")
             }
         } else {
             if(!isValue) {
@@ -722,9 +831,7 @@ class DatabaseHelper {
                 changes = -1
             }
         }
-        if sqlite3_close_v2(db) != SQLITE_OK {
-            throw DatabaseHelperError.createTableData(message: "Error: createTableData closing the database")
-        }
+        closeDB(db: db,method: "createTableData")
         return changes
     }
 

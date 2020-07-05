@@ -94,6 +94,9 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                 database = SQLiteDatabase.openOrCreateDatabase(databaseFile, "", null);
                 isOpen = true;
             } catch (Exception e) {
+                Log.d(TAG, "InitializeSQLCipher: no-encryption " + e );
+            } finally {
+                if(database != null) database.close();
                 database = null;
             }
         } else if (encrypted && mode.equals("secret") && secret.length() > 0) {
@@ -110,8 +113,10 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                     isOpen = true;
                 } catch (Exception e1) {
                     Log.d(TAG, "InitializeSQLCipher: Wrong Secret ");
-                    database = null;
                 }
+            } finally {
+                if(database != null) database.close();
+                database = null;
             }
         } else if(encrypted && mode.equals("newsecret") && secret.length() > 0
                 && newsecret.length() > 0) {
@@ -125,6 +130,8 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                 isOpen = true;
             } catch (Exception e) {
                 Log.d(TAG, "InitializeSQLCipher: " + e );
+            } finally {
+                if(database != null) database.close();
                 database = null;
             }
 
@@ -138,11 +145,12 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                 isOpen = true;
             } catch (Exception e) {
                 Log.d(TAG, "InitializeSQLCipher: Error while encrypting the database");
+            } finally {
+                if(database != null) database.close();
                 database = null;
             }
         }
         Log.d(TAG, "InitializeSQLCipher isOpen: " + isOpen );
-        if(database != null) database.close();
 
     }
 
