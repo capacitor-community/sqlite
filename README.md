@@ -1,7 +1,8 @@
 # Capacitor SQLite Plugin
 Capacitor SQlite  Plugin is a custom Native Capacitor plugin to create SQLite databases, tables, indexes and store permanently data to it. 
-It is then available only for IOS and Android platforms.
-Databases can be or not encrypted using SQLCipher module.
+The plugin is available for IOS and Android platforms for native Apps and on Electron for Desktop Apps.
+On IOS and Android platforms, the plugin is based on the SQLCipher module then databases can be or not encrypted.
+On Electron platform, the plugin is based on sqlite3 then databases cannot be encrypted
 
 
 ### `available since 2.0.0`

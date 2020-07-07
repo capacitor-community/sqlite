@@ -1,3 +1,9 @@
+## 2.2.0 (2020-07-07)
+
+### Bug Fixes
+
+* Improve the readme
+
 ## 2.2.0-4 (2020-07-04)
 
 ### Bug Fixes
