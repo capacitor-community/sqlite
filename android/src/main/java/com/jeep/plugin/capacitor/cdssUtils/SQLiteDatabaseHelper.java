@@ -258,7 +258,9 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                     }
                     lastId = prepareSQL(db, statement, values );
                     if (lastId == -1) {
-                        throw new Exception("ExecSet failed");
+                        success = false;
+                        changes = Integer.valueOf(-1);
+                        break;
                     } else {
                         changes += 1;
                     }
@@ -844,7 +846,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                 db.endTransaction();
                 if (success && isValue) changes = dbChanges(db);
                 if(!isValue) changes = Integer.valueOf(0);
-//                db.close();
+                db.close();
             }
         }
 

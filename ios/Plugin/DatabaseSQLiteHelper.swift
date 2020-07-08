@@ -255,16 +255,18 @@ class DatabaseHelper {
                 let row:NSMutableDictionary = dict as! NSMutableDictionary
                 let sql: String = row["statement"] as! String
                 let values : Array<Any> = row["values"] as! Array<Any>
-                let rowChanges: Int = try prepareSQL(db: db,sql: sql,values: values)
-                if( rowChanges != 1) {
-                    message = "Error: prepareSQL failed"
+                let lastId: Int = try prepareSQL(db: db,sql: sql,values: values)
+                if( lastId == -1) {
+                    message = "Error: ExecSet failed in  prepareSQL"
+                    changes = -1
                     break
                 } else {
-                    changes += rowChanges
+                    changes += 1
                 }
             }
         } catch DatabaseHelperError.prepareSql(let msg) {
             message = msg
+            changes = -1
         }
         if(changes > 0 && message.count == 0) {
             // commit the transaction
@@ -273,10 +275,12 @@ class DatabaseHelper {
             if returnCode != SQLITE_OK {
                 let errmsg: String = String(cString: sqlite3_errmsg(db))
                 message = "Error: Commit Transaction failed rc: \(returnCode) message: \(errmsg)"
+            } else {
+                changes = Int(sqlite3_total_changes(db))
             }
-            // close the db          
-            closeDB(db: db,method: "execSet")
         }
+        // close the db
+        closeDB(db: db,method: "execSet")
         if(message.count > 0) {
             throw DatabaseHelperError.execSet(message: message)
         } else {
@@ -304,10 +308,7 @@ class DatabaseHelper {
                 message: "Error: Begin Transaction failed rc: \(returnCode) message: \(errmsg)")
         }
         do {
-            changes = try prepareSQL(db: db,sql: sql,values: values)
-            if changes > 0 {
-                lastId = Int(sqlite3_last_insert_rowid(db))
-            }
+            lastId = try prepareSQL(db: db,sql: sql,values: values)
         } catch DatabaseHelperError.prepareSql(let msg) {
             message = msg
         }
@@ -319,6 +320,8 @@ class DatabaseHelper {
                 message = "Error: Commit Transaction failed rc: \(returnCode) message: \(errmsg)"
             }
         }
+        changes = Int(sqlite3_total_changes(db))
+
         closeDB(db: db,method: "runSQL")
         if(message.count > 0) {
             throw DatabaseHelperError.runSql(message: message)
@@ -332,7 +335,8 @@ class DatabaseHelper {
     
     func prepareSQL(db: OpaquePointer,sql: String,values: Array<Any>) throws -> Int {
         var runSQLStatement: OpaquePointer? = nil
-        var message: String = "";
+        var message: String = ""
+        var lastId: Int = -1
 
         var returnCode: Int32 = sqlite3_prepare_v2(db, sql, -1, &runSQLStatement, nil)
         if returnCode == SQLITE_OK {
@@ -366,8 +370,8 @@ class DatabaseHelper {
         if(message.count > 0) {
             throw DatabaseHelperError.prepareSql(message: message)
         } else {
-            let changes: Int = Int(sqlite3_changes(db))
-            return changes
+            lastId = Int(sqlite3_last_insert_rowid(db))
+            return lastId
         }
     }
 
@@ -588,8 +592,8 @@ class DatabaseHelper {
 //            let dateString = dateFormatter.string(from: date)
             let syncTime: Int = Int(date.timeIntervalSince1970)
             let stmt: String = "UPDATE sync_table SET sync_date = \(syncTime) WHERE id = 1;"
-            let changes: Int = try prepareSQL(db: db,sql: stmt, values: [])
-            if(changes != -1) {retBool = true}
+            let lastId: Int = try prepareSQL(db: db,sql: stmt, values: [])
+            if(lastId != -1) {retBool = true}
 
         } catch DatabaseHelperError.prepareSql(let message) {
             throw DatabaseHelperError.createSyncDate(message: message)
@@ -805,8 +809,8 @@ class DatabaseHelper {
                     }
                     let rowValues = getValuesFromRow(rowValues: row)
                     do {
-                        changes = try prepareSQL(db: db,sql: stmt, values: rowValues)
-                        if (changes == -1) {
+                        let lastId: Int = try prepareSQL(db: db,sql: stmt, values: rowValues)
+                        if (lastId == -1) {
                             success = false
                         }
                     } catch DatabaseHelperError.prepareSql(let message) {
@@ -823,6 +827,8 @@ class DatabaseHelper {
                 let errmsg: String = String(cString: sqlite3_errmsg(db))
                 throw DatabaseHelperError.createTableData(
                     message: "Error: Commit Transaction failed rc: \(returnCode) message: \(errmsg)")
+            } else {
+                changes = Int(sqlite3_total_changes(db))
             }
         } else {
             if(!isValue) {

@@ -1,3 +1,13 @@
+## 2.2.1-1 (2020-07-08)
+
+### Chores
+
+* Capacitor: update 2.2.1
+
+### Bug Fixes
+
+* Fix return changes in IOS plugin when FOREIGN KEY and ON DELETE CASCADE 
+
 ## 2.2.0 (2020-07-07)
 
 ### Bug Fixes
