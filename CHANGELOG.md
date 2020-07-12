@@ -1,3 +1,9 @@
+## 2.2.1-2 (2020-07-12)
+
+### Bug Fixes
+
+* Fix issue#29 iOS exportToJson converting zero and empty string values to "NULL" 
+
 ## 2.2.1-1 (2020-07-08)
 
 ### Chores

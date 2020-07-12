@@ -1233,23 +1233,19 @@ class DatabaseHelper {
                     var row: Array<Any> = []
                     for j in 0..<names.count {
                         if types[j] == "INTEGER" {
-                            if((resValues[i][names[j]] as! Int64) != 0) {
-                                row.append(resValues[i][names[j]] as! Int64 )
-                            } else {
-                                row.append("NULL")
-                            }
-                        } else if types[j] == "REAL" {
-                                if((resValues[i][names[j]] as! Double) != 0) {
-                                row.append(resValues[i][names[j]] as! Double )
-                            } else {
-                                row.append("NULL")
-                            }
-                        } else {
-                            if((resValues[i][names[j]] as! String).count > 1) {
+                            if(resValues[i][names[j]] is String) {
                                 row.append(resValues[i][names[j]] as! String )
                             } else {
-                                row.append("NULL")
+                                row.append(resValues[i][names[j]] as! Int64 )
                             }
+                        } else if types[j] == "REAL" {
+                            if(resValues[i][names[j]] is String) {
+                                row.append(resValues[i][names[j]] as! String )
+                            } else {
+                                row.append(resValues[i][names[j]] as! Double )
+                            }
+                        } else {
+                            row.append(resValues[i][names[j]] as! String )
                         }
                     }
                     retValues.append(row)

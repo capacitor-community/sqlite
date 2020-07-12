@@ -123,7 +123,6 @@ class UtilsSQLite {
 
         // Determine type of column - http://www.sqlite.org/c3ref/c_blob.html
         let declaredType = sqlite3_column_decltype(stmt, index)
-
         if (declaredType != nil) {
             var declaredType = String(cString:declaredType!).uppercased()
 
@@ -159,31 +158,38 @@ class UtilsSQLite {
 
     
     class func getColumnValue(index: Int32, type: Int32, stmt: OpaquePointer) -> Any? {
-        switch type {
-        case SQLITE_INTEGER:
-            let val = sqlite3_column_int64(stmt, index)
-            return Int64(val)
-        case SQLITE_FLOAT:
-            let val = sqlite3_column_double(stmt, index)
-            return Double(val)
-        case SQLITE_BLOB:
-            let data = sqlite3_column_blob(stmt, index)
-            let size = sqlite3_column_bytes(stmt, index)
-            let val = NSData(bytes:data, length: Int(size))
-            // Convert to string
-            let strVal: String = String(decoding: val, as: UTF8.self)
-            return strVal
-        case SQLITE_TEXT:
-            let buffer = sqlite3_column_text(stmt, index)
-            var val: String
-            if(buffer != nil) {
-                val = String(cString:buffer!)
-            } else {
-                val = ""
+        if(sqlite3_column_type(stmt, index) == SQLITE_NULL) {
+            return "NULL"
+        } else {
+
+            switch type {
+            case SQLITE_INTEGER:
+                let val = sqlite3_column_int64(stmt, index)
+                return Int64(val)
+            case SQLITE_FLOAT:
+                let val = sqlite3_column_double(stmt, index)
+                return Double(val)
+            case SQLITE_BLOB:
+                let data = sqlite3_column_blob(stmt, index)
+                let size = sqlite3_column_bytes(stmt, index)
+                let val = NSData(bytes:data, length: Int(size))
+                // Convert to string
+                let strVal: String = String(decoding: val, as: UTF8.self)
+                return strVal
+            case SQLITE_TEXT:
+                let buffer = sqlite3_column_text(stmt, index)
+                var val: String
+                if(buffer != nil) {
+                    val = String(cString:buffer!)
+                } else {
+                    val = "NULL"
+                }
+                return val
+            case SQLITE_NULL:
+                return "NULL"
+            default:
+                return "NULL"
             }
-            return val
-        default:
-            return nil
         }
     }
 
