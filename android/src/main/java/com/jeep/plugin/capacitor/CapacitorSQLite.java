@@ -221,14 +221,19 @@ public class CapacitorSQLite extends Plugin {
         }
         JSArray values = call.getArray("values");
         if(values == null) {
-            retValues(call, new JSArray(), "Must provide an Array of values");
+            retValues(call, new JSArray(), "Must provide an Array of strings");
             return;
         }
         JSArray res;
         if(values.length() > 0) {
             ArrayList<String> vals = new ArrayList<String>();
             for (int i = 0; i < values.length(); i++) {
-                vals.add(values.getString(i));
+                if( values.get(i) instanceof String ) {
+                    vals.add(values.getString(i));
+                } else {
+                    retValues(call, new JSArray(), "Must provide an Array of strings");
+                    return;
+                }
             }
             res = mDb.querySQL(statement, vals);
         } else {
@@ -414,26 +419,37 @@ public class CapacitorSQLite extends Plugin {
     private void retResult(PluginCall call, Boolean res, String message) {
         JSObject ret = new JSObject();
         ret.put("result", res);
-        if(message != null) ret.put("message",message);
+        if(message != null) {
+            ret.put("message",message);
+            Log.v(TAG, "*** ERROR " + message);
+        }
         call.resolve(ret);
     }
     private void retChanges(PluginCall call, JSObject res, String message) {
         JSObject ret = new JSObject();
         ret.put("changes", res);
-        if(message != null) ret.put("message",message);
+        if(message != null) {
+            ret.put("message",message);
+            Log.v(TAG, "*** ERROR " + message);
+        }
         call.resolve(ret);
     }
     private void retValues(PluginCall call, JSArray res, String message) {
         JSObject ret = new JSObject();
         ret.put("values", res);
-        if(message != null) ret.put("message",message);
+        if(message != null) {
+            ret.put("message",message);
+            Log.v(TAG, "*** ERROR " + message);
+        }
         call.resolve(ret);
     }
     private void retJSObject(PluginCall call, JSObject res, String message) {
         JSObject ret = new JSObject();
         ret.put("export", res);
-        if(message != null) ret.put("message",message);
+        if(message != null) {
+            ret.put("message",message);
+            Log.v(TAG, "*** ERROR " + message);
+        }
         call.resolve(ret);
     }
-
 }

@@ -1,3 +1,9 @@
+## 2.2.1-3 (2020-07-15)
+
+### Bug Fixes
+
+* Fix issue#31 Android query value array types MUST be an Array<String>
+
 ## 2.2.1-2 (2020-07-12)
 
 ### Bug Fixes
