@@ -1,5 +1,5 @@
 {
-  "name": "capacitor-sqlite",
+  "name": "@capacitor-community/sqlite",
   "version": "2.3.0-1",
   "description": "Capacitor SQLite Plugin",
   "homepage": "https://github.com/capacitor-community/sqlite",

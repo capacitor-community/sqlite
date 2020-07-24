@@ -17,7 +17,7 @@ export class CapacitorSQLitePluginElectron extends WebPlugin {
     constructor() {
         super({
             name: 'CapacitorSQLite',
-            platforms: ['electron']
+            platforms: ['electron'],
         });
     }
     echo(options) {
@@ -28,18 +28,24 @@ export class CapacitorSQLitePluginElectron extends WebPlugin {
     open(options) {
         return __awaiter(this, void 0, void 0, function* () {
             if (typeof options.database === 'undefined') {
-                return Promise.reject({ result: false, message: "Must provide a database name" });
+                return Promise.reject({
+                    result: false,
+                    message: 'Must provide a database name',
+                });
             }
             const dbName = options.database;
             /*
-            let encrypted: boolean = options.encrypted ? options.encrypted : false;
-            let inMode: string = "no-encryption";
-            let secretKey: string = "";
-            let newsecretKey: string = "";
-            */
+                let encrypted: boolean = options.encrypted ? options.encrypted : false;
+                let inMode: string = "no-encryption";
+                let secretKey: string = "";
+                let newsecretKey: string = "";
+                */
             this.mDb = new DatabaseSQLiteHelper(`${dbName}SQLite.db` /*,encrypted,inMode,secretKey,newsecretKey*/);
             if (!this.mDb.isOpen) {
-                return Promise.reject({ result: false, message: `Open command failed: Database ${dbName}SQLite.db not opened` });
+                return Promise.reject({
+                    result: false,
+                    message: `Open command failed: Database ${dbName}SQLite.db not opened`,
+                });
             }
             return Promise.resolve({ result: true });
         });
@@ -47,12 +53,15 @@ export class CapacitorSQLitePluginElectron extends WebPlugin {
     close(options) {
         return __awaiter(this, void 0, void 0, function* () {
             if (typeof options.database === 'undefined') {
-                return Promise.reject({ result: false, message: "Close command failed: Must provide a database name" });
+                return Promise.reject({
+                    result: false,
+                    message: 'Close command failed: Must provide a database name',
+                });
             }
             const dbName = options.database;
             const ret = yield this.mDb.close(`${dbName}SQLite.db`);
             if (!ret) {
-                return Promise.reject({ status: false, message: "Close command failed" });
+                return Promise.reject({ status: false, message: 'Close command failed' });
             }
             return Promise.resolve({ result: true });
         });
@@ -61,7 +70,10 @@ export class CapacitorSQLitePluginElectron extends WebPlugin {
         return __awaiter(this, void 0, void 0, function* () {
             const retRes = { changes: -1 };
             if (typeof options.statements === 'undefined') {
-                return Promise.reject({ changes: retRes, message: "Execute command failed : Must provide raw SQL statements" });
+                return Promise.reject({
+                    changes: retRes,
+                    message: 'Execute command failed : Must provide raw SQL statements',
+                });
             }
             const statements = options.statements;
             const ret = yield this.mDb.exec(statements);
@@ -72,15 +84,25 @@ export class CapacitorSQLitePluginElectron extends WebPlugin {
         return __awaiter(this, void 0, void 0, function* () {
             const retRes = { changes: -1 };
             if (typeof options.set === 'undefined') {
-                return Promise.reject({ changes: retRes, message: "ExecuteSet command failed : Must provide a set of SQL statements" });
+                return Promise.reject({
+                    changes: retRes,
+                    message: 'ExecuteSet command failed : Must provide a set of SQL statements',
+                });
             }
             const setOfStatements = options.set;
             if (setOfStatements.length === 0) {
-                return Promise.reject({ changes: retRes, message: "ExecuteSet command failed : Must provide a non-empty set of SQL statements" });
+                return Promise.reject({
+                    changes: retRes,
+                    message: 'ExecuteSet command failed : Must provide a non-empty set of SQL statements',
+                });
             }
             for (let i = 0; i < setOfStatements.length; i++) {
-                if (!("statement" in setOfStatements[i]) || !("values" in setOfStatements[i])) {
-                    return Promise.reject({ changes: retRes, message: "ExecuteSet command failed : Must provide a set as Array of {statement,values}" });
+                if (!('statement' in setOfStatements[i]) ||
+                    !('values' in setOfStatements[i])) {
+                    return Promise.reject({
+                        changes: retRes,
+                        message: 'ExecuteSet command failed : Must provide a set as Array of {statement,values}',
+                    });
                 }
             }
             const ret = yield this.mDb.execSet(setOfStatements);
@@ -91,10 +113,16 @@ export class CapacitorSQLitePluginElectron extends WebPlugin {
         return __awaiter(this, void 0, void 0, function* () {
             const retRes = { changes: -1 };
             if (typeof options.statement === 'undefined') {
-                return Promise.reject({ changes: retRes, message: "Run command failed : Must provide a SQL statement" });
+                return Promise.reject({
+                    changes: retRes,
+                    message: 'Run command failed : Must provide a SQL statement',
+                });
             }
             if (typeof options.values === 'undefined') {
-                return Promise.reject({ changes: retRes, message: "Run command failed : Values should be an Array of values" });
+                return Promise.reject({
+                    changes: retRes,
+                    message: 'Run command failed : Values should be an Array of values',
+                });
             }
             const statement = options.statement;
             const values = options.values;
@@ -111,10 +139,16 @@ export class CapacitorSQLitePluginElectron extends WebPlugin {
     query(options) {
         return __awaiter(this, void 0, void 0, function* () {
             if (typeof options.statement === 'undefined') {
-                return Promise.reject({ changes: -1, message: "Query command failed : Must provide a SQL statement" });
+                return Promise.reject({
+                    changes: -1,
+                    message: 'Query command failed : Must provide a SQL statement',
+                });
             }
             if (typeof options.values === 'undefined') {
-                return Promise.reject({ changes: -1, message: "Query command failed : Values should be an Array of values" });
+                return Promise.reject({
+                    changes: -1,
+                    message: 'Query command failed : Values should be an Array of values',
+                });
             }
             const statement = options.statement;
             const values = options.values;
@@ -132,12 +166,15 @@ export class CapacitorSQLitePluginElectron extends WebPlugin {
         return __awaiter(this, void 0, void 0, function* () {
             let dbName = options.database;
             if (dbName == null) {
-                return Promise.reject({ result: false, message: "Must provide a Database Name" });
+                return Promise.reject({
+                    result: false,
+                    message: 'Must provide a Database Name',
+                });
             }
             dbName = `${options.database}SQLite.db`;
             const utils = new UtilsSQLite();
             const dbPath = utils.getDBPath(dbName);
-            let message = "";
+            let message = '';
             let ret = false;
             try {
                 if (fs.existsSync(dbPath)) {
@@ -163,11 +200,17 @@ export class CapacitorSQLitePluginElectron extends WebPlugin {
         return __awaiter(this, void 0, void 0, function* () {
             let dbName = options.database;
             if (dbName == null) {
-                return Promise.reject({ result: false, message: "Must provide a Database Name" });
+                return Promise.reject({
+                    result: false,
+                    message: 'Must provide a Database Name',
+                });
             }
             dbName = `${options.database}SQLite.db`;
             if (typeof this.mDb === 'undefined' || this.mDb === null) {
-                return Promise.reject({ result: false, message: "The database is not opened" });
+                return Promise.reject({
+                    result: false,
+                    message: 'The database is not opened',
+                });
             }
             const ret = yield this.mDb.deleteDB(dbName);
             return Promise.resolve({ result: ret });
@@ -176,13 +219,21 @@ export class CapacitorSQLitePluginElectron extends WebPlugin {
     isJsonValid(options) {
         return __awaiter(this, void 0, void 0, function* () {
             const jsonStrObj = options.jsonstring;
-            if (typeof jsonStrObj != "string" || jsonStrObj == null || jsonStrObj.length === 0) {
-                return Promise.reject({ result: false, message: "Must provide a json object" });
+            if (typeof jsonStrObj != 'string' ||
+                jsonStrObj == null ||
+                jsonStrObj.length === 0) {
+                return Promise.reject({
+                    result: false,
+                    message: 'Must provide a json object',
+                });
             }
             const jsonObj = JSON.parse(jsonStrObj);
             const isValid = isJsonSQLite(jsonObj);
             if (!isValid) {
-                return Promise.reject({ result: false, message: "Stringify Json Object not Valid" });
+                return Promise.reject({
+                    result: false,
+                    message: 'Stringify Json Object not Valid',
+                });
             }
             else {
                 return Promise.resolve({ result: true });
@@ -193,13 +244,21 @@ export class CapacitorSQLitePluginElectron extends WebPlugin {
         return __awaiter(this, void 0, void 0, function* () {
             const retRes = { changes: -1 };
             const jsonStrObj = options.jsonstring;
-            if (typeof jsonStrObj != "string" || jsonStrObj == null || jsonStrObj.length === 0) {
-                return Promise.reject({ changes: retRes, message: "Must provide a json object" });
+            if (typeof jsonStrObj != 'string' ||
+                jsonStrObj == null ||
+                jsonStrObj.length === 0) {
+                return Promise.reject({
+                    changes: retRes,
+                    message: 'Must provide a json object',
+                });
             }
             const jsonObj = JSON.parse(jsonStrObj);
             const isValid = isJsonSQLite(jsonObj);
             if (!isValid)
-                return Promise.reject({ changes: retRes, message: "Must provide a jsonSQLite object" });
+                return Promise.reject({
+                    changes: retRes,
+                    message: 'Must provide a jsonSQLite object',
+                });
             const dbName = `${jsonObj.database}SQLite.db`;
             this.mDb = new DatabaseSQLiteHelper(dbName);
             const ret = yield this.mDb.importJson(jsonObj);
@@ -212,10 +271,17 @@ export class CapacitorSQLitePluginElectron extends WebPlugin {
         return __awaiter(this, void 0, void 0, function* () {
             const retRes = {};
             if (typeof options.jsonexportmode === 'undefined') {
-                return Promise.reject({ export: retRes, message: "Must provide a json export mode" });
+                return Promise.reject({
+                    export: retRes,
+                    message: 'Must provide a json export mode',
+                });
             }
-            if (options.jsonexportmode != "full" && options.jsonexportmode != "partial") {
-                return Promise.reject({ export: retRes, message: "Json export mode should be 'full' or 'partial'" });
+            if (options.jsonexportmode != 'full' &&
+                options.jsonexportmode != 'partial') {
+                return Promise.reject({
+                    export: retRes,
+                    message: "Json export mode should be 'full' or 'partial'",
+                });
             }
             const exportMode = options.jsonexportmode;
             const ret = yield this.mDb.exportJson(exportMode);
@@ -230,8 +296,12 @@ export class CapacitorSQLitePluginElectron extends WebPlugin {
     }
     setSyncDate(options) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (typeof options.syncdate === 'undefined' || typeof options.syncdate != "string") {
-                return Promise.reject({ result: false, message: "Must provide a synchronization date" });
+            if (typeof options.syncdate === 'undefined' ||
+                typeof options.syncdate != 'string') {
+                return Promise.reject({
+                    result: false,
+                    message: 'Must provide a synchronization date',
+                });
             }
             const syncDate = options.syncdate;
             const ret = yield this.mDb.setSyncDate(syncDate);

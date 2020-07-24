@@ -5,10 +5,12 @@ const appName = window['appName'];
 const homeDir = window['homeDir'];
 export class UtilsSQLite {
     constructor() {
-        this.pathDB = "Databases";
+        this.pathDB = 'Databases';
     }
     connection(dbName, readOnly /*,key?:string*/) {
-        const flags = readOnly ? sqlite3.OPEN_READONLY : sqlite3.OPEN_CREATE | sqlite3.OPEN_READWRITE;
+        const flags = readOnly
+            ? sqlite3.OPEN_READONLY
+            : sqlite3.OPEN_CREATE | sqlite3.OPEN_READWRITE;
         // get the path for the database
         const dbPath = this.getDBPath(dbName);
         let dbOpen = null;
@@ -17,12 +19,12 @@ export class UtilsSQLite {
                 dbOpen = new sqlite3.Database(dbPath, flags);
             }
             catch (e) {
-                console.log("Error: in UtilsSQLite.connection ", e);
+                console.log('Error: in UtilsSQLite.connection ', e);
                 dbOpen = null;
             }
             finally {
                 if (dbOpen != null) {
-                    const statements = "PRAGMA foreign_keys = ON;";
+                    const statements = 'PRAGMA foreign_keys = ON;';
                     dbOpen.serialize(() => {
                         dbOpen.exec(statements, (err) => {
                             if (err) {
@@ -45,18 +47,18 @@ export class UtilsSQLite {
         return db;
     }
     getDBPath(dbName) {
-        let retPath = "";
+        let retPath = '';
         const dbFolder = this.pathDB;
         if (appName == null) {
-            let sep = "/";
-            const idx = __dirname.indexOf("\\");
+            let sep = '/';
+            const idx = __dirname.indexOf('\\');
             if (idx != -1)
-                sep = "\\";
+                sep = '\\';
             const dir = __dirname.substring(0, __dirname.lastIndexOf(sep) + 1);
             retPath = path.join(dir, dbFolder, dbName);
             const retB = this._createFolderIfNotExists(path.join(dir, dbFolder));
             if (!retB)
-                retPath = "";
+                retPath = '';
         }
         else {
             retPath = path.join(homeDir, dbFolder, appName, dbName);
@@ -64,10 +66,10 @@ export class UtilsSQLite {
             if (retB) {
                 retB = this._createFolderIfNotExists(path.join(homeDir, dbFolder, appName));
                 if (!retB)
-                    retPath = "";
+                    retPath = '';
             }
             else {
-                retPath = "";
+                retPath = '';
             }
         }
         return retPath;
@@ -90,7 +92,9 @@ export class UtilsSQLite {
         var path = directory.replace(/\/$/, '').split('/');
         for (var i = 1; i <= path.length; i++) {
             var segment = path.slice(0, i).join('/');
-            segment.length > 0 && !fs.existsSync(segment) ? fs.mkdirSync(segment) : null;
+            segment.length > 0 && !fs.existsSync(segment)
+                ? fs.mkdirSync(segment)
+                : null;
         }
         return;
     }

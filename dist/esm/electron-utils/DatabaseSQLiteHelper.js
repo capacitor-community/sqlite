@@ -8,7 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { UtilsSQLite } from './UtilsSQLite';
-import { isJsonSQLite, isTable } from './JsonUtils';
+import { isJsonSQLite, isTable, } from './JsonUtils';
 const fs = window['fs'];
 export class DatabaseSQLiteHelper {
     constructor(dbName /*, encrypted:boolean = false, mode:string = "no-encryption",
@@ -30,7 +30,7 @@ export class DatabaseSQLiteHelper {
         }
         else {
             this.isOpen = false;
-            console.log("openDB: Error Database connection failed");
+            console.log('openDB: Error Database connection failed');
         }
     }
     createSyncTable() {
@@ -39,13 +39,13 @@ export class DatabaseSQLiteHelper {
             const db = this._utils.connection(this._databaseName, false /*,this._secret*/);
             if (db === null) {
                 this.isOpen = false;
-                console.log("exec: Error Database connection failed");
+                console.log('exec: Error Database connection failed');
                 resolve(retRes);
             }
             // check if the table has already been created
             const isExists = yield this.isTableExists(db, 'sync_table');
             if (!isExists) {
-                const date = Math.round((new Date()).getTime() / 1000);
+                const date = Math.round(new Date().getTime() / 1000);
                 const stmts = `
                 BEGIN TRANSACTION;
                 CREATE TABLE IF NOT EXISTS sync_table (
@@ -67,10 +67,10 @@ export class DatabaseSQLiteHelper {
             const db = this._utils.connection(this._databaseName, false /*,this._secret*/);
             if (db === null) {
                 this.isOpen = false;
-                console.log("exec: Error Database connection failed");
+                console.log('exec: Error Database connection failed');
                 resolve(ret);
             }
-            const sDate = Math.round((new Date(syncDate)).getTime() / 1000);
+            const sDate = Math.round(new Date(syncDate).getTime() / 1000);
             const stmt = `UPDATE sync_table SET sync_date = ${sDate} WHERE id = 1;`;
             const retRes = yield this.execute(db, stmt);
             if (retRes.changes != -1)
@@ -80,17 +80,17 @@ export class DatabaseSQLiteHelper {
         }));
     }
     close(databaseName) {
-        return new Promise((resolve) => {
+        return new Promise(resolve => {
             const db = this._utils.connection(databaseName, false /*,this._secret*/);
             if (db === null) {
                 this.isOpen = false;
-                console.log("close: Error Database connection failed");
+                console.log('close: Error Database connection failed');
                 resolve(false);
             }
             this.isOpen = true;
             db.close((err) => {
                 if (err) {
-                    console.log("close: Error closing the database");
+                    console.log('close: Error closing the database');
                     resolve(false);
                 }
                 else {
@@ -106,7 +106,7 @@ export class DatabaseSQLiteHelper {
             const db = this._utils.connection(this._databaseName, false /*,this._secret*/);
             if (db === null) {
                 this.isOpen = false;
-                console.log("exec: Error Database connection failed");
+                console.log('exec: Error Database connection failed');
                 resolve(retRes);
             }
             retRes = yield this.execute(db, statements);
@@ -115,7 +115,7 @@ export class DatabaseSQLiteHelper {
         }));
     }
     execute(db, statements) {
-        return new Promise((resolve) => {
+        return new Promise(resolve => {
             let retRes = { changes: -1 };
             db.serialize(() => {
                 db.exec(statements, (err) => __awaiter(this, void 0, void 0, function* () {
@@ -139,7 +139,7 @@ export class DatabaseSQLiteHelper {
             const db = this._utils.connection(this._databaseName, false /*,this._secret*/);
             if (db === null) {
                 this.isOpen = false;
-                console.log("run: Error Database connection failed");
+                console.log('run: Error Database connection failed');
                 resolve(retRes);
             }
             let retB = yield this.beginTransaction(db);
@@ -148,16 +148,16 @@ export class DatabaseSQLiteHelper {
                 resolve(retRes);
             }
             for (let i = 0; i < set.length; i++) {
-                const statement = "statement" in set[i] ? set[i].statement : null;
-                const values = "values" in set[i] && set[i].values.length > 0 ? set[i].values : null;
+                const statement = 'statement' in set[i] ? set[i].statement : null;
+                const values = 'values' in set[i] && set[i].values.length > 0 ? set[i].values : null;
                 if (statement == null || values == null) {
-                    console.log("execSet: Error statement or values are null");
+                    console.log('execSet: Error statement or values are null');
                     db.close();
                     resolve(retRes);
                 }
                 lastId = yield this.prepare(db, statement, values);
                 if (lastId === -1) {
-                    console.log("execSet: Error return lastId= -1");
+                    console.log('execSet: Error return lastId= -1');
                     db.close();
                     resolve(retRes);
                 }
@@ -181,7 +181,7 @@ export class DatabaseSQLiteHelper {
             const db = this._utils.connection(this._databaseName, false /*,this._secret*/);
             if (db === null) {
                 this.isOpen = false;
-                console.log("run: Error Database connection failed");
+                console.log('run: Error Database connection failed');
                 resolve(retRes);
             }
             let retB = yield this.beginTransaction(db);
@@ -191,7 +191,7 @@ export class DatabaseSQLiteHelper {
             }
             lastId = yield this.prepare(db, statement, values);
             if (lastId === -1) {
-                console.log("run: Error return lastId= -1");
+                console.log('run: Error return lastId= -1');
                 db.close();
                 resolve(retRes);
             }
@@ -251,7 +251,7 @@ export class DatabaseSQLiteHelper {
             const db = this._utils.connection(this._databaseName, true /*,this._secret*/);
             if (db === null) {
                 this.isOpen = false;
-                console.log("query: Error Database connection failed");
+                console.log('query: Error Database connection failed');
                 resolve([]);
             }
             const retRows = yield this.select(db, statement, values);
@@ -260,7 +260,7 @@ export class DatabaseSQLiteHelper {
         }));
     }
     select(db, statement, values) {
-        return new Promise((resolve) => {
+        return new Promise(resolve => {
             let retRows = [];
             if (values && values.length >= 1) {
                 db.serialize(() => {
@@ -293,7 +293,7 @@ export class DatabaseSQLiteHelper {
         });
     }
     deleteDB(dbName) {
-        return new Promise((resolve) => {
+        return new Promise(resolve => {
             let ret = false;
             const dbPath = this._utils.getDBPath(dbName);
             if (dbPath.length > 0) {
@@ -303,7 +303,7 @@ export class DatabaseSQLiteHelper {
                     ret = true;
                 }
                 catch (e) {
-                    console.log("Error: in deleteDB");
+                    console.log('Error: in deleteDB');
                 }
             }
             resolve(ret);
@@ -358,9 +358,10 @@ export class DatabaseSQLiteHelper {
                 resolve(-1);
             // create the database schema
             let statements = [];
-            statements.push("BEGIN TRANSACTION;");
+            statements.push('BEGIN TRANSACTION;');
             for (let i = 0; i < jsonData.tables.length; i++) {
-                if (jsonData.tables[i].schema != null && jsonData.tables[i].schema.length >= 1) {
+                if (jsonData.tables[i].schema != null &&
+                    jsonData.tables[i].schema.length >= 1) {
                     isSchema = true;
                     if (jsonData.mode === 'full')
                         statements.push(`DROP TABLE IF EXISTS ${jsonData.tables[i].name};`);
@@ -383,9 +384,10 @@ export class DatabaseSQLiteHelper {
                             }
                         }
                     }
-                    statements.push(");");
+                    statements.push(');');
                 }
-                if (jsonData.tables[i].indexes != null && jsonData.tables[i].indexes.length >= 1) {
+                if (jsonData.tables[i].indexes != null &&
+                    jsonData.tables[i].indexes.length >= 1) {
                     isIndexes = true;
                     for (let j = 0; j < jsonData.tables[i].indexes.length; j++) {
                         statements.push(`CREATE INDEX IF NOT EXISTS ${jsonData.tables[i].indexes[j].name} ON ${jsonData.tables[i].name} (${jsonData.tables[i].indexes[j].column});`);
@@ -393,7 +395,7 @@ export class DatabaseSQLiteHelper {
                 }
             }
             if (statements.length > 1) {
-                statements.push("COMMIT TRANSACTION;");
+                statements.push('COMMIT TRANSACTION;');
                 const schemaStmt = statements.join('\n');
                 changes = yield this.exec(schemaStmt);
             }
@@ -411,7 +413,7 @@ export class DatabaseSQLiteHelper {
             const db = this._utils.connection(this._databaseName, false /*,this._secret*/);
             if (db === null) {
                 this.isOpen = false;
-                console.log("createTableData: Error Database connection failed");
+                console.log('createTableData: Error Database connection failed');
                 resolve(changes);
             }
             let retB = yield this.beginTransaction(db);
@@ -421,7 +423,8 @@ export class DatabaseSQLiteHelper {
             }
             // Create the table's data
             for (let i = 0; i < jsonData.tables.length; i++) {
-                if (jsonData.tables[i].values != null && jsonData.tables[i].values.length >= 1) {
+                if (jsonData.tables[i].values != null &&
+                    jsonData.tables[i].values.length >= 1) {
                     // Check if the table exists
                     const tableExists = yield this.isTableExists(db, jsonData.tables[i].name);
                     if (!tableExists) {
@@ -444,7 +447,8 @@ export class DatabaseSQLiteHelper {
                             // Loop on Table Values
                             for (let j = 0; j < jsonData.tables[i].values.length; j++) {
                                 // Check the row number of columns
-                                if (jsonData.tables[i].values[j].length != tableColumnTypes.length) {
+                                if (jsonData.tables[i].values[j].length !=
+                                    tableColumnTypes.length) {
                                     console.log(`Error: Table ${jsonData.tables[i].name} values row ${j} not correct length`);
                                     success = false;
                                     break;
@@ -458,8 +462,8 @@ export class DatabaseSQLiteHelper {
                                 }
                                 const retisIdExists = yield this.isIdExists(db, jsonData.tables[i].name, tableColumnNames[0], jsonData.tables[i].values[j][0]);
                                 let stmt;
-                                if (jsonData.mode === 'full' || (jsonData.mode === 'partial'
-                                    && !retisIdExists)) {
+                                if (jsonData.mode === 'full' ||
+                                    (jsonData.mode === 'partial' && !retisIdExists)) {
                                     // Insert
                                     const nameString = tableColumnNames.join();
                                     const questionMarkString = yield this.createQuestionMarkString(tableColumnNames.length);
@@ -479,7 +483,7 @@ export class DatabaseSQLiteHelper {
                                 }
                                 const lastId = yield this.prepare(db, stmt, jsonData.tables[i].values[j]);
                                 if (lastId === -1) {
-                                    console.log("run: Error return lastId= -1");
+                                    console.log('run: Error return lastId= -1');
                                     success = false;
                                     break;
                                 }
@@ -531,10 +535,10 @@ export class DatabaseSQLiteHelper {
         }));
     }
     createQuestionMarkString(length) {
-        return new Promise((resolve) => {
-            var retString = "";
+        return new Promise(resolve => {
+            var retString = '';
             for (let i = 0; i < length; i++) {
-                retString += "?,";
+                retString += '?,';
             }
             if (retString.length > 1)
                 retString = retString.slice(0, -1);
@@ -542,8 +546,8 @@ export class DatabaseSQLiteHelper {
         });
     }
     setNameForUpdate(names) {
-        return new Promise((resolve) => {
-            var retString = "";
+        return new Promise(resolve => {
+            var retString = '';
             for (let i = 0; i < names.length; i++) {
                 retString += `${names[i]} = ? ,`;
             }
@@ -556,7 +560,7 @@ export class DatabaseSQLiteHelper {
         return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
             let isType = true;
             for (let i = 0; i < rowValues.length; i++) {
-                if (rowValues[i].toString().toUpperCase() != "NULL") {
+                if (rowValues[i].toString().toUpperCase() != 'NULL') {
                     isType = yield this.isType(tableTypes[i], rowValues[i]);
                     if (!isType)
                         break;
@@ -566,17 +570,17 @@ export class DatabaseSQLiteHelper {
         }));
     }
     isType(type, value) {
-        return new Promise((resolve) => {
+        return new Promise(resolve => {
             let ret = false;
-            if (type === "NULL" && typeof value === 'object')
+            if (type === 'NULL' && typeof value === 'object')
                 ret = true;
-            if (type === "TEXT" && typeof value === 'string')
+            if (type === 'TEXT' && typeof value === 'string')
                 ret = true;
-            if (type === "INTEGER" && typeof value === 'number')
+            if (type === 'INTEGER' && typeof value === 'number')
                 ret = true;
-            if (type === "REAL" && typeof value === 'number')
+            if (type === 'REAL' && typeof value === 'number')
                 ret = true;
-            if (type === "BLOB" && typeof value === 'string')
+            if (type === 'BLOB' && typeof value === 'string')
                 ret = true;
             resolve(ret);
         });
@@ -592,11 +596,11 @@ export class DatabaseSQLiteHelper {
         }));
     }
     dbChanges(db) {
-        return new Promise((resolve) => {
-            const SELECT_CHANGE = "SELECT total_changes()";
+        return new Promise(resolve => {
+            const SELECT_CHANGE = 'SELECT total_changes()';
             let ret = -1;
             db.get(SELECT_CHANGE, (err, row) => {
-                // process the row here 
+                // process the row here
                 if (err) {
                     console.log(`"Error: dbChanges failed: " : ${err.message}`);
                     resolve(ret);
@@ -610,11 +614,11 @@ export class DatabaseSQLiteHelper {
         });
     }
     getLastId(db) {
-        return new Promise((resolve) => {
-            const SELECT_LAST_ID = "SELECT last_insert_rowid()";
+        return new Promise(resolve => {
+            const SELECT_LAST_ID = 'SELECT last_insert_rowid()';
             let ret = -1;
             db.get(SELECT_LAST_ID, (err, row) => {
-                // process the row here 
+                // process the row here
                 if (err) {
                     console.log(`"Error: getLastId failed: " : ${err.message}`);
                     resolve(ret);
@@ -628,8 +632,8 @@ export class DatabaseSQLiteHelper {
         });
     }
     beginTransaction(db) {
-        return new Promise((resolve) => {
-            const stmt = "BEGIN TRANSACTION";
+        return new Promise(resolve => {
+            const stmt = 'BEGIN TRANSACTION';
             db.exec(stmt, (err) => {
                 if (err) {
                     console.log(`exec: Error Begin Transaction failed : ${err.message}`);
@@ -642,8 +646,8 @@ export class DatabaseSQLiteHelper {
         });
     }
     endTransaction(db) {
-        return new Promise((resolve) => {
-            const stmt = "COMMIT TRANSACTION";
+        return new Promise(resolve => {
+            const stmt = 'COMMIT TRANSACTION';
             db.exec(stmt, (err) => {
                 if (err) {
                     console.log(`exec: Error End Transaction failed : ${err.message}`);
@@ -662,7 +666,7 @@ export class DatabaseSQLiteHelper {
             const db = this._utils.connection(databaseName, false /*,this._secret*/);
             if (db === null) {
                 this.isOpen = false;
-                console.log("createJsonTables: Error Database connection failed");
+                console.log('createJsonTables: Error Database connection failed');
                 resolve(false);
             }
             // get the table's names
@@ -675,22 +679,23 @@ export class DatabaseSQLiteHelper {
             }
             let modTables = {};
             let syncDate = 0;
-            if (retJson.mode === "partial") {
+            if (retJson.mode === 'partial') {
                 syncDate = yield this.getSyncDate(db);
                 if (syncDate != -1) {
                     // take the tables which have been modified or created since last sync
                     modTables = yield this.getTableModified(db, tables, syncDate);
                 }
                 else {
-                    console.log("createJsonTables: Error did not find a sync_date");
+                    console.log('createJsonTables: Error did not find a sync_date');
                     resolve(false);
                 }
             }
             let jsonTables = [];
             for (let i = 0; i < tables.length; i++) {
-                if (retJson.mode === "partial" && (Object.keys(modTables).length === 0 ||
-                    Object.keys(modTables).indexOf(tables[i].name) === -1 ||
-                    modTables[tables[i].name] == "No")) {
+                if (retJson.mode === 'partial' &&
+                    (Object.keys(modTables).length === 0 ||
+                        Object.keys(modTables).indexOf(tables[i].name) === -1 ||
+                        modTables[tables[i].name] == 'No')) {
                     continue;
                 }
                 let table = {};
@@ -698,28 +703,28 @@ export class DatabaseSQLiteHelper {
                 let isIndexes = false;
                 let isValues = false;
                 table.name = tables[i].name;
-                if (retJson.mode === "full" ||
-                    (retJson.mode === "partial" && modTables[table.name] === "Create")) {
+                if (retJson.mode === 'full' ||
+                    (retJson.mode === 'partial' && modTables[table.name] === 'Create')) {
                     // create the schema
                     let schema = [];
                     // take the substring between parenthesis
-                    let openPar = tables[i].sql.indexOf("(");
-                    let closePar = tables[i].sql.lastIndexOf(")");
+                    let openPar = tables[i].sql.indexOf('(');
+                    let closePar = tables[i].sql.lastIndexOf(')');
                     let sstr = tables[i].sql.substring(openPar + 1, closePar);
-                    let sch = sstr.replace(/\n/g, "").split(",");
+                    let sch = sstr.replace(/\n/g, '').split(',');
                     for (let j = 0; j < sch.length; j++) {
                         const rstr = sch[j].trim();
-                        let idx = rstr.indexOf(" ");
-                        //find the index of the first 
+                        let idx = rstr.indexOf(' ');
+                        //find the index of the first
                         let row = [rstr.slice(0, idx), rstr.slice(idx + 1)];
                         if (row.length != 2)
                             resolve(false);
-                        if (row[0].toUpperCase() != "FOREIGN") {
+                        if (row[0].toUpperCase() != 'FOREIGN') {
                             schema.push({ column: row[0], value: row[1] });
                         }
                         else {
-                            const oPar = rstr.indexOf("(");
-                            const cPar = rstr.indexOf(")");
+                            const oPar = rstr.indexOf('(');
+                            const cPar = rstr.indexOf(')');
                             row = [rstr.slice(oPar + 1, cPar), rstr.slice(cPar + 2)];
                             if (row.length != 2)
                                 resolve(false);
@@ -729,7 +734,7 @@ export class DatabaseSQLiteHelper {
                     table.schema = schema;
                     isSchema = true;
                     // create the indexes
-                    stmt = "SELECT name,tbl_name,sql FROM sqlite_master WHERE ";
+                    stmt = 'SELECT name,tbl_name,sql FROM sqlite_master WHERE ';
                     stmt += `type = 'index' AND tbl_name = '${table.name}' AND sql NOTNULL;`;
                     const retIndexes = yield this.select(db, stmt, []);
                     if (retIndexes.length > 0) {
@@ -737,12 +742,14 @@ export class DatabaseSQLiteHelper {
                         for (let j = 0; j < retIndexes.length; j++) {
                             const keys = Object.keys(retIndexes[j]);
                             if (keys.length === 3) {
-                                if (retIndexes[j]["tbl_name"] === table.name) {
-                                    const sql = retIndexes[j]["sql"];
-                                    const oPar = sql.lastIndexOf("(");
-                                    const cPar = sql.lastIndexOf(")");
-                                    indexes.push({ name: retIndexes[j]["name"],
-                                        column: sql.slice(oPar + 1, cPar) });
+                                if (retIndexes[j]['tbl_name'] === table.name) {
+                                    const sql = retIndexes[j]['sql'];
+                                    const oPar = sql.lastIndexOf('(');
+                                    const cPar = sql.lastIndexOf(')');
+                                    indexes.push({
+                                        name: retIndexes[j]['name'],
+                                        column: sql.slice(oPar + 1, cPar),
+                                    });
                                 }
                                 else {
                                     console.log("createJsonTables: Error indexes table name doesn't match");
@@ -763,8 +770,8 @@ export class DatabaseSQLiteHelper {
                 const tableNamesTypes = yield this.getTableColumnNamesTypes(db, table.name);
                 const rowNames = tableNamesTypes.names;
                 // create the data
-                if (retJson.mode === "full" ||
-                    (retJson.mode === "partial" && modTables[table.name] === "Create")) {
+                if (retJson.mode === 'full' ||
+                    (retJson.mode === 'partial' && modTables[table.name] === 'Create')) {
                     stmt = `SELECT * FROM ${table.name};`;
                 }
                 else {
@@ -784,14 +791,15 @@ export class DatabaseSQLiteHelper {
                             row.push(retValues[j][rowNames[k]]);
                         }
                         else {
-                            row.push("NULL");
+                            row.push('NULL');
                         }
                     }
                     values.push(row);
                 }
                 table.values = values;
                 isValues = true;
-                if (Object.keys(table).length < 1 || !isTable(table) ||
+                if (Object.keys(table).length < 1 ||
+                    !isTable(table) ||
                     (!isSchema && !isIndexes && !isValues)) {
                     console.log('createJsonTables: Error table is not a jsonTable');
                     success = false;
@@ -818,21 +826,21 @@ export class DatabaseSQLiteHelper {
                 let retQuery = yield this.select(db, stmt, []);
                 if (retQuery.length != 1)
                     break;
-                const totalCount = retQuery[0]["count(*)"];
+                const totalCount = retQuery[0]['count(*)'];
                 // get total count of modified since last sync
                 stmt = `SELECT count(*) FROM ${tables[i].name} WHERE last_modified > ${syncDate};`;
                 retQuery = yield this.select(db, stmt, []);
                 if (retQuery.length != 1)
                     break;
-                const totalModifiedCount = retQuery[0]["count(*)"];
+                const totalModifiedCount = retQuery[0]['count(*)'];
                 if (totalModifiedCount === 0) {
-                    mode = "No";
+                    mode = 'No';
                 }
                 else if (totalCount === totalModifiedCount) {
-                    mode = "Create";
+                    mode = 'Create';
                 }
                 else {
-                    mode = "Modified";
+                    mode = 'Modified';
                 }
                 const key = tables[i].name;
                 retModified[key] = mode;
@@ -849,7 +857,7 @@ export class DatabaseSQLiteHelper {
             let stmt = `SELECT sync_date FROM sync_table;`;
             let retQuery = yield this.select(db, stmt, []);
             if (retQuery.length === 1) {
-                const syncDate = retQuery[0]["sync_date"];
+                const syncDate = retQuery[0]['sync_date'];
                 if (syncDate > 0)
                     ret = syncDate;
             }

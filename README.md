@@ -84,6 +84,8 @@ No configuration required for this plugin
 
 ## Usage
 
+ALL BELOW HAS TO BE REFORMATTED
+
 TODO
 
 - Upload of images (as Base64 string)
