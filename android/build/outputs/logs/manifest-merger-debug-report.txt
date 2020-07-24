@@ -1,0 +1,37 @@
+-- Merging decision tree log ---
+manifest
+ADDED from /Users/queaujeanpierre/Documents/capacitor-community/sqlite/android/src/main/AndroidManifest.xml:2:3-4:14
+INJECTED from /Users/queaujeanpierre/Documents/capacitor-community/sqlite/android/src/main/AndroidManifest.xml:2:3-4:14
+INJECTED from /Users/queaujeanpierre/Documents/capacitor-community/sqlite/android/src/main/AndroidManifest.xml:2:3-4:14
+INJECTED from /Users/queaujeanpierre/Documents/capacitor-community/sqlite/android/src/main/AndroidManifest.xml:2:3-4:14
+INJECTED from /Users/queaujeanpierre/Documents/capacitor-community/sqlite/android/src/main/AndroidManifest.xml:2:3-4:14
+INJECTED from /Users/queaujeanpierre/Documents/capacitor-community/sqlite/android/src/main/AndroidManifest.xml:2:3-4:14
+INJECTED from /Users/queaujeanpierre/Documents/capacitor-community/sqlite/android/src/main/AndroidManifest.xml:2:3-4:14
+	package
+		ADDED from /Users/queaujeanpierre/Documents/capacitor-community/sqlite/android/src/main/AndroidManifest.xml:3:7-59
+		INJECTED from /Users/queaujeanpierre/Documents/capacitor-community/sqlite/android/src/main/AndroidManifest.xml
+		INJECTED from /Users/queaujeanpierre/Documents/capacitor-community/sqlite/android/src/main/AndroidManifest.xml
+	android:versionName
+		INJECTED from /Users/queaujeanpierre/Documents/capacitor-community/sqlite/android/src/main/AndroidManifest.xml
+		ADDED from /Users/queaujeanpierre/Documents/capacitor-community/sqlite/android/src/main/AndroidManifest.xml:2:3-4:14
+		INJECTED from /Users/queaujeanpierre/Documents/capacitor-community/sqlite/android/src/main/AndroidManifest.xml
+	android:versionCode
+		INJECTED from /Users/queaujeanpierre/Documents/capacitor-community/sqlite/android/src/main/AndroidManifest.xml
+		ADDED from /Users/queaujeanpierre/Documents/capacitor-community/sqlite/android/src/main/AndroidManifest.xml:2:3-4:14
+		INJECTED from /Users/queaujeanpierre/Documents/capacitor-community/sqlite/android/src/main/AndroidManifest.xml
+	xmlns:android
+		ADDED from /Users/queaujeanpierre/Documents/capacitor-community/sqlite/android/src/main/AndroidManifest.xml:2:13-71
+uses-sdk
+INJECTED from /Users/queaujeanpierre/Documents/capacitor-community/sqlite/android/src/main/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /Users/queaujeanpierre/Documents/capacitor-community/sqlite/android/src/main/AndroidManifest.xml
+INJECTED from /Users/queaujeanpierre/Documents/capacitor-community/sqlite/android/src/main/AndroidManifest.xml
+INJECTED from /Users/queaujeanpierre/Documents/capacitor-community/sqlite/android/src/main/AndroidManifest.xml
+INJECTED from /Users/queaujeanpierre/Documents/capacitor-community/sqlite/android/src/main/AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from /Users/queaujeanpierre/Documents/capacitor-community/sqlite/android/src/main/AndroidManifest.xml
+		ADDED from /Users/queaujeanpierre/Documents/capacitor-community/sqlite/android/src/main/AndroidManifest.xml
+		INJECTED from /Users/queaujeanpierre/Documents/capacitor-community/sqlite/android/src/main/AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from /Users/queaujeanpierre/Documents/capacitor-community/sqlite/android/src/main/AndroidManifest.xml
+		ADDED from /Users/queaujeanpierre/Documents/capacitor-community/sqlite/android/src/main/AndroidManifest.xml
+		INJECTED from /Users/queaujeanpierre/Documents/capacitor-community/sqlite/android/src/main/AndroidManifest.xml

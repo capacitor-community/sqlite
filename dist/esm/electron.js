@@ -103,7 +103,7 @@ export class CapacitorSQLitePluginElectron extends WebPlugin {
                 ret = yield this.mDb.run(statement, values);
             }
             else {
-                ret = yield this.mDb.run(statement, null);
+                ret = yield this.mDb.run(statement, []);
             }
             return Promise.resolve({ changes: ret });
         });
@@ -204,7 +204,7 @@ export class CapacitorSQLitePluginElectron extends WebPlugin {
             this.mDb = new DatabaseSQLiteHelper(dbName);
             const ret = yield this.mDb.importJson(jsonObj);
             this.mDb.close(dbName);
-            this.mDb = null;
+            //      this.mDb = null;
             return Promise.resolve({ changes: ret });
         });
     }

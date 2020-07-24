@@ -252,7 +252,7 @@ export class DatabaseSQLiteHelper {
             if (db === null) {
                 this.isOpen = false;
                 console.log("query: Error Database connection failed");
-                resolve(null);
+                resolve([]);
             }
             const retRows = yield this.select(db, statement, values);
             db.close();
@@ -261,7 +261,7 @@ export class DatabaseSQLiteHelper {
     }
     select(db, statement, values) {
         return new Promise((resolve) => {
-            let retRows = null;
+            let retRows = [];
             if (values && values.length >= 1) {
                 db.serialize(() => {
                     db.all(statement, values, (err, rows) => {
@@ -296,13 +296,15 @@ export class DatabaseSQLiteHelper {
         return new Promise((resolve) => {
             let ret = false;
             const dbPath = this._utils.getDBPath(dbName);
-            try {
-                fs.unlinkSync(dbPath);
-                //file removed
-                ret = true;
-            }
-            catch (e) {
-                console.log("Error: in deleteDB");
+            if (dbPath.length > 0) {
+                try {
+                    fs.unlinkSync(dbPath);
+                    //file removed
+                    ret = true;
+                }
+                catch (e) {
+                    console.log("Error: in deleteDB");
+                }
             }
             resolve(ret);
         });
@@ -358,7 +360,7 @@ export class DatabaseSQLiteHelper {
             let statements = [];
             statements.push("BEGIN TRANSACTION;");
             for (let i = 0; i < jsonData.tables.length; i++) {
-                if (jsonData.tables[i].schema && jsonData.tables[i].schema.length >= 1) {
+                if (jsonData.tables[i].schema != null && jsonData.tables[i].schema.length >= 1) {
                     isSchema = true;
                     if (jsonData.mode === 'full')
                         statements.push(`DROP TABLE IF EXISTS ${jsonData.tables[i].name};`);
@@ -383,7 +385,7 @@ export class DatabaseSQLiteHelper {
                     }
                     statements.push(");");
                 }
-                if (jsonData.tables[i].indexes && jsonData.tables[i].indexes.length >= 1) {
+                if (jsonData.tables[i].indexes != null && jsonData.tables[i].indexes.length >= 1) {
                     isIndexes = true;
                     for (let j = 0; j < jsonData.tables[i].indexes.length; j++) {
                         statements.push(`CREATE INDEX IF NOT EXISTS ${jsonData.tables[i].indexes[j].name} ON ${jsonData.tables[i].name} (${jsonData.tables[i].indexes[j].column});`);
@@ -419,7 +421,7 @@ export class DatabaseSQLiteHelper {
             }
             // Create the table's data
             for (let i = 0; i < jsonData.tables.length; i++) {
-                if (jsonData.tables[i].values && jsonData.tables[i].values.length >= 1) {
+                if (jsonData.tables[i].values != null && jsonData.tables[i].values.length >= 1) {
                     // Check if the table exists
                     const tableExists = yield this.isTableExists(db, jsonData.tables[i].name);
                     if (!tableExists) {
@@ -672,7 +674,7 @@ export class DatabaseSQLiteHelper {
                 resolve(false);
             }
             let modTables = {};
-            let syncDate;
+            let syncDate = 0;
             if (retJson.mode === "partial") {
                 syncDate = yield this.getSyncDate(db);
                 if (syncDate != -1) {
@@ -766,7 +768,12 @@ export class DatabaseSQLiteHelper {
                     stmt = `SELECT * FROM ${table.name};`;
                 }
                 else {
-                    stmt = `SELECT * FROM ${table.name} WHERE last_modified > ${syncDate};`;
+                    if (syncDate != 0) {
+                        stmt = `SELECT * FROM ${table.name} WHERE last_modified > ${syncDate};`;
+                    }
+                    else {
+                        stmt = `SELECT * FROM ${table.name};`;
+                    }
                 }
                 const retValues = yield this.select(db, stmt, []);
                 let values = [];

@@ -12,7 +12,7 @@ export class UtilsSQLite {
         // get the path for the database
         const dbPath = this.getDBPath(dbName);
         let dbOpen = null;
-        if (dbPath != null) {
+        if (dbPath.length > 0) {
             try {
                 dbOpen = new sqlite3.Database(dbPath, flags);
             }
@@ -45,7 +45,7 @@ export class UtilsSQLite {
         return db;
     }
     getDBPath(dbName) {
-        let retPath = null;
+        let retPath = "";
         const dbFolder = this.pathDB;
         if (appName == null) {
             let sep = "/";
@@ -56,7 +56,7 @@ export class UtilsSQLite {
             retPath = path.join(dir, dbFolder, dbName);
             const retB = this._createFolderIfNotExists(path.join(dir, dbFolder));
             if (!retB)
-                retPath = null;
+                retPath = "";
         }
         else {
             retPath = path.join(homeDir, dbFolder, appName, dbName);
@@ -64,10 +64,10 @@ export class UtilsSQLite {
             if (retB) {
                 retB = this._createFolderIfNotExists(path.join(homeDir, dbFolder, appName));
                 if (!retB)
-                    retPath = null;
+                    retPath = "";
             }
             else {
-                retPath = null;
+                retPath = "";
             }
         }
         return retPath;

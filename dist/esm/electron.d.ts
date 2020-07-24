@@ -1,8 +1,7 @@
 import { WebPlugin } from '@capacitor/core';
 import { CapacitorSQLitePlugin, capSQLiteOptions, capSQLiteResult } from './definitions';
-import { DatabaseSQLiteHelper } from './electron-utils/DatabaseSQLiteHelper';
 export declare class CapacitorSQLitePluginElectron extends WebPlugin implements CapacitorSQLitePlugin {
-    mDb: DatabaseSQLiteHelper;
+    private mDb;
     constructor();
     echo(options: {
         value: string;
