@@ -21,7 +21,7 @@
 
 | Maintainer        | GitHub                                    | Social |
 | ----------------- | ----------------------------------------- | ------ |
-| Quéau Jean Pierre | [jepiqueau](https://github.com/jepiqueau) | [      |
+| Quéau Jean Pierre | [jepiqueau](https://github.com/jepiqueau) |        |
 
 ## Installation
 
@@ -30,34 +30,126 @@ npm install @capacitor-community/sqlite
 npx cap sync
 ```
 
-On iOS, no further steps are needed.
+- On iOS, no further steps are needed.
 
-On Android, register the plugin in your main activity:
+- On Android, register the plugin in your main activity:
 
-```java
-import com.getcapacitor.community.database.sqlite.CapacitorSQLite;
+  ```java
+  import com.getcapacitor.community.database.sqlite.CapacitorSQLite;
 
-public class MainActivity extends BridgeActivity {
+  public class MainActivity extends BridgeActivity {
 
-  @Override
-  public void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
 
-    // Initializes the Bridge
-    this.init(
-        savedInstanceState,
-        new ArrayList<Class<? extends Plugin>>() {
+      // Initializes the Bridge
+      this.init(
+          savedInstanceState,
+          new ArrayList<Class<? extends Plugin>>() {
 
-          {
-            // Additional plugins you've installed go here
-            // Ex: add(TotallyAwesomePlugin.class);
-            add(CapacitorSQLite.class);
+            {
+              // Additional plugins you've installed go here
+              // Ex: add(TotallyAwesomePlugin.class);
+              add(CapacitorSQLite.class);
+            }
           }
-        }
-      );
+        );
+    }
   }
-}
-```
+  ```
+
+- On Electron, go to the Electron folder of YOUR_APPLICATION
+
+  ```bash
+  npm install --save sqlite3
+  npm install --save-dev @types/sqlite3
+  npm install --save-dev electron-rebuild
+  ```
+
+  Modify the Electron package.json file by adding a script "postinstall"
+
+  ```json
+    "scripts": {
+      "electron:start": "electron ./",
+      "postinstall": "electron-rebuild -f -w sqlite3"
+    },
+  ```
+
+  Execute the postinstall script
+
+  ```bash
+  npm run postinstall
+  ```
+
+  Go back in the main folder of your application
+  Add a script in the index.html file of your application in the body tag
+
+  - case databases under `YourApplication/Electron/`
+
+  ```html
+  <body>
+    <app-root></app-root>
+    <script>
+      try {
+        if (
+          process &&
+          typeof process.versions.electron === 'string' &&
+          process.versions.hasOwnProperty('electron')
+        ) {
+          const sqlite3 = require('sqlite3');
+          const fs = require('fs');
+          const path = require('path');
+          window.sqlite3 = sqlite3;
+          window.fs = fs;
+          window.path = path;
+        }
+      } catch {
+        console.log("process doesn't exists");
+      }
+    </script>
+  </body>
+  ```
+
+  - case databases under `User/Databases/APP_NAME/`
+
+  ```html
+  <body>
+    <app-root></app-root>
+    <script>
+      try {
+        if (
+          process &&
+          typeof process.versions.electron === 'string' &&
+          process.versions.hasOwnProperty('electron')
+        ) {
+          const sqlite3 = require('sqlite3');
+          const fs = require('fs');
+          const path = require('path');
+          const homeDir = require('os').homedir();
+          window.sqlite3 = sqlite3;
+          window.fs = fs;
+          window.path = path;
+          window.appName = 'YOUR_APP_NAME';
+          window.homeDir = homeDir;
+        }
+      } catch {
+        console.log("process doesn't exists");
+      }
+    </script>
+  </body>
+  ```
+
+  Then build YOUR_APPLICATION
+
+  ```
+  npm run build
+  npx cap copy
+  npx cap copy web
+  npx cap open android
+  npx cap open ios
+  npx cap open electron
+  ```
 
 ## Configuration
 
@@ -82,200 +174,11 @@ No configuration required for this plugin
 | isJsonValid             | ✅      | ✅  | ✅       | ❌  |
 | isDBExists              | ✅      | ✅  | ✅       | ❌  |
 
-## Usage
+## Documentation
 
-ALL BELOW HAS TO BE REFORMATTED
+[API_Documentation](https://github.com/capacitor-community/sqlite/blob/master/APIdocumentation.md)
 
-TODO
-
-- Upload of images (as Base64 string)
-
-### `available since 2.0.1-1`
-
-- exportToJson has been added with two modes "full" or "partial". To use the "partial", it is mandatory to add a "last_modified" field as Integer (Date as a Unix timestamp)
-- createSyncTable has also been added and is required only once, it will create a table to store the synchronization date
-- setSyncDate is allowing the update of the synchronization date
-
-All these new features give you all the bits and pieces to manage in your application the synchronization of SQL databases between a remote server and the mobile device. It can also be used for upgrading the schema of databases by exporting the current database to json, make the schema modifications in the json object and importing it back with the mode "full".
-
-[ImportExportJson_Documentation](https://github.com/jepiqueau/capacitor-sqlite/blob/master/ImportExportJson.md)
-
-### `available since 2.1.0-1`
-
-Electron Plugin: the location of the databases could nw be selected:
-
-- the previous one **YourApplication/Electron/Databases**
-- under **User/Databases/APP_NAME/** to not loose them when updating the application. This is manage in the index.html file of the application (see below `Running on Electron`).
-
-## Error Return values
-
-- For all methods, a message containing the error message will be returned
-
-- For execute and run commands, {changes:{changes: -1}} will be returned in changes
-
-- For query command, an empty array will be returned in values
-
-## API
-
-### `open({database:"fooDB"}) => Promise<{result:boolean,message:string}>`
-
-Open a database,
-the plugin add a suffix "SQLite" and an extension ".db" to the name given ie (fooDBSQLite.db)
-
-#### Returns
-
-Type: `Promise<{result:boolean,message:string}>`
-
-### `close({database:"fooDB"}) => Promise<{result:boolean,message:string}>`
-
-Close a database
-
-#### Returns
-
-Type: `Promise<{result:boolean,message:string}>`
-
-### `execute({statements:"fooStatements"}) => Promise<{changes:{changes:number},message:string}>`
-
-Execute a batch of raw SQL statements given in a string
-
-#### Returns
-
-Type: `Promise<{changes:{changes:number},message:string}>`
-
-### `executeSet({set:[{statement:"fooStatement",values:[1,"foo1","foo2"]}]}) => Promise<{changes:{changes:number},message:string}>`
-
-Execute a set of raw SQL statements given in an Array of
-{statement: String , values: Array<Any>}
-
-#### Returns
-
-Type: `Promise<{changes:{changes:number},message:string}>`
-
-### `run({statement:"fooStatement",values:[]}) => Promise<{changes:{changes:number,lastId:number},message:string}>`
-
-Run a SQL statement (single statement)
-
-#### Returns
-
-Type: `Promise<{changes:{changes:number,lastId:number},message:string}>`
-
-### `run({statement:"fooStatement VALUES (?,?,?)",values:[1,"foo1","foo2"]}) => Promise<{changes:{changes:number,lastId:number},message:string}>`
-
-Run a SQL statement with given values (single statement)
-
-#### Returns
-
-Type: `Promise<{changes:{changes:number,lastId:number},message:string}>`
-
-### `query({statement:"fooStatement",values:[]}) => Promise<{values:Array<any>,message:string}>`
-
-Query a SELECT SQL statement (single statement)
-
-#### Returns
-
-Type: `Promise<{values:Array<any>,message:string}>`
-
-### `query({statement:"fooStatement VALUES (?)",values:["foo1"]}) => Promise<{values:Array<any>,message:string}>`
-
-Query a SELECT SQL statement with given values (single statement)
-
-#### Returns
-
-Type: `Promise<{values:Array<any>,message:string}>`
-
-### `deleteDatabase({database:"fooDB"}) => Promise<{result:boolean,message:string}>`
-
-Delete a database, require to have open the database first
-
-#### Returns
-
-Type: `Promise<{result:boolean,message:string}>`
-
-### `importFomJson({jsonstring:fooJSONString}) => Promise<{changes:{changes:number},message:string}>`
-
-Import Stringify JSON Object describing a database with Schemas, Indexes and Tables Data.
-
-**`Mandatory`**
-
-For each tables, the schema must have as first column an id described as
-
-`schema: [ {column:"id", value: "INTEGER PRIMARY KEY NOT NULL"}, ..., ]`
-
-#### Returns
-
-Type: `Promise<{changes:{changes:number},message:string}>`
-
-### `exportToJson({jsonexportmode:fooModeString}) => Promise<{export:any,message:string}>`
-
-Export a JSON Object describing a database with Schemas, Indexes and Tables Data with two modes "full" or "partial"
-
-#### Returns
-
-Type: `Promise<{export:any,message:string}>`
-
-### `createSyncTable() => Promise<{changes:{changes:number},message:string}>`
-
-Create a synchronization table in the database
-
-#### Returns
-
-Type: `Promise<{changes:{changes:number},message:string}>`
-
-### `setSyncDate({syncdate:fooDateString}) => Promise<{result:boolean,message:string}>`
-
-Set a new synchronization date in the database
-
-#### Returns
-
-Type: `Promise<{result:boolean,message:string}>`
-
-### `isJsonValid({jsonstring:fooJSONString}) => Promise<{result:boolean,message:string}>`
-
-Check the validity of a Json Object
-
-#### Returns
-
-Type: `Promise<{result:boolean,message:string}>`
-
-### `isDBExists({database:"fooDB"}) => Promise<{result:boolean,message:string}>`
-
-Check if a database exists
-
-#### Returns
-
-Type: `Promise<{result:boolean,message:string}>`
-
-## Methods available for encrypted database in IOS and Android
-
-### `open({database:"fooDB",encrypted:true,mode:"encryption"}) => Promise<{result:boolean,message:string}>`
-
-Encrypt an existing database with a secret key and open the database with given database name.
-
-To define your own "secret" and "newsecret" keys:
-
-- in IOS, go to the Pod/Development Pods/capacitor-sqlite/GlobalSQLite.swift file
-- in Android, go to capacitor-sqlite/java/com.jeep.plugin.capacitor/cdssUtils/GlobalSQLite.java
-  and update the default values before building your app.
-
-#### Returns
-
-Type: `Promise<{result:boolean,message:string}>`
-
-### `open({database:"fooDB",encrypted:true,mode:"secret"}) => Promise<{result:boolean,message:string}>`
-
-Open an encrypted database with given database and table names and secret key.
-
-#### Returns
-
-Type: `Promise<{result:boolean,message:string}>`
-
-### `open({database:"fooDB",encrypted:true,mode:"newsecret"}) => Promise<{result:boolean,message:string}>`
-
-Modify the secret key with the newsecret key of an encrypted database and open it with given database and table names and newsecret key.
-
-#### Returns
-
-Type: `Promise<{result:boolean,message:string}>`
+[ImportExportJson_Documentation](https://github.com/capacitor-community/sqlite/blob/master/ImportExportJson.md)
 
 ## Applications demonstrating the use of the plugin
 
@@ -289,21 +192,15 @@ Type: `Promise<{result:boolean,message:string}>`
 
 - [react-sqlite-app-starter](https://github.com/jepiqueau/react-sqlite-app-starter)
 
-## Using the Plugin in your App
+## Usage
 
 - [see capacitor documentation](https://capacitor.ionicframework.com/docs/getting-started/with-ionic)
-
-- Plugin installation
-
-```bash
-npm install --save capacitor-sqlite@latest
-```
 
 - In your code
 
 ```ts
  import { Plugins } from '@capacitor/core';
- import * as CapacitorSQLPlugin from 'capacitor-sqlite';
+ import * as CapacitorSQLPlugin from '@capacitor-community/sqlite';
  const { CapacitorSQLite,Device } = Plugins;
 
  @Component( ... )
@@ -404,170 +301,6 @@ npm install --save capacitor-sqlite@latest
    }
    ...
  }
-```
-
-### Running on Android
-
-```bash
-npx cap update
-npm run build
-npx cap copy
-npx cap open android
-```
-
-Android Studio will be opened with your project and will sync the files.
-In Android Studio go to the file **MainActivity**
-
-```java
- ...
-import com.jeep.plugin.capacitor.CapacitorSQLite;
-
- ...
-
- public class MainActivity extends BridgeActivity {
-   @Override
-   public void onCreate(Bundle savedInstanceState) {
-     super.onCreate(savedInstanceState);
-
-     // Initializes the Bridge
-     this.init(savedInstanceState, new ArrayList<Class<? extends Plugin>>() {{
-       // Additional plugins you've installed go here
-       // Ex: add(TotallyAwesomePlugin.class);
-       add(CapacitorSQLite.class);
-     }});
-   }
- }
-```
-
-### Running on IOS
-
-Modify the Podfile under the ios folder as follows
-
-```
-platform :ios, '11.0'
-use_frameworks!
-
-# workaround to avoid Xcode 10 caching of Pods that requires
-# Product -> Clean Build Folder after new Cordova plugins installed
-# Requires CocoaPods 1.6 or newer
-install! 'cocoapods', :disable_input_output_paths => true
-
-def capacitor_pods
- # Automatic Capacitor Pod dependencies, do not delete
- pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
- pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
- # Do not delete
-end
-
-target 'App' do
- capacitor_pods
- # Add your Pods here
-end
-```
-
-```bash
-npx cap update
-npm run build
-npx cap copy
-npx cap open ios
-```
-
-### Running on Electron
-
-In your application folder add the Electron platform
-
-```bash
-npx cap add electron
-```
-
-In the Electron folder of your application
-
-```bash
-npm install --save sqlite3
-npm install --save-dev @types/sqlite3
-npm install --save-dev electron-rebuild
-```
-
-Modify the Electron package.json file by adding a script "postinstall"
-
-```json
-  "scripts": {
-    "electron:start": "electron ./",
-    "postinstall": "electron-rebuild -f -w sqlite3"
-  },
-```
-
-Execute the postinstall script
-
-```bash
-npm run postinstall
-```
-
-Go back in the main folder of your application
-Add a script in the index.html file of your application in the body tag
-
-- case databases under `YourApplication/Electron/`
-
-```html
-<body>
-  <app-root></app-root>
-  <script>
-    try {
-      if (
-        process &&
-        typeof process.versions.electron === 'string' &&
-        process.versions.hasOwnProperty('electron')
-      ) {
-        const sqlite3 = require('sqlite3');
-        const fs = require('fs');
-        const path = require('path');
-        window.sqlite3 = sqlite3;
-        window.fs = fs;
-        window.path = path;
-      }
-    } catch {
-      console.log("process doesn't exists");
-    }
-  </script>
-</body>
-```
-
-- case databases under `User/Databases/APP_NAME/`
-
-```html
-<body>
-  <app-root></app-root>
-  <script>
-    try {
-      if (
-        process &&
-        typeof process.versions.electron === 'string' &&
-        process.versions.hasOwnProperty('electron')
-      ) {
-        const sqlite3 = require('sqlite3');
-        const fs = require('fs');
-        const path = require('path');
-        const homeDir = require('os').homedir();
-        window.sqlite3 = sqlite3;
-        window.fs = fs;
-        window.path = path;
-        window.appName = 'YOUR_APP_NAME';
-        window.homeDir = homeDir;
-      }
-    } catch {
-      console.log("process doesn't exists");
-    }
-  </script>
-</body>
-```
-
-and then build the application
-
-```bash
- npx cap update
- npm run build
- npx cap copy
- npx cap open electron
 ```
 
 ## Dependencies

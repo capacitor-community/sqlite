@@ -1,3 +1,14 @@
+## 2.3.0-2 (2020-07-25)
+
+### Added Features
+
+- add API documentation
+- modify ImportExportJson documentation
+
+### Bug Fixes
+
+- Fix podspec file name
+
 ## 2.3.0-1 (2020-07-24)
 
 ### Ownership
@@ -13,7 +24,7 @@
 
 ### Bug Fixes
 
-- Fix issue#31 Android query value array types MUST be an Array<String>
+- Fix issue#31 Android query value array types MUST be an Array
 
 ## 2.2.1-2 (2020-07-12)
 

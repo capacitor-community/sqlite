@@ -2,12 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="241f8181-1180-4d41-bd48-9f064589ab4a" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/../Sqlite.podspec" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../node_modules/typescript/lib/tsserver.js" beforeDir="false" afterPath="$PROJECT_DIR$/../node_modules/typescript/lib/tsserver.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../node_modules/typescript/lib/tsserverlibrary.js" beforeDir="false" afterPath="$PROJECT_DIR$/../node_modules/typescript/lib/tsserverlibrary.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../node_modules/typescript/lib/typescript.js" beforeDir="false" afterPath="$PROJECT_DIR$/../node_modules/typescript/lib/typescript.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../node_modules/typescript/lib/typescriptServices.js" beforeDir="false" afterPath="$PROJECT_DIR$/../node_modules/typescript/lib/typescriptServices.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../node_modules/typescript/lib/typingsInstaller.js" beforeDir="false" afterPath="$PROJECT_DIR$/../node_modules/typescript/lib/typingsInstaller.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ios/Plugin.xcworkspace/xcuserdata/queaujeanpierre.xcuserdatad/UserInterfaceState.xcuserstate" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin.xcworkspace/xcuserdata/queaujeanpierre.xcuserdatad/UserInterfaceState.xcuserstate" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ios/Podfile" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Podfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../package.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -122,5 +121,11 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="456" y="319" key="com.intellij.ide.util.TipDialog" timestamp="1595669729496">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state x="456" y="319" key="com.intellij.ide.util.TipDialog/0.0.1680.1050@0.0.1680.1050" timestamp="1595669729496" />
   </component>
 </project>

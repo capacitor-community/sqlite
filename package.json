@@ -46,7 +46,7 @@
     "dist/",
     "ios/",
     "android/",
-    "Sqlite.podspec"
+    "CapacitorCommunitySqlite.podspec"
   ],
   "keywords": [
     "capacitor",
