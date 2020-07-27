@@ -22,18 +22,17 @@ enum UtilsSQLiteError: Error {
 
 let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
 
-
 class UtilsSQLite {
     class func connection(filename: String, readonly: Bool = false, key: String = "") throws -> OpaquePointer {
         let flags = readonly ? SQLITE_OPEN_READONLY : SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE
-        var db: OpaquePointer? = nil
+        var db: OpaquePointer?
         if sqlite3_open_v2(filename, &db, flags | SQLITE_OPEN_FULLMUTEX, nil) == SQLITE_OK {
             if key.count > 0 {
                 let keyStatementString = """
                 PRAGMA key = '\(key)';
                 """
-                if sqlite3_exec(db, keyStatementString, nil,nil,nil) == SQLITE_OK  {
-                    if (sqlite3_exec(db!, "SELECT count(*) FROM sqlite_master;", nil, nil, nil) != SQLITE_OK) {
+                if sqlite3_exec(db, keyStatementString, nil, nil, nil) == SQLITE_OK {
+                    if sqlite3_exec(db!, "SELECT count(*) FROM sqlite_master;", nil, nil, nil) != SQLITE_OK {
                         throw UtilsSQLiteError.wrongSecret
                     }
                 } else {
@@ -57,7 +56,7 @@ class UtilsSQLite {
             */
             // PRAGMA foreign_keys = ON;
             let sqltr: String = "PRAGMA foreign_keys = ON;"
-            if sqlite3_exec(db,sqltr, nil, nil, nil) != SQLITE_OK {
+            if sqlite3_exec(db, sqltr, nil, nil, nil) != SQLITE_OK {
                 throw UtilsSQLiteError.connectionFailed
             }
 
@@ -66,20 +65,20 @@ class UtilsSQLite {
             throw UtilsSQLiteError.connectionFailed
         }
     }
-        
+
     class func getWritableDatabase(filename: String, secret: String) throws -> OpaquePointer? {
-        guard let db = try? connection(filename: filename,readonly: false,key: secret) else {
+        guard let db = try? connection(filename: filename, readonly: false, key: secret) else {
             throw UtilsSQLiteError.connectionFailed
         }
         return db
     }
     class func getReadableDatabase(filename: String, secret: String) throws -> OpaquePointer? {
-        guard let db = try? connection(filename:filename, readonly: true,key: secret) else {
+        guard let db = try? connection(filename: filename, readonly: true, key: secret) else {
             throw UtilsSQLiteError.connectionFailed
         }
         return db
     }
-    class func bind( handle: OpaquePointer, value: Any?, idx:Int) throws {
+    class func bind( handle: OpaquePointer, value: Any?, idx: Int) throws {
 
         if value == nil {
             sqlite3_bind_null(handle, Int32(idx))
@@ -88,30 +87,30 @@ class UtilsSQLite {
         } else if let value = value as? Int64 {
             sqlite3_bind_int64(handle, Int32(idx), value)
         } else if let value = value as? String {
-            if(value.contains("base64")) {
+            if value.contains("base64") {
                 // case Base64 string as Blob
 //                sqlite3_bind_blob(handle, Int32(idx), [value], Int32(value.count), SQLITE_TRANSIENT)
                 sqlite3_bind_text(handle, Int32(idx), value, -1, SQLITE_TRANSIENT)
 
-            } else if (value.uppercased() == "NULL") {
+            } else if value.uppercased() == "NULL" {
                 // case NULL
                 sqlite3_bind_null(handle, Int32(idx))
             } else {
                 sqlite3_bind_text(handle, Int32(idx), value, -1, SQLITE_TRANSIENT)
             }
         } else if let value = value as? Int {
-            sqlite3_bind_int64(handle,Int32(idx), Int64(value))
+            sqlite3_bind_int64(handle, Int32(idx), Int64(value))
         } else if let value = value as? Bool {
             var bInt: Int32 = Int32(0)
-            if(value) {bInt = Int32(1)}
-            sqlite3_bind_int(handle,Int32(idx), Int32(bInt))
+            if value {bInt = Int32(1)}
+            sqlite3_bind_int(handle, Int32(idx), Int32(bInt))
         } else {
             throw UtilsSQLiteError.bindFailed
         }
 
     }
-    class func getColumnType(index:Int32, stmt:OpaquePointer) -> Int32 {
-        var type:Int32 = 0
+    class func getColumnType(index: Int32, stmt: OpaquePointer) -> Int32 {
+        var type: Int32 = 0
 
         // Column types - http://www.sqlite.org/datatype3.html (section 2.2 table column 1)
         let blobTypes = ["BINARY", "BLOB", "VARBINARY"]
@@ -123,8 +122,8 @@ class UtilsSQLite {
 
         // Determine type of column - http://www.sqlite.org/c3ref/c_blob.html
         let declaredType = sqlite3_column_decltype(stmt, index)
-        if (declaredType != nil) {
-            var declaredType = String(cString:declaredType!).uppercased()
+        if declaredType != nil {
+            var declaredType = String(cString: declaredType!).uppercased()
 
             if let index = declaredType.firstIndex(of: "(" ) {
                 declaredType = String(declaredType[..<index])
@@ -149,16 +148,14 @@ class UtilsSQLite {
                 return SQLITE_NULL
             }
             return SQLITE_NULL
-        }
-        else {
+        } else {
             type = sqlite3_column_type(stmt, index)
             return type
         }
     }
 
-    
     class func getColumnValue(index: Int32, type: Int32, stmt: OpaquePointer) -> Any? {
-        if(sqlite3_column_type(stmt, index) == SQLITE_NULL) {
+        if sqlite3_column_type(stmt, index) == SQLITE_NULL {
             return "NULL"
         } else {
 
@@ -172,15 +169,15 @@ class UtilsSQLite {
             case SQLITE_BLOB:
                 let data = sqlite3_column_blob(stmt, index)
                 let size = sqlite3_column_bytes(stmt, index)
-                let val = NSData(bytes:data, length: Int(size))
+                let val = NSData(bytes: data, length: Int(size))
                 // Convert to string
                 let strVal: String = String(decoding: val, as: UTF8.self)
                 return strVal
             case SQLITE_TEXT:
                 let buffer = sqlite3_column_text(stmt, index)
                 var val: String
-                if(buffer != nil) {
-                    val = String(cString:buffer!)
+                if buffer != nil {
+                    val = String(cString: buffer!)
                 } else {
                     val = "NULL"
                 }
@@ -193,7 +190,6 @@ class UtilsSQLite {
         }
     }
 
-
     class func isFileExist(filePath: String) -> Bool {
         var ret: Bool = false
         let fileManager = FileManager.default
@@ -202,7 +198,7 @@ class UtilsSQLite {
          }
         return ret
     }
-    
+
     class func getFilePath(fileName: String) throws -> String {
         let path: String = NSSearchPathForDirectoriesInDomains(
            .documentDirectory, .userDomainMask, true
@@ -217,7 +213,7 @@ class UtilsSQLite {
 
     class func deleteFile(fileName: String) throws -> Bool {
         var ret: Bool = false
-        
+
         do {
             let filePath: String = try getFilePath(fileName: fileName)
             if isFileExist(filePath: filePath) {
@@ -236,7 +232,7 @@ class UtilsSQLite {
         }
         return ret
     }
-    
+
     class func renameFile (filePath: String, toFilePath: String) throws {
          let fileManager = FileManager.default
          do {
@@ -246,13 +242,12 @@ class UtilsSQLite {
             }
 
              try fileManager.moveItem(atPath: filePath, toPath: toFilePath)
-         }
-         catch let error {
+         } catch let error {
             print("Error: \(error)")
              throw UtilsSQLiteError.renameFileFailed
          }
     }
-       
+
     class func encryptDatabase(fileName: String, secret: String) throws -> Bool {
         var ret: Bool = false
         var db: OpaquePointer?
@@ -260,17 +255,17 @@ class UtilsSQLite {
             let filePath: String = try getFilePath(fileName: fileName)
             if isFileExist(filePath: filePath) {
                 do {
-                    let tempPath: String = try getFilePath(fileName:"temp.db")
+                    let tempPath: String = try getFilePath(fileName: "temp.db")
                     try renameFile(filePath: filePath, toFilePath: tempPath)
 
                     try db = UtilsSQLite.connection(filename: tempPath)
-                    try _ = UtilsSQLite.connection(filename: filePath,readonly: false,key: secret)
+                    try _ = UtilsSQLite.connection(filename: filePath, readonly: false, key: secret)
                     let stmt: String = """
                     ATTACH DATABASE '\(filePath)' AS encrypted KEY '\(secret)';
                     SELECT sqlcipher_export('encrypted');
                     DETACH DATABASE encrypted;
                     """
-                    if sqlite3_exec(db,stmt, nil, nil, nil) == SQLITE_OK  {
+                    if sqlite3_exec(db, stmt, nil, nil, nil) == SQLITE_OK {
                         try _ = deleteFile(fileName: "temp.db")
                         ret = true
                     }
@@ -279,7 +274,7 @@ class UtilsSQLite {
                     print("Error: \(error)")
                     throw UtilsSQLiteError.encryptionFailed
                 }
-                
+
             }
         } catch let error {
             print("Error: \(error)")
@@ -287,5 +282,5 @@ class UtilsSQLite {
         }
         return ret
     }
-        
+
 }

@@ -1,11 +1,11 @@
-declare module "@capacitor/core" {
+declare module '@capacitor/core' {
   interface PluginRegistry {
     CapacitorSQLite: CapacitorSQLitePlugin;
   }
 }
 
 export interface CapacitorSQLitePlugin {
-  echo(options: { value: string }): Promise<{value: string}>;
+  echo(options: { value: string }): Promise<{ value: string }>;
   /**
    * Open a SQLite database
    * @param {capSQLiteOptions} options {database: string, encrypted?: boolean, mode?: string}
@@ -76,16 +76,15 @@ export interface CapacitorSQLitePlugin {
    * Create a synchronization table
    * @returns {Promise<capSQLiteResult>} {changes:{changes:number}}
    */
-  createSyncTable(): Promise<capSQLiteResult>; 
+  createSyncTable(): Promise<capSQLiteResult>;
   /**
    * Set the synchronization date
    * @param {capSQLiteOptions} options {syncdate: string}
    * @returns {Promise<capSQLiteResult>} {result:boolean}
    */
-  setSyncDate(options: capSQLiteOptions): Promise<capSQLiteResult>; 
-
+  setSyncDate(options: capSQLiteOptions): Promise<capSQLiteResult>;
 }
- 
+
 export interface capSQLiteOptions {
   /**
    * The database name
@@ -110,7 +109,7 @@ export interface capSQLiteOptions {
   /**
    * Set to true for database encryption
    */
-  encrypted?: boolean;  
+  encrypted?: boolean;
   /***
    * Set the mode for database encryption
    * ["encryption", "secret","newsecret"]
@@ -126,13 +125,12 @@ export interface capSQLiteOptions {
    * "full", "partial"
    *
    */
-  jsonexportmode?: string; 
+  jsonexportmode?: string;
   /***
    * Set the synchronization date
    *
    */
-  syncdate?: string; 
-
+  syncdate?: string;
 }
 
 export interface capSQLiteResult {
@@ -155,7 +153,7 @@ export interface capSQLiteResult {
   /**
    * an export JSON object
    */
-  export?: any
+  export?: any;
 }
 export interface capSQLiteSet {
   /**
@@ -167,5 +165,3 @@ export interface capSQLiteSet {
    */
   values?: Array<any>;
 }
-
-

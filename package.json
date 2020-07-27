@@ -8,11 +8,12 @@
   "scripts": {
     "lint": "npm run prettier -- --check && npm run swiftlint -- lint",
     "prettier": "prettier \"**/*.{css,html,ts,js,java}\"",
+    "fmt": "npm run prettier -- --write && npm run swiftlint -- autocorrect",
     "swiftlint": "node-swiftlint",
     "build": "npm run clean && tsc && rollup -c rollup.config.js",
     "clean": "rimraf ./dist",
-    "prepublishOnly": "npm run build",
-    "npm-publish": "np"
+    "watch": "tsc --watch",
+    "prepublishOnly": "npm run build"
   },
   "author": "Jean Pierre Queau",
   "license": "MIT",

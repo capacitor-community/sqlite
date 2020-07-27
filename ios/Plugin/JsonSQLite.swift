@@ -12,41 +12,39 @@ public struct JsonSQLite: Codable {
     let encrypted: Bool
     let mode: String
     let tables: [JsonTable]
-    
+
     public func show() {
         print("databaseName: \(database) ")
         print("encrypted: \(encrypted) ")
         print("mode: \(mode) ")
         print("Number of Tables: \(tables.count) ")
         for table in tables {
-            table.show();
+            table.show()
         }
     }
 }
-
 
 struct JsonTable: Codable {
     let name: String
     var schema: [JsonColumn]?
     var indexes: [JsonIndex]?
-    var values: [[UncertainValue<String,Int,Float>]]?
-    
- 
+    var values: [[UncertainValue<String, Int, Float>]]?
+
     public func show() {
         print("name: \(name) ")
-        if((schema) != nil) {
+        if (schema) != nil {
             print("Number of schema: \(schema!.count) ")
             for sch in schema! {
-                sch.show();
+                sch.show()
             }
         }
-        if((indexes) != nil) {
+        if (indexes) != nil {
             print("Number of indexes: \(indexes!.count) ")
             for idx in indexes! {
-                idx.show();
+                idx.show()
             }
         }
-        if((values) != nil) {
+        if (values) != nil {
             print("Number of Values: \(values!.count) ")
             for val in values! {
                 var row = [] as [Any]
@@ -64,12 +62,12 @@ struct JsonColumn: Codable {
     var column: String?
     let value: String
     var foreignkey: String?
-    
+
     public func show() {
-        if((column) != nil) {
+        if (column) != nil {
             print("column: \(String(describing: column)) ")
         }
-        if((foreignkey) != nil) {
+        if (foreignkey) != nil {
             print("column: \(String(describing: column)) ")
         }
         print("value: \(value) ")
@@ -79,7 +77,7 @@ struct JsonColumn: Codable {
 struct JsonIndex: Codable {
     let name: String
     let column: String
-    
+
     public func show() {
         print("name: \(name) ")
         print("column: \(column) ")
@@ -94,12 +92,12 @@ public struct UncertainValue<T: Codable, U: Codable, V: Codable>: Codable {
     public var value: Any? {
         return tValue ?? uValue ?? vValue
     }
-    
+
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         tValue = try? container.decode(T.self)
         uValue = try? container.decode(U.self)
-        if(uValue == nil) {
+        if uValue == nil {
             vValue = try? container.decode(V.self)
         }
         if tValue == nil && uValue == nil && vValue == nil {
@@ -110,7 +108,6 @@ public struct UncertainValue<T: Codable, U: Codable, V: Codable>: Codable {
 }
 
 public struct JsonNamesTypes {
-    var names: Array<String>
-    var types: Array<String>
+    var names: [String]
+    var types: [String]
 }
-
