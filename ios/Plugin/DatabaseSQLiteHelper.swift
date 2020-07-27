@@ -756,7 +756,7 @@ class DatabaseHelper {
                 // Loop on Table's Values
                 for j in 0..<jsonSQLite.tables[i].values!.count {
                     // Check the row number of columns
-                    let row: [UncertainValue[String, Int, Float]> = jsonSQLite.tables[i].values![j]
+                    let row: [UncertainValue<String, Int, Float>] = jsonSQLite.tables[i].values![j]
 
                     if jsonNamesTypes.names.count != row.count {
                         let message: String = """
@@ -883,7 +883,7 @@ class DatabaseHelper {
 
     // MARK: - ImportFromJson - CheckColumnTypes
 
-    private func checkColumnTypes (types: [String], values: [UncertainValue[String, Int, Float]>) -> Bool {
+    private func checkColumnTypes (types: [String], values: [UncertainValue<String, Int, Float>]) -> Bool {
         var isRetType: Bool = true
         for i in 0..<values.count {
             if String(describing: values[i].value!).uppercased() != "NULL" {
@@ -940,7 +940,7 @@ class DatabaseHelper {
 
     // MARK: - ImportFromJson - GetValuesFromRow
 
-    private func getValuesFromRow(rowValues: [UncertainValue[String, Int, Float]>) -> [Any] {
+    private func getValuesFromRow(rowValues: [ UncertainValue<String, Int, Float>]) -> [Any] {
         var retArray: [Any] = []
         for i in 0..<rowValues.count {
             retArray.append(rowValues[i].value!)
@@ -1047,7 +1047,7 @@ class DatabaseHelper {
                         query = "SELECT * FROM \(tableName) WHERE last_modified > \(syncDate);"
                     }
 
-                    let values: [Array[Any]> = try createValues(db: db, query: query, names: rowNames, types: rowTypes)
+                    let values: [[Any]] = try createValues(db: db, query: query, names: rowNames, types: rowTypes)
                     if values.count > 0 {
                         table["values"] = values
                         isValues = true
@@ -1220,8 +1220,8 @@ class DatabaseHelper {
 
     // MARK: - ExportToJson - CreateValues
 
-    private func createValues(db: OpaquePointer, query: String, names: [String], types: [String]) throws -> [Array[Any]> {
-        var retValues: [Array[Any]> = []
+    private func createValues(db: OpaquePointer, query: String, names: [String], types: [String]) throws -> [[Any]] {
+        var retValues: [[Any]] = []
 
         do {
             let resValues =  try querySQL(db: db, sql: query, values: [])
