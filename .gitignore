@@ -1,6 +1,7 @@
 .idea/
 dist
 .sourcemaps
+node_modules/
 xcuserdata/
 node_modules/
 cli/dist/commands/copy.js
