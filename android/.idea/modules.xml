@@ -2,15 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/../node_modules/@capacitor/android/capacitor/@capacitor-capacitor-android.iml" filepath="$PROJECT_DIR$/../node_modules/@capacitor/android/capacitor/@capacitor-capacitor-android.iml" group="android/capacitor-android" />
-      <module fileurl="file://$PROJECT_DIR$/android.iml" filepath="$PROJECT_DIR$/android.iml" group="android" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/1465669620/android-capacitor-android.iml" filepath="$PROJECT_DIR$/.idea/modules/1465669620/android-capacitor-android.iml" group="android/capacitor-android" />
-      <module fileurl="file://$PROJECT_DIR$/../node_modules/@capacitor/android/capacitor/capacitor-android.iml" filepath="$PROJECT_DIR$/../node_modules/@capacitor/android/capacitor/capacitor-android.iml" group="android/capacitor-android" />
-      <module fileurl="file://$PROJECT_DIR$/capacitor-sqlite-android.iml" filepath="$PROJECT_DIR$/capacitor-sqlite-android.iml" group="android" />
-      <module fileurl="file://$PROJECT_DIR$/../node_modules/@capacitor/android/capacitor/capacitor-sqlite-node_modules-@capacitor-capacitor-android.iml" filepath="$PROJECT_DIR$/../node_modules/@capacitor/android/capacitor/capacitor-sqlite-node_modules-@capacitor-capacitor-android.iml" group="android/capacitor-android" />
-      <module fileurl="file://$PROJECT_DIR$/../node_modules/@capacitor/android/capacitor/capacitor-sqlite-node_modules-@capacitor-capacitor-android~1.iml" filepath="$PROJECT_DIR$/../node_modules/@capacitor/android/capacitor/capacitor-sqlite-node_modules-@capacitor-capacitor-android~1.iml" group="android/capacitor-android" />
-      <module fileurl="file://$PROJECT_DIR$/../node_modules/@capacitor/android/capacitor/capacitor-sqlite-node_modules-@capacitor-capacitor-android~2.iml" filepath="$PROJECT_DIR$/../node_modules/@capacitor/android/capacitor/capacitor-sqlite-node_modules-@capacitor-capacitor-android~2.iml" group="android/capacitor-android" />
-      <module fileurl="file://$PROJECT_DIR$/../node_modules/@capacitor/android/capacitor/node_modules-@capacitor-capacitor-android.iml" filepath="$PROJECT_DIR$/../node_modules/@capacitor/android/capacitor/node_modules-@capacitor-capacitor-android.iml" group="android/capacitor-android" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/android.iml" filepath="$PROJECT_DIR$/.idea/modules/android.iml" group="android" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/391246013/capacitor-android.iml" filepath="$PROJECT_DIR$/.idea/modules/391246013/capacitor-android.iml" group="android/capacitor-android" />
     </modules>
   </component>
 </project>

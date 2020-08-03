@@ -1,31 +1,53 @@
 {
-  "name": "capacitor-sqlite",
-  "version": "2.2.1-3",
+  "name": "@capacitor-community/sqlite",
+  "version": "2.3.0-beta3",
   "description": "Capacitor SQLite Plugin",
+  "homepage": "https://github.com/capacitor-community/sqlite",
   "main": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
   "scripts": {
-    "build": "npm run clean && tsc",
-    "clean": "rm -rf ./dist",
+    "lint": "npm run prettier -- --check && npm run swiftlint -- lint",
+    "prettier": "prettier \"**/*.{css,html,ts,js,java}\"",
+    "fmt": "npm run prettier -- --write && npm run swiftlint -- autocorrect",
+    "swiftlint": "node-swiftlint",
+    "build": "npm run clean && tsc && rollup -c rollup.config.js",
+    "clean": "rimraf ./dist",
     "watch": "tsc --watch",
     "prepublishOnly": "npm run build"
   },
   "author": "Jean Pierre Queau",
   "license": "MIT",
-  "dependencies": {
-    "@capacitor/core": "^2.2.1"
-  },
   "devDependencies": {
-    "@capacitor/android": "^2.2.1",
-    "@capacitor/ios": "^2.2.1",
+    "@capacitor/android": "^2.3.0",
+    "@capacitor/core": "^2.3.0",
+    "@capacitor/ios": "^2.3.0",
+    "@ionic/prettier-config": "^1.0.0",
+    "@ionic/swiftlint-config": "^1.1.1",
+    "@rollup/plugin-node-resolve": "^8.4.0",
     "@types/node": "^13.13.2",
+    "husky": "^4.2.5",
+    "np": "^6.3.2",
+    "prettier": "^2.0.5",
+    "prettier-plugin-java": "^0.8.0",
+    "pretty-quick": "^2.0.1",
+    "rimraf": "^3.0.0",
+    "rollup": "^2.21.0",
+    "swiftlint": "^1.0.1",
     "typescript": "^3.9.6"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "pretty-quick --staged"
+    }
+  },
+  "peerDependencies": {
+    "@capacitor/core": "^2.3.0"
   },
   "files": [
     "dist/",
     "ios/",
     "android/",
-    "CapacitorSqlite.podspec"
+    "CapacitorCommunitySqlite.podspec"
   ],
   "keywords": [
     "capacitor",
@@ -42,11 +64,13 @@
       "src": "android"
     }
   },
+  "prettier": "@ionic/prettier-config",
+  "swiftlint": "@ionic/swiftlint-config",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jepiqueau/capacitor-sqlite"
+    "url": "https://github.com/capacitor-community/sqlite"
   },
   "bugs": {
-    "url": "https://github.com/jepiqueau/capacitor-sqlite/issues"
+    "url": "https://github.com/capacitor-community/sqlite/issues"
   }
 }

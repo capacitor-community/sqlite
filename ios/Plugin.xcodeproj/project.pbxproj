@@ -9,7 +9,12 @@
 /* Begin PBXBuildFile section */
 		03FC29A292ACC40490383A1F /* Pods_Plugin.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3B2A61DA5A1F2DD4F959604D /* Pods_Plugin.framework */; };
 		20C0B05DCFC8E3958A738AF2 /* Pods_PluginTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F6753A823D3815DB436415E3 /* Pods_PluginTests.framework */; };
-		2C6C636D2447835200EED166 /* JsonSQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6C636C2447835200EED166 /* JsonSQLite.swift */; };
+		2C3CF92424D070DA001E24F2 /* ReturnHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C3CF92324D070DA001E24F2 /* ReturnHandler.swift */; };
+		2C6A011D24D82B9000A46075 /* JsonSQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6A011A24D82B9000A46075 /* JsonSQLite.swift */; };
+		2C6A011E24D82B9000A46075 /* ImportFromJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6A011B24D82B9000A46075 /* ImportFromJson.swift */; };
+		2C6A011F24D82B9000A46075 /* ExportToJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6A011C24D82B9000A46075 /* ExportToJson.swift */; };
+		2C6A012224D82BCF00A46075 /* UtilsBinding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6A012024D82BCF00A46075 /* UtilsBinding.swift */; };
+		2C6A012324D82BCF00A46075 /* UtilsJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6A012124D82BCF00A46075 /* UtilsJson.swift */; };
 		2C77B2E52421082E0059C80C /* UtilsSQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C77B2E32421082E0059C80C /* UtilsSQLite.swift */; };
 		2C77B2E9242108480059C80C /* GlobalSQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C77B2E7242108480059C80C /* GlobalSQLite.swift */; };
 		2C77B2EA242108480059C80C /* DatabaseSQLiteHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C77B2E8242108480059C80C /* DatabaseSQLiteHelper.swift */; };
@@ -32,7 +37,12 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		2C6C636C2447835200EED166 /* JsonSQLite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JsonSQLite.swift; sourceTree = "<group>"; };
+		2C3CF92324D070DA001E24F2 /* ReturnHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReturnHandler.swift; sourceTree = "<group>"; };
+		2C6A011A24D82B9000A46075 /* JsonSQLite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JsonSQLite.swift; sourceTree = "<group>"; };
+		2C6A011B24D82B9000A46075 /* ImportFromJson.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImportFromJson.swift; sourceTree = "<group>"; };
+		2C6A011C24D82B9000A46075 /* ExportToJson.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExportToJson.swift; sourceTree = "<group>"; };
+		2C6A012024D82BCF00A46075 /* UtilsBinding.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilsBinding.swift; sourceTree = "<group>"; };
+		2C6A012124D82BCF00A46075 /* UtilsJson.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilsJson.swift; sourceTree = "<group>"; };
 		2C77B2E32421082E0059C80C /* UtilsSQLite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilsSQLite.swift; sourceTree = "<group>"; };
 		2C77B2E7242108480059C80C /* GlobalSQLite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GlobalSQLite.swift; sourceTree = "<group>"; };
 		2C77B2E8242108480059C80C /* DatabaseSQLiteHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatabaseSQLiteHelper.swift; sourceTree = "<group>"; };
@@ -75,9 +85,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		2C6A011924D82B9000A46075 /* ImportExportJson */ = {
+			isa = PBXGroup;
+			children = (
+				2C6A011C24D82B9000A46075 /* ExportToJson.swift */,
+				2C6A011B24D82B9000A46075 /* ImportFromJson.swift */,
+				2C6A011A24D82B9000A46075 /* JsonSQLite.swift */,
+			);
+			path = ImportExportJson;
+			sourceTree = "<group>";
+		};
 		2C77B2E22421082E0059C80C /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				2C6A012024D82BCF00A46075 /* UtilsBinding.swift */,
+				2C6A012124D82BCF00A46075 /* UtilsJson.swift */,
 				2C77B2E32421082E0059C80C /* UtilsSQLite.swift */,
 			);
 			path = Utils;
@@ -106,14 +128,15 @@
 		50ADFF8A201F53D600D50D53 /* Plugin */ = {
 			isa = PBXGroup;
 			children = (
+				2C6A011924D82B9000A46075 /* ImportExportJson */,
 				2C77B2E8242108480059C80C /* DatabaseSQLiteHelper.swift */,
 				2C77B2E7242108480059C80C /* GlobalSQLite.swift */,
-				2C6C636C2447835200EED166 /* JsonSQLite.swift */,
 				50E1A94720377CB70090CE1A /* Plugin.swift */,
 				50ADFF8B201F53D600D50D53 /* Plugin.h */,
 				50ADFFA72020EE4F00D50D53 /* Plugin.m */,
 				2C77B2E22421082E0059C80C /* Utils */,
 				50ADFF8C201F53D600D50D53 /* Info.plist */,
+				2C3CF92324D070DA001E24F2 /* ReturnHandler.swift */,
 			);
 			path = Plugin;
 			sourceTree = "<group>";
@@ -325,11 +348,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				2C77B2EA242108480059C80C /* DatabaseSQLiteHelper.swift in Sources */,
-				2C6C636D2447835200EED166 /* JsonSQLite.swift in Sources */,
 				50E1A94820377CB70090CE1A /* Plugin.swift in Sources */,
+				2C3CF92424D070DA001E24F2 /* ReturnHandler.swift in Sources */,
+				2C6A012224D82BCF00A46075 /* UtilsBinding.swift in Sources */,
+				2C6A011E24D82B9000A46075 /* ImportFromJson.swift in Sources */,
 				2C77B2E9242108480059C80C /* GlobalSQLite.swift in Sources */,
 				50ADFFA82020EE4F00D50D53 /* Plugin.m in Sources */,
 				2C77B2E52421082E0059C80C /* UtilsSQLite.swift in Sources */,
+				2C6A011F24D82B9000A46075 /* ExportToJson.swift in Sources */,
+				2C6A011D24D82B9000A46075 /* JsonSQLite.swift in Sources */,
+				2C6A012324D82BCF00A46075 /* UtilsJson.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
