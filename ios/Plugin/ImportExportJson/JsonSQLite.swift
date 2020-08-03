@@ -24,7 +24,7 @@ public struct JsonSQLite: Codable {
     }
 }
 
-struct JsonTable: Codable {
+public struct JsonTable: Codable {
     let name: String
     var schema: [JsonColumn]?
     var indexes: [JsonIndex]?
@@ -32,49 +32,53 @@ struct JsonTable: Codable {
 
     public func show() {
         print("name: \(name) ")
-        if (schema) != nil {
-            print("Number of schema: \(schema!.count) ")
-            for sch in schema! {
+        if let mSchema = schema {
+            print("Number of schema: \(mSchema.count) ")
+            for sch in mSchema {
                 sch.show()
             }
+
         }
-        if (indexes) != nil {
-            print("Number of indexes: \(indexes!.count) ")
-            for idx in indexes! {
+        if let mIndexes = indexes {
+            print("Number of indexes: \(mIndexes.count) ")
+            for idx in mIndexes {
                 idx.show()
             }
         }
-        if (values) != nil {
-            print("Number of Values: \(values!.count) ")
-            for val in values! {
+        if let mValues = values {
+            print("Number of Values: \(mValues.count) ")
+            for val in mValues {
                 var row = [] as [Any]
-                for v in val {
-                    row.append(v.value!)
+                for vItem in val {
+                    if let tvItem = vItem.value {
+                        row.append(tvItem)
+                    } else {
+                        row.append("NULL")
+                    }
                 }
                 print("row: \(row) ")
             }
         }
-
     }
 }
 
-struct JsonColumn: Codable {
+public struct JsonColumn: Codable {
     var column: String?
     let value: String
     var foreignkey: String?
 
     public func show() {
-        if (column) != nil {
-            print("column: \(String(describing: column)) ")
+        if let mColumn = column {
+            print("column: \(mColumn) ")
         }
-        if (foreignkey) != nil {
-            print("column: \(String(describing: column)) ")
+        if let mForeignkey = foreignkey {
+            print("foreignkey: \(mForeignkey) ")
         }
         print("value: \(value) ")
     }
 }
 
-struct JsonIndex: Codable {
+public struct JsonIndex: Codable {
     let name: String
     let column: String
 
@@ -102,7 +106,8 @@ public struct UncertainValue<T: Codable, U: Codable, V: Codable>: Codable {
         }
         if tValue == nil && uValue == nil && vValue == nil {
             //Type mismatch
-            throw DecodingError.typeMismatch(type(of: self), DecodingError.Context(codingPath: [], debugDescription: "The value is not of type \(T.self) not of type \(U.self) not even \(V.self)"))
+            throw DecodingError.typeMismatch(type(of: self), DecodingError.Context(codingPath: [],
+                debugDescription: "The value is not of type \(T.self) not of type \(U.self) not even \(V.self)"))
         }
     }
 }

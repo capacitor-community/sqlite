@@ -21,15 +21,16 @@ class PluginTests: XCTestCase {
         let value = "Hello, World!"
         let plugin = CapacitorSQLite()
 
-        let call = CAPPluginCall(callbackId: "test", options: [
+        if let call = CAPPluginCall(callbackId: "test", options: [
             "value": value
         ], success: { (result, _) in
-            let resultValue = result!.data["value"] as? String
-            XCTAssertEqual(value, resultValue)
+            if let resultValue = result.data["value"] as? String {
+                XCTAssertEqual(value, resultValue)
+            }
         }, error: { (_) in
             XCTFail("Error shouldn't have been called")
-        })
-
-        plugin.echo(call!)
+        }) {
+            plugin.echo(call)
+        }
     }
 }

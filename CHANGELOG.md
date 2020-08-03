@@ -1,3 +1,15 @@
+## 2.3.0-beta3 (2020-08-03)
+
+### Bug Fixes
+
+- Rewrite the iOS Plugin to pass through SwiftLint
+
+## 2.3.0-beta.2 (2020-07-28)
+
+### Bug Fixes
+
+- Fix iOS issues due to the move to capacitor-community
+
 ## 2.3.0-2 (2020-07-25)
 
 ### Added Features
@@ -18,7 +30,7 @@
 
 ### Chores
 
-- Capacitor: update 2.2.1
+- Capacitor: update 2.3.0
 
 ## 2.2.1-3 (2020-07-15)
 
