@@ -1,5 +1,6 @@
 package com.getcapacitor.community.database.sqlite;
 
+import android.Manifest;
 import android.content.Context;
 import android.util.Log;
 import com.getcapacitor.JSArray;
@@ -19,16 +20,31 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-@NativePlugin
+@NativePlugin(
+    permissions = { Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE },
+    requestCodes = { CapacitorSQLite.REQUEST_SQLITE_PERMISSION }
+)
 public class CapacitorSQLite extends Plugin {
+    static final int REQUEST_SQLITE_PERMISSION = 9538;
     private static final String TAG = "CapacitorSQLite";
 
     private SQLiteDatabaseHelper mDb;
     private GlobalSQLite globalData = new GlobalSQLite();
+    private boolean isPermissionGranted = false;
 
     private Context context;
 
     public void load() {
+        Log.v(TAG, "*** in load " + isPermissionGranted + " ***");
+        if (hasRequiredPermissions()) {
+            isPermissionGranted = true;
+        } else {
+            pluginRequestPermissions(
+                new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE },
+                REQUEST_SQLITE_PERMISSION
+            );
+        }
+
         // Get singleton instance of database
         context = getContext();
     }
@@ -49,11 +65,14 @@ public class CapacitorSQLite extends Plugin {
         String newsecret = null;
         String inMode = null;
         JSObject ret = new JSObject();
-
+        Log.v(TAG, "*** in open " + isPermissionGranted + " ***");
+        if (!isPermissionGranted) {
+            retResult(call, false, "Open command failed: Permissions not granted");
+            return;
+        }
         dbName = call.getString("database");
         if (dbName == null) {
             retResult(call, false, "Open command failed: Must provide a database name");
-            call.reject("Must provide a database name");
             return;
         }
         boolean encrypted = call.getBoolean("encrypted", false);
@@ -141,7 +160,7 @@ public class CapacitorSQLite extends Plugin {
         }
         JSObject res = mDb.execSQL(sqlCmdArray);
         if (res.getInteger("changes") == Integer.valueOf(-1)) {
-            retChanges(call, retRes, "Execute command failed");
+            retChanges(call, retRes, res.getString("message"));
         } else {
             retChanges(call, res, null);
         }
@@ -172,7 +191,7 @@ public class CapacitorSQLite extends Plugin {
         }
         JSObject res = mDb.execSet(set);
         if (res.getInteger("changes") == Integer.valueOf(-1)) {
-            retChanges(call, retRes, "ExecuteSet command failed");
+            retChanges(call, retRes, res.getString("message"));
         } else {
             retChanges(call, res, null);
         }
@@ -199,7 +218,7 @@ public class CapacitorSQLite extends Plugin {
             res = mDb.runSQL(statement, null);
         }
         if (res.getInteger("changes") == Integer.valueOf(-1)) {
-            retChanges(call, retRes, "Run command failed");
+            retChanges(call, retRes, res.getString("message"));
         } else {
             retChanges(call, res, null);
         }
@@ -394,6 +413,27 @@ public class CapacitorSQLite extends Plugin {
             retResult(call, false, "setSyncDate command failed");
         } else {
             retResult(call, true, null);
+        }
+    }
+
+    @Override
+    protected void handleRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.handleRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_SQLITE_PERMISSION) {
+            boolean permissionsGranted = true;
+            for (int grantResult : grantResults) {
+                if (grantResult != 0) {
+                    permissionsGranted = false;
+                }
+            }
+
+            PluginCall savedCall = getSavedCall();
+            if (permissionsGranted) {
+                isPermissionGranted = true;
+            } else {
+                isPermissionGranted = false;
+                savedCall.reject("permission failed");
+            }
         }
     }
 

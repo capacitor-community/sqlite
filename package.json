@@ -1,6 +1,6 @@
 {
   "name": "@capacitor-community/sqlite",
-  "version": "2.3.0",
+  "version": "2.4.0-beta.2",
   "description": "Capacitor SQLite Plugin",
   "homepage": "https://github.com/capacitor-community/sqlite",
   "main": "dist/esm/index.js",
@@ -18,9 +18,9 @@
   "author": "Jean Pierre Queau",
   "license": "MIT",
   "devDependencies": {
-    "@capacitor/android": "^2.3.0",
-    "@capacitor/core": "^2.3.0",
-    "@capacitor/ios": "^2.3.0",
+    "@capacitor/android": "^2.4.0",
+    "@capacitor/core": "^2.4.0",
+    "@capacitor/ios": "^2.4.0",
     "@ionic/prettier-config": "^1.0.0",
     "@ionic/swiftlint-config": "^1.1.1",
     "@rollup/plugin-node-resolve": "^8.4.0",
@@ -41,7 +41,7 @@
     }
   },
   "peerDependencies": {
-    "@capacitor/core": "^2.3.0"
+    "@capacitor/core": "^2.4.0"
   },
   "files": [
     "dist/",

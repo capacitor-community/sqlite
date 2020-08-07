@@ -94,6 +94,7 @@ class UtilsSQLite {
             let returnCode: Int32 = sqlite3_exec(mDB, keyStatementString, nil, nil, nil)
             if returnCode != SQLITE_OK {
                 message = "connection: Unable to open a connection to database at \(path))"
+                return message
             }
             /* this should work but does not sqlite3_rekey_v2 is not known
              if sqlite3_rekey_v2(db!, "\(path)/\(self.dbName)", newsecret, Int32(newsecret.count)) == SQLITE_OK {
@@ -116,7 +117,7 @@ class UtilsSQLite {
         do {
             try res = UtilsSQLite.encryptDatabase(dbHelper: dbHelper, filePath: path, secret: secret)
             if res {
-                message = "encryption"
+                message = "success encryption"
             }
         } catch UtilsSQLiteError.encryptionFailed {
             message = "init: Error Database Encryption failed"

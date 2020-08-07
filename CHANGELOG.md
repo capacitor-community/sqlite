@@ -1,3 +1,23 @@
+## 2.4.0-beta.2 (2020-08-07)
+
+### Bug Fixes
+
+- Fix iOS encryption issue
+
+## 2.4.0-beta.1 (2020-08-07)
+
+### Chores
+
+- Capacitor: update 2.4.0
+
+### Bug Fixes
+
+- Fix Android sqlite3_close issue#36
+
+## 2.3.0 (2020-08-03)
+
+- Publish from 2.3.0-beta3
+
 ## 2.3.0-beta3 (2020-08-03)
 
 ### Bug Fixes

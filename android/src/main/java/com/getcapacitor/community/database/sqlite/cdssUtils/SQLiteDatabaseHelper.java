@@ -193,12 +193,10 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         try {
             String cmd = "PRAGMA foreign_keys = ON;";
             db.execSQL(cmd);
+            return db;
         } catch (Exception e) {
             Log.d(TAG, "Error: getConnection PRAGMA FOREIGN KEY failed: ", e);
-            db = null;
             throw new Exception("getConnection PRAGMA FOREIGN KEY failed");
-        } finally {
-            return db;
         }
     }
 
@@ -215,11 +213,14 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         try {
             db = getConnection(false, secret);
             retObj = execute(db, statements);
+            return retObj;
         } catch (Exception e) {
             Log.d(TAG, "Error: execSQL failed: ", e);
+            retObj.put("changes", Integer.valueOf(-1));
+            retObj.put("message", "Error: execSQL failed: " + e);
+            return retObj;
         } finally {
             if (db != null) db.close();
-            return retObj;
         }
     }
 
@@ -232,7 +233,6 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         JSObject retObj = new JSObject();
         // Open the database for writing
         SQLiteDatabase db = null;
-        boolean success = true;
         long lastId = Long.valueOf(-1);
         int changes = 0;
         if (set.length() > 0) {
@@ -249,31 +249,36 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                     }
                     lastId = prepareSQL(db, statement, values);
                     if (lastId == -1) {
-                        success = false;
                         changes = Integer.valueOf(-1);
+                        Log.v(TAG, "*** breaking lastId -1");
                         break;
                     } else {
                         changes += 1;
                     }
                 }
-                if (changes > 0) db.setTransactionSuccessful();
-            } catch (Exception e) {
-                Log.d(TAG, "Error: ExecSet failed: ", e);
-                success = false;
-            } finally {
-                db.endTransaction();
-                if (!success) {
-                    retObj.put("changes", Integer.valueOf(-1));
-                } else {
+                if (changes > 0) {
+                    db.setTransactionSuccessful();
                     retObj.put("changes", dbChanges(db));
                     retObj.put("lastId", lastId);
+                    return retObj;
                 }
+            } catch (Exception e) {
+                Log.d(TAG, "Error: ExecSet failed: ", e);
+                retObj.put("changes", Integer.valueOf(-1));
+                retObj.put("message", "Error: ExecSet failed: " + e);
+                return retObj;
+            } finally {
+                db.endTransaction();
                 if (db != null) db.close();
             }
+            retObj.put("changes", Integer.valueOf(-1));
+            retObj.put("message", "Error: ExecSet wrong statement");
+            return retObj;
         } else {
             retObj.put("changes", Integer.valueOf(-1));
+            retObj.put("message", "Error: ExecSet no Set given");
+            return retObj;
         }
-        return retObj;
     }
 
     /**
@@ -285,23 +290,17 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
      */
     public JSObject execute(SQLiteDatabase db, String[] statements) throws Exception {
         JSObject retObj = new JSObject();
-        boolean success = true;
         try {
             for (String cmd : statements) {
                 if (!cmd.endsWith(";")) cmd += ";";
                 db.execSQL(cmd);
             }
+            retObj.put("changes", dbChanges(db));
+            return retObj;
         } catch (Exception e) {
-            success = false;
             throw new Exception("Execute failed");
         } finally {
-            if (!success) {
-                retObj.put("changes", Integer.valueOf(-1));
-            } else {
-                retObj.put("changes", dbChanges(db));
-            }
             if (db != null) db.close();
-            return retObj;
         }
     }
 
@@ -315,7 +314,6 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         JSObject retObj = new JSObject();
         // Open the database for writing
         SQLiteDatabase db = null;
-        boolean success = true;
         long lastId = Long.valueOf(-1);
         if (statement.length() > 6) {
             try {
@@ -323,23 +321,23 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                 db.beginTransaction();
                 lastId = prepareSQL(db, statement, values);
                 if (lastId != -1) db.setTransactionSuccessful();
+                retObj.put("changes", dbChanges(db));
+                retObj.put("lastId", lastId);
+                return retObj;
             } catch (Exception e) {
                 Log.d(TAG, "Error: runSQL failed: ", e);
-                success = false;
+                retObj.put("changes", Integer.valueOf(-1));
+                retObj.put("message", "Error: runSQL failed: " + e);
+                return retObj;
             } finally {
                 db.endTransaction();
-                if (!success) {
-                    retObj.put("changes", Integer.valueOf(-1));
-                } else {
-                    retObj.put("changes", dbChanges(db));
-                    retObj.put("lastId", lastId);
-                }
                 if (db != null) db.close();
             }
         } else {
             retObj.put("changes", Integer.valueOf(-1));
+            retObj.put("message", "Error: runSQL statement not given");
+            return retObj;
         }
-        return retObj;
     }
 
     /**
@@ -372,6 +370,7 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                 lastId = Long.valueOf(stmt.executeUpdateDelete());
             }
         }
+        stmt.close();
         return lastId;
     }
 
@@ -389,19 +388,16 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         try {
             db = getConnection(true, secret);
             retArray = selectSQL(db, statement, values);
-            if (retArray.length() == 0) success = false;
+            if (retArray.length() > 0) {
+                return retArray;
+            } else {
+                return new JSArray();
+            }
         } catch (Exception e) {
             Log.d(TAG, "Error: querySQL failed: ", e);
-            success = false;
+            return new JSArray();
         } finally {
             if (db != null) db.close();
-            if (!success) {
-                return new JSArray();
-            } else {
-                Log.d(TAG, "querySQL: " + retArray);
-
-                return retArray;
-            }
         }
     }
 
@@ -475,16 +471,11 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
         try {
             database = SQLiteDatabase.openOrCreateDatabase(databaseFile, secret, null);
             database.close();
+            isOpen = false;
+            return true;
         } catch (Exception e) {
             Log.d(TAG, "Error: closeDB failed: ", e);
-            success = false;
-        } finally {
-            if (!success) {
-                return false;
-            } else {
-                isOpen = false;
-                return true;
-            }
+            return false;
         }
     }
 

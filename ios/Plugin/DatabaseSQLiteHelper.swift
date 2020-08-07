@@ -90,7 +90,7 @@ class DatabaseHelper {
                                                             encrypted: self.encrypted, secret: self.secret,
                                                             newsecret: self.newsecret)
         self.isOpen = message.count == 0 || message == "swap newsecret" ||
-                 message == "encryption" ? true : false
+                 message == "success encryption" ? true : false
 
         if message.count > 0 {
             if message.contains("connection:") {
@@ -99,7 +99,7 @@ class DatabaseHelper {
                 throw UtilsSQLiteError.wrongSecret
             } else if message == "swap newsecret" {
                 self.secret = self.newsecret
-            } else if message == "encryption" {
+            } else if message == "success encryption" {
                 self.encrypted = true
             } else {
                 throw UtilsSQLiteError.connectionFailed
