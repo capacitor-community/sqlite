@@ -117,7 +117,7 @@ class UtilsSQLite {
         do {
             try res = UtilsSQLite.encryptDatabase(dbHelper: dbHelper, filePath: path, secret: secret)
             if res {
-                message = "encryption"
+                message = "success encryption"
             }
         } catch UtilsSQLiteError.encryptionFailed {
             message = "init: Error Database Encryption failed"

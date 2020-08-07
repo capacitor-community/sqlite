@@ -1,3 +1,9 @@
+## 2.4.0-beta.2 (2020-08-07)
+
+### Bug Fixes
+
+- Fix iOS encryption issue
+
 ## 2.4.0-beta.1 (2020-08-07)
 
 ### Chores
