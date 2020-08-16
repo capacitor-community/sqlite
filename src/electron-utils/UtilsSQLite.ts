@@ -6,8 +6,14 @@ const homeDir = window['homeDir' as any];
 
 export class UtilsSQLite {
   public pathDB: string = 'Databases';
+
   constructor() {}
-  public connection(dbName: string, readOnly?: boolean /*,key?:string*/): any {
+
+  public connection(
+    dbName: string,
+    readOnly?: boolean,
+    dbVersion = 1 /*,key?:string*/,
+  ): any {
     const flags = readOnly
       ? sqlite3.OPEN_READONLY
       : sqlite3.OPEN_CREATE | sqlite3.OPEN_READWRITE;
@@ -35,21 +41,53 @@ export class UtilsSQLite {
               }
             });
           });
+
+          const versionStatement: string = 'PRAGMA user_version;';
+          dbOpen.serialize(() => {
+            dbOpen.get(versionStatement, (err: Error, row: any) => {
+              if (err) {
+                console.log(
+                  `get: Error PRAGMA user_version failed : ${err.message}`,
+                );
+                dbOpen = null;
+                return;
+              }
+
+              if (row === undefined || row['user_version'] === 0) {
+                dbOpen.run('PRAGMA user_version = $version;', {
+                  $version: dbVersion,
+                });
+              } else if (row['user_version'] !== dbVersion) {
+                console.log(
+                  `Error PRAGMA user_version failed : Version mismatch expected Version ${dbVersion} found Version ${row['user_version']}`,
+                );
+                dbOpen = null;
+                return;
+              }
+            });
+          });
         }
         return dbOpen;
       }
     }
   }
 
-  public getWritableDatabase(dbName: string /*, secret: string*/): any {
-    const db: any = this.connection(dbName, false /*,secret*/);
+  public getWritableDatabase(
+    dbName: string,
+    dbVersion = 1 /*, secret: string*/,
+  ): any {
+    const db: any = this.connection(dbName, false, dbVersion /*,secret*/);
     return db;
   }
 
-  public getReadableDatabase(dbName: string /*, secret: string*/): any {
-    const db: any = this.connection(dbName, true /*,secret*/);
+  public getReadableDatabase(
+    dbName: string,
+    dbVersion = 1 /*, secret: string*/,
+  ): any {
+    const db: any = this.connection(dbName, true, dbVersion /*,secret*/);
     return db;
   }
+
   public getDBPath(dbName: string): string {
     let retPath: string = '';
     const dbFolder: string = this.pathDB;
@@ -83,6 +121,7 @@ export class UtilsSQLite {
 
     return retPath;
   }
+
   private _createFolderIfNotExists(folder: string): boolean {
     let ret: boolean;
     try {
@@ -96,6 +135,7 @@ export class UtilsSQLite {
     }
     return ret;
   }
+
   private _mkdirSyncRecursive(directory: string): void {
     var path = directory.replace(/\/$/, '').split('/');
     for (var i = 1; i <= path.length; i++) {

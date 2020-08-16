@@ -116,6 +116,10 @@ export interface capSQLiteOptions {
    */
   mode?: string;
   /***
+   * Set Database Version
+   */
+  version?: number;
+  /***
    * Set the JSON object to import
    *
    */

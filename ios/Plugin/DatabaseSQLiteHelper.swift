@@ -63,6 +63,7 @@ class DatabaseHelper {
     // define the path for the database
     var path: String = ""
     var databaseName: String
+    var databaseVersion: Int
     var secret: String
     var newsecret: String
     var encrypted: Bool
@@ -71,13 +72,14 @@ class DatabaseHelper {
     // MARK: - Init
 
     init(databaseName: String, encrypted: Bool = false, mode: String = "no-encryption",
-         secret: String = "", newsecret: String = "") throws {
+         secret: String = "", newsecret: String = "", databaseVersion: Int = 1) throws {
         print("databaseName: \(databaseName) ")
         self.secret = secret
         self.newsecret = newsecret
         self.encrypted = encrypted
         self.databaseName = databaseName
         self.mode = mode
+        self.databaseVersion = databaseVersion
         do {
             self.path = try UtilsSQLite.getFilePath(fileName: databaseName)
         } catch UtilsSQLiteError.filePathFailed {
@@ -88,7 +90,7 @@ class DatabaseHelper {
 
         let message: String = UtilsSQLite.createConnection(dbHelper: self, path: self.path, mode: self.mode,
                                                             encrypted: self.encrypted, secret: self.secret,
-                                                            newsecret: self.newsecret)
+                                                            newsecret: self.newsecret, version: self.databaseVersion)
         self.isOpen = message.count == 0 || message == "swap newsecret" ||
                  message == "success encryption" ? true : false
 
@@ -126,7 +128,7 @@ class DatabaseHelper {
         var ret: Bool = false
         var mDB: OpaquePointer?
         do {
-            try mDB = UtilsSQLite.connection(filename: self.path)
+            try mDB = UtilsSQLite.connection(filename: self.path, version: self.databaseVersion)
             isOpen = true
             closeDB(mDB: mDB, method: "init")
             isOpen = false
@@ -146,7 +148,7 @@ class DatabaseHelper {
 
     func execSQL(sql: String) throws -> Int {
         guard let mDB: OpaquePointer = try UtilsSQLite.getWritableDatabase(filename: self.path,
-                    secret: secret) else {
+                    secret: secret, version: self.databaseVersion) else {
             throw DatabaseHelperError.dbConnection(message: "Error: DB connection")
         }
         var changes: Int = 0
@@ -182,7 +184,7 @@ class DatabaseHelper {
 
     func execSet(set: [[String: Any]]) throws -> Int {
         guard let mDB: OpaquePointer = try UtilsSQLite.getWritableDatabase(filename: self.path,
-                    secret: secret) else {
+                    secret: secret, version: self.databaseVersion) else {
             throw DatabaseHelperError.dbConnection(message: "Error: DB connection")
         }
         var changes: Int = 0
@@ -238,7 +240,7 @@ class DatabaseHelper {
 
     func runSQL(sql: String, values: [Any]) throws -> [String: Int] {
         guard let mDB: OpaquePointer = try UtilsSQLite.getWritableDatabase(filename: self.path,
-                    secret: secret) else {
+                    secret: secret, version: self.databaseVersion) else {
             throw DatabaseHelperError.dbConnection(message: "Error: DB connection")
         }
         var message: String = ""
@@ -458,7 +460,7 @@ class DatabaseHelper {
         var retObj: Int = -1
         // Open the database for writing
         guard let mDB: OpaquePointer = try UtilsSQLite.getWritableDatabase(filename: self.path,
-                    secret: secret) else {
+                    secret: secret, version: self.databaseVersion) else {
             throw DatabaseHelperError.dbConnection(message: "Error: DB connection")
         }
         // check if the table has already been created
@@ -494,7 +496,7 @@ class DatabaseHelper {
         var retBool: Bool = false
         // Open the database for writing
         guard let mDB: OpaquePointer = try UtilsSQLite.getWritableDatabase(filename: self.path,
-                    secret: secret) else {
+                    secret: secret, version: self.databaseVersion) else {
             throw DatabaseHelperError.dbConnection(message: "Error: DB connection")
         }
         do {

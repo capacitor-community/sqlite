@@ -13,6 +13,7 @@ const fs: any = window['fs' as any];
 export class DatabaseSQLiteHelper {
   public isOpen: boolean = false;
   private _databaseName: string;
+  private _databaseVersion: number;
   //    private _encrypted: boolean;
   //    private _mode: string;
   //    private _secret: string = "";
@@ -20,11 +21,13 @@ export class DatabaseSQLiteHelper {
   private _utils: UtilsSQLite;
 
   constructor(
-    dbName: string /*, encrypted:boolean = false, mode:string = "no-encryption",
+    dbName: string,
+    dbVersion = 1 /*, encrypted:boolean = false, mode:string = "no-encryption",
         secret:string = "",newsecret:string=""*/,
   ) {
     this._utils = new UtilsSQLite();
     this._databaseName = dbName;
+    this._databaseVersion = dbVersion;
     //        this._encrypted = encrypted;
     //        this._mode = mode;
     //        this._secret = secret;
@@ -34,7 +37,8 @@ export class DatabaseSQLiteHelper {
   private _openDB() {
     const db = this._utils.connection(
       this._databaseName,
-      false /*,this._secret*/,
+      false,
+      this._databaseVersion /*,this._secret*/,
     );
     if (db != null) {
       this.isOpen = true;
@@ -49,7 +53,8 @@ export class DatabaseSQLiteHelper {
       let retRes = { changes: -1 };
       const db = this._utils.connection(
         this._databaseName,
-        false /*,this._secret*/,
+        false,
+        this._databaseVersion /*,this._secret*/,
       );
       if (db === null) {
         this.isOpen = false;
@@ -80,7 +85,8 @@ export class DatabaseSQLiteHelper {
       let ret: boolean = false;
       const db = this._utils.connection(
         this._databaseName,
-        false /*,this._secret*/,
+        false,
+        this._databaseVersion /*,this._secret*/,
       );
       if (db === null) {
         this.isOpen = false;
@@ -98,7 +104,11 @@ export class DatabaseSQLiteHelper {
 
   public close(databaseName: string): Promise<boolean> {
     return new Promise(resolve => {
-      const db = this._utils.connection(databaseName, false /*,this._secret*/);
+      const db = this._utils.connection(
+        databaseName,
+        false,
+        this._databaseVersion /*,this._secret*/,
+      );
       if (db === null) {
         this.isOpen = false;
         console.log('close: Error Database connection failed');
@@ -121,7 +131,8 @@ export class DatabaseSQLiteHelper {
       let retRes = { changes: -1 };
       const db = this._utils.connection(
         this._databaseName,
-        false /*,this._secret*/,
+        false,
+        this._databaseVersion /*,this._secret*/,
       );
       if (db === null) {
         this.isOpen = false;
@@ -156,7 +167,8 @@ export class DatabaseSQLiteHelper {
       let retRes: any = { changes: -1, lastId: lastId };
       const db = this._utils.connection(
         this._databaseName,
-        false /*,this._secret*/,
+        false,
+        this._databaseVersion /*,this._secret*/,
       );
       if (db === null) {
         this.isOpen = false;
@@ -203,7 +215,8 @@ export class DatabaseSQLiteHelper {
       let retRes: any = { changes: -1, lastId: lastId };
       const db = this._utils.connection(
         this._databaseName,
-        false /*,this._secret*/,
+        false,
+        this._databaseVersion /*,this._secret*/,
       );
       if (db === null) {
         this.isOpen = false;
@@ -280,7 +293,8 @@ export class DatabaseSQLiteHelper {
     return new Promise(async resolve => {
       const db = this._utils.connection(
         this._databaseName,
-        true /*,this._secret*/,
+        true,
+        this._databaseVersion /*,this._secret*/,
       );
       if (db === null) {
         this.isOpen = false;
@@ -476,7 +490,8 @@ export class DatabaseSQLiteHelper {
       let isValue: boolean = false;
       const db = this._utils.connection(
         this._databaseName,
-        false /*,this._secret*/,
+        false,
+        this._databaseVersion /*,this._secret*/,
       );
       if (db === null) {
         this.isOpen = false;
@@ -766,7 +781,11 @@ export class DatabaseSQLiteHelper {
     return new Promise(async resolve => {
       let success: boolean = true;
       const databaseName: string = `${retJson.database}SQLite.db`;
-      const db = this._utils.connection(databaseName, false /*,this._secret*/);
+      const db = this._utils.connection(
+        databaseName,
+        false,
+        this._databaseVersion /*,this._secret*/,
+      );
       if (db === null) {
         this.isOpen = false;
         console.log('createJsonTables: Error Database connection failed');

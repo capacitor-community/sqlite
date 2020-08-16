@@ -32,6 +32,7 @@ export class CapacitorSQLitePluginElectron extends WebPlugin
       });
     }
     const dbName: string = options.database;
+    const dbVersion: number = options.version ?? 1;
     /*
         let encrypted: boolean = options.encrypted ? options.encrypted : false;
         let inMode: string = "no-encryption";
@@ -39,7 +40,8 @@ export class CapacitorSQLitePluginElectron extends WebPlugin
         let newsecretKey: string = "";
         */
     this.mDb = new DatabaseSQLiteHelper(
-      `${dbName}SQLite.db` /*,encrypted,inMode,secretKey,newsecretKey*/,
+      `${dbName}SQLite.db`,
+      dbVersion /*,encrypted,inMode,secretKey,newsecretKey*/,
     );
     if (!this.mDb.isOpen) {
       return Promise.reject({

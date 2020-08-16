@@ -37,6 +37,7 @@ public class CapacitorSQLite: CAPPlugin {
         var inMode: String = ""
         var secretKey: String = ""
         var newsecretKey: String = ""
+        var dbVersion: Int = call.getInt("version", 1) ?? 1;
         if encrypted {
             inMode = call.getString("mode") ?? "no-encryption"
             if inMode != "no-encryption" && inMode != "encryption" && inMode != "secret"
@@ -65,7 +66,7 @@ public class CapacitorSQLite: CAPPlugin {
         }
         do {
            mDb = try DatabaseHelper(databaseName: "\(dbName)SQLite.db", encrypted: encrypted,
-                mode: inMode, secret: secretKey, newsecret: newsecretKey)
+                mode: inMode, secret: secretKey, newsecret: newsecretKey, databaseVersion: dbVersion)
         } catch let error {
             retHandler.rResult(call: call, ret: false, message: "Open command failed: \(error)")
         }

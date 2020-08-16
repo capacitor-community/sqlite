@@ -18,6 +18,7 @@ enum UtilsSQLiteError: Error {
     case encryptionFailed
     case filePathFailed
     case renameFileFailed
+    case versionMismatchFound
 }
 
 let SQLITETRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
@@ -26,18 +27,18 @@ let SQLITETRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
 class UtilsSQLite {
     // swiftlint:disable function_parameter_count
     class func createConnection(dbHelper: DatabaseHelper, path: String, mode: String,
-                                encrypted: Bool, secret: String, newsecret: String) -> String {
+                                encrypted: Bool, secret: String, newsecret: String, version: Int = 1) -> String {
         var message: String = ""
         if !encrypted && mode == "no-encryption" {
-            message = UtilsSQLite.createConnectionNoEncryption(dbHelper: dbHelper, path: path)
+            message = UtilsSQLite.createConnectionNoEncryption(dbHelper: dbHelper, path: path, version: version)
         } else if encrypted && mode == "secret" && secret.count > 0 {
             message = UtilsSQLite.createConnectionEncryptedWithSecret(dbHelper: dbHelper,
                                                                       path: path, secret: secret,
-                                                                      newsecret: newsecret)
+                                                                      newsecret: newsecret, version: version)
         } else if encrypted && mode == "newsecret" && secret.count > 0 && newsecret.count > 0 {
             message = UtilsSQLite.createConnectionEncryptedWithNewSecret(dbHelper: dbHelper,
                                                                          path: path, secret: secret,
-                                                                         newsecret: newsecret)
+                                                                         newsecret: newsecret, version: version)
         } else if encrypted && mode == "encryption" && secret.count > 0 {
             message = UtilsSQLite.makeEncryption(dbHelper: dbHelper, path: path,
                                                  secret: secret)
@@ -45,11 +46,11 @@ class UtilsSQLite {
         return message
     }
     // swiftlint:enable function_parameter_count
-    class func createConnectionNoEncryption(dbHelper: DatabaseHelper, path: String) -> String {
+    class func createConnectionNoEncryption(dbHelper: DatabaseHelper, path: String, version: Int = 1) -> String {
         var message: String = ""
         var mDB: OpaquePointer?
         do {
-            try mDB = UtilsSQLite.connection(filename: path)
+            try mDB = UtilsSQLite.connection(filename: path, version: version)
         } catch {
             message = "init: Error Database connection failed"
         }
@@ -57,12 +58,12 @@ class UtilsSQLite {
         return message
     }
     class func createConnectionEncryptedWithSecret(dbHelper: DatabaseHelper, path: String,
-                                                   secret: String, newsecret: String) -> String {
+                                                   secret: String, newsecret: String, version: Int = 1) -> String {
         var message: String = ""
         var mDB: OpaquePointer?
         do {
             try mDB = UtilsSQLite.connection(filename: path,
-                                             readonly: false, key: secret)
+                                             readonly: false, key: secret, version: version)
         } catch {
             // for testing purpose
             if secret == "wrongsecret" {
@@ -71,7 +72,7 @@ class UtilsSQLite {
                 // test if you can open it with the new secret in case of multiple runs
                 do {
                     try mDB = UtilsSQLite.connection(filename: path,
-                                                     readonly: false, key: newsecret)
+                                                     readonly: false, key: newsecret, version: version)
                     message = "swap newsecret"
                 } catch {
                     message = "init: Error Database connection failed wrong secret"
@@ -82,12 +83,12 @@ class UtilsSQLite {
         return message
     }
     class func createConnectionEncryptedWithNewSecret(dbHelper: DatabaseHelper, path: String,
-                                                      secret: String, newsecret: String) -> String {
+                                                      secret: String, newsecret: String, version: Int = 1) -> String {
         var message: String = ""
         var mDB: OpaquePointer?
         do {
             try mDB = UtilsSQLite.connection(filename: path,
-                                             readonly: false, key: secret)
+                                             readonly: false, key: secret, version: version)
             let keyStatementString = """
             PRAGMA rekey = '\(newsecret)';
             """
@@ -128,7 +129,7 @@ class UtilsSQLite {
         }
         return message
     }
-    class func connection(filename: String, readonly: Bool = false, key: String = "") throws -> OpaquePointer? {
+    class func connection(filename: String, readonly: Bool = false, key: String = "", version: Int = 1) throws -> OpaquePointer? {
         let flags = readonly ? SQLITE_OPEN_READONLY : SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE
         var mDB: OpaquePointer?
         if sqlite3_open_v2(filename, &mDB, flags | SQLITE_OPEN_FULLMUTEX, nil) == SQLITE_OK {
@@ -165,19 +166,59 @@ class UtilsSQLite {
             if sqlite3_exec(mDB, sqltr, nil, nil, nil) != SQLITE_OK {
                 throw UtilsSQLiteError.connectionFailed
             }
+
+            // Version handling
+            let sqlversionStatementString: String = "PRAGMA user_version;"
+            var sqlversionStatement: OpaquePointer?
+            var usedVersion = 0
+
+            if sqlite3_prepare_v2(mDB, sqlversionStatementString, -1, &sqlversionStatement, nil) == 
+                SQLITE_OK {
+                if sqlite3_step(sqlversionStatement) == SQLITE_ROW {
+                    usedVersion = Int(sqlite3_column_int(sqlversionStatement, 0))
+                    sqlite3_finalize(sqlversionStatement)
+                    if usedVersion == 0 {
+                        UtilsSQLite.setVersion(mDB: mDB, version: version)
+                        usedVersion = 1
+                    }
+                    if usedVersion != version {
+                        print("\nError: Database Version mismatch found. Database Version is \(usedVersion). Connection Version is \(version)")
+                        throw UtilsSQLiteError.versionMismatchFound
+                    }
+                } else {
+                    sqlite3_finalize(sqlversionStatement)
+                    print("\nNo Version information found. setting version to 1")
+                    UtilsSQLite.setVersion(mDB: mDB, version: version)
+                }
+            } else {
+                let errorMessage = String(cString: sqlite3_errmsg(mDB))
+                print("\nError: \(errorMessage)")
+            }
+            // /Version handling
+
             return mDB
         } else {
             throw UtilsSQLiteError.connectionFailed
         }
     }
-    class func getWritableDatabase(filename: String, secret: String) throws -> OpaquePointer? {
-        guard let mDB = try? connection(filename: filename, readonly: false, key: secret) else {
+    class func setVersion(mDB: OpaquePointer?, version: Int) -> OpaquePointer? {
+        if mDB == nil {
+            return mDB
+        }
+        let sqltr: String = "PRAGMA user_version = \(version);"
+        if sqlite3_exec(mDB, sqltr, nil, nil, nil) != SQLITE_OK {
+            // throw UtilsSQLiteError.connectionFailed
+        }
+        return mDB
+    }
+    class func getWritableDatabase(filename: String, secret: String, version: Int = 1) throws -> OpaquePointer? {
+        guard let mDB = try? connection(filename: filename, readonly: false, key: secret, version: version) else {
             throw UtilsSQLiteError.connectionFailed
         }
         return mDB
     }
-    class func getReadableDatabase(filename: String, secret: String) throws -> OpaquePointer? {
-        guard let mDB = try? connection(filename: filename, readonly: true, key: secret) else {
+    class func getReadableDatabase(filename: String, secret: String, version: Int = 1) throws -> OpaquePointer? {
+        guard let mDB = try? connection(filename: filename, readonly: true, key: secret, version: version) else {
             throw UtilsSQLiteError.connectionFailed
         }
         return mDB
@@ -315,7 +356,7 @@ class UtilsSQLite {
             throw UtilsSQLiteError.renameFileFailed
         }
     }
-    class func encryptDatabase(dbHelper: DatabaseHelper, filePath: String, secret: String) throws -> Bool {
+    class func encryptDatabase(dbHelper: DatabaseHelper, filePath: String, secret: String, version: Int = 1) throws -> Bool {
         var ret: Bool = false
         var mDB: OpaquePointer?
         do {
@@ -323,8 +364,8 @@ class UtilsSQLite {
                 do {
                     let tempPath: String = try getFilePath(fileName: "temp.db")
                     try renameFile(filePath: filePath, toFilePath: tempPath)
-                    try mDB = UtilsSQLite.connection(filename: tempPath)
-                    try _ = UtilsSQLite.connection(filename: filePath, readonly: false, key: secret)
+                    try mDB = UtilsSQLite.connection(filename: tempPath, version: version)
+                    try _ = UtilsSQLite.connection(filename: filePath, readonly: false, key: secret, version: version)
                     let stmt: String = """
                     ATTACH DATABASE '\(filePath)' AS encrypted KEY '\(secret)';
                     SELECT sqlcipher_export('encrypted');
