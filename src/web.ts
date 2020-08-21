@@ -3,6 +3,7 @@ import {
   CapacitorSQLitePlugin,
   capSQLiteOptions,
   capSQLiteResult,
+  capSQLiteVersionUpgrade,
 } from './definitions';
 
 export class CapacitorSQLiteWeb extends WebPlugin
@@ -69,6 +70,13 @@ export class CapacitorSQLiteWeb extends WebPlugin
   }
   async setSyncDate(options: capSQLiteOptions): Promise<capSQLiteResult> {
     console.log('setSyncDate', options);
+    return Promise.reject('Not implemented');
+  }
+  async addUpgradeStatement(
+    database: string,
+    upgrade: capSQLiteVersionUpgrade,
+  ): Promise<void> {
+    console.log('addUpgradeStatement', database, upgrade);
     return Promise.reject('Not implemented');
   }
 }

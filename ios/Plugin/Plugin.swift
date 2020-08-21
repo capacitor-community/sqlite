@@ -349,10 +349,11 @@ public class CapacitorSQLite: CAPPlugin {
                 let jsonSQLite = try JSONDecoder().decode([JsonSQLite].self, from: data)
                 let secret: String = jsonSQLite[0].encrypted ? globalData.secret : ""
                 let inMode: String = jsonSQLite[0].encrypted ? "secret" : "no-encryption"
+                var dbVersion: Int = call.getInt("version", 1) ?? 1
                 do {
                    mDb = try DatabaseHelper(databaseName: jsonSQLite[0].database + "SQLite.db",
                                             encrypted: jsonSQLite[0].encrypted, mode: inMode, secret: secret,
-                                            newsecret: "")
+                                            newsecret: "", databaseVersion: dbVersion)
                 } catch let error {
                     retHandler.rChanges(call: call, ret: ["changes": -1],
                         message: "ImportFromJson command failed : " + error.localizedDescription)

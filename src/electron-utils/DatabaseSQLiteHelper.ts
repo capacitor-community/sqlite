@@ -1,4 +1,5 @@
 import { UtilsSQLite } from './UtilsSQLite';
+import { capSQLiteVersionUpgrade } from '../definitions';
 import {
   JsonSQLite,
   JsonTable,
@@ -8,12 +9,17 @@ import {
   isTable,
 } from './JsonUtils';
 
+const sqlite3: any = window['sqlite3' as any];
 const fs: any = window['fs' as any];
 
 export class DatabaseSQLiteHelper {
   public isOpen: boolean = false;
   private _databaseName: string;
   private _databaseVersion: number;
+  private _upgradeStatements: Record<
+    string,
+    Record<number, capSQLiteVersionUpgrade>
+  >;
   //    private _encrypted: boolean;
   //    private _mode: string;
   //    private _secret: string = "";
@@ -22,20 +28,31 @@ export class DatabaseSQLiteHelper {
 
   constructor(
     dbName: string,
-    dbVersion = 1 /*, encrypted:boolean = false, mode:string = "no-encryption",
-        secret:string = "",newsecret:string=""*/,
+    dbVersion = 1,
+    upgradeStatements: Record<string, Record<number, capSQLiteVersionUpgrade>>,
+    /*
+    encrypted:boolean = false,
+    mode:string = "no-encryption",
+    secret:string = "",
+    newsecret:string="",
+    */
   ) {
     this._utils = new UtilsSQLite();
     this._databaseName = dbName;
     this._databaseVersion = dbVersion;
+    this._upgradeStatements = upgradeStatements;
     //        this._encrypted = encrypted;
     //        this._mode = mode;
     //        this._secret = secret;
     //        this._newsecret = newsecret;
-    this._openDB();
   }
-  private _openDB() {
-    const db = this._utils.connection(
+
+  public async setup(): Promise<any> {
+    await this._openDB();
+  }
+
+  private async _openDB() {
+    const db = await this.connection(
       this._databaseName,
       false,
       this._databaseVersion /*,this._secret*/,
@@ -48,10 +65,11 @@ export class DatabaseSQLiteHelper {
       console.log('openDB: Error Database connection failed');
     }
   }
+
   public createSyncTable(): Promise<any> {
     return new Promise(async resolve => {
       let retRes = { changes: -1 };
-      const db = this._utils.connection(
+      const db = await this.connection(
         this._databaseName,
         false,
         this._databaseVersion /*,this._secret*/,
@@ -80,10 +98,11 @@ export class DatabaseSQLiteHelper {
       resolve(retRes);
     });
   }
+
   public setSyncDate(syncDate: string): Promise<boolean> {
     return new Promise(async resolve => {
       let ret: boolean = false;
-      const db = this._utils.connection(
+      const db = await this.connection(
         this._databaseName,
         false,
         this._databaseVersion /*,this._secret*/,
@@ -103,8 +122,8 @@ export class DatabaseSQLiteHelper {
   }
 
   public close(databaseName: string): Promise<boolean> {
-    return new Promise(resolve => {
-      const db = this._utils.connection(
+    return new Promise(async resolve => {
+      const db = await this.connection(
         databaseName,
         false,
         this._databaseVersion /*,this._secret*/,
@@ -126,10 +145,11 @@ export class DatabaseSQLiteHelper {
       });
     });
   }
+
   public exec(statements: string): Promise<any> {
     return new Promise(async resolve => {
       let retRes = { changes: -1 };
-      const db = this._utils.connection(
+      const db = await this.connection(
         this._databaseName,
         false,
         this._databaseVersion /*,this._secret*/,
@@ -144,6 +164,7 @@ export class DatabaseSQLiteHelper {
       resolve(retRes);
     });
   }
+
   private execute(db: any, statements: string): Promise<any> {
     return new Promise(resolve => {
       let retRes = { changes: -1 };
@@ -161,59 +182,72 @@ export class DatabaseSQLiteHelper {
       });
     });
   }
+
   public execSet(set: Array<any>): Promise<any> {
     return new Promise(async resolve => {
-      let lastId: number = -1;
-      let retRes: any = { changes: -1, lastId: lastId };
-      const db = this._utils.connection(
+      const db = await this.connection(
         this._databaseName,
         false,
         this._databaseVersion /*,this._secret*/,
       );
-      if (db === null) {
-        this.isOpen = false;
-        console.log('run: Error Database connection failed');
-        resolve(retRes);
-      }
-      let retB: boolean = await this.beginTransaction(db);
-      if (!retB) {
-        db.close();
-        resolve(retRes);
-      }
-      for (let i = 0; i < set.length; i++) {
-        const statement = 'statement' in set[i] ? set[i].statement : null;
-        const values =
-          'values' in set[i] && set[i].values.length > 0 ? set[i].values : null;
-        if (statement == null || values == null) {
-          console.log('execSet: Error statement or values are null');
-          db.close();
-          resolve(retRes);
-        }
-        lastId = await this.prepare(db, statement, values);
-        if (lastId === -1) {
-          console.log('execSet: Error return lastId= -1');
-          db.close();
-          resolve(retRes);
-        }
-      }
-
-      retB = await this.endTransaction(db);
-      if (!retB) {
-        db.close();
-        resolve(retRes);
-      }
-      const changes = await this.dbChanges(db);
-      retRes.changes = changes;
-      retRes.lastId = lastId;
+      let retRes: any = await this.executeSet(db, set);
       db.close();
       resolve(retRes);
     });
   }
+
+  private async executeSet(db: any, set: Array<any>): Promise<any> {
+    let lastId: number = -1;
+    let retRes: any = { changes: -1, lastId: lastId };
+
+    if (db === null) {
+      this.isOpen = false;
+      console.log('executeSet: Error Database connection failed');
+      return retRes;
+    }
+
+    let retB: boolean = await this.beginTransaction(db);
+    if (!retB) {
+      console.log('executeSet: Error beginTransaction failed');
+      db.close();
+      return retRes;
+    }
+
+    for (let i = 0; i < set.length; i++) {
+      const statement = 'statement' in set[i] ? set[i].statement : null;
+      const values =
+        'values' in set[i] && set[i].values.length > 0 ? set[i].values : null;
+      if (statement == null || values == null) {
+        console.log('executeSet: Error statement or values are null');
+        db.close();
+        return retRes;
+      }
+      lastId = await this.prepare(db, statement, values);
+      if (lastId === -1) {
+        console.log('executeSet: Error return lastId= -1');
+        db.close();
+        return retRes;
+      }
+    }
+
+    retB = await this.endTransaction(db);
+    if (!retB) {
+      console.log('executeSet: Error endTransaction failed');
+      db.close();
+      return retRes;
+    }
+
+    const changes = await this.dbChanges(db);
+    retRes.changes = changes;
+    retRes.lastId = lastId;
+    return retRes;
+  }
+
   public run(statement: string, values: Array<any>): Promise<any> {
     return new Promise(async resolve => {
       let lastId: number = -1;
       let retRes: any = { changes: -1, lastId: lastId };
-      const db = this._utils.connection(
+      const db = await this.connection(
         this._databaseName,
         false,
         this._databaseVersion /*,this._secret*/,
@@ -246,6 +280,7 @@ export class DatabaseSQLiteHelper {
       resolve(retRes);
     });
   }
+
   private prepare(
     db: any,
     statement: string,
@@ -289,9 +324,10 @@ export class DatabaseSQLiteHelper {
       }
     });
   }
+
   public query(statement: string, values: Array<any>): Promise<Array<any>> {
     return new Promise(async resolve => {
-      const db = this._utils.connection(
+      const db = await this.connection(
         this._databaseName,
         true,
         this._databaseVersion /*,this._secret*/,
@@ -374,6 +410,7 @@ export class DatabaseSQLiteHelper {
       resolve({ changes: changes });
     });
   }
+
   public exportJson(mode: string): Promise<any> {
     return new Promise(async resolve => {
       let retJson: JsonSQLite = {} as JsonSQLite;
@@ -483,12 +520,167 @@ export class DatabaseSQLiteHelper {
       resolve(changes);
     });
   }
+
+  public async connection(
+    dbName: string,
+    readOnly?: boolean,
+    dbVersion = 1,
+    /*,key?:string,*/
+  ): Promise<any> {
+    const flags = readOnly
+      ? sqlite3.OPEN_READONLY
+      : sqlite3.OPEN_CREATE | sqlite3.OPEN_READWRITE;
+
+    // get the path for the database
+    const dbPath = this._utils.getDBPath(dbName);
+    let dbOpen: any = null;
+
+    if (dbPath.length > 0) {
+      try {
+        dbOpen = new sqlite3.Database(dbPath, flags);
+      } catch (e) {
+        console.log('Error: in UtilsSQLite.connection ', e);
+        dbOpen = null;
+      } finally {
+        if (dbOpen != null) {
+          const statements: string = 'PRAGMA foreign_keys = ON;';
+          dbOpen.serialize(() => {
+            dbOpen.exec(statements, (err: Error) => {
+              if (err) {
+                console.log(
+                  `exec: Error PRAGMA foreign_keys failed : ${err.message}`,
+                );
+                dbOpen = null;
+              }
+            });
+          });
+
+          const versionStatement: string = 'PRAGMA user_version;';
+          dbOpen.serialize(() => {
+            dbOpen.get(versionStatement, (err: Error, row: any) => {
+              if (err) {
+                console.log(
+                  `get: Error PRAGMA user_version failed : ${err.message}`,
+                );
+                dbOpen = null;
+                return;
+              }
+
+              if (row === undefined || row['user_version'] === 0) {
+                this.updateDatabaseVersion(dbOpen, dbVersion);
+              } else if (row['user_version'] !== dbVersion) {
+                dbOpen = this.onUpgrade(
+                  dbName,
+                  dbOpen,
+                  row['user_version'],
+                  dbVersion,
+                );
+              }
+            });
+          });
+        }
+        return dbOpen;
+      }
+    }
+  }
+
+  private updateDatabaseVersion(db: any, newVersion: number): void {
+    db.run('PRAGMA user_version = $version;', {
+      $version: newVersion,
+    });
+  }
+
+  private async onUpgrade(
+    dbName: string,
+    db: any,
+    currentVersion: number,
+    targetVersion: number,
+  ): Promise<any> {
+    /**
+     * When upgrade statements for current database are missing
+     */
+    if (!this._upgradeStatements[dbName]) {
+      console.log(
+        `Error PRAGMA user_version failed : Version mismatch! Expected Version ${targetVersion} found Version ${currentVersion}. Missing Upgrade Statements for Database '${dbName}' Version ${currentVersion}.`,
+      );
+      return null;
+    } else if (!this._upgradeStatements[dbName][currentVersion]) {
+    /**
+     * When upgrade statements for current version are missing
+     */
+      console.log(
+        `Error PRAGMA user_version failed : Version mismatch! Expected Version ${targetVersion} found Version ${currentVersion}. Missing Upgrade Statements for Database '${dbName}' Version ${currentVersion}.`,
+      );
+      return null;
+    }
+
+    const upgrade = this._upgradeStatements[dbName][currentVersion];
+
+    /**
+     * When the version after an upgrade would be greater than the targeted version
+     */
+    if (targetVersion < upgrade.toVersion) {
+      console.log(
+        `Error PRAGMA user_version failed : Version mismatch! Expected Version ${targetVersion} found Version ${currentVersion}. Upgrade Statement would upgrade to version ${upgrade.toVersion}, but target version is ${targetVersion}.`,
+      );
+      return null;
+    }
+
+    if (upgrade.statement) {
+      const result = await this.execute(db, upgrade.statement);
+
+      if (result.changes < 0) {
+        console.log(
+          `Error PRAGMA user_version failed : Version mismatch! Expected Version ${targetVersion} found Version ${currentVersion}. Upgrade Statement returned error.`,
+        );
+        return null;
+      }
+    }
+
+    if (upgrade.set) {
+      const result = await this.executeSet(db, upgrade.set);
+
+      if (result.changes < 0) {
+        console.log(
+          `Error PRAGMA user_version failed : Version mismatch! Expected Version ${targetVersion} found Version ${currentVersion}. Upgrade Statement Set returned error.`,
+        );
+        return null;
+      }
+    }
+
+    this.updateDatabaseVersion(db, upgrade.toVersion);
+
+    // When there are still updates to do
+    if (targetVersion > upgrade.toVersion) {
+      return this.onUpgrade(dbName, db, upgrade.toVersion, targetVersion);
+    }
+
+    return db;
+  }
+
+  public async getWritableDatabase(
+    dbName: string,
+    dbVersion = 1,
+    /*secret: string,*/
+  ): Promise<any> {
+    const db: any = await this.connection(dbName, false, dbVersion /*,secret*/);
+    return db;
+  }
+
+  public async getReadableDatabase(
+    dbName: string,
+    dbVersion = 1 /*, secret: string*/,
+  ): Promise<any> {
+    const db: any = await this.connection(dbName, true, dbVersion /*,secret*/);
+    return db;
+  }
+
   private createTableData(jsonData: JsonSQLite): Promise<number> {
     return new Promise(async resolve => {
       let success: boolean = true;
       let changes: number = -1;
       let isValue: boolean = false;
-      const db = this._utils.connection(
+      const db = await this.connection(
         this._databaseName,
         false,
         this._databaseVersion /*,this._secret*/,
@@ -631,6 +823,7 @@ export class DatabaseSQLiteHelper {
       resolve(changes);
     });
   }
+
   private isTableExists(db: any, tableName: string): Promise<boolean> {
     return new Promise(async resolve => {
       // Check if the table exists
@@ -641,6 +834,7 @@ export class DatabaseSQLiteHelper {
       resolve(ret);
     });
   }
+
   private getTableColumnNamesTypes(db: any, tableName: string): Promise<any> {
     return new Promise(async resolve => {
       let retTypes: Array<string> = [];
@@ -656,6 +850,7 @@ export class DatabaseSQLiteHelper {
       resolve({ names: retNames, types: retTypes });
     });
   }
+
   private createQuestionMarkString(length: number): Promise<string> {
     return new Promise(resolve => {
       var retString: string = '';
@@ -666,6 +861,7 @@ export class DatabaseSQLiteHelper {
       resolve(retString);
     });
   }
+
   private setNameForUpdate(names: String[]): Promise<string> {
     return new Promise(resolve => {
       var retString: string = '';
@@ -676,6 +872,7 @@ export class DatabaseSQLiteHelper {
       resolve(retString);
     });
   }
+
   private checkColumnTypes(
     tableTypes: Array<any>,
     rowValues: Array<any>,
@@ -702,6 +899,7 @@ export class DatabaseSQLiteHelper {
       resolve(ret);
     });
   }
+
   private isIdExists(
     db: any,
     dbName: string,
@@ -716,6 +914,7 @@ export class DatabaseSQLiteHelper {
       resolve(ret);
     });
   }
+
   private dbChanges(db: any): Promise<number> {
     return new Promise(resolve => {
       const SELECT_CHANGE: string = 'SELECT total_changes()';
@@ -734,6 +933,7 @@ export class DatabaseSQLiteHelper {
       });
     });
   }
+
   private getLastId(db: any): Promise<number> {
     return new Promise(resolve => {
       const SELECT_LAST_ID: string = 'SELECT last_insert_rowid()';
@@ -751,6 +951,7 @@ export class DatabaseSQLiteHelper {
       });
     });
   }
+
   private beginTransaction(db: any): Promise<boolean> {
     return new Promise(resolve => {
       const stmt = 'BEGIN TRANSACTION';
@@ -764,6 +965,7 @@ export class DatabaseSQLiteHelper {
       });
     });
   }
+
   private endTransaction(db: any): Promise<boolean> {
     return new Promise(resolve => {
       const stmt = 'COMMIT TRANSACTION';
@@ -777,11 +979,12 @@ export class DatabaseSQLiteHelper {
       });
     });
   }
+
   private createJsonTables(retJson: JsonSQLite): Promise<boolean> {
     return new Promise(async resolve => {
       let success: boolean = true;
       const databaseName: string = `${retJson.database}SQLite.db`;
-      const db = this._utils.connection(
+      const db = await this.connection(
         databaseName,
         false,
         this._databaseVersion /*,this._secret*/,
@@ -981,6 +1184,7 @@ export class DatabaseSQLiteHelper {
       resolve(retModified);
     });
   }
+
   private getSyncDate(db: any): Promise<number> {
     return new Promise(async resolve => {
       let ret: number = -1;
