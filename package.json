@@ -28,7 +28,7 @@
     "husky": "^4.2.5",
     "np": "^6.3.2",
     "prettier": "^2.0.5",
-    "prettier-plugin-java": "^0.8.0",
+    "prettier-plugin-java": "^0.8.1",
     "pretty-quick": "^2.0.1",
     "rimraf": "^3.0.0",
     "rollup": "^2.21.0",
