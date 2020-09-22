@@ -303,6 +303,33 @@ No configuration required for this plugin
  }
 ```
 
+On android, you must request permissions to read and write in storage :
+
+```ts
+export class MyPage {
+   _sqlite: any;
+
+   ...
+
+   async ngAfterViewInit()() {
+     const info = await Device.getInfo();
+
+     if (info.platform === "android") {
+       this._sqlite = CapacitorSQLite;
+       try {
+          // Show request popup
+          await this._sqlite.requestPermissions();
+       } catch (e) {
+          // Permissions declined
+       }
+
+     }
+
+   }
+}
+
+```
+
 ## Dependencies
 
 The IOS and Android codes are using SQLCipher allowing for database encryption

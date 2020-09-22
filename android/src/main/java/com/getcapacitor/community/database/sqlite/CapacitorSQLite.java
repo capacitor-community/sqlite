@@ -22,7 +22,8 @@ import org.json.JSONObject;
 
 @NativePlugin(
     permissions = { Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE },
-    requestCodes = { CapacitorSQLite.REQUEST_SQLITE_PERMISSION }
+    requestCodes = { CapacitorSQLite.REQUEST_SQLITE_PERMISSION },
+    permissionRequestCode = CapacitorSQLite.REQUEST_SQLITE_PERMISSION
 )
 public class CapacitorSQLite extends Plugin {
     static final int REQUEST_SQLITE_PERMISSION = 9538;
@@ -39,10 +40,7 @@ public class CapacitorSQLite extends Plugin {
         if (hasRequiredPermissions()) {
             isPermissionGranted = true;
         } else {
-            pluginRequestPermissions(
-                new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE },
-                REQUEST_SQLITE_PERMISSION
-            );
+            isPermissionGranted = false;
         }
 
         // Get singleton instance of database
@@ -430,10 +428,12 @@ public class CapacitorSQLite extends Plugin {
             PluginCall savedCall = getSavedCall();
             if (permissionsGranted) {
                 isPermissionGranted = true;
+                savedCall.resolve();
             } else {
                 isPermissionGranted = false;
                 savedCall.reject("permission failed");
             }
+            this.freeSavedCall();
         }
     }
 
