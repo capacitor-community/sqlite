@@ -75,7 +75,7 @@ export class DatabaseSQLiteHelper {
       resolve(retRes);
     });
   }
-  public setSyncDate(syncDate: string): Promise<boolean> {
+  public setSyncDate(syncDate: string): Promise<any> {
     return new Promise(async resolve => {
       let ret: boolean = false;
       const db = this._utils.connection(

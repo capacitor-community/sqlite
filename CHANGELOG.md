@@ -1,3 +1,11 @@
+## 2.4.1-1 (2020-09-22)
+
+### Bug Fixes
+
+- Fix Better permission request on Android issue#40
+- Update APIdocumentation.md, .gitignore & .npmignore
+- Fix bug in setSyncDate iOS & electron
+
 ## 2.4.0 (2020-08-07)
 
 ### Chores

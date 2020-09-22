@@ -6,6 +6,7 @@ node_modules/
 Pods
 Build
 xcuserdata
+ios/Plugin.xcworkspace/xcuserdata/queaujeanpierre.xcuserdatad/UserInterfaceState.xcuserstate
 
 # macOS files
 .DS_Store

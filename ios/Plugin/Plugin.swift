@@ -477,7 +477,7 @@ public class CapacitorSQLite: CAPPlugin {
                 retHandler.rResult(call: call, ret: false, message: "setSyncDate command failed: \(error)")
            }
         } else {
-            retHandler.rChanges(call: call, ret: ["changes": -1],
+            retHandler.rResult(call: call, ret: false,
                 message: "setSyncDate command failed: No database connection ")
         }
     }
