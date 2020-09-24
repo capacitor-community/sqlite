@@ -1,16 +1,37 @@
-const sqlite3: any = window['sqlite3' as any];
+/*const sqlite3: any = window['sqlite3' as any];
 const fs: any = window['fs' as any];
 const path: any = window['path' as any];
 const appName: any = window['appName' as any];
 const homeDir = window['homeDir' as any];
+*/
 
 export class UtilsSQLite {
   public pathDB: string = 'Databases';
-  constructor() {}
+  Path: any = null;
+  NodeFs: any = null;
+  RemoteRef: any = null;
+  Os: any = null;
+  SQLite3: any = null;
+  AppName: any = null;
+  HomeDir: any = null;
+
+  constructor() {
+    this.Path = require('path');
+    this.NodeFs = require('fs');
+    this.Os = require('os');
+    this.SQLite3 = require('sqlite3');
+    this.HomeDir = this.Os.homedir;
+    /**
+     * !!! in case you want your databases to be stored in YourApplication/Electron/
+     * comment the below line
+     */
+
+    this.AppName = require(__dirname + '/package.json').name;
+  }
   public connection(dbName: string, readOnly?: boolean /*,key?:string*/): any {
     const flags = readOnly
-      ? sqlite3.OPEN_READONLY
-      : sqlite3.OPEN_CREATE | sqlite3.OPEN_READWRITE;
+      ? this.SQLite3.OPEN_READONLY
+      : this.SQLite3.OPEN_CREATE | this.SQLite3.OPEN_READWRITE;
 
     // get the path for the database
     const dbPath = this.getDBPath(dbName);
@@ -18,7 +39,7 @@ export class UtilsSQLite {
 
     if (dbPath.length > 0) {
       try {
-        dbOpen = new sqlite3.Database(dbPath, flags);
+        dbOpen = new this.SQLite3.Database(dbPath, flags);
       } catch (e) {
         console.log('Error: in UtilsSQLite.connection ', e);
         dbOpen = null;
@@ -53,7 +74,7 @@ export class UtilsSQLite {
   public getDBPath(dbName: string): string {
     let retPath: string = '';
     const dbFolder: string = this.pathDB;
-    if (appName == null) {
+    if (this.AppName == null) {
       let sep: string = '/';
       const idx: number = __dirname.indexOf('\\');
       if (idx != -1) sep = '\\';
@@ -61,19 +82,19 @@ export class UtilsSQLite {
         0,
         __dirname.lastIndexOf(sep) + 1,
       );
-      retPath = path.join(dir, dbFolder, dbName);
+      retPath = this.Path.join(dir, dbFolder, dbName);
       const retB: boolean = this._createFolderIfNotExists(
-        path.join(dir, dbFolder),
+        this.Path.join(dir, dbFolder),
       );
       if (!retB) retPath = '';
     } else {
-      retPath = path.join(homeDir, dbFolder, appName, dbName);
+      retPath = this.Path.join(this.HomeDir, dbFolder, this.AppName, dbName);
       let retB: boolean = this._createFolderIfNotExists(
-        path.join(homeDir, dbFolder),
+        this.Path.join(this.HomeDir, dbFolder),
       );
       if (retB) {
         retB = this._createFolderIfNotExists(
-          path.join(homeDir, dbFolder, appName),
+          this.Path.join(this.HomeDir, dbFolder, this.AppName),
         );
         if (!retB) retPath = '';
       } else {
@@ -86,7 +107,7 @@ export class UtilsSQLite {
   private _createFolderIfNotExists(folder: string): boolean {
     let ret: boolean;
     try {
-      if (!fs.existsSync(folder)) {
+      if (!this.NodeFs.existsSync(folder)) {
         this._mkdirSyncRecursive(folder);
       }
       ret = true;
@@ -100,8 +121,8 @@ export class UtilsSQLite {
     var path = directory.replace(/\/$/, '').split('/');
     for (var i = 1; i <= path.length; i++) {
       var segment = path.slice(0, i).join('/');
-      segment.length > 0 && !fs.existsSync(segment)
-        ? fs.mkdirSync(segment)
+      segment.length > 0 && !this.NodeFs.existsSync(segment)
+        ? this.NodeFs.mkdirSync(segment)
         : null;
     }
     return;

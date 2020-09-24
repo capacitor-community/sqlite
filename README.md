@@ -28,128 +28,142 @@
 ```bash
 npm install @capacitor-community/sqlite
 npx cap sync
+npx cap add ios
+npx cap add android
+npx cap add @capacitor-community/electron
 ```
+
+### iOS
 
 - On iOS, no further steps are needed.
 
+### Android
+
 - On Android, register the plugin in your main activity:
 
-  ```java
-  import com.getcapacitor.community.database.sqlite.CapacitorSQLite;
+```java
+import com.getcapacitor.community.database.sqlite.CapacitorSQLite;
 
-  public class MainActivity extends BridgeActivity {
+public class MainActivity extends BridgeActivity {
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-      super.onCreate(savedInstanceState);
+  @Override
+  public void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
 
-      // Initializes the Bridge
-      this.init(
-          savedInstanceState,
-          new ArrayList<Class<? extends Plugin>>() {
+    // Initializes the Bridge
+    this.init(
+        savedInstanceState,
+        new ArrayList<Class<? extends Plugin>>() {
 
-            {
-              // Additional plugins you've installed go here
-              // Ex: add(TotallyAwesomePlugin.class);
-              add(CapacitorSQLite.class);
-            }
+          {
+            // Additional plugins you've installed go here
+            // Ex: add(TotallyAwesomePlugin.class);
+            add(CapacitorSQLite.class);
           }
-        );
-    }
+        }
+      );
   }
-  ```
+}
+```
+
+### Electron
 
 - On Electron, go to the Electron folder of YOUR_APPLICATION
 
-  ```bash
-  npm install --save sqlite3
-  npm install --save-dev @types/sqlite3
-  npm install --save-dev electron-rebuild
-  ```
+```bash
+npm install --save sqlite3
+npm install --save-dev @types/sqlite3
+npm install --save-dev electron-rebuild
+```
 
-  Modify the Electron package.json file by adding a script "postinstall"
+Modify the Electron package.json file by adding a script "postinstall"
 
-  ```json
-    "scripts": {
-      "electron:start": "electron ./",
-      "postinstall": "electron-rebuild -f -w sqlite3"
-    },
-  ```
+```json
+  "scripts": {
+    "electron:start": "electron ./",
+    "postinstall": "electron-rebuild -f -w sqlite3"
+  },
+```
 
-  Execute the postinstall script
+Execute the postinstall script
 
-  ```bash
-  npm run postinstall
-  ```
+```bash
+npm run postinstall
+```
 
+#### Electron databases location
+
+- There are by default under `User/Databases/APP_NAME/`
+
+- If you wish to have then under `YourApplication/Electron/`
   Go back in the main folder of your application
   Add a script in the index.html file of your application in the body tag
 
-  - case databases under `YourApplication/Electron/`
+- case databases under `YourApplication/Electron/`
 
-  ```html
-  <body>
-    <app-root></app-root>
-    <script>
-      try {
-        if (
-          process &&
-          typeof process.versions.electron === 'string' &&
-          process.versions.hasOwnProperty('electron')
-        ) {
-          const sqlite3 = require('sqlite3');
-          const fs = require('fs');
-          const path = require('path');
-          window.sqlite3 = sqlite3;
-          window.fs = fs;
-          window.path = path;
-        }
-      } catch {
-        console.log("process doesn't exists");
+```html
+<body>
+  <app-root></app-root>
+  <script>
+    try {
+      if (
+        process &&
+        typeof process.versions.electron === 'string' &&
+        process.versions.hasOwnProperty('electron')
+      ) {
+        const sqlite3 = require('sqlite3');
+        const fs = require('fs');
+        const path = require('path');
+        window.sqlite3 = sqlite3;
+        window.fs = fs;
+        window.path = path;
       }
-    </script>
-  </body>
-  ```
+    } catch {
+      console.log("process doesn't exists");
+    }
+  </script>
+</body>
+```
 
-  - case databases under `User/Databases/APP_NAME/`
+- case databases under `User/Databases/APP_NAME/`
 
-  ```html
-  <body>
-    <app-root></app-root>
-    <script>
-      try {
-        if (
-          process &&
-          typeof process.versions.electron === 'string' &&
-          process.versions.hasOwnProperty('electron')
-        ) {
-          const sqlite3 = require('sqlite3');
-          const fs = require('fs');
-          const path = require('path');
-          const homeDir = require('os').homedir();
-          window.sqlite3 = sqlite3;
-          window.fs = fs;
-          window.path = path;
-          window.appName = 'YOUR_APP_NAME';
-          window.homeDir = homeDir;
-        }
-      } catch {
-        console.log("process doesn't exists");
+```html
+<body>
+  <app-root></app-root>
+  <script>
+    try {
+      if (
+        process &&
+        typeof process.versions.electron === 'string' &&
+        process.versions.hasOwnProperty('electron')
+      ) {
+        const sqlite3 = require('sqlite3');
+        const fs = require('fs');
+        const path = require('path');
+        const homeDir = require('os').homedir();
+        window.sqlite3 = sqlite3;
+        window.fs = fs;
+        window.path = path;
+        window.appName = 'YOUR_APP_NAME';
+        window.homeDir = homeDir;
       }
-    </script>
-  </body>
-  ```
+    } catch {
+      console.log("process doesn't exists");
+    }
+  </script>
+</body>
+```
 
-  Then build YOUR_APPLICATION
+Then build YOUR_APPLICATION
 
-  ```
-  npm run build
-  npx cap copy
-  npx cap copy web
-  npx cap open android
-  npx cap open ios
-  npx cap open electron
-  ```
+```
+npm run build
+npx cap copy
+npx cap copy web
+npx cap open android
+npx cap open ios
+npx cap open @capacitor-community/electron
+```
 
 ## Configuration
 

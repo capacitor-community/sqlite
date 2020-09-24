@@ -8,20 +8,23 @@ import { DatabaseSQLiteHelper } from './electron-utils/DatabaseSQLiteHelper';
 import { isJsonSQLite } from './electron-utils/JsonUtils';
 import { UtilsSQLite } from './electron-utils/UtilsSQLite';
 
-const fs: any = window['fs' as any];
-//const path: any = window['path' as any];
+const { remote } = require('electron');
 
 export class CapacitorSQLitePluginElectron extends WebPlugin
   implements CapacitorSQLitePlugin {
+  NodeFs: any = null;
+  RemoteRef: any = null;
   private mDb!: DatabaseSQLiteHelper;
   constructor() {
     super({
       name: 'CapacitorSQLite',
       platforms: ['electron'],
     });
+    this.RemoteRef = remote;
+    this.NodeFs = require('fs');
   }
-
   async echo(options: { value: string }): Promise<{ value: string }> {
+    console.log('this.RemoteRef ' + this.RemoteRef);
     return options;
   }
   async open(options: capSQLiteOptions): Promise<capSQLiteResult> {
@@ -33,11 +36,11 @@ export class CapacitorSQLitePluginElectron extends WebPlugin
     }
     const dbName: string = options.database;
     /*
-        let encrypted: boolean = options.encrypted ? options.encrypted : false;
-        let inMode: string = "no-encryption";
-        let secretKey: string = "";
-        let newsecretKey: string = "";
-        */
+            let encrypted: boolean = options.encrypted ? options.encrypted : false;
+            let inMode: string = "no-encryption";
+            let secretKey: string = "";
+            let newsecretKey: string = "";
+            */
     this.mDb = new DatabaseSQLiteHelper(
       `${dbName}SQLite.db` /*,encrypted,inMode,secretKey,newsecretKey*/,
     );
@@ -168,7 +171,7 @@ export class CapacitorSQLitePluginElectron extends WebPlugin
     let message: string = '';
     let ret: boolean = false;
     try {
-      if (fs.existsSync(dbPath)) {
+      if (this.NodeFs.existsSync(dbPath)) {
         //file exists
         ret = true;
       }
