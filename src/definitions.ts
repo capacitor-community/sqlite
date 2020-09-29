@@ -1,12 +1,10 @@
-import { Plugin } from '@capacitor/core/dist/esm/definitions';
-
 declare module '@capacitor/core' {
   interface PluginRegistry {
     CapacitorSQLite: CapacitorSQLitePlugin;
   }
 }
 
-export interface CapacitorSQLitePlugin extends Plugin {
+export interface CapacitorSQLitePlugin {
   echo(options: { value: string }): Promise<{ value: string }>;
   /**
    * Open a SQLite database

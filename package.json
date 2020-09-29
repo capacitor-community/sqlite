@@ -11,6 +11,7 @@
     "fmt": "npm run prettier -- --write && npm run swiftlint -- autocorrect",
     "swiftlint": "node-swiftlint",
     "build": "npm run clean && tsc && rollup -c rollup.config.js",
+    "build-electron": "rimraf ./electron/dist && cd ./electron && tsc && rollup --config rollup.config.js",
     "clean": "rimraf ./dist",
     "watch": "tsc --watch",
     "prepublishOnly": "npm run build"
@@ -18,21 +19,24 @@
   "author": "Jean Pierre Queau",
   "license": "MIT",
   "devDependencies": {
-    "@capacitor/android": "^2.4.0",
-    "@capacitor/core": "^2.4.0",
-    "@capacitor/ios": "^2.4.0",
+    "@capacitor/android": "^2.4.2",
+    "@capacitor/core": "^2.4.2",
+    "@capacitor/ios": "^2.4.2",
     "@ionic/prettier-config": "^1.0.0",
     "@ionic/swiftlint-config": "^1.1.1",
-    "@rollup/plugin-node-resolve": "^8.4.0",
-    "@types/node": "^13.13.2",
+    "@rollup/plugin-node-resolve": "^9.0.0",
+    "@types/node": "^12.12.62",
+    "electron": "^10.1.2",
     "husky": "^4.2.5",
     "np": "^6.3.2",
     "prettier": "^2.0.5",
     "prettier-plugin-java": "^0.8.1",
     "pretty-quick": "^2.0.1",
     "rimraf": "^3.0.0",
-    "rollup": "^2.21.0",
+    "rollup": "^2.28.1",
+    "rollup-plugin-node-resolve": "^5.2.0",
     "swiftlint": "^1.0.1",
+    "tslib": "^1.13.0",
     "typescript": "^3.9.6"
   },
   "husky": {
@@ -41,13 +45,14 @@
     }
   },
   "peerDependencies": {
-    "@capacitor/core": "^2.4.0"
+    "@capacitor/core": "^2.4.2"
   },
   "files": [
     "dist/",
     "ios/",
     "android/",
-    "CapacitorCommunitySqlite.podspec"
+    "electron/",
+    "CommunitySqlite.podspec"
   ],
   "keywords": [
     "capacitor",
@@ -62,6 +67,9 @@
     },
     "android": {
       "src": "android"
+    },
+    "electron": {
+      "src": "electron/dist/plugin.js"
     }
   },
   "prettier": "@ionic/prettier-config",
@@ -72,5 +80,6 @@
   },
   "bugs": {
     "url": "https://github.com/capacitor-community/sqlite/issues"
-  }
+  },
+  "dependencies": {}
 }

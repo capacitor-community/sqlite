@@ -8,10 +8,10 @@ import {
   isTable,
 } from './JsonUtils';
 
-const fs: any = window['fs' as any];
-
 export class DatabaseSQLiteHelper {
   public isOpen: boolean = false;
+  NodeFs: any = null;
+
   private _databaseName: string;
   //    private _encrypted: boolean;
   //    private _mode: string;
@@ -23,6 +23,7 @@ export class DatabaseSQLiteHelper {
     dbName: string /*, encrypted:boolean = false, mode:string = "no-encryption",
         secret:string = "",newsecret:string=""*/,
   ) {
+    this.NodeFs = require('fs');
     this._utils = new UtilsSQLite();
     this._databaseName = dbName;
     //        this._encrypted = encrypted;
@@ -337,7 +338,7 @@ export class DatabaseSQLiteHelper {
       const dbPath = this._utils.getDBPath(dbName);
       if (dbPath.length > 0) {
         try {
-          fs.unlinkSync(dbPath);
+          this.NodeFs.unlinkSync(dbPath);
           //file removed
           ret = true;
         } catch (e) {
