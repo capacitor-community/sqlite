@@ -52,7 +52,7 @@
     "ios/",
     "android/",
     "electron/",
-    "CommunitySqlite.podspec"
+    "CapacitorCommunitySqlite.podspec"
   ],
   "keywords": [
     "capacitor",
