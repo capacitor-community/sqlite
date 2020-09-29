@@ -64,6 +64,7 @@ public class MainActivity extends BridgeActivity {
       );
   }
 }
+
 ```
 
 ### Electron
@@ -95,70 +96,12 @@ npm run postinstall
 
 - There are by default under `User/Databases/APP_NAME/`
 
-- If you wish to have then under `YourApplication/Electron/`
-  Go back in the main folder of your application
-  Add a script in the index.html file of your application in the body tag
-
-- case databases under `YourApplication/Electron/`
-
-```html
-<body>
-  <app-root></app-root>
-  <script>
-    try {
-      if (
-        process &&
-        typeof process.versions.electron === 'string' &&
-        process.versions.hasOwnProperty('electron')
-      ) {
-        const sqlite3 = require('sqlite3');
-        const fs = require('fs');
-        const path = require('path');
-        window.sqlite3 = sqlite3;
-        window.fs = fs;
-        window.path = path;
-      }
-    } catch {
-      console.log("process doesn't exists");
-    }
-  </script>
-</body>
-```
-
-- case databases under `User/Databases/APP_NAME/`
-
-```html
-<body>
-  <app-root></app-root>
-  <script>
-    try {
-      if (
-        process &&
-        typeof process.versions.electron === 'string' &&
-        process.versions.hasOwnProperty('electron')
-      ) {
-        const sqlite3 = require('sqlite3');
-        const fs = require('fs');
-        const path = require('path');
-        const homeDir = require('os').homedir();
-        window.sqlite3 = sqlite3;
-        window.fs = fs;
-        window.path = path;
-        window.appName = 'YOUR_APP_NAME';
-        window.homeDir = homeDir;
-      }
-    } catch {
-      console.log("process doesn't exists");
-    }
-  </script>
-</body>
-```
-
 Then build YOUR_APPLICATION
 
 ```
 npm run build
 npx cap copy
+npx cap copy @capacitor-community/electron
 npx cap copy web
 npx cap open android
 npx cap open ios

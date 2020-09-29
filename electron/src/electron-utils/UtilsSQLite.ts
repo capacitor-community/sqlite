@@ -1,10 +1,3 @@
-/*const sqlite3: any = window['sqlite3' as any];
-const fs: any = window['fs' as any];
-const path: any = window['path' as any];
-const appName: any = window['appName' as any];
-const homeDir = window['homeDir' as any];
-*/
-
 export class UtilsSQLite {
   public pathDB: string = 'Databases';
   Path: any = null;
@@ -12,21 +5,20 @@ export class UtilsSQLite {
   RemoteRef: any = null;
   Os: any = null;
   SQLite3: any = null;
-  AppName: any = null;
-  HomeDir: any = null;
+  AppName: String = null;
+  HomeDir: String = null;
 
   constructor() {
     this.Path = require('path');
     this.NodeFs = require('fs');
     this.Os = require('os');
     this.SQLite3 = require('sqlite3');
-    this.HomeDir = this.Os.homedir;
+    this.HomeDir = this.Os.homedir();
     /**
      * !!! in case you want your databases to be stored in YourApplication/Electron/
      * comment the below line
      */
-
-    this.AppName = require(__dirname + '/package.json').name;
+    this.AppName = require('../../package.json').name;
   }
   public connection(dbName: string, readOnly?: boolean /*,key?:string*/): any {
     const flags = readOnly
@@ -101,7 +93,6 @@ export class UtilsSQLite {
         retPath = '';
       }
     }
-
     return retPath;
   }
   private _createFolderIfNotExists(folder: string): boolean {

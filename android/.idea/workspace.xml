@@ -2,42 +2,21 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="241f8181-1180-4d41-bd48-9f064589ab4a" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/../.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/../.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../.npmignore" beforeDir="false" afterPath="$PROJECT_DIR$/../.npmignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/caches/build_file_checksums.ser" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/build_file_checksums.ser" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/generated/source/buildConfig/debug/com/getcapacitor/community/database/sqlite/BuildConfig.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/aapt_friendly_merged_manifests/debug/aapt/AndroidManifest.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/aapt_friendly_merged_manifests/debug/aapt/output.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/aar_main_jar/debug/classes.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/annotation_processor_list/debug/annotationProcessors.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/annotations_typedef_file/debug/typedefs.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/compile_only_not_namespaced_r_class_jar/debug/R.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/compile_symbol_list/debug/R.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/incremental/debug-mergeJavaRes/merge-state" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/incremental/debug-mergeNativeLibs/merge-state" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/incremental/mergeDebugJniLibFolders/merger.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/incremental/mergeDebugShaders/merger.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/incremental/packageDebugAssets/merger.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/incremental/packageDebugResources/compile-file-map.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/incremental/packageDebugResources/merged.dir/values/values.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/incremental/packageDebugResources/merger.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/javac/debug/classes/com/getcapacitor/community/database/sqlite/BuildConfig.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/javac/debug/classes/com/getcapacitor/community/database/sqlite/CapacitorSQLite.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/javac/debug/classes/com/getcapacitor/community/database/sqlite/cdssUtils/GlobalSQLite.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/javac/debug/classes/com/getcapacitor/community/database/sqlite/cdssUtils/JsonColumn.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/javac/debug/classes/com/getcapacitor/community/database/sqlite/cdssUtils/JsonIndex.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/javac/debug/classes/com/getcapacitor/community/database/sqlite/cdssUtils/JsonSQLite.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/javac/debug/classes/com/getcapacitor/community/database/sqlite/cdssUtils/JsonTable.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/javac/debug/classes/com/getcapacitor/community/database/sqlite/cdssUtils/SQLiteDatabaseHelper.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/library_manifest/debug/AndroidManifest.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/local_only_symbol_list/debug/R-def.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/manifest_merge_blame_file/debug/manifest-merger-blame-debug-report.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/merged_java_res/debug/out.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/merged_manifests/debug/output.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/packaged_res/debug/layout/bridge_layout_main.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/packaged_res/debug/values/values.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/intermediates/symbol_list_with_package_name/debug/package-aware-r.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/outputs/aar/android-debug.aar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/outputs/logs/manifest-merger-debug-report.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/intermediates/aar_main_jar/debug/classes.jar" beforeDir="false" afterPath="$PROJECT_DIR$/build/intermediates/aar_main_jar/debug/classes.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/intermediates/incremental/packageDebugResources/compile-file-map.properties" beforeDir="false" afterPath="$PROJECT_DIR$/build/intermediates/incremental/packageDebugResources/compile-file-map.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/intermediates/javac/debug/classes/com/getcapacitor/community/database/sqlite/CapacitorSQLite.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/intermediates/javac/debug/classes/com/getcapacitor/community/database/sqlite/CapacitorSQLite.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/outputs/aar/android-debug.aar" beforeDir="false" afterPath="$PROJECT_DIR$/build/outputs/aar/android-debug.aar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs/APIdocumentation.md" beforeDir="false" afterPath="$PROJECT_DIR$/../docs/APIdocumentation.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ios/Plugin.xcworkspace/xcuserdata/queaujeanpierre.xcuserdatad/UserInterfaceState.xcuserstate" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin.xcworkspace/xcuserdata/queaujeanpierre.xcuserdatad/UserInterfaceState.xcuserstate" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ios/Plugin/Plugin.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/Plugin.swift" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/electron-utils/DatabaseSQLiteHelper.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../src/electron-utils/DatabaseSQLiteHelper.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -154,9 +133,9 @@
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="456" y="319" key="com.intellij.ide.util.TipDialog" timestamp="1600847142995">
+    <state x="456" y="319" key="com.intellij.ide.util.TipDialog" timestamp="1600794280219">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state x="456" y="319" key="com.intellij.ide.util.TipDialog/0.0.1680.1050@0.0.1680.1050" timestamp="1600847142995" />
+    <state x="456" y="319" key="com.intellij.ide.util.TipDialog/0.0.1680.1050@0.0.1680.1050" timestamp="1600794280219" />
   </component>
 </project>

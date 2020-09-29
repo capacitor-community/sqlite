@@ -2,29 +2,32 @@ import { WebPlugin } from '@capacitor/core';
 import {
   CapacitorSQLitePlugin,
   capSQLiteOptions,
-  capSQLiteResult /*, jsonSQLite*/,
+  capSQLiteResult,
 } from './definitions';
 import { DatabaseSQLiteHelper } from './electron-utils/DatabaseSQLiteHelper';
 import { isJsonSQLite } from './electron-utils/JsonUtils';
 import { UtilsSQLite } from './electron-utils/UtilsSQLite';
 
 const { remote } = require('electron');
-
-export class CapacitorSQLitePluginElectron extends WebPlugin
+export class CapacitorSQLiteElectronWeb
+  extends WebPlugin
   implements CapacitorSQLitePlugin {
   NodeFs: any = null;
   RemoteRef: any = null;
   private mDb!: DatabaseSQLiteHelper;
+
   constructor() {
     super({
       name: 'CapacitorSQLite',
       platforms: ['electron'],
     });
+    console.log('CapacitorSQLite Electron');
     this.RemoteRef = remote;
     this.NodeFs = require('fs');
   }
   async echo(options: { value: string }): Promise<{ value: string }> {
-    console.log('this.RemoteRef ' + this.RemoteRef);
+    console.log('ECHO in CapacitorSQLiteElectronWeb ', options);
+    console.log(this.RemoteRef);
     return options;
   }
   async open(options: capSQLiteOptions): Promise<capSQLiteResult> {
@@ -294,9 +297,7 @@ export class CapacitorSQLitePluginElectron extends WebPlugin
     return Promise.resolve({ result: ret });
   }
 }
-
-const CapacitorSQLiteElectron = new CapacitorSQLitePluginElectron();
-
-export { CapacitorSQLiteElectron };
+const CapacitorSQLite = new CapacitorSQLiteElectronWeb();
+export { CapacitorSQLite };
 import { registerWebPlugin } from '@capacitor/core';
-registerWebPlugin(CapacitorSQLiteElectron);
+registerWebPlugin(CapacitorSQLite);
