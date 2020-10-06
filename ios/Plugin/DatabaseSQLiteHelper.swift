@@ -291,8 +291,8 @@ class DatabaseHelper {
                         idx += 1
                     } catch let error as NSError {
                         message = "Error: prepareSQL bind failed " + error.localizedDescription
-                        break
                     }
+                    if message.count > 0 { break }
                 }
             }
             returnCode = sqlite3_step(runSQLStatement)

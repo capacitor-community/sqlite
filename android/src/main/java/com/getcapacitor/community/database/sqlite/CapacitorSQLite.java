@@ -149,7 +149,7 @@ public class CapacitorSQLite extends Plugin {
             String[] array = sqlCmdArray[i].split("\n");
             StringBuilder builder = new StringBuilder();
             for (String s : array) {
-                builder.append(s.trim());
+                builder.append(" ").append(s.trim());
             }
             sqlCmdArray[i] = builder.toString();
         }

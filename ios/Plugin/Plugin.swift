@@ -174,6 +174,7 @@ public class CapacitorSQLite: CAPPlugin {
 
     // MARK: - Run
 
+    // swiftlint:disable cyclomatic_complexity
     @objc func run(_ call: CAPPluginCall) {
         let statement: String = call.getString("statement") ?? ""
         if statement.count == 0 {
@@ -220,6 +221,7 @@ public class CapacitorSQLite: CAPPlugin {
                 message: "Run command failed : No database connection")
         }
     }
+    // swiftlint:enable cyclomatic_complexity
 
     // MARK: - Query
 

@@ -93,13 +93,17 @@ const dataToImport: jsonSQLite = {
         { column: 'email', value: 'TEXT UNIQUE NOT NULL' },
         { column: 'name', value: 'TEXT' },
         { column: 'age', value: 'INTEGER' },
+        { column: 'last_modified', value: 'INTEGER' },
       ],
-      indexes: [{ name: 'index_user_on_name', column: 'name' }],
+      indexes: [
+        { name: 'index_user_on_name', column: 'name' },
+        { name: 'index_user_on_last_modified', column: 'last_modified' },
+      ],
       values: [
-        [1, 'Whiteley.com', 'Whiteley', 30],
-        [2, 'Jones.com', 'Jones', 44],
-        [3, 'Simpson@example.com', 'Simpson', 69],
-        [4, 'Brown@example.com', 'Brown', 15],
+        [1, 'Whiteley.com', 'Whiteley', 30, 1582536810],
+        [2, 'Jones.com', 'Jones', 44, 1582812800],
+        [3, 'Simpson@example.com', 'Simpson', 69, 1583570630],
+        [4, 'Brown@example.com', 'Brown', 15, 1590383895],
       ],
     },
     {
@@ -109,15 +113,20 @@ const dataToImport: jsonSQLite = {
         { column: 'userid', value: 'INTEGER' },
         { column: 'title', value: 'TEXT NOT NULL' },
         { column: 'body', value: 'TEXT NOT NULL' },
+        { column: 'last_modified', value: 'INTEGER' },
         {
           foreignkey: 'userid',
           value: 'REFERENCES users(id) ON DELETE CASCADE',
         },
       ],
+      indexes: [
+        { name: 'index_messages_on_title', column: 'title' },
+        { name: 'index_messages_on_last_modified', column: 'last_modified' },
+      ],
       values: [
-        [1, 1, 'test post 1', 'content test post 1'],
-        [2, 2, 'test post 2', 'content test post 2'],
-        [3, 1, 'test post 3', 'content test post 3'],
+        [1, 1, 'test post 1', 'content test post 1', 1587310030],
+        [2, 2, 'test post 2', 'content test post 2', 1590388125],
+        [3, 1, 'test post 3', 'content test post 3', 1590383895],
       ],
     },
     {
@@ -128,10 +137,14 @@ const dataToImport: jsonSQLite = {
         { column: 'type', value: 'TEXT NOT NULL' },
         { column: 'size', value: 'INTEGER' },
         { column: 'img', value: 'BLOB' },
+        { column: 'last_modified', value: 'INTEGER' },
+      ],
+      indexes: [
+        { name: 'index_images_on_last_modified', column: 'last_modified' },
       ],
       values: [
-        [1, 'meowth', 'png', 'NULL', Images[0]],
-        [2, 'feather', 'png', 'NULL', Images[1]],
+        [1, 'meowth', 'png', 'NULL', Images[0], 1590388825],
+        [2, 'feather', 'png', 'NULL', Images[1], 1590389895],
       ],
     },
   ],
@@ -162,8 +175,12 @@ const dataToImport1: jsonSQLite = {
         { column: 'email', value: 'TEXT UNIQUE NOT NULL' },
         { column: 'name', value: 'TEXT' },
         { column: 'age', value: 'INTEGER' },
+        { column: 'last_modified', value: 'INTEGER' },
       ],
-      indexes: [{ name: 'index_user_on_name', column: 'name' }],
+      indexes: [
+        { name: 'index_user_on_name', column: 'name' },
+        { name: 'index_user_on_last_modified', column: 'last_modified' },
+      ],
     },
     {
       name: 'messages',
@@ -172,10 +189,14 @@ const dataToImport1: jsonSQLite = {
         { column: 'userid', value: 'INTEGER' },
         { column: 'title', value: 'TEXT NOT NULL' },
         { column: 'body', value: 'TEXT NOT NULL' },
+        { column: 'last_modified', value: 'INTEGER' },
         {
           foreignkey: 'userid',
           value: 'REFERENCES users(id) ON DELETE CASCADE',
         },
+      ],
+      indexes: [
+        { name: 'index_messages_on_last_modified', column: 'last_modified' },
       ],
     },
   ],
@@ -193,18 +214,18 @@ const dataToImport2: jsonSQLite = {
     {
       name: 'users',
       values: [
-        [1, 'Whiteley.com', 'Whiteley', 30],
-        [2, 'Jones.com', 'Jones', 44],
-        [3, 'Simpson@example.com', 'Simpson', 69],
-        [4, 'Brown@example.com', 'Brown', 15],
+        [1, 'Whiteley.com', 'Whiteley', 30, 1582536810],
+        [2, 'Jones.com', 'Jones', 44, 1582812800],
+        [3, 'Simpson@example.com', 'Simpson', 69, 1583570630],
+        [4, 'Brown@example.com', 'Brown', 15, 1590383895],
       ],
     },
     {
       name: 'messages',
       values: [
-        [1, 1, 'test post 1', 'content test post 1'],
-        [2, 2, 'test post 2', 'content test post 2'],
-        [3, 1, 'test post 3', 'content test post 3'],
+        [1, 1, 'test post 1', 'content test post 1', 1587310030],
+        [2, 2, 'test post 2', 'content test post 2', 1590388125],
+        [3, 1, 'test post 3', 'content test post 3', 1590383895],
       ],
     },
   ],
@@ -220,59 +241,43 @@ const partialImport1: any = {
     mode : "partial",
     tables :[
         {
-            name: "users",
-            values: [
-                [5,"Addington.com","Addington",22],
-                [6,"Bannister.com","Bannister",59],
-                [2,"Jones@example.com","Jones",45],
-
-            ]
+          name: "users",
+          values: [
+              [5,"Addington.com","Addington",22,1601972413],
+              [6,"Bannister.com","Bannister",59,1601983245],
+              [2,"Jones@example.com","Jones",45,1601995473],
+          ]
         },
         {
-            name: "messages",
-            indexes: [
-                {name: "index_messages_on_title",
-                column: "title"
-                }
-            ],
-            values: [
-                [4,1"test post 4","content test post 4"],
-                [5,6,"test post 5","content test post 5"]
-            ]
-        }
-
-    ]
-};
-```
-
-```js
-const partialImport1: any = {
-  database: 'db-from-json',
-  encrypted: false,
-  mode: 'partial',
-  tables: [
-    {
-      name: 'users',
-      values: [
-        [5, 'Addington.com', 'Addington', 22],
-        [6, 'Bannister.com', 'Bannister', 59],
-        [2, 'Jones@example.com', 'Jones', 45],
-      ],
-    },
-    {
-      name: 'fruits',
-      schema: [
-        { column: 'id', value: 'INTEGER PRIMARY KEY NOT NULL' },
-        { column: 'name', value: 'TEXT UNIQUE NOT NULL' },
-        { column: 'weight', value: 'REAL' },
-      ],
-      indexes: [{ name: 'index_fruits_on_name', column: 'name' }],
-      values: [
-        [1, 'orange', 200.3],
-        [2, 'apple', 450.0],
-        [2, 'banana', 120.5],
-      ],
-    },
-  ],
+          name: "messages",
+          indexes: [
+              {name: "index_messages_on_title",
+              column: "title"
+              }
+          ],
+          values: [
+              [4,1"test post 4","content test post 4",1601983742],
+              [5,6,"test post 5","content test post 5",1601992872]
+          ]
+        },
+        {
+          name: 'fruits',
+          schema: [
+            { column: 'id', value: 'INTEGER PRIMARY KEY NOT NULL' },
+            { column: 'name', value: 'TEXT UNIQUE NOT NULL' },
+            { column: 'weight', value: 'REAL' },
+            { column:"last_modified", value:"INTEGER"},
+          ],
+          indexes: [
+            { name: 'index_fruits_on_name', column: 'name' },
+            { name: "index_fruits_on_last_modified",column: "last_modified"},
+          ],
+          values: [
+            [1, 'orange', 200.3,1601995573],
+            [2, 'apple', 450.0,1601995573],
+            [2, 'banana', 120.5,1601995573],
+          ],
+        },
+    ],
 };
 ```

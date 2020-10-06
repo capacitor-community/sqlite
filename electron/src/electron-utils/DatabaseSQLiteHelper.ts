@@ -1,12 +1,7 @@
 import { UtilsSQLite } from './UtilsSQLite';
-import {
-  JsonSQLite,
-  JsonTable,
-  JsonIndex,
-  JsonColumn,
-  isJsonSQLite,
-  isTable,
-} from './JsonUtils';
+import { JsonSQLite, JsonTable, JsonColumn, JsonIndex } from '../definitions';
+
+import { isJsonSQLite, isTable } from './JsonUtils';
 
 export class DatabaseSQLiteHelper {
   public isOpen: boolean = false;
@@ -406,6 +401,7 @@ export class DatabaseSQLiteHelper {
           isSchema = true;
           if (jsonData.mode === 'full')
             statements.push(`DROP TABLE IF EXISTS ${jsonData.tables[i].name};`);
+          // create table
           statements.push(
             `CREATE TABLE IF NOT EXISTS ${jsonData.tables[i].name} (`,
           );
@@ -441,6 +437,10 @@ export class DatabaseSQLiteHelper {
             }
           }
           statements.push(');');
+          // create trigger last_modified associated with the table
+          statements.push(
+            `CREATE TRIGGER IF NOT EXISTS ${jsonData.tables[i].name}_trigger_last_modified AFTER UPDATE ON ${jsonData.tables[i].name} FOR EACH ROW WHEN NEW.last_modified <= OLD.last_modified BEGIN UPDATE ${jsonData.tables[i].name} SET last_modified = (strftime('%s','now')) WHERE id=OLD.id; END;`,
+          );
         }
         if (
           jsonData.tables[i].indexes != null &&

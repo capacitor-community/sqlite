@@ -133,7 +133,7 @@ No configuration required for this plugin
 
 ## Documentation
 
-[API_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/APIdocumentation.md)
+[API_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/API.md)
 
 [ImportExportJson_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/ImportExportJson.md)
 

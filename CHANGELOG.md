@@ -1,3 +1,21 @@
+## 2.4.2-3 (2020-10-06)
+
+### ### Added Features
+
+- Add docgen to generate API documentation
+
+- Add a trigger for last_modified in importFromJson method to update the last-modified field when a data in an another field is updated
+
+### Bug Fixes
+
+- Split up capSQLiteOptions capSQLiteResult in multiple interfaces issue#4
+
+## 2.4.2-2 (2020-09-29)
+
+### Bug Fixes
+
+- Fix podspec file name (iOS)
+
 ## 2.4.2-1 (2020-09-29)
 
 ### Chores

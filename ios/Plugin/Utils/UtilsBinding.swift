@@ -22,8 +22,8 @@ class UtilsBinding {
                 }
             } catch let error as NSError {
                 message = "Error: querySQL bind failed " + error.localizedDescription
-                break
             }
+            if message.count > 0 { break }
         }
         return message
     }

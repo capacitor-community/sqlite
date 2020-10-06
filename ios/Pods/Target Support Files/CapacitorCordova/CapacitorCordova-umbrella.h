@@ -17,6 +17,7 @@
 #import "CDVCommandDelegateImpl.h"
 #import "CDVConfigParser.h"
 #import "CDVInvokedUrlCommand.h"
+#import "CDVPlugin+Resources.h"
 #import "CDVPlugin.h"
 #import "CDVPluginManager.h"
 #import "CDVPluginResult.h"

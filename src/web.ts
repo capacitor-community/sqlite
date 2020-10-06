@@ -1,8 +1,20 @@
 import { WebPlugin } from '@capacitor/core';
 import {
   CapacitorSQLitePlugin,
+  capEchoOptions,
   capSQLiteOptions,
+  capSQLiteExecuteOptions,
+  capSQLiteSetOptions,
+  capSQLiteRunOptions,
+  capSQLiteQueryOptions,
+  capSQLiteImportOptions,
+  capSQLiteExportOptions,
+  capSQLiteSyncDateOptions,
+  capEchoResult,
   capSQLiteResult,
+  capSQLiteChanges,
+  capSQLiteValues,
+  capSQLiteJson,
 } from './definitions';
 
 export class CapacitorSQLiteWeb
@@ -15,7 +27,7 @@ export class CapacitorSQLiteWeb
     });
   }
 
-  async echo(options: { value: string }): Promise<{ value: string }> {
+  async echo(options: capEchoOptions): Promise<capEchoResult> {
     console.log('ECHO in Web plugin', options);
     return options;
   }
@@ -27,19 +39,19 @@ export class CapacitorSQLiteWeb
     console.log('close', options);
     return Promise.reject('Not implemented on Web Platform');
   }
-  async execute(options: capSQLiteOptions): Promise<capSQLiteResult> {
+  async execute(options: capSQLiteExecuteOptions): Promise<capSQLiteChanges> {
     console.log('execute', options);
     return Promise.reject('Not implemented on Web Platform');
   }
-  async executeSet(options: capSQLiteOptions): Promise<capSQLiteResult> {
+  async executeSet(options: capSQLiteSetOptions): Promise<capSQLiteChanges> {
     console.log('execute', options);
     return Promise.reject('Not implemented on Web Platform');
   }
-  async run(options: capSQLiteOptions): Promise<capSQLiteResult> {
+  async run(options: capSQLiteRunOptions): Promise<capSQLiteChanges> {
     console.log('run', options);
     return Promise.reject('Not implemented on Web Platform');
   }
-  async query(options: capSQLiteOptions): Promise<capSQLiteResult> {
+  async query(options: capSQLiteQueryOptions): Promise<capSQLiteValues> {
     console.log('query', options);
     return Promise.reject('Not implemented on Web Platform');
   }
@@ -51,24 +63,28 @@ export class CapacitorSQLiteWeb
     console.log('deleteDatabase', options);
     return Promise.reject('Not implemented on Web Platform');
   }
-  async isJsonValid(options: capSQLiteOptions): Promise<capSQLiteResult> {
+  async isJsonValid(options: capSQLiteImportOptions): Promise<capSQLiteResult> {
     console.log('isJsonValid', options);
     return Promise.reject('Not implemented on Web Platform');
   }
 
-  async importFromJson(options: capSQLiteOptions): Promise<capSQLiteResult> {
+  async importFromJson(
+    options: capSQLiteImportOptions,
+  ): Promise<capSQLiteChanges> {
     console.log('importFromJson', options);
     return Promise.reject('Not implemented on Web Platform');
   }
-  async exportToJson(options: capSQLiteOptions): Promise<capSQLiteResult> {
+  async exportToJson(options: capSQLiteExportOptions): Promise<capSQLiteJson> {
     console.log('exportToJson', options);
     return Promise.reject('Not implemented on Web Platform');
   }
-  async createSyncTable(): Promise<capSQLiteResult> {
+  async createSyncTable(): Promise<capSQLiteChanges> {
     console.log('createSyncTable');
     return Promise.reject('Not implemented on Web Platform');
   }
-  async setSyncDate(options: capSQLiteOptions): Promise<capSQLiteResult> {
+  async setSyncDate(
+    options: capSQLiteSyncDateOptions,
+  ): Promise<capSQLiteResult> {
     console.log('setSyncDate', options);
     return Promise.reject('Not implemented on Web Platform');
   }

@@ -1,8 +1,20 @@
 import { WebPlugin } from '@capacitor/core';
 import {
   CapacitorSQLitePlugin,
+  capEchoOptions,
   capSQLiteOptions,
+  capSQLiteExecuteOptions,
+  capSQLiteSetOptions,
+  capSQLiteRunOptions,
+  capSQLiteQueryOptions,
+  capSQLiteImportOptions,
+  capSQLiteExportOptions,
+  capSQLiteSyncDateOptions,
+  capEchoResult,
   capSQLiteResult,
+  capSQLiteChanges,
+  capSQLiteValues,
+  capSQLiteJson,
 } from './definitions';
 import { DatabaseSQLiteHelper } from './electron-utils/DatabaseSQLiteHelper';
 import { isJsonSQLite } from './electron-utils/JsonUtils';
@@ -25,7 +37,7 @@ export class CapacitorSQLiteElectronWeb
     this.RemoteRef = remote;
     this.NodeFs = require('fs');
   }
-  async echo(options: { value: string }): Promise<{ value: string }> {
+  async echo(options: capEchoOptions): Promise<capEchoResult> {
     console.log('ECHO in CapacitorSQLiteElectronWeb ', options);
     console.log(this.RemoteRef);
     return options;
@@ -69,7 +81,7 @@ export class CapacitorSQLiteElectronWeb
     }
     return Promise.resolve({ result: true });
   }
-  async execute(options: capSQLiteOptions): Promise<capSQLiteResult> {
+  async execute(options: capSQLiteExecuteOptions): Promise<capSQLiteChanges> {
     const retRes = { changes: -1 };
     if (typeof options.statements === 'undefined') {
       return Promise.reject({
@@ -81,7 +93,7 @@ export class CapacitorSQLiteElectronWeb
     const ret: any = await this.mDb.exec(statements);
     return Promise.resolve({ changes: ret });
   }
-  async executeSet(options: capSQLiteOptions): Promise<capSQLiteResult> {
+  async executeSet(options: capSQLiteSetOptions): Promise<capSQLiteChanges> {
     const retRes = { changes: -1 };
     if (typeof options.set === 'undefined') {
       return Promise.reject({
@@ -113,7 +125,7 @@ export class CapacitorSQLiteElectronWeb
     const ret: any = await this.mDb.execSet(setOfStatements);
     return Promise.resolve({ changes: ret });
   }
-  async run(options: capSQLiteOptions): Promise<capSQLiteResult> {
+  async run(options: capSQLiteRunOptions): Promise<capSQLiteChanges> {
     const retRes = { changes: -1 };
     if (typeof options.statement === 'undefined') {
       return Promise.reject({
@@ -137,16 +149,16 @@ export class CapacitorSQLiteElectronWeb
     }
     return Promise.resolve({ changes: ret });
   }
-  async query(options: capSQLiteOptions): Promise<capSQLiteResult> {
+  async query(options: capSQLiteQueryOptions): Promise<capSQLiteValues> {
     if (typeof options.statement === 'undefined') {
       return Promise.reject({
-        changes: -1,
+        values: [],
         message: 'Query command failed : Must provide a SQL statement',
       });
     }
     if (typeof options.values === 'undefined') {
       return Promise.reject({
-        changes: -1,
+        values: [],
         message: 'Query command failed : Values should be an Array of values',
       });
     }
@@ -207,7 +219,7 @@ export class CapacitorSQLiteElectronWeb
     const ret = await this.mDb.deleteDB(dbName);
     return Promise.resolve({ result: ret });
   }
-  async isJsonValid(options: capSQLiteOptions): Promise<capSQLiteResult> {
+  async isJsonValid(options: capSQLiteImportOptions): Promise<capSQLiteResult> {
     const jsonStrObj = options.jsonstring;
     if (
       typeof jsonStrObj != 'string' ||
@@ -230,7 +242,9 @@ export class CapacitorSQLiteElectronWeb
       return Promise.resolve({ result: true });
     }
   }
-  async importFromJson(options: capSQLiteOptions): Promise<capSQLiteResult> {
+  async importFromJson(
+    options: capSQLiteImportOptions,
+  ): Promise<capSQLiteChanges> {
     const retRes = { changes: -1 };
     const jsonStrObj = options.jsonstring;
     if (
@@ -257,7 +271,7 @@ export class CapacitorSQLiteElectronWeb
     //      this.mDb = null;
     return Promise.resolve({ changes: ret });
   }
-  async exportToJson(options: capSQLiteOptions): Promise<capSQLiteResult> {
+  async exportToJson(options: capSQLiteExportOptions): Promise<capSQLiteJson> {
     const retRes = {};
     if (typeof options.jsonexportmode === 'undefined') {
       return Promise.reject({
@@ -278,11 +292,13 @@ export class CapacitorSQLiteElectronWeb
     const ret: any = await this.mDb.exportJson(exportMode);
     return Promise.resolve({ export: ret });
   }
-  async createSyncTable(): Promise<capSQLiteResult> {
+  async createSyncTable(): Promise<capSQLiteChanges> {
     const ret: any = await this.mDb.createSyncTable();
     return Promise.resolve({ changes: ret });
   }
-  async setSyncDate(options: capSQLiteOptions): Promise<capSQLiteResult> {
+  async setSyncDate(
+    options: capSQLiteSyncDateOptions,
+  ): Promise<capSQLiteResult> {
     if (
       typeof options.syncdate === 'undefined' ||
       typeof options.syncdate != 'string'

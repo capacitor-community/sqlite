@@ -5,84 +5,110 @@ declare module '@capacitor/core' {
 }
 
 export interface CapacitorSQLitePlugin {
-  echo(options: { value: string }): Promise<{ value: string }>;
+  /**
+   * Echo a given string
+   *
+   * @param options The echo options
+   * @return Promise<{ value: string }
+   * @since 0.0.1
+   */
+  echo(options: capEchoOptions): Promise<capEchoResult>;
   /**
    * Open a SQLite database
-   * @param {capSQLiteOptions} options {database: string, encrypted?: boolean, mode?: string}
-   * @returns {Promise<capSQLiteResult>} {result:boolean}
+   * @param {capSQLiteOptions} options
+   * @returns {Promise<capSQLiteResult>}
+   * @since 0.0.1
    */
   open(options: capSQLiteOptions): Promise<capSQLiteResult>;
   /**
    * Close a SQLite database
-   * @param {capSQLiteOptions} options {database: string}
-   * @returns {Promise<capSQLiteResult>} {result:boolean}
+   * @param {capSQLiteOptions} options
+   * @returns {Promise<capSQLiteResult>}
+   * @since 0.0.1
    */
   close(options: capSQLiteOptions): Promise<capSQLiteResult>;
   /**
    * Execute a Batch of Raw Statements as String
-   * @param {capSQLiteOptions} options {statements: string}
-   * @returns {Promise<capSQLiteResult>} {changes:{changes:number}}
+   * @param {capSQLiteExecuteOptions} options
+   * @returns {Promise<capSQLiteChanges>}
+   * @since 0.0.1
    */
-  execute(options: capSQLiteOptions): Promise<capSQLiteResult>;
+  execute(options: capSQLiteExecuteOptions): Promise<capSQLiteChanges>;
   /**
    * Execute a Set of Raw Statements as Array of CapSQLiteSet
-   * @param {capSQLiteOptions} options {set: Array<CapSQLiteSet>}
-   * @returns {Promise<capSQLiteResult>} {changes:{changes:number}}
+   * @param {capSQLiteSetOptions} options
+   * @returns {Promise<capSQLiteChanges>}
+   * @since 2.2.0-2
    */
-  executeSet(options: capSQLiteOptions): Promise<capSQLiteResult>;
+  executeSet(options: capSQLiteSetOptions): Promise<capSQLiteChanges>;
   /**
    * Execute a Single Statement
-   * @param {capSQLiteOptions} options {statement: string, values:Array<any> }
-   * @returns {Promise<capSQLiteResult>} {changes:{changes:number,lastId:number}}
+   * @param {capSQLiteRunOptions} options
+   * @returns {Promise<capSQLiteChanges>}
+   * @since 0.0.1
    */
-  run(options: capSQLiteOptions): Promise<capSQLiteResult>;
+  run(options: capSQLiteRunOptions): Promise<capSQLiteChanges>;
   /**
    * Query a Single Statement
-   * @param {capSQLiteOptions} options {statement: string, values:Array<string> }
-   * @returns {Promise<capSQLiteResult>} {values:Array<any>}
+   * @param {capSQLiteQueryOptions} options
+   * @returns {Promise<capSQLiteValues>}
+   * @since 0.0.1
    */
-  query(options: capSQLiteOptions): Promise<capSQLiteResult>;
+  query(options: capSQLiteQueryOptions): Promise<capSQLiteValues>;
   /**
    * Check is a SQLite database exists
-   * @param {capSQLiteOptions} options {database: string}
-   * @returns {Promise<capSQLiteResult>} {result:boolean}
+   * @param {capSQLiteOptions} options
+   * @returns {Promise<capSQLiteResult>}
+   * @since 2.0.1-1
    */
   isDBExists(options: capSQLiteOptions): Promise<capSQLiteResult>;
   /**
    * Delete a SQLite database
-   * @param {capSQLiteOptions} options {database: string}
-   * @returns {Promise<capSQLiteResult>} {result:boolean}
+   * @param {capSQLiteOptions} options
+   * @returns {Promise<capSQLiteResult>}
+   * @since 0.0.1
    */
   deleteDatabase(options: capSQLiteOptions): Promise<capSQLiteResult>;
   /**
    * Is Json Object Valid
-   * @param {capSQLiteOptions} options {jsonstring: string}
-   * @returns {Promise<capSQLiteResult>} {result:boolean}
+   * @param {capSQLiteImportOptions} options
+   * @returns {Promise<capSQLiteResult>}
+   * @since 2.0.1-1
    */
-  isJsonValid(options: capSQLiteOptions): Promise<capSQLiteResult>;
+  isJsonValid(options: capSQLiteImportOptions): Promise<capSQLiteResult>;
   /**
    * Import from Json Object
-   * @param {capSQLiteOptions} options {jsonstring: string}
-   * @returns {Promise<capSQLiteResult>} {changes:{changes:number}}
+   * @param {capSQLiteImportOptions} options
+   * @returns {Promise<capSQLiteChanges>}
+   * @since 2.0.0-3
    */
-  importFromJson(options: capSQLiteOptions): Promise<capSQLiteResult>;
+  importFromJson(options: capSQLiteImportOptions): Promise<capSQLiteChanges>;
   /**
    * Export to Json Object
-   * @param {capSQLiteOptions} options {jsonexportmode: string}
-   * @returns {Promise<capSQLiteResult>} {export:any}
+   * @param {capSQLiteExportOptions} options
+   * @returns {Promise<capSQLiteJson>}
+   * @since 2.0.1-1
    */
-  exportToJson(options: capSQLiteOptions): Promise<capSQLiteResult>;
+  exportToJson(options: capSQLiteExportOptions): Promise<capSQLiteJson>;
   /**
    * Create a synchronization table
-   * @returns {Promise<capSQLiteResult>} {changes:{changes:number}}
+   * @returns {Promise<capSQLiteChanges>}
+   * @since 2.0.1-1
    */
-  createSyncTable(): Promise<capSQLiteResult>;
+  createSyncTable(): Promise<capSQLiteChanges>;
   /**
    * Set the synchronization date
-   * @param {capSQLiteOptions} options {syncdate: string}
-   * @returns {Promise<capSQLiteResult>} {result:boolean}
+   * @param {capSQLiteSyncDateOptions} options
+   * @returns {Promise<capSQLiteResult>}
+   * @since 2.0.1-1
    */
-  setSyncDate(options: capSQLiteOptions): Promise<capSQLiteResult>;
+  setSyncDate(options: capSQLiteSyncDateOptions): Promise<capSQLiteResult>;
+}
+export interface capEchoOptions {
+  /**
+   *  String to be echoed
+   */
+  value?: string;
 }
 
 export interface capSQLiteOptions {
@@ -91,13 +117,30 @@ export interface capSQLiteOptions {
    */
   database?: string;
   /**
+   * Set to true (database encryption) / false
+   * - Open method only
+   */
+  encrypted?: boolean;
+  /**
+   * Set the mode for database encryption
+   * ["encryption", "secret", "newsecret"]
+   * - Open method only
+   */
+  mode?: string;
+}
+export interface capSQLiteExecuteOptions {
+  /**
    * The batch of raw SQL statements as string
    */
   statements?: string;
+}
+export interface capSQLiteSetOptions {
   /**
    * The batch of raw SQL statements as Array of capSQLLiteSet
    */
-  set?: Array<capSQLiteSet>;
+  set?: capSQLiteSet[];
+}
+export interface capSQLiteRunOptions {
   /**
    * A statement
    */
@@ -105,63 +148,156 @@ export interface capSQLiteOptions {
   /**
    * A set of values for a statement
    */
-  values?: Array<any>;
+  values?: any[];
+}
+export interface capSQLiteQueryOptions {
   /**
-   * Set to true for database encryption
+   * A statement
    */
-  encrypted?: boolean;
-  /***
-   * Set the mode for database encryption
-   * ["encryption", "secret","newsecret"]
+  statement?: string;
+  /**
+   * A set of values for a statement
    */
-  mode?: string;
-  /***
+  values?: string[];
+}
+export interface capSQLiteImportOptions {
+  /**
    * Set the JSON object to import
    *
    */
   jsonstring?: string;
-  /***
-   * Set the mode to export JSON Object
-   * "full", "partial"
+}
+export interface capSQLiteExportOptions {
+  /**
+   * Set the mode to export JSON Object:
+   * "full" or "partial"
    *
    */
   jsonexportmode?: string;
-  /***
+}
+export interface capSQLiteSyncDateOptions {
+  /**
    * Set the synchronization date
    *
    */
   syncdate?: string;
 }
-
+export interface capSQLiteSet {
+  /**
+   * A statement
+   */
+  statement?: string;
+  /**
+   * the data values list as an Array
+   */
+  values?: any[];
+}
+export interface capEchoResult {
+  /**
+   * String returned
+   */
+  value?: string;
+}
 export interface capSQLiteResult {
   /**
    * result set to true when successful else false
    */
   result?: boolean;
   /**
+   * a returned message
+   */
+  message?: string;
+}
+export interface capSQLiteChanges {
+  /**
    * the number of changes from an execute or run command
    */
   changes?: any;
   /**
-   * the data values list as an Array
-   */
-  values?: Array<any>;
-  /**
-   * a message
+   * a returned message
    */
   message?: string;
+}
+export interface capSQLiteValues {
+  /**
+   * the data values list as an Array
+   */
+  values?: any[];
+  /**
+   * a returned message
+   */
+  message?: string;
+}
+export interface capSQLiteJson {
   /**
    * an export JSON object
    */
-  export?: any;
+  export?: JsonSQLite;
+  /**
+   * a returned message
+   */
+  message?: string;
 }
-export interface capSQLiteSet {
+
+/* JSON Types */
+export interface JsonSQLite {
   /**
-   * A statement
+   * The database name
    */
-  statement?: String;
+  database: string;
   /**
-   * the data values list as an Array
+   * Set to true (database encryption) / false
    */
-  values?: Array<any>;
+  encrypted: boolean;
+  /***
+   * Set the mode
+   * ["full", "partial"]
+   */
+  mode: string;
+  /***
+   * Array of Table (JsonTable)
+   */
+  tables: JsonTable[];
+}
+export interface JsonTable {
+  /**
+   * The database name
+   */
+  name: string;
+  /***
+   * Array of Schema (JsonColumn)
+   */
+  schema?: JsonColumn[];
+  /***
+   * Array of Index (JsonIndex)
+   */
+  indexes?: JsonIndex[];
+  /***
+   * Array of Table data
+   */
+  values?: any[][];
+}
+export interface JsonColumn {
+  /**
+   * The column name
+   */
+  column?: string;
+  /**
+   * The column data (type, unique, ...)
+   */
+  value: string;
+  /**
+   * The column foreign key constraints
+   */
+  foreignkey?: string;
+}
+export interface JsonIndex {
+  /**
+   * The index name
+   */
+  name: string;
+  /**
+   * The column name to be indexed
+   */
+  column: string;
 }

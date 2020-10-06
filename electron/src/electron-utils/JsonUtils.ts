@@ -1,25 +1,3 @@
-/* JSON Types */
-export type JsonSQLite = {
-  database: string;
-  encrypted: boolean;
-  mode: string;
-  tables: Array<JsonTable>;
-};
-export type JsonTable = {
-  name: string;
-  schema?: Array<JsonColumn>;
-  indexes?: Array<JsonIndex>;
-  values?: Array<Array<any>>;
-};
-export type JsonColumn = {
-  column?: string;
-  value: string;
-  foreignkey?: string;
-};
-export type JsonIndex = {
-  name: string;
-  column: string;
-};
 /* JSON function */
 export function isJsonSQLite(obj: any): boolean {
   const keyFirstLevel: Array<string> = [

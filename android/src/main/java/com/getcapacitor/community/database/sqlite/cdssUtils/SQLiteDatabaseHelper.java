@@ -674,6 +674,22 @@ public class SQLiteDatabaseHelper extends SQLiteOpenHelper {
                 stmt = new StringBuilder(stmt).append(");").toString();
                 statements.add(stmt);
             }
+            // create trigger last_modified associated with the table
+            String stmtTrigger = new StringBuilder("CREATE TRIGGER IF NOT EXISTS ")
+                .append(jsonSQL.getTables().get(i).getName())
+                .append("_trigger_last_modified")
+                .append(" AFTER UPDATE ON ")
+                .append(jsonSQL.getTables().get(i).getName())
+                .append(" FOR EACH ROW ")
+                .append("WHEN NEW.last_modified <= OLD.last_modified BEGIN ")
+                .append("UPDATE ")
+                .append(jsonSQL.getTables().get(i).getName())
+                .append(" SET last_modified = (strftime('%s','now')) ")
+                .append("WHERE id=OLD.id; ")
+                .append("END;")
+                .toString();
+            statements.add(stmtTrigger);
+
             if (jsonSQL.getTables().get(i).getIndexes().size() > 0) {
                 for (int j = 0; j < jsonSQL.getTables().get(i).getIndexes().size(); j++) {
                     String stmt = new StringBuilder("CREATE INDEX IF NOT EXISTS ")

@@ -3,7 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/android.iml" filepath="$PROJECT_DIR$/.idea/modules/android.iml" group="android" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-827681266/android-capacitor-android.iml" filepath="$PROJECT_DIR$/.idea/modules/-827681266/android-capacitor-android.iml" group="android/capacitor-android" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/391246013/capacitor-android.iml" filepath="$PROJECT_DIR$/.idea/modules/391246013/capacitor-android.iml" group="android/capacitor-android" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/sqlite-android.iml" filepath="$PROJECT_DIR$/.idea/modules/sqlite-android.iml" group="android" />
     </modules>
   </component>
 </project>

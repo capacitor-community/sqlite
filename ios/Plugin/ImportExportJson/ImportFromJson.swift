@@ -12,6 +12,7 @@ class ImportFromJson {
 
     // MARK: - ImportFromJson - CreateDatabaseSchema
 
+    // swiftlint:disable cyclomatic_complexity
     class func createDatabaseSchema(dbHelper: DatabaseHelper, jsonSQLite: JsonSQLite, path: String,
                                     secret: String) throws -> Int {
         var changes: Int = -1
@@ -59,6 +60,7 @@ class ImportFromJson {
         }
         if statements.count > 0 {
             let joined = statements.joined(separator: "\n")
+            print("joined \(joined)")
             do {
                 changes = try UtilsSQLite.executeCommit(dbHelper: dbHelper, mDB: mDB, sql: joined)
             } catch DatabaseHelperError.executeCommit(let message) {
@@ -70,6 +72,7 @@ class ImportFromJson {
         dbHelper.closeDB(mDB: mDB, method: "createDatabaseSchema")
         return changes
     }
+    // swiftlint:enable cyclomatic_complexity
 
     // MARK: - ImportFromJson - CreateTableSchema
 
@@ -103,6 +106,20 @@ class ImportFromJson {
             }
         }
         stmt.append(");")
+        statements.append(stmt)
+        // create trigger last_modified associated with the table
+        let triggerName: String = tableName + "_trigger_last_modified"
+        stmt = "CREATE TRIGGER IF NOT EXISTS "
+        stmt.append(triggerName)
+        stmt.append(" AFTER UPDATE ON ")
+        stmt.append(tableName)
+        stmt.append(" FOR EACH ROW ")
+        stmt.append("WHEN NEW.last_modified <= OLD.last_modified BEGIN ")
+        stmt.append("UPDATE ")
+        stmt.append(tableName)
+        stmt.append(" SET last_modified = (strftime('%s','now')) ")
+        stmt.append("WHERE id=OLD.id; ")
+        stmt.append("END;")
         statements.append(stmt)
         return statements
     }

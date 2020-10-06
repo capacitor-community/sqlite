@@ -14,6 +14,7 @@ class ExportToJson {
     // MARK: - ExportToJson - CreateExportObject
 
     // swiftlint:disable function_body_length
+    // swiftlint:disable cyclomatic_complexity
     class func createExportObject(dbHelper: DatabaseHelper, data: [String: Any]) throws -> [String: Any] {
         var retObj: [String: Any] = [:]
         let message = "exportToJson: createExportObject miss data: "
@@ -72,6 +73,8 @@ class ExportToJson {
 
         return retObj
     }
+    // swiftlint:enable cyclomatic_complexity
+    // swiftlint:enable function_body_length
 
     // MARK: - ExportToJson - GetSchemaIndexes
 
@@ -147,7 +150,7 @@ class ExportToJson {
     }
 
     // MARK: - ExportToJson - GetTablesFull
-
+    // swiftlint:disable cyclomatic_complexity
     class func getTablesFull(dbHelper: DatabaseHelper, mDB: OpaquePointer,
                              resTables: [[String: Any]]) throws -> [[String: Any]] {
         var tables: [[String: Any]] = []
@@ -204,9 +207,11 @@ class ExportToJson {
 
         return tables
     }
+    // swiftlint:enable cyclomatic_complexity
 
     // MARK: - ExportToJson - GetTablesPartial
 
+    // swiftlint:disable function_body_length
     // swiftlint:disable cyclomatic_complexity
     class func getTablesPartial(dbHelper: DatabaseHelper, mDB: OpaquePointer,
                                 resTables: [[String: Any]]) throws -> [[String: Any]] {
@@ -294,6 +299,7 @@ class ExportToJson {
         return tables
     }
     // swiftlint:enable cyclomatic_complexity
+    // swiftlint:enable function_body_length
 
     // MARK: - ExportToJson - GetPartialModeData
 
