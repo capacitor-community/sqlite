@@ -142,8 +142,11 @@ public class CapacitorSQLite extends Plugin {
             call.reject("Must provide raw SQL statements");
             return;
         }
+        statements.replace("end;", "END;");
         // split for each statement
         String[] sqlCmdArray = statements.split(";\n");
+        // deal with trigger if any
+        sqlCmdArray = dealWithTriggers(sqlCmdArray);
         // split for a single statement on multilines
         for (int i = 0; i < sqlCmdArray.length; i++) {
             String[] array = sqlCmdArray[i].split("\n");
@@ -153,7 +156,7 @@ public class CapacitorSQLite extends Plugin {
             }
             sqlCmdArray[i] = builder.toString();
         }
-        if (sqlCmdArray[sqlCmdArray.length - 1] == "") {
+        if (sqlCmdArray[sqlCmdArray.length - 1].trim().length() == 0) {
             sqlCmdArray = Arrays.copyOf(sqlCmdArray, sqlCmdArray.length - 1);
         }
         JSObject res = mDb.execSQL(sqlCmdArray);
@@ -475,5 +478,32 @@ public class CapacitorSQLite extends Plugin {
             Log.v(TAG, "*** ERROR " + message);
         }
         call.resolve(ret);
+    }
+
+    private String[] dealWithTriggers(String[] sqlCmdArray) {
+        List listArray = Arrays.asList(sqlCmdArray);
+        listArray = trimArray(listArray);
+        listArray = concatRemoveEnd(listArray);
+        String[] retArray = (String[]) listArray.toArray(new String[0]);
+        return retArray;
+    }
+
+    private List concatRemoveEnd(List listArray) {
+        List lArray = new ArrayList(listArray);
+        if (lArray.contains("END")) {
+            int idx = lArray.indexOf("END");
+            lArray.set(idx - 1, lArray.get(idx - 1) + "; END");
+            Object o = lArray.remove(idx);
+            return concatRemoveEnd(lArray);
+        } else {
+            return lArray;
+        }
+    }
+
+    private List trimArray(List listArray) {
+        for (int i = 0; i < listArray.size(); i++) {
+            listArray.set(i, listArray.get(i).toString().trim());
+        }
+        return listArray;
     }
 }

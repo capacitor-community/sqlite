@@ -2,46 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="241f8181-1180-4d41-bd48-9f064589ab4a" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/../CHANGELOG.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/caches/build_file_checksums.ser" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/build_file_checksums.ser" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/CapacitorSQLite.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/CapacitorSQLite.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/SQLiteDatabaseHelper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/SQLiteDatabaseHelper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs/APIdocumentation.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../electron/src/electron-utils/DatabaseSQLiteHelper.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../electron/src/electron-utils/DatabaseSQLiteHelper.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../electron/src/electron-utils/JsonUtils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../electron/src/electron-utils/JsonUtils.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../electron/src/plugin.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../electron/src/plugin.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin.xcodeproj/project.pbxproj" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin.xcodeproj/project.pbxproj" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../ios/Plugin.xcworkspace/xcuserdata/queaujeanpierre.xcuserdatad/UserInterfaceState.xcuserstate" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin.xcworkspace/xcuserdata/queaujeanpierre.xcuserdatad/UserInterfaceState.xcuserstate" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/DatabaseSQLiteHelper.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/DatabaseSQLiteHelper.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/ImportExportJson/ExportToJson.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/ImportExportJson/ExportToJson.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/ImportExportJson/ImportFromJson.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/ImportExportJson/ImportFromJson.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/Plugin.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/Plugin.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsBinding.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsBinding.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Podfile.lock" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Podfile.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Local Podspecs/Capacitor.podspec.json" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Pods/Local Podspecs/Capacitor.podspec.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Local Podspecs/CapacitorCordova.podspec.json" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Pods/Local Podspecs/CapacitorCordova.podspec.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Manifest.lock" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Pods/Manifest.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/project.pbxproj" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/project.pbxproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/xcuserdata/queaujeanpierre.xcuserdatad/xcschemes/Capacitor.xcscheme" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/xcuserdata/queaujeanpierre.xcuserdatad/xcschemes/Capacitor.xcscheme" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/xcuserdata/queaujeanpierre.xcuserdatad/xcschemes/CapacitorCordova.xcscheme" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/xcuserdata/queaujeanpierre.xcuserdatad/xcschemes/CapacitorCordova.xcscheme" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/xcuserdata/queaujeanpierre.xcuserdatad/xcschemes/Pods-Plugin.xcscheme" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/xcuserdata/queaujeanpierre.xcuserdatad/xcschemes/Pods-Plugin.xcscheme" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/xcuserdata/queaujeanpierre.xcuserdatad/xcschemes/Pods-PluginTests.xcscheme" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/xcuserdata/queaujeanpierre.xcuserdatad/xcschemes/Pods-PluginTests.xcscheme" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/xcuserdata/queaujeanpierre.xcuserdatad/xcschemes/SQLCipher.xcscheme" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/xcuserdata/queaujeanpierre.xcuserdatad/xcschemes/SQLCipher.xcscheme" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/Capacitor/Capacitor-Info.plist" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Pods/Target Support Files/Capacitor/Capacitor-Info.plist" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/CapacitorCordova/CapacitorCordova-Info.plist" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Pods/Target Support Files/CapacitorCordova/CapacitorCordova-Info.plist" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/CapacitorCordova/CapacitorCordova-umbrella.h" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Pods/Target Support Files/CapacitorCordova/CapacitorCordova-umbrella.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/Pods-Plugin/Pods-Plugin.debug.xcconfig" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Pods/Target Support Files/Pods-Plugin/Pods-Plugin.debug.xcconfig" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/Pods-Plugin/Pods-Plugin.release.xcconfig" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Pods/Target Support Files/Pods-Plugin/Pods-Plugin.release.xcconfig" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/SQLCipher/SQLCipher.debug.xcconfig" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Pods/Target Support Files/SQLCipher/SQLCipher.debug.xcconfig" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/SQLCipher/SQLCipher.release.xcconfig" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Pods/Target Support Files/SQLCipher/SQLCipher.release.xcconfig" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/../package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../src/definitions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../src/definitions.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../src/web.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../src/web.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

@@ -1,3 +1,9 @@
+## 2.4.2-4 (2020-10-07)
+
+### Bug Fixes
+
+- Fix Android Trigger on multi-lines
+
 ## 2.4.2-3 (2020-10-06)
 
 ### ### Added Features
