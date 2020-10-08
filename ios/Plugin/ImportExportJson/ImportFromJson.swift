@@ -8,6 +8,7 @@
 import Foundation
 import SQLCipher
 
+// swiftlint:disable type_body_length
 class ImportFromJson {
 
     // MARK: - ImportFromJson - CreateDatabaseSchema
@@ -300,3 +301,4 @@ class ImportFromJson {
         return stmt
     }
 }
+// swiftlint:enable type_body_length
