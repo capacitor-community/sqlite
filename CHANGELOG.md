@@ -1,3 +1,9 @@
+## 2.4.2-5 (2020-10-08)
+
+### Bug Fixes
+
+- Fix iOS plugin build failed
+
 ## 2.4.2-4 (2020-10-07)
 
 ### Bug Fixes
