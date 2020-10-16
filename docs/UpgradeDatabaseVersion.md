@@ -12,7 +12,7 @@ ie: assuming `this._SQLiteService` is referring to the sqlite plugin and the cur
 ...
 
 let result:any = await this._SQLiteService.addUpgradeStatement("test-sqlite",
-{fromVersion: 1, toVersion: 2, statement: schemaStmt, set: setArray});
+[{fromVersion: 1, toVersion: 2, statement: schemaStmt, set: setArray}]);
 result = await this._SQLiteService.openDB("test-sqlite",false,"no-encryption",2);
 console.log('openDB result.result ' + result.result);
 if(result.result) {
@@ -143,15 +143,15 @@ const setArray: Array<any> = [
     },
 ]
 // call addUpgradeStatement
-let result:any = await this._SQLiteService.addUpgradeStatement([{
+let result:any = await this._SQLiteService.addUpgradeStatement({
     database: "test-updversion",
-    upgrade: {
+    upgrade: [{
         fromVersion: 1,
         toVersion: 2,
         statement: schemaStmt,
         set: setArray
-    }
-}]);
+    }]
+});
 // open the database
 result = await this._SQLiteService.openDB("test-updversion",false,"no-encryption",2);
 if(result.result) {
