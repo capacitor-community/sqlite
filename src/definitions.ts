@@ -8,101 +8,110 @@ export interface CapacitorSQLitePlugin {
   /**
    * Echo a given string
    *
-   * @param options The echo options
+   * @param options: capEchoOptions
    * @return Promise<{ value: string }
    * @since 0.0.1
    */
   echo(options: capEchoOptions): Promise<capEchoResult>;
   /**
    * Open a SQLite database
-   * @param {capSQLiteOptions} options
-   * @returns {Promise<capSQLiteResult>}
+   * @param options: capSQLiteOptions
+   * @returns Promise<capSQLiteResult>
    * @since 0.0.1
    */
   open(options: capSQLiteOptions): Promise<capSQLiteResult>;
   /**
    * Close a SQLite database
-   * @param {capSQLiteOptions} options
-   * @returns {Promise<capSQLiteResult>}
+   * @param options: capSQLiteOptions
+   * @returns Promise<capSQLiteResult>
    * @since 0.0.1
    */
   close(options: capSQLiteOptions): Promise<capSQLiteResult>;
   /**
    * Execute a Batch of Raw Statements as String
-   * @param {capSQLiteExecuteOptions} options
-   * @returns {Promise<capSQLiteChanges>}
+   * @param options: capSQLiteExecuteOptions
+   * @returns Promise<capSQLiteChanges>
    * @since 0.0.1
    */
   execute(options: capSQLiteExecuteOptions): Promise<capSQLiteChanges>;
   /**
    * Execute a Set of Raw Statements as Array of CapSQLiteSet
-   * @param {capSQLiteSetOptions} options
-   * @returns {Promise<capSQLiteChanges>}
+   * @param options: capSQLiteSetOptions
+   * @returns Promise<capSQLiteChanges>
    * @since 2.2.0-2
    */
   executeSet(options: capSQLiteSetOptions): Promise<capSQLiteChanges>;
   /**
    * Execute a Single Statement
-   * @param {capSQLiteRunOptions} options
-   * @returns {Promise<capSQLiteChanges>}
+   * @param options: capSQLiteRunOptions
+   * @returns Promise<capSQLiteChanges>
    * @since 0.0.1
    */
   run(options: capSQLiteRunOptions): Promise<capSQLiteChanges>;
   /**
    * Query a Single Statement
-   * @param {capSQLiteQueryOptions} options
-   * @returns {Promise<capSQLiteValues>}
+   * @param options: capSQLiteQueryOptions
+   * @returns Promise<capSQLiteValues>
    * @since 0.0.1
    */
   query(options: capSQLiteQueryOptions): Promise<capSQLiteValues>;
   /**
    * Check is a SQLite database exists
-   * @param {capSQLiteOptions} options
-   * @returns {Promise<capSQLiteResult>}
+   * @param options: capSQLiteOptions
+   * @returns Promise<capSQLiteResult>
    * @since 2.0.1-1
    */
   isDBExists(options: capSQLiteOptions): Promise<capSQLiteResult>;
   /**
    * Delete a SQLite database
-   * @param {capSQLiteOptions} options
-   * @returns {Promise<capSQLiteResult>}
+   * @param options: capSQLiteOptions
+   * @returns Promise<capSQLiteResult>
    * @since 0.0.1
    */
   deleteDatabase(options: capSQLiteOptions): Promise<capSQLiteResult>;
   /**
    * Is Json Object Valid
-   * @param {capSQLiteImportOptions} options
-   * @returns {Promise<capSQLiteResult>}
+   * @param options: capSQLiteImportOptions
+   * @returns Promise<capSQLiteResult>
    * @since 2.0.1-1
    */
   isJsonValid(options: capSQLiteImportOptions): Promise<capSQLiteResult>;
   /**
    * Import from Json Object
-   * @param {capSQLiteImportOptions} options
-   * @returns {Promise<capSQLiteChanges>}
+   * @param options: capSQLiteImportOptions
+   * @returns Promise<capSQLiteChanges>
    * @since 2.0.0-3
    */
   importFromJson(options: capSQLiteImportOptions): Promise<capSQLiteChanges>;
   /**
    * Export to Json Object
-   * @param {capSQLiteExportOptions} options
-   * @returns {Promise<capSQLiteJson>}
+   * @param options: capSQLiteExportOptions
+   * @returns Promise<capSQLiteJson>
    * @since 2.0.1-1
    */
   exportToJson(options: capSQLiteExportOptions): Promise<capSQLiteJson>;
   /**
    * Create a synchronization table
-   * @returns {Promise<capSQLiteChanges>}
+   * @returns Promise<capSQLiteChanges>
    * @since 2.0.1-1
    */
   createSyncTable(): Promise<capSQLiteChanges>;
   /**
    * Set the synchronization date
-   * @param {capSQLiteSyncDateOptions} options
-   * @returns {Promise<capSQLiteResult>}
+   * @param options: capSQLiteSyncDateOptions
+   * @returns Promise<capSQLiteResult>
    * @since 2.0.1-1
    */
   setSyncDate(options: capSQLiteSyncDateOptions): Promise<capSQLiteResult>;
+  /**
+   * Add the upgrade Statement for database version upgrading
+   * @param options: capSQLiteUpgradeOptions
+   * @returns Promise<capSQLiteResult>
+   * @since 2.4.2-6 iOS & Electron
+   */
+  addUpgradeStatement(
+    options: capSQLiteUpgradeOptions,
+  ): Promise<capSQLiteResult>;
 }
 export interface capEchoOptions {
   /**
@@ -116,6 +125,10 @@ export interface capSQLiteOptions {
    * The database name
    */
   database?: string;
+  /**
+   * The database  version
+   */
+  version?: number;
   /**
    * Set to true (database encryption) / false
    * - Open method only
@@ -192,6 +205,17 @@ export interface capSQLiteSet {
    */
   values?: any[];
 }
+export interface capSQLiteUpgradeOptions {
+  /**
+   * The database name
+   */
+  database?: string;
+  /**
+   * The upgrade options for version upgrade
+   * Array of length 1 to easiest the iOS plugin
+   */
+  upgrade?: capSQLiteVersionUpgrade[];
+}
 export interface capEchoResult {
   /**
    * String returned
@@ -245,6 +269,10 @@ export interface JsonSQLite {
    * The database name
    */
   database: string;
+  /**
+   *  The database version
+   */
+  version: number;
   /**
    * Set to true (database encryption) / false
    */
@@ -300,4 +328,10 @@ export interface JsonIndex {
    * The column name to be indexed
    */
   column: string;
+}
+export interface capSQLiteVersionUpgrade {
+  fromVersion: number;
+  toVersion: number;
+  statement: string;
+  set?: capSQLiteSet[];
 }

@@ -16,11 +16,13 @@ enum DatabaseHelperError: Error {
     case execSql(message: String)
     case execute(message: String)
     case execSet(message: String)
+    case executeSet(message: String)
     case runSql(message: String)
     case prepareSql(message: String)
     case selectSql(message: String)
     case querySql(message: String)
     case deleteDB(message: String)
+    case restoreDB(message: String)
     case close(message: String)
     case tableNotExists(message: String)
     case importFromJson(message: String)
@@ -63,34 +65,44 @@ class DatabaseHelper {
     // define the path for the database
     var path: String = ""
     var databaseName: String
+    var databaseVersion: Int
     var secret: String
     var newsecret: String
     var encrypted: Bool
     var mode: String
+    var versionUpgrades: [String: [Int: [String: Any]]]
 
     // MARK: - Init
-
-    init(databaseName: String, encrypted: Bool = false, mode: String = "no-encryption",
-         secret: String = "", newsecret: String = "") throws {
+    init(databaseName: String, encrypted: Bool = false,
+         mode: String = "no-encryption", secret: String = "",
+         newsecret: String = "", databaseVersion: Int = 1,
+         versionUpgrades: [String: [Int: [String: Any]]] = [:]) throws {
         print("databaseName: \(databaseName) ")
         self.secret = secret
+        self.databaseVersion = databaseVersion
         self.newsecret = newsecret
         self.encrypted = encrypted
         self.databaseName = databaseName
         self.mode = mode
+        self.versionUpgrades = versionUpgrades
         do {
-            self.path = try UtilsSQLite.getFilePath(fileName: databaseName)
+            self.path = try UtilsFile.getFilePath(
+                                            fileName: databaseName)
         } catch UtilsSQLiteError.filePathFailed {
-            throw DatabaseHelperError.filePath(message: "Could not generate the file path")
+            throw DatabaseHelperError.filePath(
+                        message: "Could not generate the file path")
         }
         print("database path \(self.path)")
         // connect to the database (create if doesn't exist)
 
-        let message: String = UtilsSQLite.createConnection(dbHelper: self, path: self.path, mode: self.mode,
-                                                            encrypted: self.encrypted, secret: self.secret,
-                                                            newsecret: self.newsecret)
-        self.isOpen = message.count == 0 || message == "swap newsecret" ||
-                 message == "success encryption" ? true : false
+        let message: String = UtilsConnection.createConnection(
+            dbHelper: self, path: self.path, mode: self.mode,
+            encrypted: self.encrypted, secret: self.secret,
+            newsecret: self.newsecret, version: self.databaseVersion,
+            versionUpgrades: self.versionUpgrades)
+        self.isOpen = message.count == 0 ||
+                     message == "swap newsecret" ||
+                     message == "success encryption" ? true : false
 
         if message.count > 0 {
             if message.contains("connection:") {
@@ -108,27 +120,15 @@ class DatabaseHelper {
 
     }
 
-    // MARK: - CloseDB
-
-    func closeDB(mDB: OpaquePointer?, method: String) {
-        var message: String = ""
-        let returnCode: Int32 = sqlite3_close_v2(mDB)
-        if returnCode != SQLITE_OK {
-            let errmsg: String = String(cString: sqlite3_errmsg(mDB))
-            message = "Error: \(method) closing the database rc: \(returnCode) message: \(errmsg)"
-            print(message)
-        }
-    }
-
     // MARK: - Close
 
     func close (databaseName: String) throws -> Bool {
         var ret: Bool = false
         var mDB: OpaquePointer?
         do {
-            try mDB = UtilsSQLite.connection(filename: self.path)
+            try mDB = UtilsConnection.connection(filename: self.path)
             isOpen = true
-            closeDB(mDB: mDB, method: "init")
+            UtilsSQLite.closeDB(mDB: mDB, method: "init")
             isOpen = false
             mDB = nil
             ret = true
@@ -145,9 +145,11 @@ class DatabaseHelper {
     // MARK: - ExecSQL
 
     func execSQL(sql: String) throws -> Int {
-        guard let mDB: OpaquePointer = try UtilsSQLite.getWritableDatabase(filename: self.path,
-                    secret: secret) else {
-            throw DatabaseHelperError.dbConnection(message: "Error: DB connection")
+        guard let mDB: OpaquePointer = try
+                UtilsConnection.getWritableDatabase(
+                filename: self.path, secret: secret) else {
+            throw DatabaseHelperError.dbConnection(
+                message: "Error: DB connection")
         }
         var changes: Int = 0
         var message: String = ""
@@ -157,7 +159,7 @@ class DatabaseHelper {
             message = "Error: execSQL \(msg)"
         }
 
-        closeDB(mDB: mDB, method: "execSQL")
+        UtilsSQLite.closeDB(mDB: mDB, method: "execSQL")
         if message.count > 0 {
             throw DatabaseHelperError.execSql(message: message)
         } else {
@@ -171,8 +173,10 @@ class DatabaseHelper {
         let returnCode: Int32 = sqlite3_exec(mDB, sql, nil, nil, nil)
         if returnCode != SQLITE_OK {
             let errmsg: String = String(cString: sqlite3_errmsg(mDB))
+            var msg: String = "Error: execute failed rc: \(returnCode)"
+            msg.append(" message: \(errmsg)")
             throw DatabaseHelperError.execute(
-                message: "Error: execute failed rc: \(returnCode) message: \(errmsg)")
+                message: msg)
         }
         let changes: Int = Int(sqlite3_total_changes(mDB))
         return changes
@@ -180,66 +184,93 @@ class DatabaseHelper {
 
     // MARK: - execSet
 
-    func execSet(set: [[String: Any]]) throws -> Int {
-        guard let mDB: OpaquePointer = try UtilsSQLite.getWritableDatabase(filename: self.path,
-                    secret: secret) else {
-            throw DatabaseHelperError.dbConnection(message: "Error: DB connection")
+    func execSet(set: [[String: Any]]) throws -> [String: Int] {
+        guard let mDB: OpaquePointer =
+            try UtilsConnection.getWritableDatabase(
+                                            filename: self.path,
+                                            secret: secret) else {
+            var msg: String = "Error: DB connection"
+            throw DatabaseHelperError.dbConnection(message: msg)
         }
-        var changes: Int = 0
+        var changesDict: [String: Int] = ["lastId": -1, "changes": -1]
         var message: String = ""
         // Start a transaction
         do {
             try UtilsSQLite.beginTransaction(mDB: mDB)
         } catch DatabaseHelperError.beginTransaction(let message) {
-            throw DatabaseHelperError.createDatabaseSchema(message: message)
+            throw DatabaseHelperError
+                        .createDatabaseSchema(message: message)
         }
         do {
-            for dict  in set {
-                guard let sql: String = dict["statement"] as? String else {
-                    throw DatabaseHelperError.execSet(
-                        message: "Error: No statement given")
-                }
-                guard let values: [Any] = dict["values"] as? [Any] else {
-                    throw DatabaseHelperError.execSet(
-                        message: "Error: No values given")
-                }
-                let lastId: Int = try prepareSQL(mDB: mDB, sql: sql, values: values)
-                if  lastId == -1 {
-                    message = "Error: ExecSet failed in  prepareSQL"
-                    changes = -1
-                    break
-                } else {
-                    changes += 1
-                }
-            }
-        } catch DatabaseHelperError.prepareSql(let msg) {
+            changesDict = try executeSet(mDB: mDB, set: set)
+        } catch DatabaseHelperError.executeSet(let msg) {
             message = msg
-            changes = -1
         }
-        if changes > 0 && message.count == 0 {
-            // commit the transaction
-            do {
-                try UtilsSQLite.commitTransaction(mDB: mDB)
-                changes = Int(sqlite3_total_changes(mDB))
-            } catch DatabaseHelperError.commitTransaction(let message) {
-                throw DatabaseHelperError.execSet(message: message)
+        if let changes = changesDict["changes"] {
+            if changes > 0 && message.count == 0 {
+                // commit the transaction
+                do {
+                    try UtilsSQLite.commitTransaction(mDB: mDB)
+                } catch DatabaseHelperError
+                                    .commitTransaction(let msg) {
+                    message = msg
+                }
             }
         }
         // close the db
-        closeDB(mDB: mDB, method: "execSet")
+        UtilsSQLite.closeDB(mDB: mDB, method: "executeSet")
         if message.count > 0 {
-            throw DatabaseHelperError.execSet(message: message)
+            throw DatabaseHelperError.executeSet(message: message)
         } else {
-            return changes
+            return changesDict
         }
     }
 
+    // MARK: - ExecuteSet
+
+    func executeSet(mDB: OpaquePointer, set: [[String: Any]])
+    throws -> [String: Int] {
+        var lastId: Int = -1
+        var changes: Int = -1
+        do {
+            for dict  in set {
+                guard let sql: String = dict["statement"] as? String
+                else {
+                    throw DatabaseHelperError.executeSet(
+                        message: "Error: ExecuteSet No statement given")
+                }
+                guard let values: [Any] = dict["values"] as? [Any]
+                else {
+                    throw DatabaseHelperError.executeSet(
+                        message: "Error: ExecuteSet No values given")
+                }
+                lastId = try prepareSQL(mDB: mDB, sql: sql,
+                                                 values: values)
+                if  lastId == -1 {
+                    var message: String = "Error: ExecuteSet failed "
+                    message += "in prepareSQL"
+                    throw DatabaseHelperError.executeSet(
+                                            message: message)
+                }
+            }
+            changes = Int(sqlite3_total_changes(mDB))
+            var retDict: [String: Int] = [:]
+            retDict["lastId"] = lastId
+            retDict["changes"] = changes
+            return retDict
+        } catch DatabaseHelperError.prepareSql(let message) {
+            throw DatabaseHelperError.executeSet(
+                                    message: message)
+        }
+    }
     // MARK: - RunSQL
 
     func runSQL(sql: String, values: [Any]) throws -> [String: Int] {
-        guard let mDB: OpaquePointer = try UtilsSQLite.getWritableDatabase(filename: self.path,
-                    secret: secret) else {
-            throw DatabaseHelperError.dbConnection(message: "Error: DB connection")
+        guard let mDB: OpaquePointer = try
+                UtilsConnection.getWritableDatabase(
+                    filename: self.path, secret: secret) else {
+            var msg: String = "Error: DB connection"
+            throw DatabaseHelperError.dbConnection(message: msg)
         }
         var message: String = ""
         var lastId: Int = -1
@@ -248,7 +279,8 @@ class DatabaseHelper {
         do {
             try UtilsSQLite.beginTransaction(mDB: mDB)
         } catch DatabaseHelperError.beginTransaction(let message) {
-            throw DatabaseHelperError.createDatabaseSchema(message: message)
+            throw DatabaseHelperError
+                        .createDatabaseSchema(message: message)
         }
         do {
             lastId = try prepareSQL(mDB: mDB, sql: sql, values: values)
@@ -260,54 +292,63 @@ class DatabaseHelper {
             do {
                 try UtilsSQLite.commitTransaction(mDB: mDB)
                 changes = Int(sqlite3_total_changes(mDB))
-            } catch DatabaseHelperError.commitTransaction(let message) {
-                throw DatabaseHelperError.createDatabaseSchema(message: message)
+            } catch DatabaseHelperError.commitTransaction(let msg) {
+                message = msg
             }
         }
-        closeDB(mDB: mDB, method: "runSQL")
+        UtilsSQLite.closeDB(mDB: mDB, method: "runSQL")
         if message.count > 0 {
             throw DatabaseHelperError.runSql(message: message)
         } else {
-            let result: [String: Int] = ["changes": changes, "lastId": lastId]
+            let result: [String: Int] = ["changes": changes,
+                                         "lastId": lastId]
             return result
         }
     }
 
     // MARK: - PrepareSQL
 
-    func prepareSQL(mDB: OpaquePointer, sql: String, values: [Any]) throws -> Int {
+    func prepareSQL(mDB: OpaquePointer,
+                    sql: String, values: [Any]) throws -> Int {
         var runSQLStatement: OpaquePointer?
         var message: String = ""
         var lastId: Int = -1
 
-        var returnCode: Int32 = sqlite3_prepare_v2(mDB, sql, -1, &runSQLStatement, nil)
+        var returnCode: Int32 = sqlite3_prepare_v2(
+                                mDB, sql, -1, &runSQLStatement, nil)
         if returnCode == SQLITE_OK {
             if !values.isEmpty {
             // do the binding of values
                 var idx: Int = 1
                 for value in values {
                     do {
-                        try UtilsBinding.bind(handle: runSQLStatement, value: value, idx: idx)
+                        try UtilsBinding.bind(handle: runSQLStatement,
+                                              value: value, idx: idx)
                         idx += 1
                     } catch let error as NSError {
-                        message = "Error: prepareSQL bind failed " + error.localizedDescription
+                        message = "Error: prepareSQL bind failed "
+                        message.append(error.localizedDescription)
                     }
                     if message.count > 0 { break }
                 }
             }
             returnCode = sqlite3_step(runSQLStatement)
             if returnCode != SQLITE_DONE {
-                let errmsg: String = String(cString: sqlite3_errmsg(mDB))
-                message = "Error: prepareSQL step failed rc: \(returnCode) message: \(errmsg)"
+                let errmsg: String =
+                                String(cString: sqlite3_errmsg(mDB))
+                message = "Error: prepareSQL step failed rc: "
+                message.append("\(returnCode) message: \(errmsg)")
             }
         } else {
             let errmsg: String = String(cString: sqlite3_errmsg(mDB))
-            message = "Error: prepareSQL prepare failed rc: \(returnCode) message: \(errmsg)"
+            message = "Error: prepareSQL prepare failed rc: "
+            message.append("\(returnCode) message: \(errmsg)")
         }
         returnCode = sqlite3_finalize(runSQLStatement)
         if returnCode != SQLITE_OK {
             let errmsg: String = String(cString: sqlite3_errmsg(mDB))
-            message = "Error: prepareSQL finalize failed rc: \(returnCode) message: \(errmsg)"
+            message = "Error: prepareSQL finalize failed rc: "
+            message.append("\(returnCode) message: \(errmsg)")
         }
         if message.count > 0 {
             throw DatabaseHelperError.prepareSql(message: message)
@@ -319,10 +360,14 @@ class DatabaseHelper {
 
     // MARK: - SelectSQL
 
-    func selectSQL(sql: String, values: [String]) throws -> [[String: Any]] {
-        guard let mDB: OpaquePointer = try UtilsSQLite.getReadableDatabase(filename: self.path,
-                    secret: secret) else {
-            throw DatabaseHelperError.dbConnection(message: "Error: DB connection")
+    func selectSQL(sql: String, values: [String])
+                                        throws -> [[String: Any]] {
+        guard let mDB: OpaquePointer = try
+                UtilsConnection.getReadableDatabase(
+                                                filename: self.path,
+                                                secret: secret) else {
+            throw DatabaseHelperError.dbConnection(
+                message: "Error: DB connection")
         }
         var result: [[String: Any]] = []
         var message: String = ""
@@ -331,7 +376,7 @@ class DatabaseHelper {
         } catch DatabaseHelperError.querySql(let msg) {
             message = msg
         }
-        closeDB(mDB: mDB, method: "selectSQL")
+        UtilsSQLite.closeDB(mDB: mDB, method: "selectSQL")
         if message.count > 0 {
             throw DatabaseHelperError.selectSql(message: message)
         } else {
@@ -341,31 +386,38 @@ class DatabaseHelper {
 
     // MARK: - QuerySQL
 
-    func querySQL(mDB: OpaquePointer, sql: String, values: [String]) throws -> [[String: Any]] {
+    func querySQL(mDB: OpaquePointer, sql: String,
+                  values: [String]) throws -> [[String: Any]] {
         var selectSQLStatement: OpaquePointer?
         var result: [[String: Any]] = []
         var message: String = ""
-        var returnCode: Int32 = sqlite3_prepare_v2(mDB, sql, -1, &selectSQLStatement, nil)
+        var returnCode: Int32 =
+            sqlite3_prepare_v2(mDB, sql, -1, &selectSQLStatement, nil)
         if returnCode == SQLITE_OK {
             if !values.isEmpty {
             // do the binding of values
-                message = UtilsBinding.bindValues(handle: selectSQLStatement, values: values)
+                message = UtilsBinding.bindValues(
+                        handle: selectSQLStatement, values: values)
             }
             if message.count == 0 {
                 do {
-                    result = try UtilsSQLite.fetchColumnInfo(handle: selectSQLStatement)
-                } catch DatabaseHelperError.fetchColumnInfo(let message) {
+                    result = try UtilsSQLite.fetchColumnInfo(
+                                        handle: selectSQLStatement)
+                } catch DatabaseHelperError
+                                .fetchColumnInfo(let message) {
                     throw DatabaseHelperError.querySql(message: message)
                 }
             }
         } else {
             let errmsg: String = String(cString: sqlite3_errmsg(mDB))
-            message = "Error: querySQL prepare failed rc: \(returnCode) message: \(errmsg)"
+            message = "Error: querySQL prepare failed rc: "
+            message.append("\(returnCode) message: \(errmsg)")
         }
         returnCode = sqlite3_finalize(selectSQLStatement)
         if returnCode != SQLITE_OK {
             let errmsg: String = String(cString: sqlite3_errmsg(mDB))
-            message = "Error: querySQL finalize failed rc: \(returnCode) message: \(errmsg)"
+            message = "Error: querySQL finalize failed rc: "
+            message.append("\(returnCode) message: \(errmsg)")
         }
         if message.count > 0 {
             throw DatabaseHelperError.querySql(message: message)
@@ -378,9 +430,12 @@ class DatabaseHelper {
 
     func deleteDB(databaseName: String) throws -> Bool {
         var ret: Bool = false
-        if let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+        if let dir = FileManager.default.urls(
+                    for: .documentDirectory,
+                    in: .userDomainMask).first {
             let fileURL = dir.appendingPathComponent(databaseName)
-            let isFileExists = FileManager.default.fileExists(atPath: fileURL.path)
+            let isFileExists = FileManager.default.fileExists(
+                atPath: fileURL.path)
             if isFileExists {
                 do {
                     try FileManager.default.removeItem(at: fileURL)
@@ -388,7 +443,8 @@ class DatabaseHelper {
                     isOpen = false
                     ret = true
                 } catch {
-                    throw DatabaseHelperError.deleteDB(message: "Error: deleteDB: \(error)")
+                    throw DatabaseHelperError.deleteDB(
+                                message: "Error: deleteDB: \(error)")
                 }
             } else {
                 isOpen = false
@@ -397,16 +453,65 @@ class DatabaseHelper {
         return ret
     }
 
+    // MARK: - RestoreDB
+
+    func restoreDB(databaseName: String) throws {
+        if let dir = FileManager.default.urls(
+                    for: .documentDirectory,
+                    in: .userDomainMask).first {
+            let fileURL = dir.appendingPathComponent(databaseName)
+            let backupURL = dir
+                .appendingPathComponent("backup-\(databaseName)")
+            let isBackupExists = FileManager.default.fileExists(
+                atPath: backupURL.path)
+            if isBackupExists {
+                let isFileExists = FileManager.default.fileExists(
+                    atPath: fileURL.path)
+                if isFileExists {
+                    do {
+                        try FileManager.default.removeItem(at: fileURL)
+                        print("Database \(databaseName) deleted")
+                    } catch {
+                        var msg = "Error: restoreDB: \(databaseName)"
+                        msg += " \(error)"
+                        throw DatabaseHelperError.restoreDB(
+                            message: msg)
+                    }
+                }
+                do {
+                    try FileManager.default.copyItem(
+                        atPath: backupURL.path, toPath: fileURL.path)
+                } catch {
+                    var msg = "Error: restoreDB: copyItem"
+                    msg += " \(error)"
+                    throw DatabaseHelperError.restoreDB(
+                        message: msg)
+                }
+            } else {
+                var msg = "Error: restoreDB: backup-\(databaseName)"
+                msg += " does not exist"
+                throw DatabaseHelperError.restoreDB(
+                    message: msg)
+            }
+        } else {
+            let msg = "Error: restoreDB: FileManager.default.urls"
+            throw DatabaseHelperError.restoreDB(
+                message: msg)
+        }
+    }
+
     // MARK: - ImportFromJson
 
-    func importFromJson(jsonSQLite: JsonSQLite) throws -> [String: Int] {
+    func importFromJson(jsonSQLite: JsonSQLite)
+                                            throws -> [String: Int] {
         var success: Bool = true
         var changes: Int = -1
 
         // Create the Database Schema
         do {
-            changes = try ImportFromJson.createDatabaseSchema(dbHelper: self,
-                            jsonSQLite: jsonSQLite, path: self.path, secret: self.secret)
+            changes = try ImportFromJson.createDatabaseSchema(
+                            dbHelper: self, jsonSQLite: jsonSQLite,
+                            path: self.path, secret: self.secret)
             if changes == -1 {
                 success = false
             }
@@ -420,15 +525,18 @@ class DatabaseHelper {
         if success {
 //            jsonSQLite.show()
             do {
-                changes = try ImportFromJson.createDatabaseData(dbHelper: self,
-                                jsonSQLite: jsonSQLite, path: self.path, secret: self.secret)
+                changes = try ImportFromJson.createDatabaseData(
+                            dbHelper: self, jsonSQLite: jsonSQLite,
+                            path: self.path, secret: self.secret)
                 if changes == -1 {
                     success = false
                 }
             } catch DatabaseHelperError.dbConnection(let message) {
-                throw DatabaseHelperError.importFromJson(message: message)
+                throw DatabaseHelperError.importFromJson(
+                                message: message)
             } catch DatabaseHelperError.createDatabaseData(let message) {
-                throw DatabaseHelperError.importFromJson(message: message)
+                throw DatabaseHelperError.importFromJson(
+                                message: message)
             }
         }
         if !success {
@@ -443,9 +551,12 @@ class DatabaseHelper {
         var retObj: [String: Any] = [:]
 
         do {
-            let data: [String: Any] = ["path": self.path, "dbName": self.databaseName,
-            "encrypted": self.encrypted, "expMode": expMode, "secret": self.secret]
-            retObj = try ExportToJson.createExportObject(dbHelper: self, data: data)
+            let data: [String: Any] = [
+                "path": self.path, "dbName": self.databaseName,
+                "encrypted": self.encrypted, "expMode": expMode,
+                "secret": self.secret, "version": self.databaseVersion]
+            retObj = try ExportToJson.createExportObject(
+                dbHelper: self, data: data)
         } catch DatabaseHelperError.createExportObject(let message) {
            throw DatabaseHelperError.exportToJson(message: message)
         }
@@ -457,24 +568,26 @@ class DatabaseHelper {
     func createSyncTable() throws -> Int {
         var retObj: Int = -1
         // Open the database for writing
-        guard let mDB: OpaquePointer = try UtilsSQLite.getWritableDatabase(filename: self.path,
-                    secret: secret) else {
-            throw DatabaseHelperError.dbConnection(message: "Error: DB connection")
+        guard let mDB: OpaquePointer = try
+                UtilsConnection.getWritableDatabase(
+                        filename: self.path, secret: secret) else {
+            throw DatabaseHelperError.dbConnection(
+                                    message: "Error: DB connection")
         }
         // check if the table has already been created
         do {
-            let isExists: Bool = try UtilsJson.isTableExists(dbHelper: self, mDB: mDB, tableName: "sync_table")
+            let isExists: Bool = try UtilsJson.isTableExists(
+                dbHelper: self, mDB: mDB, tableName: "sync_table")
             if !isExists {
                 let date = Date()
                 let syncTime: Int = Int(date.timeIntervalSince1970)
-                let stmt: String = """
-                BEGIN TRANSACTION;
-                CREATE TABLE IF NOT EXISTS sync_table (
-                id INTEGER PRIMARY KEY NOT NULL,
-                sync_date INTEGER);
-                INSERT INTO sync_table (sync_date) VALUES ('\(syncTime)');
-                COMMIT TRANSACTION;
-                """
+                var stmt: String = "BEGIN TRANSACTION;"
+                stmt.append("CREATE TABLE IF NOT EXISTS sync_table (")
+                stmt.append("id INTEGER PRIMARY KEY NOT NULL,")
+                stmt.append("sync_date INTEGER);")
+                stmt.append("INSERT INTO sync_table (sync_date) ")
+                stmt.append("VALUES ('\(syncTime)');")
+                stmt.append("COMMIT TRANSACTION;")
                 retObj = try execute(mDB: mDB, sql: stmt)
             } else {
                 retObj = 0
@@ -484,7 +597,7 @@ class DatabaseHelper {
         } catch DatabaseHelperError.prepareSql(let message) {
             throw DatabaseHelperError.createSyncTable(message: message)
         }
-        closeDB(mDB: mDB, method: "createSyncTable")
+        UtilsSQLite.closeDB(mDB: mDB, method: "createSyncTable")
         return retObj
     }
 
@@ -493,21 +606,25 @@ class DatabaseHelper {
     func setSyncDate(syncDate: String ) throws -> Bool {
         var retBool: Bool = false
         // Open the database for writing
-        guard let mDB: OpaquePointer = try UtilsSQLite.getWritableDatabase(filename: self.path,
-                    secret: secret) else {
-            throw DatabaseHelperError.dbConnection(message: "Error: DB connection")
+        guard let mDB: OpaquePointer = try
+                UtilsConnection.getWritableDatabase(
+                        filename: self.path, secret: secret) else {
+            throw DatabaseHelperError.dbConnection(
+                                    message: "Error: DB connection")
         }
         do {
             let date = Date()
             let syncTime: Int = Int(date.timeIntervalSince1970)
-            let stmt: String = "UPDATE sync_table SET sync_date = \(syncTime) WHERE id = 1;"
-            let lastId: Int = try prepareSQL(mDB: mDB, sql: stmt, values: [])
+            var stmt: String = "UPDATE sync_table SET sync_date = "
+            stmt.append("\(syncTime) WHERE id = 1;")
+            let lastId: Int = try prepareSQL(
+                                    mDB: mDB, sql: stmt, values: [])
             if lastId != -1 {retBool = true}
 
         } catch DatabaseHelperError.prepareSql(let message) {
             throw DatabaseHelperError.createSyncDate(message: message)
         }
-        closeDB(mDB: mDB, method: "setSyncDate")
+        UtilsSQLite.closeDB(mDB: mDB, method: "setSyncDate")
         return retBool
     }
 }

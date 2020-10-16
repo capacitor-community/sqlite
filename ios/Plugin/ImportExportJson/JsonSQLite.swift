@@ -9,12 +9,14 @@ import Foundation
 
 public struct JsonSQLite: Codable {
     let database: String
+    let version: Int
     let encrypted: Bool
     let mode: String
     let tables: [JsonTable]
 
     public func show() {
         print("databaseName: \(database) ")
+        print("version: \(version) ")
         print("encrypted: \(encrypted) ")
         print("mode: \(mode) ")
         print("Number of Tables: \(tables.count) ")

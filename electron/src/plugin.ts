@@ -15,6 +15,8 @@ import {
   capSQLiteChanges,
   capSQLiteValues,
   capSQLiteJson,
+  capSQLiteUpgradeOptions,
+  capSQLiteVersionUpgrade,
 } from './definitions';
 import { DatabaseSQLiteHelper } from './electron-utils/DatabaseSQLiteHelper';
 import { isJsonSQLite } from './electron-utils/JsonUtils';
@@ -27,6 +29,10 @@ export class CapacitorSQLiteElectronWeb
   NodeFs: any = null;
   RemoteRef: any = null;
   private mDb!: DatabaseSQLiteHelper;
+  private versionUpgrades: Record<
+    string,
+    Record<number, capSQLiteVersionUpgrade>
+  > = {};
 
   constructor() {
     super({
@@ -50,22 +56,28 @@ export class CapacitorSQLiteElectronWeb
       });
     }
     const dbName: string = options.database;
+    const dbVersion: number = options.version ?? 1;
     /*
             let encrypted: boolean = options.encrypted ? options.encrypted : false;
             let inMode: string = "no-encryption";
             let secretKey: string = "";
             let newsecretKey: string = "";
             */
+    console.log('---> in Open this.versionUpgrades ' + this.versionUpgrades);
     this.mDb = new DatabaseSQLiteHelper(
-      `${dbName}SQLite.db` /*,encrypted,inMode,secretKey,newsecretKey*/,
+      `${dbName}SQLite.db`,
+      dbVersion,
+      this.versionUpgrades /*,encrypted,inMode,secretKey,newsecretKey*/,
     );
+    await this.mDb.setup();
     if (!this.mDb.isOpen) {
-      return Promise.reject({
+      return Promise.resolve({
         result: false,
         message: `Open command failed: Database ${dbName}SQLite.db not opened`,
       });
+    } else {
+      return Promise.resolve({ result: true });
     }
-    return Promise.resolve({ result: true });
   }
   async close(options: capSQLiteOptions): Promise<capSQLiteResult> {
     if (typeof options.database === 'undefined') {
@@ -265,7 +277,9 @@ export class CapacitorSQLiteElectronWeb
         message: 'Must provide a jsonSQLite object',
       });
     const dbName: string = `${jsonObj.database}SQLite.db`;
-    this.mDb = new DatabaseSQLiteHelper(dbName);
+    const dbVersion: number = jsonObj.version ?? 1;
+    this.mDb = new DatabaseSQLiteHelper(dbName, dbVersion, {});
+    await this.mDb.setup();
     const ret = await this.mDb.importJson(jsonObj);
     this.mDb.close(dbName);
     //      this.mDb = null;
@@ -311,6 +325,50 @@ export class CapacitorSQLiteElectronWeb
     const syncDate: string = options.syncdate;
     const ret: boolean = await this.mDb.setSyncDate(syncDate);
     return Promise.resolve({ result: ret });
+  }
+  async addUpgradeStatement(
+    options: capSQLiteUpgradeOptions,
+  ): Promise<capSQLiteResult> {
+    if (
+      typeof options.database === 'undefined' ||
+      typeof options.database != 'string'
+    ) {
+      return Promise.reject({
+        result: false,
+        message: 'Must provide a database name',
+      });
+    }
+    if (typeof options.upgrade[0] === 'undefined') {
+      return Promise.reject({
+        result: false,
+        message: 'Must provide an upgrade Object',
+      });
+    }
+    const upgrade = options.upgrade[0];
+    const keys: Array<string> = Object.keys(upgrade);
+    if (
+      !keys.includes('fromVersion') ||
+      !keys.includes('toVersion') ||
+      !keys.includes('statement')
+    ) {
+      return Promise.reject({
+        result: false,
+        message: 'Must provide an upgrade capSQLiteVersionUpgrade Object',
+      });
+    }
+    const fullDBName = `${options.database}SQLite.db`;
+    if (!this.versionUpgrades[fullDBName]) {
+      this.versionUpgrades[fullDBName] = {};
+    }
+    this.versionUpgrades[fullDBName][upgrade.fromVersion] = {
+      fromVersion: upgrade.fromVersion,
+      toVersion: upgrade.toVersion,
+      statement: upgrade.statement,
+    };
+    if (upgrade.set)
+      this.versionUpgrades[fullDBName][upgrade.fromVersion]['set'] =
+        upgrade.set;
+    return Promise.resolve({ result: true });
   }
 }
 const CapacitorSQLite = new CapacitorSQLiteElectronWeb();

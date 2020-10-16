@@ -12,7 +12,8 @@ import Capacitor
 class ReturnHandler {
     // MARK: - rResult
 
-    func rResult(call: CAPPluginCall, ret: Bool, message: String? = nil) {
+    func rResult(call: CAPPluginCall, ret: Bool,
+                 message: String? = nil) {
         if let intMessage = message {
             call.success([
                 "result": ret,
@@ -27,7 +28,8 @@ class ReturnHandler {
 
     // MARK: - rChanges
 
-    func rChanges(call: CAPPluginCall, ret: [String: Int], message: String? = nil) {
+    func rChanges(call: CAPPluginCall, ret: [String: Int],
+                  message: String? = nil) {
         if let intMessage = message {
             call.success([
                 "changes": ret,
@@ -42,7 +44,8 @@ class ReturnHandler {
 
     // MARK: - rValues
 
-    func rValues(call: CAPPluginCall, ret: [[String: Any]], message: String? = nil) {
+    func rValues(call: CAPPluginCall, ret: [[String: Any]],
+                 message: String? = nil) {
         if let intMessage = message {
             call.success([
                 "values": ret,
@@ -57,7 +60,8 @@ class ReturnHandler {
 
     // MARK: - rJsonSQLite
 
-    func rJsonSQLite(call: CAPPluginCall, ret: [String: Any], message: String? = nil) {
+    func rJsonSQLite(call: CAPPluginCall, ret: [String: Any],
+                     message: String? = nil) {
         if let intMessage = message {
             call.success([
                 "export": ret,

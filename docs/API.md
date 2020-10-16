@@ -56,6 +56,7 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 - [exportToJson()](#exporttojson)
 - [createSyncTable()](#createsynctable)
 - [setSyncDate()](#setsyncdate)
+- [addUpgradeStatement()](#addupgradestatement)
 - [Interfaces](#interfaces)
 <!--DOCGEN_INDEX_END-->
 
@@ -74,7 +75,7 @@ Echo a given string
 
 | Param       | Type                              | Description      |
 | ----------- | --------------------------------- | ---------------- |
-| **options** | [capEchoOptions](#capechooptions) | The echo options |
+| **options** | [capEchoOptions](#capechooptions) | : capEchoOptions |
 
 **Returns:** Promise&lt;[capEchoResult](#capechoresult)&gt;
 
@@ -90,9 +91,9 @@ open(options: capSQLiteOptions) => Promise<capSQLiteResult>
 
 Open a SQLite database
 
-| Param       | Type                                  |
-| ----------- | ------------------------------------- |
-| **options** | [capSQLiteOptions](#capsqliteoptions) |
+| Param       | Type                                  | Description        |
+| ----------- | ------------------------------------- | ------------------ |
+| **options** | [capSQLiteOptions](#capsqliteoptions) | : capSQLiteOptions |
 
 **Returns:** Promise&lt;[capSQLiteResult](#capsqliteresult)&gt;
 
@@ -108,9 +109,9 @@ close(options: capSQLiteOptions) => Promise<capSQLiteResult>
 
 Close a SQLite database
 
-| Param       | Type                                  |
-| ----------- | ------------------------------------- |
-| **options** | [capSQLiteOptions](#capsqliteoptions) |
+| Param       | Type                                  | Description        |
+| ----------- | ------------------------------------- | ------------------ |
+| **options** | [capSQLiteOptions](#capsqliteoptions) | : capSQLiteOptions |
 
 **Returns:** Promise&lt;[capSQLiteResult](#capsqliteresult)&gt;
 
@@ -126,9 +127,9 @@ execute(options: capSQLiteExecuteOptions) => Promise<capSQLiteChanges>
 
 Execute a Batch of Raw Statements as String
 
-| Param       | Type                                                |
-| ----------- | --------------------------------------------------- |
-| **options** | [capSQLiteExecuteOptions](#capsqliteexecuteoptions) |
+| Param       | Type                                                | Description               |
+| ----------- | --------------------------------------------------- | ------------------------- |
+| **options** | [capSQLiteExecuteOptions](#capsqliteexecuteoptions) | : capSQLiteExecuteOptions |
 
 **Returns:** Promise&lt;[capSQLiteChanges](#capsqlitechanges)&gt;
 
@@ -144,9 +145,9 @@ executeSet(options: capSQLiteSetOptions) => Promise<capSQLiteChanges>
 
 Execute a Set of Raw Statements as Array of CapSQLiteSet
 
-| Param       | Type                                        |
-| ----------- | ------------------------------------------- |
-| **options** | [capSQLiteSetOptions](#capsqlitesetoptions) |
+| Param       | Type                                        | Description           |
+| ----------- | ------------------------------------------- | --------------------- |
+| **options** | [capSQLiteSetOptions](#capsqlitesetoptions) | : capSQLiteSetOptions |
 
 **Returns:** Promise&lt;[capSQLiteChanges](#capsqlitechanges)&gt;
 
@@ -162,9 +163,9 @@ run(options: capSQLiteRunOptions) => Promise<capSQLiteChanges>
 
 Execute a Single Statement
 
-| Param       | Type                                        |
-| ----------- | ------------------------------------------- |
-| **options** | [capSQLiteRunOptions](#capsqliterunoptions) |
+| Param       | Type                                        | Description           |
+| ----------- | ------------------------------------------- | --------------------- |
+| **options** | [capSQLiteRunOptions](#capsqliterunoptions) | : capSQLiteRunOptions |
 
 **Returns:** Promise&lt;[capSQLiteChanges](#capsqlitechanges)&gt;
 
@@ -180,9 +181,9 @@ query(options: capSQLiteQueryOptions) => Promise<capSQLiteValues>
 
 Query a Single Statement
 
-| Param       | Type                                            |
-| ----------- | ----------------------------------------------- |
-| **options** | [capSQLiteQueryOptions](#capsqlitequeryoptions) |
+| Param       | Type                                            | Description             |
+| ----------- | ----------------------------------------------- | ----------------------- |
+| **options** | [capSQLiteQueryOptions](#capsqlitequeryoptions) | : capSQLiteQueryOptions |
 
 **Returns:** Promise&lt;[capSQLiteValues](#capsqlitevalues)&gt;
 
@@ -198,9 +199,9 @@ isDBExists(options: capSQLiteOptions) => Promise<capSQLiteResult>
 
 Check is a SQLite database exists
 
-| Param       | Type                                  |
-| ----------- | ------------------------------------- |
-| **options** | [capSQLiteOptions](#capsqliteoptions) |
+| Param       | Type                                  | Description        |
+| ----------- | ------------------------------------- | ------------------ |
+| **options** | [capSQLiteOptions](#capsqliteoptions) | : capSQLiteOptions |
 
 **Returns:** Promise&lt;[capSQLiteResult](#capsqliteresult)&gt;
 
@@ -216,9 +217,9 @@ deleteDatabase(options: capSQLiteOptions) => Promise<capSQLiteResult>
 
 Delete a SQLite database
 
-| Param       | Type                                  |
-| ----------- | ------------------------------------- |
-| **options** | [capSQLiteOptions](#capsqliteoptions) |
+| Param       | Type                                  | Description        |
+| ----------- | ------------------------------------- | ------------------ |
+| **options** | [capSQLiteOptions](#capsqliteoptions) | : capSQLiteOptions |
 
 **Returns:** Promise&lt;[capSQLiteResult](#capsqliteresult)&gt;
 
@@ -234,9 +235,9 @@ isJsonValid(options: capSQLiteImportOptions) => Promise<capSQLiteResult>
 
 Is Json Object Valid
 
-| Param       | Type                                              |
-| ----------- | ------------------------------------------------- |
-| **options** | [capSQLiteImportOptions](#capsqliteimportoptions) |
+| Param       | Type                                              | Description              |
+| ----------- | ------------------------------------------------- | ------------------------ |
+| **options** | [capSQLiteImportOptions](#capsqliteimportoptions) | : capSQLiteImportOptions |
 
 **Returns:** Promise&lt;[capSQLiteResult](#capsqliteresult)&gt;
 
@@ -252,9 +253,9 @@ importFromJson(options: capSQLiteImportOptions) => Promise<capSQLiteChanges>
 
 Import from Json Object
 
-| Param       | Type                                              |
-| ----------- | ------------------------------------------------- |
-| **options** | [capSQLiteImportOptions](#capsqliteimportoptions) |
+| Param       | Type                                              | Description              |
+| ----------- | ------------------------------------------------- | ------------------------ |
+| **options** | [capSQLiteImportOptions](#capsqliteimportoptions) | : capSQLiteImportOptions |
 
 **Returns:** Promise&lt;[capSQLiteChanges](#capsqlitechanges)&gt;
 
@@ -270,9 +271,9 @@ exportToJson(options: capSQLiteExportOptions) => Promise<capSQLiteJson>
 
 Export to Json Object
 
-| Param       | Type                                              |
-| ----------- | ------------------------------------------------- |
-| **options** | [capSQLiteExportOptions](#capsqliteexportoptions) |
+| Param       | Type                                              | Description              |
+| ----------- | ------------------------------------------------- | ------------------------ |
+| **options** | [capSQLiteExportOptions](#capsqliteexportoptions) | : capSQLiteExportOptions |
 
 **Returns:** Promise&lt;[capSQLiteJson](#capsqlitejson)&gt;
 
@@ -302,13 +303,31 @@ setSyncDate(options: capSQLiteSyncDateOptions) => Promise<capSQLiteResult>
 
 Set the synchronization date
 
-| Param       | Type                                                  |
-| ----------- | ----------------------------------------------------- |
-| **options** | [capSQLiteSyncDateOptions](#capsqlitesyncdateoptions) |
+| Param       | Type                                                  | Description                |
+| ----------- | ----------------------------------------------------- | -------------------------- |
+| **options** | [capSQLiteSyncDateOptions](#capsqlitesyncdateoptions) | : capSQLiteSyncDateOptions |
 
 **Returns:** Promise&lt;[capSQLiteResult](#capsqliteresult)&gt;
 
 **Since:** 2.0.1-1
+
+---
+
+### addUpgradeStatement
+
+```typescript
+addUpgradeStatement(options: capSQLiteUpgradeOptions) => Promise<capSQLiteResult>
+```
+
+Add the upgrade Statement for database version upgrading
+
+| Param       | Type                                                | Description               |
+| ----------- | --------------------------------------------------- | ------------------------- |
+| **options** | [capSQLiteUpgradeOptions](#capsqliteupgradeoptions) | : capSQLiteUpgradeOptions |
+
+**Returns:** Promise&lt;[capSQLiteResult](#capsqliteresult)&gt;
+
+**Since:** 2.4.2-6 iOS & Electron
 
 ---
 
@@ -338,6 +357,7 @@ Set the synchronization date
 | Prop          | Type    | Description                                                                                   |
 | ------------- | ------- | --------------------------------------------------------------------------------------------- |
 | **database**  | string  | The database name                                                                             |
+| **version**   | number  | The database version                                                                          |
 | **encrypted** | boolean | Set to true (database encryption) / false - Open method only                                  |
 | **mode**      | string  | Set the mode for database encryption ["encryption", "secret", "newsecret"] - Open method only |
 
@@ -406,6 +426,7 @@ Set the synchronization date
 | Prop          | Type        | Description                               |
 | ------------- | ----------- | ----------------------------------------- |
 | **database**  | string      | The database name                         |
+| **version**   | number      | The database version                      |
 | **encrypted** | boolean     | Set to true (database encryption) / false |
 | **mode**      | string      | \* Set the mode ["full", "partial"]       |
 | **tables**    | JsonTable[] | \* Array of Table (JsonTable)             |
@@ -445,6 +466,22 @@ Set the synchronization date
 | Prop         | Type   | Description                  |
 | ------------ | ------ | ---------------------------- |
 | **syncdate** | string | Set the synchronization date |
+
+#### capSQLiteUpgradeOptions
+
+| Prop         | Type                      | Description                                                                         |
+| ------------ | ------------------------- | ----------------------------------------------------------------------------------- |
+| **database** | string                    | The database name                                                                   |
+| **upgrade**  | capSQLiteVersionUpgrade[] | The upgrade options for version upgrade Array of length 1 to easiest the iOS plugin |
+
+#### capSQLiteVersionUpgrade
+
+| Prop            | Type           |
+| --------------- | -------------- |
+| **fromVersion** | number         |
+| **toVersion**   | number         |
+| **statement**   | string         |
+| **set**         | capSQLiteSet[] |
 
 <!--DOCGEN_API_END-->
 

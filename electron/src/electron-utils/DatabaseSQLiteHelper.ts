@@ -1,6 +1,11 @@
 import { UtilsSQLite } from './UtilsSQLite';
-import { JsonSQLite, JsonTable, JsonColumn, JsonIndex } from '../definitions';
-
+import {
+  JsonSQLite,
+  JsonTable,
+  JsonColumn,
+  JsonIndex,
+  capSQLiteVersionUpgrade,
+} from '../definitions';
 import { isJsonSQLite, isTable } from './JsonUtils';
 
 export class DatabaseSQLiteHelper {
@@ -8,6 +13,13 @@ export class DatabaseSQLiteHelper {
   NodeFs: any = null;
 
   private _databaseName: string;
+  private _databaseVersion: number;
+  private _upgradeStatements: Record<
+    string,
+    Record<number, capSQLiteVersionUpgrade>
+  >;
+  private _alterTables: Record<string, Array<string>> = {};
+  private _commonColumns: Record<string, Array<string>> = {};
   //    private _encrypted: boolean;
   //    private _mode: string;
   //    private _secret: string = "";
@@ -15,25 +27,106 @@ export class DatabaseSQLiteHelper {
   private _utils: UtilsSQLite;
 
   constructor(
-    dbName: string /*, encrypted:boolean = false, mode:string = "no-encryption",
-        secret:string = "",newsecret:string=""*/,
+    dbName: string,
+    dbVersion = 1,
+    upgradeStatements: Record<string, Record<number, capSQLiteVersionUpgrade>>,
+
+    /*, encrypted:boolean = false, mode:string = "no-encryption",
+        secret:string = "",newsecret:string=""*/
   ) {
     this.NodeFs = require('fs');
     this._utils = new UtilsSQLite();
     this._databaseName = dbName;
+    this._databaseVersion = dbVersion;
+    this._upgradeStatements = upgradeStatements;
     //        this._encrypted = encrypted;
     //        this._mode = mode;
     //        this._secret = secret;
     //        this._newsecret = newsecret;
-    this._openDB();
   }
-  private _openDB() {
+  public async setup(): Promise<any> {
+    await this._openDB();
+  }
+
+  private async _openDB() {
     const db = this._utils.connection(
       this._databaseName,
       false /*,this._secret*/,
     );
     if (db != null) {
       this.isOpen = true;
+      // check if the database got a version
+      let curVersion: number = await this.getDBVersion(db);
+      console.log('openDB: curVersion ', curVersion);
+      if (curVersion === -1 || curVersion === 0) {
+        await this.updateDatabaseVersion(db, 1);
+        curVersion = await this.getDBVersion(db);
+        console.log(
+          'openDB: After updateDatabaseVersion curVersion ',
+          curVersion,
+        );
+      }
+      // check if the database version is Ok
+      console.log(
+        'openDB: curVersion ' +
+          curVersion +
+          ' databaseVersion ' +
+          this._databaseVersion,
+      );
+      console.log('this._databaseName ', this._databaseName);
+      console.log('this._upgradeStatements ', this._upgradeStatements);
+      if (curVersion !== this._databaseVersion) {
+        // version not ok
+        if (this._databaseVersion < curVersion) {
+          this.isOpen = false;
+          console.log(
+            'openDB: Error Database version lower than current version',
+          );
+        } else if (
+          Object.keys(this._upgradeStatements).length === 0 ||
+          Object.keys(this._upgradeStatements[this._databaseName]).length === 0
+        ) {
+          this.isOpen = false;
+          console.log(
+            'openDB: Error No upgrade statements found for that database',
+          );
+        } else {
+          // backup the current version
+          const backup: boolean = await this.backupDB(this._databaseName);
+          if (backup) {
+            // upgrade version process
+            let res: boolean = await this.onUpgrade(
+              this._databaseName,
+              db,
+              curVersion,
+              this._databaseVersion,
+            );
+            if (res) {
+              this.isOpen = true;
+            } else {
+              this.isOpen = false;
+              console.log(
+                'openDB: Error Failed on database version ' + 'upgrading',
+              );
+              // restore the old version
+              const restore: boolean = await this.restoreDB(this._databaseName);
+              if (!restore) {
+                console.log(
+                  'openDB: Error Failed on database version ' + 'restoring',
+                );
+              }
+            }
+          } else {
+            this.isOpen = false;
+            console.log('openDB: Error Failed on database version ' + 'backup');
+          }
+          // delete the backup file
+          const retDel = await this.deleteDB(`backup-${this._databaseName}`);
+          if (!retDel) {
+            console.log('openDB: Error Failed on deleting backup ');
+          }
+        }
+      }
       db.close();
     } else {
       this.isOpen = false;
@@ -84,7 +177,8 @@ export class DatabaseSQLiteHelper {
         resolve(ret);
       }
       const sDate: number = Math.round(new Date(syncDate).getTime() / 1000);
-      const stmt: string = `UPDATE sync_table SET sync_date = ${sDate} WHERE id = 1;`;
+      let stmt: string = `UPDATE sync_table SET sync_date = ${sDate} `;
+      stmt += `WHERE id = 1;`;
       const retRes = await this.execute(db, stmt);
       if (retRes.changes != -1) ret = true;
       db.close();
@@ -164,21 +258,11 @@ export class DatabaseSQLiteHelper {
         db.close();
         resolve(retRes);
       }
-      for (let i = 0; i < set.length; i++) {
-        const statement = 'statement' in set[i] ? set[i].statement : null;
-        const values =
-          'values' in set[i] && set[i].values.length > 0 ? set[i].values : null;
-        if (statement == null || values == null) {
-          console.log('execSet: Error statement or values are null');
-          db.close();
-          resolve(retRes);
-        }
-        lastId = await this.prepare(db, statement, values);
-        if (lastId === -1) {
-          console.log('execSet: Error return lastId= -1');
-          db.close();
-          resolve(retRes);
-        }
+      retRes = await this.executeSet(db, set);
+      if (retRes.changes === -1) {
+        console.log('executeSet: Error executeSet failed');
+        db.close();
+        return retRes;
       }
 
       retB = await this.endTransaction(db);
@@ -192,6 +276,35 @@ export class DatabaseSQLiteHelper {
       db.close();
       resolve(retRes);
     });
+  }
+  private async executeSet(db: any, set: Array<any>): Promise<any> {
+    let lastId: number = -1;
+    let retRes: any = { changes: -1, lastId: lastId };
+
+    if (db === null) {
+      this.isOpen = false;
+      console.log('executeSet: Error Database connection failed');
+      return retRes;
+    }
+
+    for (let i = 0; i < set.length; i++) {
+      const statement = 'statement' in set[i] ? set[i].statement : null;
+      const values =
+        'values' in set[i] && set[i].values.length > 0 ? set[i].values : null;
+      if (statement == null || values == null) {
+        console.log('executeSet: Error statement or values are null');
+        return retRes;
+      }
+      lastId = await this.prepare(db, statement, values);
+      if (lastId === -1) {
+        console.log('executeSet: Error return lastId= -1');
+        return retRes;
+      }
+    }
+    const changes = await this.dbChanges(db);
+    retRes.changes = changes;
+    retRes.lastId = lastId;
+    return retRes;
   }
   public run(statement: string, values: Array<any>): Promise<any> {
     return new Promise(async resolve => {
@@ -361,6 +474,7 @@ export class DatabaseSQLiteHelper {
       let retJson: JsonSQLite = {} as JsonSQLite;
       let success: boolean = false;
       retJson.database = this._databaseName.slice(0, -9);
+      retJson.version = this._databaseVersion;
       retJson.encrypted = false;
       retJson.mode = mode;
       success = await this.createJsonTables(retJson);
@@ -382,14 +496,20 @@ export class DatabaseSQLiteHelper {
       let changes: number = -1;
       let isSchema: boolean = false;
       let isIndexes: boolean = false;
-      // set PRAGMA
-      let pragmas: string = `
-            PRAGMA user_version = 1;
-            PRAGMA foreign_keys = ON;            
-            `;
-      const pchanges: number = await this.exec(pragmas);
+      const version: number = jsonData.version;
+      // set Foreign Keys PRAGMA
+      let pragmas: string = 'PRAGMA foreign_keys = ON;';
+      let pchanges: number = await this.exec(pragmas);
 
       if (pchanges === -1) resolve(-1);
+      // DROP ALL when mode="full"
+      if (jsonData.mode === 'full') {
+        // set User Version PRAGMA
+        let pragmas: string = `PRAGMA user_version = ${version};`;
+        pchanges = await this.exec(pragmas);
+        if (pchanges === -1) resolve(-1);
+        await this.dropAll();
+      }
       // create the database schema
       let statements: Array<string> = [];
       statements.push('BEGIN TRANSACTION;');
@@ -399,8 +519,6 @@ export class DatabaseSQLiteHelper {
           jsonData.tables[i].schema!.length >= 1
         ) {
           isSchema = true;
-          if (jsonData.mode === 'full')
-            statements.push(`DROP TABLE IF EXISTS ${jsonData.tables[i].name};`);
           // create table
           statements.push(
             `CREATE TABLE IF NOT EXISTS ${jsonData.tables[i].name} (`,
@@ -438,9 +556,14 @@ export class DatabaseSQLiteHelper {
           }
           statements.push(');');
           // create trigger last_modified associated with the table
-          statements.push(
-            `CREATE TRIGGER IF NOT EXISTS ${jsonData.tables[i].name}_trigger_last_modified AFTER UPDATE ON ${jsonData.tables[i].name} FOR EACH ROW WHEN NEW.last_modified <= OLD.last_modified BEGIN UPDATE ${jsonData.tables[i].name} SET last_modified = (strftime('%s','now')) WHERE id=OLD.id; END;`,
-          );
+          let trig: string = 'CREATE TRIGGER IF NOT EXISTS ';
+          trig += `${jsonData.tables[i].name}_trigger_last_modified `;
+          trig += `AFTER UPDATE ON ${jsonData.tables[i].name} `;
+          trig += 'FOR EACH ROW WHEN NEW.last_modified <= ';
+          trig += 'OLD.last_modified BEGIN UPDATE ';
+          trig += `${jsonData.tables[i].name} SET last_modified = `;
+          trig += "(strftime('%s','now')) WHERE id=OLD.id; END;";
+          statements.push(trig);
         }
         if (
           jsonData.tables[i].indexes != null &&
@@ -517,7 +640,8 @@ export class DatabaseSQLiteHelper {
             const tableColumnNames: Array<string> = tableNamesTypes.names;
             if (tableColumnTypes.length === 0) {
               console.log(
-                `Error: Table ${jsonData.tables[i].name} info does not exist`,
+                `Error: Table ${jsonData.tables[i].name} ` +
+                  'info does not exist',
               );
               success = false;
               break;
@@ -535,7 +659,8 @@ export class DatabaseSQLiteHelper {
                   tableColumnTypes.length
                 ) {
                   console.log(
-                    `Error: Table ${jsonData.tables[i].name} values row ${j} not correct length`,
+                    `Error: Table ${jsonData.tables[i].name} ` +
+                      `values row ${j} not correct length`,
                   );
                   success = false;
                   break;
@@ -547,7 +672,8 @@ export class DatabaseSQLiteHelper {
                 );
                 if (!isColumnTypes) {
                   console.log(
-                    `Error: Table ${jsonData.tables[i].name} values row ${j} not correct types`,
+                    `Error: Table ${jsonData.tables[i].name} ` +
+                      `values row ${j} not correct types`,
                   );
                   success = false;
                   break;
@@ -568,7 +694,9 @@ export class DatabaseSQLiteHelper {
                   const questionMarkString = await this.createQuestionMarkString(
                     tableColumnNames.length,
                   );
-                  stmt = `INSERT INTO ${jsonData.tables[i].name} (${nameString}) VALUES (`;
+                  stmt =
+                    `INSERT INTO ${jsonData.tables[i].name} (` +
+                    `${nameString}) VALUES (`;
                   stmt += `${questionMarkString});`;
                 } else {
                   // Update
@@ -577,15 +705,16 @@ export class DatabaseSQLiteHelper {
                   );
                   if (setString.length === 0) {
                     console.log(
-                      `Error: Table ${jsonData.tables[i].name} values row ${j} not set to String`,
+                      `Error: Table ${jsonData.tables[i].name} ` +
+                        `values row ${j} not set to String`,
                     );
                     success = false;
                     break;
                   }
-                  stmt = `UPDATE ${jsonData.tables[i].name} SET ${setString} WHERE `;
-                  stmt += `${tableColumnNames[0]} = ${
-                    jsonData.tables[i].values![j][0]
-                  };`;
+                  stmt =
+                    `UPDATE ${jsonData.tables[i].name} SET ` +
+                    `${setString} WHERE ${tableColumnNames[0]} = ` +
+                    `${jsonData.tables[i].values![j][0]};`;
                 }
                 const lastId: number = await this.prepare(
                   db,
@@ -621,7 +750,9 @@ export class DatabaseSQLiteHelper {
     return new Promise(async resolve => {
       // Check if the table exists
       let ret: boolean = false;
-      const query: string = `SELECT name FROM sqlite_master WHERE type='table' AND name='${tableName}';`;
+      const query: string =
+        `SELECT name FROM sqlite_master WHERE ` +
+        `type='table' AND name='${tableName}';`;
       const resQuery: Array<any> = await this.select(db, query, []);
       if (resQuery.length > 0) ret = true;
       resolve(ret);
@@ -696,7 +827,9 @@ export class DatabaseSQLiteHelper {
   ): Promise<boolean> {
     return new Promise(async resolve => {
       let ret: boolean = false;
-      const query: string = `SELECT ${firstColumnName} FROM ${dbName} WHERE ${firstColumnName} = ${key};`;
+      const query: string =
+        `SELECT ${firstColumnName} FROM ` +
+        `${dbName} WHERE ${firstColumnName} = ${key};`;
       const resQuery: Array<any> = await this.select(db, query, []);
       if (resQuery.length === 1) ret = true;
       resolve(ret);
@@ -742,7 +875,9 @@ export class DatabaseSQLiteHelper {
       const stmt = 'BEGIN TRANSACTION';
       db.exec(stmt, (err: Error) => {
         if (err) {
-          console.log(`exec: Error Begin Transaction failed : ${err.message}`);
+          console.log(
+            `exec: Error Begin Transaction failed : ` + `${err.message}`,
+          );
           resolve(false);
         } else {
           resolve(true);
@@ -755,7 +890,9 @@ export class DatabaseSQLiteHelper {
       const stmt = 'COMMIT TRANSACTION';
       db.exec(stmt, (err: Error) => {
         if (err) {
-          console.log(`exec: Error End Transaction failed : ${err.message}`);
+          console.log(
+            `exec: Error End Transaction failed : ` + `${err.message}`,
+          );
           resolve(false);
         } else {
           resolve(true);
@@ -770,16 +907,17 @@ export class DatabaseSQLiteHelper {
       const db = this._utils.connection(databaseName, false /*,this._secret*/);
       if (db === null) {
         this.isOpen = false;
-        console.log('createJsonTables: Error Database connection failed');
+        console.log('createJsonTables: ' + 'Error Database connection failed');
         resolve(false);
       }
       // get the table's names
       let stmt: string =
         "SELECT name,sql FROM sqlite_master WHERE type = 'table' ";
-      stmt += "AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'sync_table';";
+      stmt += "AND name NOT LIKE 'sqlite_%' ";
+      stmt += "AND name NOT LIKE 'sync_table';";
       let tables: Array<any> = await this.select(db, stmt, []);
       if (tables.length === 0) {
-        console.log("createJsonTables: Error get table's names failed");
+        console.log('createJsonTables: ' + "Error get table's names failed");
         resolve(false);
       }
       let modTables: any = {};
@@ -787,14 +925,14 @@ export class DatabaseSQLiteHelper {
       if (retJson.mode === 'partial') {
         syncDate = await this.getSyncDate(db);
         if (syncDate != -1) {
-          // take the tables which have been modified or created since last sync
+          // take the tables which have been modified or
+          // created since last sync
           modTables = await this.getTableModified(db, tables, syncDate);
         } else {
-          console.log('createJsonTables: Error did not find a sync_date');
+          console.log('createJsonTables: ' + 'Error did not find a sync_date');
           resolve(false);
         }
       }
-
       let jsonTables: Array<JsonTable> = [];
       for (let i: number = 0; i < tables.length; i++) {
         if (
@@ -843,7 +981,8 @@ export class DatabaseSQLiteHelper {
 
           // create the indexes
           stmt = 'SELECT name,tbl_name,sql FROM sqlite_master WHERE ';
-          stmt += `type = 'index' AND tbl_name = '${table.name}' AND sql NOTNULL;`;
+          stmt += `type = 'index' AND tbl_name = '${table.name}' `;
+          stmt += `AND sql NOTNULL;`;
           const retIndexes: Array<any> = await this.select(db, stmt, []);
           if (retIndexes.length > 0) {
             let indexes: Array<JsonIndex> = [];
@@ -860,13 +999,14 @@ export class DatabaseSQLiteHelper {
                   });
                 } else {
                   console.log(
-                    "createJsonTables: Error indexes table name doesn't match",
+                    'createJsonTables: ' +
+                      "Error indexes table name doesn't match",
                   );
                   success = false;
                   break;
                 }
               } else {
-                console.log('createJsonTables: Error in creating indexes');
+                console.log('createJsonTables: ' + 'Error in creating indexes');
                 success = false;
                 break;
               }
@@ -889,7 +1029,9 @@ export class DatabaseSQLiteHelper {
           stmt = `SELECT * FROM ${table.name};`;
         } else {
           if (syncDate != 0) {
-            stmt = `SELECT * FROM ${table.name} WHERE last_modified > ${syncDate};`;
+            stmt =
+              `SELECT * FROM ${table.name} ` +
+              `WHERE last_modified > ${syncDate};`;
           } else {
             stmt = `SELECT * FROM ${table.name};`;
           }
@@ -914,7 +1056,7 @@ export class DatabaseSQLiteHelper {
           !isTable(table) ||
           (!isSchema && !isIndexes && !isValues)
         ) {
-          console.log('createJsonTables: Error table is not a jsonTable');
+          console.log('createJsonTables: ' + 'Error table is not a jsonTable');
           success = false;
           break;
         }
@@ -944,7 +1086,9 @@ export class DatabaseSQLiteHelper {
         if (retQuery.length != 1) break;
         const totalCount: number = retQuery[0]['count(*)'];
         // get total count of modified since last sync
-        stmt = `SELECT count(*) FROM ${tables[i].name} WHERE last_modified > ${syncDate};`;
+        stmt =
+          `SELECT count(*) FROM ${tables[i].name} ` +
+          `WHERE last_modified > ${syncDate};`;
         retQuery = await this.select(db, stmt, []);
         if (retQuery.length != 1) break;
         const totalModifiedCount: number = retQuery[0]['count(*)'];
@@ -976,4 +1120,491 @@ export class DatabaseSQLiteHelper {
       resolve(ret);
     });
   }
+  private getDBVersion(db: any): Promise<number> {
+    return new Promise(async resolve => {
+      const query = `PRAGMA user_version;`;
+      const resQuery: Array<any> = await this.select(db, query, []);
+      if (resQuery.length > 0) {
+        return resolve(resQuery[0].user_version);
+      } else {
+        return resolve(-1);
+      }
+    });
+  }
+  private async updateDatabaseVersion(
+    db: any,
+    newVersion: number,
+  ): Promise<number> {
+    let pragmas: string = `
+      PRAGMA user_version = ${newVersion};
+    `;
+    const pchanges: number = await this.execute(db, pragmas);
+    return pchanges;
+  }
+  private async onUpgrade(
+    dbName: string,
+    db: any,
+    currentVersion: number,
+    targetVersion: number,
+  ): Promise<boolean> {
+    /**
+     * When upgrade statements for current database are missing
+     */
+    if (!this._upgradeStatements[dbName]) {
+      console.log(
+        `Error PRAGMA user_version failed : Version mismatch! Expec
+        ted Version ${targetVersion} found Version ${currentVersion}. Mi
+        ssing Upgrade Statements for Database '${dbName}' Vers
+        ion ${currentVersion}.`,
+      );
+      return false;
+    } else if (!this._upgradeStatements[dbName][currentVersion]) {
+      /**
+       * When upgrade statements for current version are missing
+       */
+      console.log(
+        `Error PRAGMA user_version failed : Version mismatch! Expected V
+        ersion ${targetVersion} found Version ${currentVersion}. Miss
+        ing Upgrade Statements for Database '${dbName}' Versi
+        on ${currentVersion}.`,
+      );
+      return false;
+    }
+
+    const upgrade = this._upgradeStatements[dbName][currentVersion];
+
+    /**
+     * When the version after an upgrade would be greater
+     * than the targeted version
+     */
+    if (targetVersion < upgrade.toVersion) {
+      console.log(
+        `Error PRAGMA user_version failed : Version mismatch! Expect
+        ed Version ${targetVersion} found Version ${currentVersion}. Up
+        grade Statement would upgrade to version ${upgrade.toVersion}, b
+        ut target version is ${targetVersion}.`,
+      );
+      return false;
+    }
+    // set PRAGMA
+    let pragmas: string = `
+      PRAGMA foreign_keys = OFF;            
+    `;
+    let pchanges: number = await this.execute(db, pragmas);
+    if (pchanges === -1) {
+      console.log('onUpgrade: Error in setting ' + 'PRAGMA foreign_keys = OFF');
+      return false;
+    }
+
+    // Here we assume all the tables schema are given in
+    // the upgrade statement
+    if (upgrade.statement) {
+      // -> backup all existing tables  "tableName" in "temp_tableName"
+
+      let retB: boolean = await this.backupTables(db);
+      if (!retB) {
+        console.log('onUpgrade Error in backuping existing tables');
+        return false;
+      }
+
+      // -> Drop all Indexes
+      retB = await this.dropIndexes(db);
+      if (!retB) {
+        console.log('onUpgrade Error in dropping indexes');
+        return false;
+      }
+
+      // -> Drop all Triggers
+      retB = await this.dropTriggers(db);
+      if (!retB) {
+        console.log('onUpgrade Error in dropping triggers');
+        return false;
+      }
+
+      // -> Create new tables from upgrade.statement
+      const result = await this.execute(db, upgrade.statement);
+
+      if (result.changes < 0) {
+        console.log(`onUpgrade Error in creating tables `);
+        return false;
+      }
+      // -> Create the list of table's common fields
+      retB = await this.findCommonColumns(db);
+      if (!retB) {
+        console.log('onUpgrade Error in findCommonColumns');
+        return false;
+      }
+
+      // -> Update the new table's data from old table's data
+      retB = await this.updateNewTablesData(db);
+      if (!retB) {
+        console.log('onUpgrade Error in updateNewTablesData');
+        return false;
+      }
+      // -> Drop _temp_tables
+      retB = await this.dropTempTables(db);
+      if (!retB) {
+        console.log('onUpgrade Error in dropTempTables');
+        return false;
+      }
+      // -> Do some cleanup
+      this._alterTables = {};
+      this._commonColumns = {};
+
+      // here we assume that the Set contains only
+      //  - the data for new tables as INSERT statements
+      //  - the data for new columns in existing tables
+      //    as UPDATE statements
+
+      if (upgrade.set) {
+        // -> load new data
+        const result = await this.executeSet(db, upgrade.set);
+
+        if (result.changes < 0) {
+          console.log('onUpgrade Error executeSet Failed');
+          return false;
+        }
+      }
+      // -> update database version
+      await this.updateDatabaseVersion(db, upgrade.toVersion);
+
+      // -> update syncDate if any
+      const isExists = await this.isTableExists(db, 'sync_table');
+      if (isExists) {
+        const sDate: number = Math.round(new Date().getTime() / 1000);
+        let stmt: string = `UPDATE sync_table SET sync_date = ${sDate} `;
+        stmt += `WHERE id = 1;`;
+        const retRes = await this.execute(db, stmt);
+        if (retRes.changes === -1) {
+          let message: string = 'onUpgrade: Update sync_date failed ';
+          console.log(message);
+          return false;
+        }
+      }
+    } else {
+      let message: string = 'onUpgrade: No statement given in ';
+      message += 'upgradeStatements object';
+      console.log(message);
+      return false;
+    }
+    // set PRAGMA
+    pragmas = `
+      PRAGMA foreign_keys = ON;            
+    `;
+    pchanges = await this.execute(db, pragmas);
+    if (pchanges === -1) {
+      console.log('onUpgrade: Error in setting ' + 'PRAGMA foreign_keys = ON');
+      return false;
+    }
+    return true;
+  }
+
+  private async dropTempTables(db: any): Promise<boolean> {
+    return new Promise(async resolve => {
+      const tempTables: Array<string> = Object.keys(this._alterTables);
+      const statements: Array<string> = [];
+      for (let i: number = 0; i < tempTables.length; i++) {
+        const stmt = `DROP TABLE IF EXISTS _temp_${tempTables[i]};`;
+        statements.push(stmt);
+      }
+      const pchanges: any = await this.execute(db, statements.join('\n'));
+      if (pchanges.changes === -1) {
+        console.log('dropTempTables: Error execute failed');
+        resolve(false);
+      }
+      resolve(true);
+    });
+  }
+
+  private async backupTables(db: any): Promise<boolean> {
+    return new Promise(async resolve => {
+      const tables: Array<any> = await this.getTablesNames(db);
+      if (tables.length === 0) {
+        console.log("backupTables: Error get table's names failed");
+        resolve(false);
+      }
+      for (let i: number = 0; i < tables.length; i++) {
+        const retB: boolean = await this.backupTable(db, tables[i].name);
+        if (!retB) {
+          console.log('backupTables: Error backupTable failed');
+          resolve(false);
+        }
+      }
+      resolve(true);
+    });
+  }
+  private async backupTable(db: any, tableName: string): Promise<boolean> {
+    return new Promise(async resolve => {
+      let retB: boolean = await this.beginTransaction(db);
+      if (!retB) {
+        console.log('backupTable: Error beginTransaction failed');
+        resolve(false);
+      }
+      // get the column's name
+      const tableNamesTypes: any = await this.getTableColumnNamesTypes(
+        db,
+        tableName,
+      );
+      this._alterTables[tableName] = tableNamesTypes.names;
+      // prefix the table with _temp_
+      let stmt: string = `ALTER TABLE ${tableName} RENAME TO _temp_${tableName};`;
+      const pchanges: any = await this.execute(db, stmt);
+      if (pchanges.changes === -1) {
+        console.log('backupTable: Error execute failed');
+        resolve(false);
+      }
+
+      retB = await this.endTransaction(db);
+      if (!retB) {
+        console.log('backupTable: Error endTransaction failed');
+        resolve(false);
+      }
+      resolve(true);
+    });
+  }
+  private async dropAll(): Promise<boolean> {
+    return new Promise(async resolve => {
+      // Drop All Tables
+      const db = this._utils.connection(
+        this._databaseName,
+        false /*,this._secret*/,
+      );
+      if (db === null) {
+        this.isOpen = false;
+        console.log('dropAll: Error Database connection failed');
+        resolve(false);
+      }
+      let retB: boolean = await this.dropTables(db);
+      if (!retB) resolve(false);
+      // Drop All Indexes
+      retB = await this.dropIndexes(db);
+      if (!retB) resolve(false);
+      // Drop All Triggers
+      retB = await this.dropTriggers(db);
+      if (!retB) resolve(false);
+      // VACCUUM
+      await this.execute(db, 'VACUUM;');
+      db.close();
+      return true;
+    });
+  }
+  private async dropTables(db: any): Promise<boolean> {
+    return new Promise(async resolve => {
+      // get the table's names
+      const tables: Array<any> = await this.getTablesNames(db);
+
+      let statements: Array<string> = [];
+      for (let i: number = 0; i < tables.length; i++) {
+        const stmt: string = `DROP TABLE IF EXISTS ${tables[i].name};`;
+        statements.push(stmt);
+      }
+      if (statements.length > 0) {
+        const pchanges: any = await this.execute(db, statements.join('\n'));
+        if (pchanges.changes === -1) {
+          console.log('dropTables: Error execute failed');
+          resolve(false);
+        }
+      }
+      resolve(true);
+    });
+  }
+  private async dropIndexes(db: any): Promise<boolean> {
+    return new Promise(async resolve => {
+      // get the index's names
+      let stmt: string = "SELECT name FROM sqlite_master WHERE type = 'index' ";
+      stmt += "AND name NOT LIKE 'sqlite_%';";
+      let indexes: Array<any> = await this.select(db, stmt, []);
+      if (indexes.length === 0) {
+        console.log("dropIndexes: Error get index's names failed");
+        resolve(false);
+      }
+      let statements: Array<string> = [];
+      for (let i: number = 0; i < indexes.length; i++) {
+        const stmt: string = `DROP INDEX IF EXISTS ${indexes[i].name};`;
+        statements.push(stmt);
+      }
+      if (statements.length > 0) {
+        const pchanges: any = await this.execute(db, statements.join('\n'));
+        if (pchanges.changes === -1) {
+          console.log('dropIndexes: Error execute failed');
+          resolve(false);
+        }
+      }
+      resolve(true);
+    });
+  }
+  private async dropTriggers(db: any): Promise<boolean> {
+    return new Promise(async resolve => {
+      // get the index's names
+      let stmt: string =
+        "SELECT name FROM sqlite_master WHERE type = 'trigger';";
+      let triggers: Array<any> = await this.select(db, stmt, []);
+      if (triggers.length === 0) {
+        console.log("dropTriggers: Error get index's names failed");
+        resolve(false);
+      }
+      let statements: Array<string> = [];
+      for (let i: number = 0; i < triggers.length; i++) {
+        let stmt: string = 'DROP TRIGGER IF EXISTS ';
+        stmt += `${triggers[i].name};`;
+        statements.push(stmt);
+      }
+      if (statements.length > 0) {
+        const pchanges: any = await this.execute(db, statements.join('\n'));
+        if (pchanges.changes === -1) {
+          console.log('dropTriggers: Error execute failed');
+          resolve(false);
+        }
+      }
+      resolve(true);
+    });
+  }
+  private async findCommonColumns(db: any): Promise<boolean> {
+    return new Promise(async resolve => {
+      // Get new table list
+      const tables: Array<any> = await this.getTablesNames(db);
+      if (tables.length === 0) {
+        console.log("findCommonColumns: Error get table's names failed");
+        resolve(false);
+      }
+      for (let i: number = 0; i < tables.length; i++) {
+        // get the column's name
+        const tableNamesTypes: any = await this.getTableColumnNamesTypes(
+          db,
+          tables[i].name,
+        );
+        // find the common columns
+        const keys: Array<string> = Object.keys(this._alterTables);
+        if (keys.includes(tables[i].name)) {
+          this._commonColumns[tables[i].name] = this.arraysIntersection(
+            this._alterTables[tables[i].name],
+            tableNamesTypes.names,
+          );
+        }
+      }
+      resolve(true);
+    });
+  }
+  private async getTablesNames(db: any): Promise<Array<any>> {
+    return new Promise(async resolve => {
+      // get the table's names
+      let stmt: string = "SELECT name FROM sqlite_master WHERE type = 'table' ";
+      stmt += "AND name NOT LIKE 'sync_table' ";
+      stmt += "AND name NOT LIKE '_temp_%' ";
+      stmt += "AND name NOT LIKE 'sqlite_%';";
+      const tables: Array<any> = await this.select(db, stmt, []);
+      resolve(tables);
+    });
+  }
+  private async updateNewTablesData(db: any): Promise<boolean> {
+    return new Promise(async resolve => {
+      let retB: boolean = await this.beginTransaction(db);
+      if (!retB) {
+        console.log('updateNewTablesData: ' + 'Error beginTransaction failed');
+        resolve(false);
+      }
+
+      let statements: Array<string> = [];
+      const keys: Array<string> = Object.keys(this._commonColumns);
+      keys.forEach(key => {
+        const columns = this._commonColumns[key].join(',');
+        let stmt: string = `INSERT INTO ${key} (${columns}) SELECT `;
+        stmt += `${columns} FROM _temp_${key};`;
+        statements.push(stmt);
+      });
+      const pchanges: any = await this.execute(db, statements.join('\n'));
+      if (pchanges.changes === -1) {
+        console.log('updateNewTablesData: Error execute failed');
+        resolve(false);
+      }
+
+      retB = await this.endTransaction(db);
+      if (!retB) {
+        console.log('updateNewTablesData: ' + 'Error endTransaction failed');
+        resolve(false);
+      }
+      resolve(true);
+    });
+  }
+  private arraysIntersection(a1: Array<any>, a2: Array<any>): Array<any> {
+    return a1.filter((n: any) => {
+      return a2.indexOf(n) !== -1;
+    });
+  }
+  private backupDB(dbName: string): Promise<boolean> {
+    return new Promise(resolve => {
+      const dbPath = this._utils.getDBPath(dbName);
+      const dbBackupPath = this._utils.getDBPath(`backup-${dbName}`);
+      if (dbPath.length > 0 && dbBackupPath.length > 0) {
+        this.NodeFs.copyFile(
+          dbPath,
+          dbBackupPath,
+          this.NodeFs.constants.COPYFILE_EXCL,
+          (err: any) => {
+            if (err) {
+              console.log('Error: in backupDB Found:', err);
+              resolve(false);
+            } else {
+              resolve(true);
+            }
+          },
+        );
+      } else {
+        console.log('Error: in backupDB path & backuppath not correct');
+        resolve(false);
+      }
+    });
+  }
+  private restoreDB(dbName: string): Promise<boolean> {
+    return new Promise(resolve => {
+      const dbPath = this._utils.getDBPath(dbName);
+      const dbBackupPath = this._utils.getDBPath(`backup-${dbName}`);
+      if (dbPath.length > 0 && dbBackupPath.length > 0) {
+        const isBackup: boolean = this.isDB(dbBackupPath);
+        if (!isBackup) {
+          console.log('Error: in restoreDB no backup database');
+          resolve(false);
+        }
+        const isFile: boolean = this.isDB(dbPath);
+        if (isFile) {
+          try {
+            this.NodeFs.unlinkSync(dbPath);
+            //file removed
+          } catch (e) {
+            console.log('Error: in restoreDB delete database failed');
+            resolve(false);
+          }
+        }
+        this.NodeFs.copyFile(
+          dbBackupPath,
+          dbPath,
+          this.NodeFs.constants.COPYFILE_EXCL,
+          (err: any) => {
+            if (err) {
+              console.log('Error: in restoreDB copyfile failed:', err);
+              resolve(false);
+            } else {
+              resolve(true);
+            }
+          },
+        );
+      } else {
+        console.log('Error: in backupDB path & backuppath not correct');
+        resolve(false);
+      }
+    });
+  }
+  private isDB(dbPath: string): boolean {
+    try {
+      if (this.NodeFs.existsSync(dbPath)) {
+        //file exists
+        return true;
+      }
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
+
+  //1234567890123456789012345678901234567890123456789012345678901234567890
 }

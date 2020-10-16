@@ -15,6 +15,11 @@
 		2C6A011F24D82B9000A46075 /* ExportToJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6A011C24D82B9000A46075 /* ExportToJson.swift */; };
 		2C6A012224D82BCF00A46075 /* UtilsBinding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6A012024D82BCF00A46075 /* UtilsBinding.swift */; };
 		2C6A012324D82BCF00A46075 /* UtilsJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6A012124D82BCF00A46075 /* UtilsJson.swift */; };
+		2C6A501D2539C2CD00A61A82 /* UtilsEncryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6A50182539C2CD00A61A82 /* UtilsEncryption.swift */; };
+		2C6A501E2539C2CD00A61A82 /* UtilsFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6A50192539C2CD00A61A82 /* UtilsFile.swift */; };
+		2C6A501F2539C2CD00A61A82 /* UtilsDrop.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6A501A2539C2CD00A61A82 /* UtilsDrop.swift */; };
+		2C6A50202539C2CD00A61A82 /* UtilsConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6A501B2539C2CD00A61A82 /* UtilsConnection.swift */; };
+		2C6A50212539C2CD00A61A82 /* UtilsUpgrade.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6A501C2539C2CD00A61A82 /* UtilsUpgrade.swift */; };
 		2C77B2E52421082E0059C80C /* UtilsSQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C77B2E32421082E0059C80C /* UtilsSQLite.swift */; };
 		2C77B2E9242108480059C80C /* GlobalSQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C77B2E7242108480059C80C /* GlobalSQLite.swift */; };
 		2C77B2EA242108480059C80C /* DatabaseSQLiteHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C77B2E8242108480059C80C /* DatabaseSQLiteHelper.swift */; };
@@ -43,6 +48,11 @@
 		2C6A011C24D82B9000A46075 /* ExportToJson.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExportToJson.swift; sourceTree = "<group>"; };
 		2C6A012024D82BCF00A46075 /* UtilsBinding.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilsBinding.swift; sourceTree = "<group>"; };
 		2C6A012124D82BCF00A46075 /* UtilsJson.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilsJson.swift; sourceTree = "<group>"; };
+		2C6A50182539C2CD00A61A82 /* UtilsEncryption.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilsEncryption.swift; sourceTree = "<group>"; };
+		2C6A50192539C2CD00A61A82 /* UtilsFile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilsFile.swift; sourceTree = "<group>"; };
+		2C6A501A2539C2CD00A61A82 /* UtilsDrop.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilsDrop.swift; sourceTree = "<group>"; };
+		2C6A501B2539C2CD00A61A82 /* UtilsConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilsConnection.swift; sourceTree = "<group>"; };
+		2C6A501C2539C2CD00A61A82 /* UtilsUpgrade.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilsUpgrade.swift; sourceTree = "<group>"; };
 		2C77B2E32421082E0059C80C /* UtilsSQLite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilsSQLite.swift; sourceTree = "<group>"; };
 		2C77B2E7242108480059C80C /* GlobalSQLite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GlobalSQLite.swift; sourceTree = "<group>"; };
 		2C77B2E8242108480059C80C /* DatabaseSQLiteHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatabaseSQLiteHelper.swift; sourceTree = "<group>"; };
@@ -99,8 +109,13 @@
 			isa = PBXGroup;
 			children = (
 				2C6A012024D82BCF00A46075 /* UtilsBinding.swift */,
+				2C6A501B2539C2CD00A61A82 /* UtilsConnection.swift */,
+				2C6A501A2539C2CD00A61A82 /* UtilsDrop.swift */,
+				2C6A50182539C2CD00A61A82 /* UtilsEncryption.swift */,
+				2C6A50192539C2CD00A61A82 /* UtilsFile.swift */,
 				2C6A012124D82BCF00A46075 /* UtilsJson.swift */,
 				2C77B2E32421082E0059C80C /* UtilsSQLite.swift */,
+				2C6A501C2539C2CD00A61A82 /* UtilsUpgrade.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -347,9 +362,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2C6A501D2539C2CD00A61A82 /* UtilsEncryption.swift in Sources */,
 				2C77B2EA242108480059C80C /* DatabaseSQLiteHelper.swift in Sources */,
+				2C6A501E2539C2CD00A61A82 /* UtilsFile.swift in Sources */,
 				50E1A94820377CB70090CE1A /* Plugin.swift in Sources */,
+				2C6A501F2539C2CD00A61A82 /* UtilsDrop.swift in Sources */,
 				2C3CF92424D070DA001E24F2 /* ReturnHandler.swift in Sources */,
+				2C6A50212539C2CD00A61A82 /* UtilsUpgrade.swift in Sources */,
+				2C6A50202539C2CD00A61A82 /* UtilsConnection.swift in Sources */,
 				2C6A012224D82BCF00A46075 /* UtilsBinding.swift in Sources */,
 				2C6A011E24D82B9000A46075 /* ImportFromJson.swift in Sources */,
 				2C77B2E9242108480059C80C /* GlobalSQLite.swift in Sources */,

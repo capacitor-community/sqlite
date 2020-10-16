@@ -55,6 +55,7 @@ This is requested to identify if the value given is an INSERT or an UPDATE SQL c
 ```js
 export type jsonSQLite = {
   database: string,
+  version: number,
   encrypted: boolean,
   mode: string,
   tables: Array<jsonTable>,

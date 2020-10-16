@@ -2,6 +2,7 @@
 export function isJsonSQLite(obj: any): boolean {
   const keyFirstLevel: Array<string> = [
     'database',
+    'version',
     'encrypted',
     'mode',
     'tables',
@@ -14,6 +15,7 @@ export function isJsonSQLite(obj: any): boolean {
   for (var key of Object.keys(obj)) {
     if (keyFirstLevel.indexOf(key) === -1) return false;
     if (key === 'database' && typeof obj[key] != 'string') return false;
+    if (key === 'version' && typeof obj[key] != 'number') return false;
     if (key === 'encrypted' && typeof obj[key] != 'boolean') return false;
     if (key === 'mode' && typeof obj[key] != 'string') return false;
     if (key === 'tables' && typeof obj[key] != 'object') return false;

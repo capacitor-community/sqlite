@@ -1,3 +1,10 @@
+## 2.4.2-6 (2020-10-16)
+
+### Added Features
+
+- Add addUpgradeStatement for version upgrade (iOS & Electron)
+- Add UgradeDatabaseVersion.md documentation
+
 ## 2.4.2-5 (2020-10-08)
 
 ### Bug Fixes
@@ -12,7 +19,7 @@
 
 ## 2.4.2-3 (2020-10-06)
 
-### ### Added Features
+### Added Features
 
 - Add docgen to generate API documentation
 
