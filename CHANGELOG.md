@@ -1,3 +1,9 @@
+## 2.4.2-8 (2020-10-22)
+
+### Bug Fixes
+
+- Fix iOS plugin open bug
+
 ## 2.4.2-7 (2020-10-22)
 
 ### Added Features

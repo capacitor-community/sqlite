@@ -72,12 +72,6 @@ class UtilsConnection {
                     versionUpgrades: versionUpgrades, dbName: dbName,
                     currentVersion: curVersion,
                     targetVersion: version)
-
-            } else {
-                var msg: String = "Error: checkVersion Database"
-                msg.append("current version \(curVersion) <= 0")
-                throw UtilsSQLiteError
-                    .checkVersionAndBackupFailed(message: msg)
             }
         } catch {
             do {
