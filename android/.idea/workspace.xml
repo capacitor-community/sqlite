@@ -1,7 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AndroidLogFilters">
+    <option name="TOOL_WINDOW_CONFIGURED_FILTER" value="Show only selected application" />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="241f8181-1180-4d41-bd48-9f064589ab4a" name="Default Changelist" comment="" />
+    <list default="true" id="241f8181-1180-4d41-bd48-9f064589ab4a" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/Binding.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/ImportExportJson/ExportToJson.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/ImportExportJson/ImportFromJson.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/ImportExportJson/UtilsJson.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/UtilsConnection.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/UtilsDrop.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/UtilsEncryption.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/UtilsFile.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/UtilsSQLite.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/UtilsUpgrade.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/../CHANGELOG.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/caches/build_file_checksums.ser" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/build_file_checksums.ser" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/CapacitorSQLite.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/CapacitorSQLite.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/JsonColumn.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/ImportExportJson/JsonColumn.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/JsonIndex.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/ImportExportJson/JsonIndex.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/JsonSQLite.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/ImportExportJson/JsonSQLite.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/JsonTable.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/ImportExportJson/JsonTable.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/SQLiteDatabaseHelper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/SQLiteDatabaseHelper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs/API.md" beforeDir="false" afterPath="$PROJECT_DIR$/../docs/API.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs/ImportExportJson.md" beforeDir="false" afterPath="$PROJECT_DIR$/../docs/ImportExportJson.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs/UpgradeDatabaseVersion.md" beforeDir="false" afterPath="$PROJECT_DIR$/../docs/UpgradeDatabaseVersion.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ios/Plugin.xcworkspace/xcuserdata/queaujeanpierre.xcuserdatad/UserInterfaceState.xcuserstate" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin.xcworkspace/xcuserdata/queaujeanpierre.xcuserdatad/UserInterfaceState.xcuserstate" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ios/Plugin/Plugin.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/Plugin.swift" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsConnection.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsConnection.swift" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsUpgrade.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsUpgrade.swift" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/definitions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../src/definitions.ts" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -18,6 +51,13 @@
         <projects_view />
       </state>
     </system>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
@@ -117,9 +157,29 @@
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="456" y="319" key="com.intellij.ide.util.TipDialog" timestamp="1600794280219">
+    <state x="515" y="232" key="#com.intellij.codeInsight.editorActions.RestoreReferencesDialog" timestamp="1603177859218">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state x="456" y="319" key="com.intellij.ide.util.TipDialog/0.0.1680.1050@0.0.1680.1050" timestamp="1600794280219" />
+    <state x="515" y="232" key="#com.intellij.codeInsight.editorActions.RestoreReferencesDialog/0.0.1680.1050@0.0.1680.1050" timestamp="1603177859218" />
+    <state width="1626" height="221" key="GridCell.Tab.0.bottom" timestamp="1603377076811">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state width="1626" height="221" key="GridCell.Tab.0.bottom/0.0.1680.1050@0.0.1680.1050" timestamp="1603377076811" />
+    <state width="1626" height="221" key="GridCell.Tab.0.center" timestamp="1603377076809">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state width="1626" height="221" key="GridCell.Tab.0.center/0.0.1680.1050@0.0.1680.1050" timestamp="1603377076809" />
+    <state width="1626" height="221" key="GridCell.Tab.0.left" timestamp="1603377076808">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state width="1626" height="221" key="GridCell.Tab.0.left/0.0.1680.1050@0.0.1680.1050" timestamp="1603377076808" />
+    <state width="1626" height="221" key="GridCell.Tab.0.right" timestamp="1603377076810">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state width="1626" height="221" key="GridCell.Tab.0.right/0.0.1680.1050@0.0.1680.1050" timestamp="1603377076810" />
+    <state x="456" y="351" key="com.intellij.ide.util.TipDialog" timestamp="1603379947813">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state x="456" y="351" key="com.intellij.ide.util.TipDialog/0.0.1680.1050@0.0.1680.1050" timestamp="1603379947813" />
   </component>
 </project>

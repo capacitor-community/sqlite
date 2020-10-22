@@ -14,6 +14,7 @@ class UtilsConnection {
 
     // MARK: - CreateConnection
 
+    // swiftlint:disable file_length
     // swiftlint:disable function_parameter_count
     class func createConnection(
         dbHelper: DatabaseHelper, path: String, mode: String,
@@ -49,6 +50,7 @@ class UtilsConnection {
 
     // MARK: - CheckVersion
 
+    // swiftlint:disable function_body_length
     // swiftlint:disable function_parameter_count
     class func checkVersion(
 
@@ -58,28 +60,35 @@ class UtilsConnection {
         var message: String = ""
 
         do {
+            // check version and backup the database
             let curVersion: Int = try self.checkVersionAndBackup(
                 dbHelper: dbHelper, mDB: mDB, dbName: dbName,
                 version: version, versionUpgrades: versionUpgrades,
                 utilsUpgrade: utilsUpgrade)
-            if curVersion != version {
-                // version not ok
+            if curVersion > 0 && curVersion != version {
+                // version not ok -> upgrade
                 _ = try utilsUpgrade.onUpgrade(
                     dbHelper: dbHelper, mDB: mDB,
                     versionUpgrades: versionUpgrades, dbName: dbName,
                     currentVersion: curVersion,
                     targetVersion: version)
 
+            } else {
+                var msg: String = "Error: checkVersion Database"
+                msg.append("current version \(curVersion) <= 0")
+                throw UtilsSQLiteError
+                    .checkVersionAndBackupFailed(message: msg)
             }
         } catch {
             do {
+                // failed -> restore the database 
                 try dbHelper.restoreDB(databaseName: dbName)
                 message = "init: Error Database upgrade version "
                 message += "failed"
                 message += " \(error.localizedDescription)"
             } catch {
                 message = "init: Error Database upgrade version "
-                message += "failed"
+                message += "failed in restoring the database"
                 message += " \(error.localizedDescription)"
             }
         }
@@ -105,6 +114,7 @@ class UtilsConnection {
         return message
     }
     // swiftlint:enable function_parameter_count
+    // swiftlint:enable function_body_length
 
     // MARK: - CheckVersionAndBackup
 
@@ -129,7 +139,7 @@ class UtilsConnection {
                             dbHelper: dbHelper, mDB: mDB)
                 }
             }
-            if curVersion != version {
+            if curVersion > 0 && curVersion != version {
                 if version < curVersion {
                     var msg: String = "Error: checkVersion Database"
                     msg.append(" version \(version) lower than ")
@@ -148,7 +158,7 @@ class UtilsConnection {
                 guard let upgrade: [String: Any] =
                         dbVUValues[curVersion] else {
                     var message: String = "Error: checkVersion No "
-                    message.append("upgrade statement for database")
+                    message.append("upgrade statement for database ")
                     message.append("\(dbName) ")
                     message.append("and version \(curVersion)")
                     throw UtilsSQLiteError.checkVersionAndBackupFailed(
@@ -168,7 +178,8 @@ class UtilsConnection {
                 let retB: Bool = try UtilsFile.copyFile(
                     fileName: dbName, toFileName: "backup-\(dbName)")
                 if !retB {
-                    let message: String = "Error: checkVersion copyFile"
+                    var message: String = "Error: checkVersion copyFile "
+                    message.append("backup-\(dbName) failed")
                     throw UtilsSQLiteError.checkVersionAndBackupFailed(
                         message: message)
                 }
@@ -398,3 +409,4 @@ class UtilsConnection {
     }
 }
 // swiftlint:enable type_body_length
+// swiftlint:enable file_length

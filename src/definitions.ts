@@ -107,7 +107,7 @@ export interface CapacitorSQLitePlugin {
    * Add the upgrade Statement for database version upgrading
    * @param options: capSQLiteUpgradeOptions
    * @returns Promise<capSQLiteResult>
-   * @since 2.4.2-6 iOS & Electron
+   * @since 2.4.2-6 iOS & Electron 2.4.2-7 Android
    */
   addUpgradeStatement(
     options: capSQLiteUpgradeOptions,

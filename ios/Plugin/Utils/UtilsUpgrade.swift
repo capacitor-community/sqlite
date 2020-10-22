@@ -61,9 +61,12 @@ class UtilsUpgrade {
             let msg: String = "Error: onUpgrade statement not given"
             throw UtilsUpgradeError.onUpgradeFailed(message: msg)
         }
-        guard let set = upgrade["set"] as? [[String: Any]] else {
-            let msg: String = "Error: onUpgrade set not given"
-            throw UtilsUpgradeError.onUpgradeFailed(message: msg)
+        var set: [[String: Any]] = [[:]]
+        if (upgrade["set"] as? [[String: Any]]) != nil {
+            if let set1: [[String: Any]] =
+                            upgrade["set"] as? [[String: Any]] {
+                set = set1
+            }
         }
         if targetVersion < toVersion {
             var message: String = "Error: version mistmatch Upgrade "

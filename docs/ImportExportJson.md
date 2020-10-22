@@ -84,6 +84,7 @@ export type jsonIndex = {
 ```js
 const dataToImport: jsonSQLite = {
   database: 'db-from-json',
+  version: 1,
   encrypted: false,
   mode: 'full',
   tables: [
@@ -166,6 +167,7 @@ or first the database schema
 ```js
 const dataToImport1: jsonSQLite = {
   database: 'db-from-json',
+  version: 1,
   encrypted: false,
   mode: 'full',
   tables: [
@@ -209,6 +211,7 @@ followed by an import of the Table' Data
 ```js
 const dataToImport2: jsonSQLite = {
   database: 'db-from-json',
+  version: 1,
   encrypted: false,
   mode: 'full',
   tables: [
@@ -238,6 +241,7 @@ const dataToImport2: jsonSQLite = {
 ```js
 const partialImport1: any = {
     database : "db-from-json",
+    version: 1,
     encrypted : false,
     mode : "partial",
     tables :[

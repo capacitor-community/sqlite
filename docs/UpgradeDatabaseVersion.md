@@ -188,6 +188,10 @@ console.log("*** Database test-updversion Opened");
 
 -> Execute the set of new table's data
 
+-> update database version
+
+-> update syncDate if any
+
 -> process failed restore the backup file
 
 -> delete the backup file

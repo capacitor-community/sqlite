@@ -1,4 +1,4 @@
-package com.getcapacitor.community.database.sqlite.cdssUtils;
+package com.getcapacitor.community.database.sqlite.cdssUtils.ImportExportJson;
 
 import android.util.Log;
 import com.getcapacitor.JSObject;

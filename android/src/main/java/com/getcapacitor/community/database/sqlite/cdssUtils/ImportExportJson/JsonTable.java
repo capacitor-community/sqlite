@@ -1,7 +1,9 @@
-package com.getcapacitor.community.database.sqlite.cdssUtils;
+package com.getcapacitor.community.database.sqlite.cdssUtils.ImportExportJson;
 
 import android.util.Log;
 import com.getcapacitor.JSObject;
+import com.getcapacitor.community.database.sqlite.cdssUtils.ImportExportJson.JsonColumn;
+import com.getcapacitor.community.database.sqlite.cdssUtils.ImportExportJson.JsonIndex;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;

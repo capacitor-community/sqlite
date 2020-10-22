@@ -130,7 +130,7 @@ No configuration required for this plugin
 | setSyncDate             | ✅      | ✅  | ✅       | ❌  |
 | isJsonValid             | ✅      | ✅  | ✅       | ❌  |
 | isDBExists              | ✅      | ✅  | ✅       | ❌  |
-| addUpgradeStatement     | ❌      | ✅  | ✅       | ❌  |
+| addUpgradeStatement     | ✅      | ✅  | ✅       | ❌  |
 
 ## Documentation
 
@@ -160,24 +160,20 @@ No configuration required for this plugin
 
 ```ts
  import { Plugins } from '@capacitor/core';
- import * as CapacitorSQLPlugin from '@capacitor-community/sqlite';
+ import '@capacitor-community/sqlite';
  const { CapacitorSQLite,Device } = Plugins;
 
  @Component( ... )
  export class MyPage {
    _sqlite: any;
+   _platform: string
 
    ...
 
    async ngAfterViewInit()() {
      const info = await Device.getInfo();
-     if (info.platform === "ios" || info.platform === "android") {
-       this._sqlite = CapacitorSQLite;
-     } else if(info.platform === "electron") {
-       this._sqlite = CapacitorSQLPlugin.CapacitorSQLiteElectron;
-     } else {
-       this._sqlite = CapacitorSQLPlugin.CapacitorSQLite;
-     }
+     this._platform = info.platform;
+     this._sqlite = CapacitorSQLite;
 
    }
 
@@ -273,9 +269,9 @@ export class MyPage {
 
    async ngAfterViewInit()() {
      const info = await Device.getInfo();
+     this._sqlite = CapacitorSQLite;
 
      if (info.platform === "android") {
-       this._sqlite = CapacitorSQLite;
        try {
           // Show request popup
           await this._sqlite.requestPermissions();

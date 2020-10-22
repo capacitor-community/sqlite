@@ -688,10 +688,8 @@ public class CapacitorSQLite: CAPPlugin {
             let keys = dict.keys
             if !(keys.contains("fromVersion")) ||
                 !(keys.contains("toVersion")) ||
-                !(keys.contains("statement")) ||
-                !(keys.contains("set")) {
-                msg.append("Must provide a an upgrade statement ")
-                msg.append("{fromVersion,toVersion,statement,set}")
+                !(keys.contains("statement")) {
+                msg.append("{fromVersion,toVersion,statement}")
                 retHandler.rResult(call: call, ret: false, message: msg)
             }
             for (key, value) in dict {
@@ -699,7 +697,7 @@ public class CapacitorSQLite: CAPPlugin {
             }
         }
         guard let fromVersion = upgDict["fromVersion"] as? Int else {
-            msg.append("Must provide an upgrade statement")
+            msg.append("fromVersion must be an Int")
             retHandler.rResult(call: call, ret: false, message: msg)
             return
         }

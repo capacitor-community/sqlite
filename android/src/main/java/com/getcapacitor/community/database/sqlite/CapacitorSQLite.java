@@ -10,11 +10,15 @@ import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.community.database.sqlite.cdssUtils.GlobalSQLite;
-import com.getcapacitor.community.database.sqlite.cdssUtils.JsonSQLite;
+import com.getcapacitor.community.database.sqlite.cdssUtils.ImportExportJson.JsonSQLite;
 import com.getcapacitor.community.database.sqlite.cdssUtils.SQLiteDatabaseHelper;
+import com.getcapacitor.community.database.sqlite.cdssUtils.UtilsSQLite;
+import com.getcapacitor.util.HostMask;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Dictionary;
+import java.util.Hashtable;
 import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -34,6 +38,9 @@ public class CapacitorSQLite extends Plugin {
     private boolean isPermissionGranted = false;
 
     private Context context;
+    private UtilsSQLite uSqlite = new UtilsSQLite();
+
+    private Dictionary<String, Dictionary<Integer, JSONObject>> versionUpgrades = new Hashtable<>();
 
     public void load() {
         Log.v(TAG, "*** in load " + isPermissionGranted + " ***");
@@ -59,6 +66,7 @@ public class CapacitorSQLite extends Plugin {
     @PluginMethod
     public void open(PluginCall call) {
         String dbName = null;
+        int dbVersion = Integer.valueOf(-1);
         String secret = null;
         String newsecret = null;
         String inMode = null;
@@ -70,9 +78,12 @@ public class CapacitorSQLite extends Plugin {
         }
         dbName = call.getString("database");
         if (dbName == null) {
-            retResult(call, false, "Open command failed: Must provide a database name");
+            String msg = "Open command failed: Must provide a database";
+            msg += " name";
+            retResult(call, false, msg);
             return;
         }
+        dbVersion = call.getInt("version", 1);
         boolean encrypted = call.getBoolean("encrypted", false);
         if (encrypted) {
             inMode = call.getString("mode", "no-encryption");
@@ -83,7 +94,9 @@ public class CapacitorSQLite extends Plugin {
                 !inMode.equals("newsecret") &&
                 !inMode.equals("wrongsecret")
             ) {
-                retResult(call, false, "Open command failed: Error inMode must be in ['encryption','secret','newsecret']");
+                String msg = "Open command failed: Error inMode must ";
+                msg += "be in ['encryption','secret','newsecret']";
+                retResult(call, false, msg);
             }
             if (inMode.equals("encryption") || inMode.equals("secret")) {
                 secret = globalData.secret;
@@ -104,9 +117,11 @@ public class CapacitorSQLite extends Plugin {
             inMode = "no-encryption";
             secret = "";
         }
-        mDb = new SQLiteDatabaseHelper(context, dbName + "SQLite.db", encrypted, inMode, secret, newsecret, 1);
+        mDb = new SQLiteDatabaseHelper(context, dbName + "SQLite.db", encrypted, inMode, secret, newsecret, dbVersion, versionUpgrades);
         if (!mDb.isOpen) {
-            retResult(call, false, "Open command failed: Database " + dbName + "SQLite.db not opened");
+            String msg = "Open command failed: Database ";
+            msg += dbName + "SQLite.db not opened";
+            retResult(call, false, msg);
         } else {
             retResult(call, true, null);
         }
@@ -120,7 +135,9 @@ public class CapacitorSQLite extends Plugin {
 
         dbName = call.getString("database");
         if (dbName == null) {
-            retResult(call, false, "Close command failed: Must provide a database name");
+            String msg = "Close command failed: ";
+            msg += "Must provide a database name";
+            retResult(call, false, msg);
             return;
         }
         boolean res = mDb.closeDB(dbName + "SQLite.db");
@@ -138,27 +155,13 @@ public class CapacitorSQLite extends Plugin {
         retRes.put("changes", Integer.valueOf(-1));
         String statements = call.getString("statements");
         if (statements == null) {
-            retChanges(call, retRes, "Execute command failed : Must provide raw SQL statements");
-            call.reject("Must provide raw SQL statements");
+            String msg = "Execute command failed : ";
+            msg += "Must provide raw SQL statements";
+            retChanges(call, retRes, msg);
             return;
         }
-        statements.replace("end;", "END;");
-        // split for each statement
-        String[] sqlCmdArray = statements.split(";\n");
-        // deal with trigger if any
-        sqlCmdArray = dealWithTriggers(sqlCmdArray);
-        // split for a single statement on multilines
-        for (int i = 0; i < sqlCmdArray.length; i++) {
-            String[] array = sqlCmdArray[i].split("\n");
-            StringBuilder builder = new StringBuilder();
-            for (String s : array) {
-                builder.append(" ").append(s.trim());
-            }
-            sqlCmdArray[i] = builder.toString();
-        }
-        if (sqlCmdArray[sqlCmdArray.length - 1].trim().length() == 0) {
-            sqlCmdArray = Arrays.copyOf(sqlCmdArray, sqlCmdArray.length - 1);
-        }
+        // convert string in string[]
+        String[] sqlCmdArray = uSqlite.getStatementsArray(statements);
         JSObject res = mDb.execSQL(sqlCmdArray);
         if (res.getInteger("changes") == Integer.valueOf(-1)) {
             retChanges(call, retRes, res.getString("message"));
@@ -173,11 +176,15 @@ public class CapacitorSQLite extends Plugin {
         retRes.put("changes", Integer.valueOf(-1));
         JSArray set = call.getArray("set");
         if (set == null) {
-            retChanges(call, retRes, "ExecuteSet command failed: Must provide a set of SQL statements");
+            String msg = "ExecuteSet command failed : ";
+            msg += "Must provide a set of SQL statements";
+            retChanges(call, retRes, msg);
             return;
         }
         if (set.length() == 0) {
-            retChanges(call, retRes, "ExecuteSet command failed: Must provide a non-empty set of SQL statements");
+            String msg = "ExecuteSet command failed : ";
+            msg += "Must provide a non-empty set of SQL statements";
+            retChanges(call, retRes, msg);
             return;
         }
         for (int i = 0; i < set.length(); i++) {
@@ -185,7 +192,10 @@ public class CapacitorSQLite extends Plugin {
             for (int j = 0; j < keys.length(); ++j) {
                 String key = keys.getString(j);
                 if (!(key.equals("statement")) && !(key.equals("values"))) {
-                    retChanges(call, retRes, "ExecuteSet command failed: Must provide a set as Array of {statement,values}");
+                    String msg = "ExecuteSet command failed : ";
+                    msg += "Must provide a set as Array of {statement,";
+                    msg += "values}";
+                    retChanges(call, retRes, msg);
                     return;
                 }
             }
@@ -204,12 +214,16 @@ public class CapacitorSQLite extends Plugin {
         retRes.put("changes", Integer.valueOf(-1));
         String statement = call.getString("statement");
         if (statement == null) {
-            retChanges(call, retRes, "Run command failed: Must provide a SQL statement");
+            String msg = "Run command failed : ";
+            msg += "Must provide a SQL statement";
+            retChanges(call, retRes, msg);
             return;
         }
         JSArray values = call.getArray("values");
         if (values == null) {
-            retChanges(call, retRes, "Run command failed: Must provide an Array of values");
+            String msg = "Run command failed : ";
+            msg += "Must provide an Array of values";
+            retChanges(call, retRes, msg);
             return;
         }
         JSObject res;
@@ -229,12 +243,16 @@ public class CapacitorSQLite extends Plugin {
     public void query(PluginCall call) throws JSONException {
         String statement = call.getString("statement");
         if (statement == null) {
-            retValues(call, new JSArray(), "Must provide a query statement");
+            String msg = "Query command failed : ";
+            msg += "Must provide a query statement";
+            retValues(call, new JSArray(), msg);
             return;
         }
         JSArray values = call.getArray("values");
         if (values == null) {
-            retValues(call, new JSArray(), "Must provide an Array of strings");
+            String msg = "Query command failed : ";
+            msg += "Must provide an Array of strings";
+            retValues(call, new JSArray(), msg);
             return;
         }
         JSArray res;
@@ -244,7 +262,9 @@ public class CapacitorSQLite extends Plugin {
                 if (values.get(i) instanceof String) {
                     vals.add(values.getString(i));
                 } else {
-                    retValues(call, new JSArray(), "Must provide an Array of strings");
+                    String msg = "Query command failed : ";
+                    msg += "Must provide an Array of strings";
+                    retValues(call, new JSArray(), msg);
                     return;
                 }
             }
@@ -265,7 +285,9 @@ public class CapacitorSQLite extends Plugin {
         String dbName = null;
         dbName = call.getString("database");
         if (dbName == null) {
-            retResult(call, false, "isDBExists command failed: Must provide a database name");
+            String msg = "isDBExists command failed : ";
+            msg += "Must provide a database name";
+            retResult(call, false, msg);
             return;
         }
         File databaseFile = context.getDatabasePath(dbName + "SQLite.db");
@@ -281,7 +303,9 @@ public class CapacitorSQLite extends Plugin {
         String dbName = null;
         dbName = call.getString("database");
         if (dbName == null) {
-            retResult(call, false, "DeleteDatabase command failed: Must provide a database name");
+            String msg = "DeleteDatabase command failed : ";
+            msg += "Must provide a database name";
+            retResult(call, false, msg);
             return;
         }
 
@@ -289,7 +313,9 @@ public class CapacitorSQLite extends Plugin {
             boolean res = mDb.deleteDB(dbName + "SQLite.db");
             retResult(call, true, null);
         } else {
-            retResult(call, false, "DeleteDatabase command failed: The database is not opened");
+            String msg = "DeleteDatabase command failed : ";
+            msg += "The database is not opened";
+            retResult(call, false, msg);
             return;
         }
     }
@@ -299,7 +325,9 @@ public class CapacitorSQLite extends Plugin {
         String parsingData = null;
         parsingData = call.getString("jsonstring");
         if (parsingData == null) {
-            retResult(call, false, "isJsonValid command failed: Must provide a Stringify Json Object");
+            String msg = "isJsonValid command failed : ";
+            msg += "Must provide a Stringify Json Object";
+            retResult(call, false, msg);
             return;
         }
 
@@ -308,13 +336,17 @@ public class CapacitorSQLite extends Plugin {
             JsonSQLite jsonSQL = new JsonSQLite();
             Boolean isValid = jsonSQL.isJsonSQLite(jsonObject);
             if (!isValid) {
-                retResult(call, false, "isJsonValid command failed: Stringify Json Object not Valid");
+                String msg = "isJsonValid command failed : ";
+                msg += "Stringify Json Object not Valid";
+                retResult(call, false, msg);
                 return;
             } else {
                 retResult(call, true, null);
             }
         } catch (Exception e) {
-            retResult(call, false, "isJsonValid command failed: " + e.getMessage());
+            String msg = "isJsonValid command failed : ";
+            msg += e.getMessage();
+            retResult(call, false, msg);
             return;
         }
     }
@@ -326,7 +358,9 @@ public class CapacitorSQLite extends Plugin {
         JSObject retRes = new JSObject();
         retRes.put("changes", Integer.valueOf(-1));
         if (parsingData == null) {
-            retChanges(call, retRes, "importFromJson command failed: Must provide a Stringify Json Object");
+            String msg = "importFromJson command failed : ";
+            msg += "Must provide a Stringify Json Object";
+            retChanges(call, retRes, msg);
             return;
         }
         try {
@@ -334,10 +368,13 @@ public class CapacitorSQLite extends Plugin {
             JsonSQLite jsonSQL = new JsonSQLite();
             Boolean isValid = jsonSQL.isJsonSQLite(jsonObject);
             if (!isValid) {
-                retChanges(call, retRes, "importFromJson command failed: Stringify Json Object not Valid");
+                String msg = "importFromJson command failed : ";
+                msg += "Stringify Json Object not Valid";
+                retChanges(call, retRes, msg);
                 return;
             }
             String dbName = new StringBuilder(jsonSQL.getDatabase()).append("SQLite.db").toString();
+            int dbVersion = jsonSQL.getVersion();
             //            jsonSQL.print();
             Boolean encrypted = jsonSQL.getEncrypted();
             String secret = null;
@@ -346,20 +383,26 @@ public class CapacitorSQLite extends Plugin {
                 inMode = "secret";
                 secret = globalData.secret;
             }
-            mDb = new SQLiteDatabaseHelper(context, dbName, encrypted, inMode, secret, null, 1);
+            mDb = new SQLiteDatabaseHelper(context, dbName, encrypted, inMode, secret, null, dbVersion, versionUpgrades);
 
             if (!mDb.isOpen) {
-                retChanges(call, retRes, "importFromJson command failed: Database " + dbName + "SQLite.db not opened");
+                String msg = "importFromJson command failed : ";
+                msg += dbName + "SQLite.db not opened";
+                retChanges(call, retRes, msg);
             } else {
                 JSObject res = mDb.importFromJson(jsonSQL);
                 if (res.getInteger("changes") == Integer.valueOf(-1)) {
-                    retChanges(call, retRes, "importFromJson command failed: " + "import JsonObject not successful");
+                    String msg = "importFromJson command failed : ";
+                    msg += "import JsonObject not successful";
+                    retChanges(call, retRes, msg);
                 } else {
                     retChanges(call, res, null);
                 }
             }
         } catch (Exception e) {
-            retChanges(call, retRes, "importFromJson command failed: " + e.getMessage());
+            String msg = "importFromJson command failed : ";
+            msg += e.getMessage();
+            retChanges(call, retRes, msg);
             return;
         }
     }
@@ -371,11 +414,15 @@ public class CapacitorSQLite extends Plugin {
         JsonSQLite retJson = new JsonSQLite();
         expMode = call.getString("jsonexportmode");
         if (expMode == null) {
-            retJSObject(call, retObj, "exportToJson: Must provide an export mode");
+            String msg = "exportToJson command failed : ";
+            msg += "Must provide an export mode";
+            retJSObject(call, retObj, msg);
             return;
         }
         if (!expMode.equals("full") && !expMode.equals("partial")) {
-            retJSObject(call, retObj, "exportToJson: Json export mode should be 'full' or 'partial'");
+            String msg = "exportToJson command failed : ";
+            msg += "Json export mode should be 'full' or 'partial'";
+            retJSObject(call, retObj, msg);
             return;
         }
         JSObject ret = mDb.exportToJson(expMode);
@@ -384,7 +431,9 @@ public class CapacitorSQLite extends Plugin {
             retJSObject(call, ret, null);
             return;
         } else {
-            retJSObject(call, retObj, "exportToJson: return Obj is not a JsonSQLite Obj");
+            String msg = "exportToJson command failed : ";
+            msg += "return Obj is not a JsonSQLite Obj";
+            retJSObject(call, retObj, msg);
             return;
         }
     }
@@ -395,7 +444,8 @@ public class CapacitorSQLite extends Plugin {
         retRes.put("changes", Integer.valueOf(-1));
         JSObject res = mDb.createSyncTable();
         if (res.getInteger("changes") == Integer.valueOf(-1)) {
-            retChanges(call, retRes, "createSyncTable command failed");
+            String msg = "createSyncTable command failed";
+            retChanges(call, retRes, msg);
         } else {
             retChanges(call, res, null);
         }
@@ -406,15 +456,58 @@ public class CapacitorSQLite extends Plugin {
         String syncDate = null;
         syncDate = call.getString("syncdate");
         if (syncDate == null) {
-            retResult(call, false, "SetSyncDate command failed: Must provide a sync date");
+            String msg = "SetSyncDate command failed : ";
+            msg += "Must provide a sync date";
+            retResult(call, false, msg);
             return;
         }
         boolean res = mDb.setSyncDate(syncDate);
         if (!res) {
-            retResult(call, false, "setSyncDate command failed");
+            String msg = "SetSyncDate command failed";
+            retResult(call, false, msg);
         } else {
             retResult(call, true, null);
         }
+    }
+
+    @PluginMethod
+    public void addUpgradeStatement(PluginCall call) throws JSONException {
+        String dbName = null;
+        dbName = call.getString("database");
+        if (dbName == null) {
+            String msg = "addUpgradeStatement command failed: ";
+            msg += "Must provide a database name";
+            retResult(call, false, msg);
+            return;
+        }
+        JSArray upgrade = call.getArray("upgrade");
+        if (upgrade == null || upgrade.length() == 0) {
+            String msg = "addUpgradeStatement command failed : ";
+            msg += "Must provide an upgrade statement";
+            retResult(call, false, msg);
+            return;
+        }
+        Dictionary<Integer, JSONObject> upgDict = new Hashtable<>();
+
+        JSONObject upgObj = (JSONObject) upgrade.get(0);
+
+        if (!upgObj.has("fromVersion") || !upgObj.has("toVersion") || !upgObj.has("toVersion")) {
+            String msg = "addUpgradeStatement command failed : ";
+            msg += "Must provide an upgrade statement";
+            msg += "{fromVersion,toVersion,statement}";
+            retResult(call, false, msg);
+            return;
+        }
+        int fromVersion = Integer.valueOf(-1);
+        fromVersion = upgObj.getInt("fromVersion");
+        if (fromVersion == -1) {
+            String msg = "addUpgradeStatement command failed : ";
+            msg += "Must provide fromVersion as Integer";
+            retResult(call, false, msg);
+        }
+        upgDict.put(fromVersion, upgObj);
+        versionUpgrades.put(dbName + "SQLite.db", upgDict);
+        retResult(call, true, null);
     }
 
     @Override
@@ -478,32 +571,5 @@ public class CapacitorSQLite extends Plugin {
             Log.v(TAG, "*** ERROR " + message);
         }
         call.resolve(ret);
-    }
-
-    private String[] dealWithTriggers(String[] sqlCmdArray) {
-        List listArray = Arrays.asList(sqlCmdArray);
-        listArray = trimArray(listArray);
-        listArray = concatRemoveEnd(listArray);
-        String[] retArray = (String[]) listArray.toArray(new String[0]);
-        return retArray;
-    }
-
-    private List concatRemoveEnd(List listArray) {
-        List lArray = new ArrayList(listArray);
-        if (lArray.contains("END")) {
-            int idx = lArray.indexOf("END");
-            lArray.set(idx - 1, lArray.get(idx - 1) + "; END");
-            Object o = lArray.remove(idx);
-            return concatRemoveEnd(lArray);
-        } else {
-            return lArray;
-        }
-    }
-
-    private List trimArray(List listArray) {
-        for (int i = 0; i < listArray.size(); i++) {
-            listArray.set(i, listArray.get(i).toString().trim());
-        }
-        return listArray;
     }
 }

@@ -1,4 +1,4 @@
-package com.getcapacitor.community.database.sqlite.cdssUtils;
+package com.getcapacitor.community.database.sqlite.cdssUtils.ImportExportJson;
 
 import android.util.Log;
 import com.getcapacitor.JSArray;
@@ -14,15 +14,22 @@ public class JsonSQLite {
     private static final String TAG = "JsonSQLite";
 
     private String database = "";
+    private Integer version = 1;
     private Boolean encrypted = null;
     private String mode = "";
     private ArrayList<JsonTable> tables = new ArrayList<JsonTable>();
 
-    private static final List<String> keyFirstLevel = new ArrayList<String>(Arrays.asList("database", "encrypted", "mode", "tables"));
+    private static final List<String> keyFirstLevel = new ArrayList<String>(
+        Arrays.asList("database", "version", "encrypted", "mode", "tables")
+    );
 
     // Getter
     public String getDatabase() {
         return database;
+    }
+
+    public Integer getVersion() {
+        return version;
     }
 
     public Boolean getEncrypted() {
@@ -42,6 +49,10 @@ public class JsonSQLite {
         this.database = newDatabase;
     }
 
+    public void setVersion(Integer newVersion) {
+        this.version = newVersion;
+    }
+
     public void setEncrypted(Boolean newEncrypted) {
         this.encrypted = newEncrypted;
     }
@@ -57,6 +68,7 @@ public class JsonSQLite {
     public ArrayList<String> getKeys() {
         ArrayList<String> retArray = new ArrayList<String>();
         if (getDatabase().length() > 0) retArray.add("database");
+        if (getVersion() != null) retArray.add("version");
         if (getEncrypted() != null) retArray.add("encrypted");
         if (getMode().length() > 0) retArray.add("mode");
         if (getTables().size() > 0) retArray.add("tables");
@@ -79,6 +91,13 @@ public class JsonSQLite {
                         database = (String) value;
                     }
                 }
+                if (key.equals("version")) {
+                    if (!(value instanceof Integer)) {
+                        return false;
+                    } else {
+                        version = (Integer) value;
+                    }
+                }
                 if (key.equals("encrypted")) {
                     if (!(value instanceof Boolean)) {
                         return false;
@@ -95,7 +114,8 @@ public class JsonSQLite {
                 }
                 if (key.equals("tables")) {
                     if (!(value instanceof JSONArray)) {
-                        Log.d(TAG, "value: not instance of JSONArray 1");
+                        String msg = "value: not instance of JSONArray 1";
+                        Log.d(TAG, msg);
 
                         return false;
                     } else {
@@ -111,7 +131,9 @@ public class JsonSQLite {
                                 tables.add(table);
                             }
                         } else {
-                            Log.d(TAG, "value: not instance of JSONArray 2");
+                            String msg = "value: not instance of ";
+                            msg += "JSONArray 2";
+                            Log.d(TAG, msg);
                         }
                     }
                 }
@@ -125,6 +147,7 @@ public class JsonSQLite {
 
     public void print() {
         Log.d(TAG, "database: " + this.getDatabase());
+        Log.d(TAG, "version: " + this.getVersion());
         Log.d(TAG, "encrypted: " + this.getEncrypted());
         Log.d(TAG, "mode: " + this.getMode());
         Log.d(TAG, "number of Tables: " + this.getTables().size());

@@ -1,3 +1,13 @@
+## 2.4.2-7 (2020-10-22)
+
+### Added Features
+
+- Add addUpgradeStatement for version upgrade (Android)
+
+### Bug Fixes
+
+- Fix README issue#47
+
 ## 2.4.2-6 (2020-10-16)
 
 ### Added Features
