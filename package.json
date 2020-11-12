@@ -1,6 +1,6 @@
 {
   "name": "@capacitor-community/sqlite",
-  "version": "2.4.2-8",
+  "version": "2.4.2-9",
   "description": "Capacitor SQLite Plugin",
   "homepage": "https://github.com/capacitor-community/sqlite",
   "main": "dist/esm/index.js",
