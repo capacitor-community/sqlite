@@ -152,6 +152,14 @@ No configuration required for this plugin
 
 - [react-sqlite-app-starter](https://github.com/jepiqueau/react-sqlite-app-starter)
 
+### Ionic/Vue
+
+- [vue-sqlite-app-starter](https://github.com/jepiqueau/vue-sqlite-app-starter)
+
+### Vue
+
+- [vue-sqlite-app](https://github.com/jepiqueau/vue-sqlite-app)
+
 ## Usage
 
 - [see capacitor documentation](https://capacitor.ionicframework.com/docs/getting-started/with-ionic)
@@ -159,131 +167,127 @@ No configuration required for this plugin
 - In your code
 
 ```ts
- import { Plugins } from '@capacitor/core';
+ import { Plugins, Capacitor } from '@capacitor/core';
  import '@capacitor-community/sqlite';
- const { CapacitorSQLite,Device } = Plugins;
+ const { CapacitorSQLite } = Plugins;
 
  @Component( ... )
  export class MyPage {
-   _sqlite: any;
-   _platform: string
+  _sqlite: any;
+  _platform: string;
+  _isPermission: boolean = true;
 
-   ...
+  ...
 
-   async ngAfterViewInit()() {
-     const info = await Device.getInfo();
-     this._platform = info.platform;
-     this._sqlite = CapacitorSQLite;
+  ngAfterViewInit()() {
+    this._platform = Capacitor.platform;
+    this._sqlite = CapacitorSQLite;
+    if (this._platform === 'android') {
+      const handlerPermissions = this.sqlite.addListener(
+            'androidPermissionsRequest', async (data:any) => {
+        if (data.permissionGranted === 1) {
+          this._isPermission = true;
+        } else {
+          this._isPermission = false;
+        }
+      });
+      try {
+        this.sqlite.requestPermissions();
+      } catch (e) {
+        console.log('Error requesting permissions!' + JSON.stringify(e));
+      }
+    }
+    ...
 
-   }
+  }
 
-   async testSQLitePlugin() {
-       let result:any = await this._sqlite.open({database:"testsqlite"});
-       retOpenDB = result.result;
-       if(retOpenDB) {
-           // Create Tables if not exist
-           let sqlcmd: string = `
-           BEGIN TRANSACTION;
-           CREATE TABLE IF NOT EXISTS users (
-               id INTEGER PRIMARY KEY NOT NULL,
-               email TEXT UNIQUE NOT NULL,
-               name TEXT,
-               FirstName TEXT,
-               age INTEGER,
-               MobileNumber TEXT
-           );
-           PRAGMA user_version = 1;
-           COMMIT TRANSACTION;
-           `;
-           var retExe: any = await this._sqlite.execute({statements:sqlcmd});
-           console.log('retExe ',retExe.changes.changes);
-           // Insert some Users
-           sqlcmd = `
-           BEGIN TRANSACTION;
-           DELETE FROM users;
-           INSERT INTO users (name,email,age) VALUES ("Whiteley","Whiteley.com",30);
-           INSERT INTO users (name,email,age) VALUES ("Jones","Jones.com",44);
-           COMMIT TRANSACTION;
-           `;
-           retExe = await this._sqlite.execute({statements:sqlcmd});
-           // will print the changes  2 in that case
-           console.log('retExe ',retExe.changes.changes);
-           // Select all Users
-           sqlcmd = "SELECT * FROM users";
-           const retSelect: any = await this._sqlite.query({statement:sqlcmd,values:[]});
-           console.log('retSelect.values.length ',retSelect.values.length);
-           const row1: any = retSelect.values[0];
-           console.log("row1 users ",JSON.stringify(row1))
-           const row2: any = retSelect.values[1];
-           console.log("row2 users ",JSON.stringify(row2))
+  async testSQLitePlugin(): Promise<void> {
+      if(!this._isPermission) {
+        console.log("Android permissions not granted");
+        return;
+      }
+      let result:any = await this._sqlite.open({database:"testsqlite"});
+      retOpenDB = result.result;
+      if(retOpenDB) {
+        // Create Tables if not exist
+        let sqlcmd: string = `
+        BEGIN TRANSACTION;
+        CREATE TABLE IF NOT EXISTS users (
+          id INTEGER PRIMARY KEY NOT NULL,
+          email TEXT UNIQUE NOT NULL,
+          name TEXT,
+          FirstName TEXT,
+          age INTEGER,
+          MobileNumber TEXT
+        );
+        PRAGMA user_version = 1;
+        COMMIT TRANSACTION;
+        `;
+        var retExe: any = await this._sqlite.execute({statements:sqlcmd});
+        console.log('retExe ',retExe.changes.changes);
+        // Insert some Users
+        sqlcmd = `
+        BEGIN TRANSACTION;
+        DELETE FROM users;
+        INSERT INTO users (name,email,age) VALUES ("Whiteley","Whiteley.com",30);
+        INSERT INTO users (name,email,age) VALUES ("Jones","Jones.com",44);
+        COMMIT TRANSACTION;
+        `;
+        retExe = await this._sqlite.execute({statements:sqlcmd});
+        // will print the changes  2 in that case
+        console.log('retExe ',retExe.changes.changes);
+        // Select all Users
+        sqlcmd = "SELECT * FROM users";
+        const retSelect: any = await this._sqlite.query({statement:sqlcmd,values:[]});
+        console.log('retSelect.values.length ',retSelect.values.length);
+        const row1: any = retSelect.values[0];
+        console.log("row1 users ",JSON.stringify(row1))
+        const row2: any = retSelect.values[1];
+        console.log("row2 users ",JSON.stringify(row2))
 
-           // Insert a new User with SQL and Values
+        // Insert a new User with SQL and Values
 
-           sqlcmd = "INSERT INTO users (name,email,age) VALUES (?,?,?)";
-           let values: Array<any>  = ["Simpson","Simpson@example.com",69];
-           var retRun: any = await this._sqlite.run({statement:sqlcmd,values:values});
-           console.log('retRun ',retRun.changes.changes,retRun.changes.lastId);
+        sqlcmd = "INSERT INTO users (name,email,age) VALUES (?,?,?)";
+        let values: Array<any>  = ["Simpson","Simpson@example.com",69];
+        var retRun: any = await this._sqlite.run({statement:sqlcmd,values:values});
+        console.log('retRun ',retRun.changes.changes,retRun.changes.lastId);
 
-           // Select Users with age > 35
-           sqlcmd = "SELECT name,email,age FROM users WHERE age > ?";
-           retSelect = await this._sqlite.query({statement:sqlcmd,values:["35"]});
-           console.log('retSelect ',retSelect.values.length);
+        // Select Users with age > 35
+        sqlcmd = "SELECT name,email,age FROM users WHERE age > ?";
+        retSelect = await this._sqlite.query({statement:sqlcmd,values:["35"]});
+        console.log('retSelect ',retSelect.values.length);
 
-           // Execute a Set of raw SQL Statements
-           let set: Array<any>  = [
-             { statement:"INSERT INTO users (name,FirstName,email,age,MobileNumber) VALUES (?,?,?,?,?);",
-               values:["Blackberry","Peter","Blackberry@example.com",69,"4405060708"]
-             },
-             { statement:"INSERT INTO users (name,FirstName,email,age,MobileNumber) VALUES (?,?,?,?,?);",
-               values:["Jones","Helen","HelenJones@example.com",42,"4404030201"]
-             },
-             { statement:"INSERT INTO users (name,FirstName,email,age,MobileNumber) VALUES (?,?,?,?,?);",
-               values:["Davison","Bill","Davison@example.com",45,"4405162732"]
-             },
-             { statement:"INSERT INTO users (name,FirstName,email,age,MobileNumber) VALUES (?,?,?,?,?);",
-               values:["Brown","John","Brown@example.com",35,"4405243853"]
-             },
-             { statement:"UPDATE users SET age = ? , MobileNumber = ? WHERE id = ?;",
-               values:[51,"4404030237",2]
-             }
-       ];
-       result = await this._sqlite.executeSet({set:set});
-       console.log("result.changes.changes ",result.changes.changes)
-       if(result.changes.changes != 5) resolve(false);
+        // Execute a Set of raw SQL Statements
+        let set: Array<any>  = [
+          { statement:"INSERT INTO users (name,FirstName,email,age,MobileNumber) VALUES (?,?,?,?,?);",
+            values:["Blackberry","Peter","Blackberry@example.com",69,"4405060708"]
+          },
+          { statement:"INSERT INTO users (name,FirstName,email,age,MobileNumber) VALUES (?,?,?,?,?);",
+            values:["Jones","Helen","HelenJones@example.com",42,"4404030201"]
+          },
+          { statement:"INSERT INTO users (name,FirstName,email,age,MobileNumber) VALUES (?,?,?,?,?);",
+            values:["Davison","Bill","Davison@example.com",45,"4405162732"]
+          },
+          { statement:"INSERT INTO users (name,FirstName,email,age,MobileNumber) VALUES (?,?,?,?,?);",
+            values:["Brown","John","Brown@example.com",35,"4405243853"]
+          },
+          { statement:"UPDATE users SET age = ? , MobileNumber = ? WHERE id = ?;",
+            values:[51,"4404030237",2]
+          }
+        ];
+        result = await this._sqlite.executeSet({set:set});
+        console.log("result.changes.changes ",result.changes.changes);
+        if(result.changes.changes != 5) return;
 
 
        ...
-       }
+      } else {
+        console.log("Error: Open database failed");
+        return;
+      }
    }
    ...
  }
-```
-
-On android, you must request permissions to read and write in storage :
-
-```ts
-export class MyPage {
-   _sqlite: any;
-
-   ...
-
-   async ngAfterViewInit()() {
-     const info = await Device.getInfo();
-     this._sqlite = CapacitorSQLite;
-
-     if (info.platform === "android") {
-       try {
-          // Show request popup
-          await this._sqlite.requestPermissions();
-       } catch (e) {
-          // Permissions declined
-       }
-
-     }
-
-   }
-}
-
 ```
 
 ## Dependencies

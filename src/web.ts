@@ -34,66 +34,108 @@ export class CapacitorSQLiteWeb
   }
   async open(options: capSQLiteOptions): Promise<capSQLiteResult> {
     console.log('open', options);
-    return Promise.reject('Not implemented on Web Platform');
+    return Promise.resolve({
+      result: false,
+      message: `Not implemented on Web Platform`,
+    });
   }
   async close(options: capSQLiteOptions): Promise<capSQLiteResult> {
     console.log('close', options);
-    return Promise.reject('Not implemented on Web Platform');
+    return Promise.resolve({
+      result: false,
+      message: `Not implemented on Web Platform`,
+    });
   }
   async execute(options: capSQLiteExecuteOptions): Promise<capSQLiteChanges> {
     console.log('execute', options);
-    return Promise.reject('Not implemented on Web Platform');
+    return Promise.resolve({
+      result: false,
+      message: `Not implemented on Web Platform`,
+    });
   }
   async executeSet(options: capSQLiteSetOptions): Promise<capSQLiteChanges> {
     console.log('execute', options);
-    return Promise.reject('Not implemented on Web Platform');
+    return Promise.resolve({
+      result: false,
+      message: `Not implemented on Web Platform`,
+    });
   }
   async run(options: capSQLiteRunOptions): Promise<capSQLiteChanges> {
     console.log('run', options);
-    return Promise.reject('Not implemented on Web Platform');
+    return Promise.resolve({
+      result: false,
+      message: `Not implemented on Web Platform`,
+    });
   }
   async query(options: capSQLiteQueryOptions): Promise<capSQLiteValues> {
     console.log('query', options);
-    return Promise.reject('Not implemented on Web Platform');
+    return Promise.resolve({
+      result: false,
+      message: `Not implemented on Web Platform`,
+    });
   }
   async isDBExists(options: capSQLiteOptions): Promise<capSQLiteResult> {
     console.log('in Web isDBExists', options);
-    return Promise.reject('Not implemented on Web Platform');
+    return Promise.resolve({
+      result: false,
+      message: `Not implemented on Web Platform`,
+    });
   }
   async deleteDatabase(options: capSQLiteOptions): Promise<capSQLiteResult> {
     console.log('deleteDatabase', options);
-    return Promise.reject('Not implemented on Web Platform');
+    return Promise.resolve({
+      result: false,
+      message: `Not implemented on Web Platform`,
+    });
   }
   async isJsonValid(options: capSQLiteImportOptions): Promise<capSQLiteResult> {
     console.log('isJsonValid', options);
-    return Promise.reject('Not implemented on Web Platform');
+    return Promise.resolve({
+      result: false,
+      message: `Not implemented on Web Platform`,
+    });
   }
 
   async importFromJson(
     options: capSQLiteImportOptions,
   ): Promise<capSQLiteChanges> {
     console.log('importFromJson', options);
-    return Promise.reject('Not implemented on Web Platform');
+    return Promise.resolve({
+      result: false,
+      message: `Not implemented on Web Platform`,
+    });
   }
   async exportToJson(options: capSQLiteExportOptions): Promise<capSQLiteJson> {
     console.log('exportToJson', options);
-    return Promise.reject('Not implemented on Web Platform');
+    return Promise.resolve({
+      result: false,
+      message: `Not implemented on Web Platform`,
+    });
   }
   async createSyncTable(): Promise<capSQLiteChanges> {
     console.log('createSyncTable');
-    return Promise.reject('Not implemented on Web Platform');
+    return Promise.resolve({
+      result: false,
+      message: `Not implemented on Web Platform`,
+    });
   }
   async setSyncDate(
     options: capSQLiteSyncDateOptions,
   ): Promise<capSQLiteResult> {
     console.log('setSyncDate', options);
-    return Promise.reject('Not implemented on Web Platform');
+    return Promise.resolve({
+      result: false,
+      message: `Not implemented on Web Platform`,
+    });
   }
   async addUpgradeStatement(
     options: capSQLiteUpgradeOptions,
   ): Promise<capSQLiteResult> {
     console.log('addUpgradeStatement', options);
-    return Promise.reject('Not implemented on Web Platform');
+    return Promise.resolve({
+      result: false,
+      message: `Not implemented on Web Platform`,
+    });
   }
 }
 

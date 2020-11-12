@@ -22,7 +22,7 @@
   "devDependencies": {
     "@capacitor/android": "^2.4.2",
     "@capacitor/core": "^2.4.2",
-    "@capacitor/docgen": "0.0.4",
+    "@capacitor/docgen": "0.0.10",
     "@capacitor/ios": "^2.4.2",
     "@ionic/prettier-config": "^1.0.0",
     "@ionic/swiftlint-config": "^1.1.1",

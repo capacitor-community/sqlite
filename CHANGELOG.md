@@ -1,3 +1,14 @@
+## 2.4.2-9 (2020-11-12)
+
+### Added Features
+
+- Add Listener for request permissions (Android)
+- Add Vue and Ionic/Vue demonstrating apps
+
+### Bug Fixes
+
+- Update documentation
+
 ## 2.4.2-8 (2020-10-22)
 
 ### Bug Fixes

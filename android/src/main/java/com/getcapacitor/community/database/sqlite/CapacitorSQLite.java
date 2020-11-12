@@ -26,8 +26,7 @@ import org.json.JSONObject;
 
 @NativePlugin(
     permissions = { Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE },
-    requestCodes = { CapacitorSQLite.REQUEST_SQLITE_PERMISSION },
-    permissionRequestCode = CapacitorSQLite.REQUEST_SQLITE_PERMISSION
+    requestCodes = { CapacitorSQLite.REQUEST_SQLITE_PERMISSION }
 )
 public class CapacitorSQLite extends Plugin {
     static final int REQUEST_SQLITE_PERMISSION = 9538;
@@ -510,6 +509,14 @@ public class CapacitorSQLite extends Plugin {
         retResult(call, true, null);
     }
 
+    @PluginMethod
+    public void requestPermissions(PluginCall call) {
+        pluginRequestPermissions(
+            new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE },
+            REQUEST_SQLITE_PERMISSION
+        );
+    }
+
     @Override
     protected void handleRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.handleRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -521,15 +528,14 @@ public class CapacitorSQLite extends Plugin {
                 }
             }
 
-            PluginCall savedCall = getSavedCall();
+            JSObject data = new JSObject();
             if (permissionsGranted) {
                 isPermissionGranted = true;
-                savedCall.resolve();
+                notifyPermissionsRequest(isPermissionGranted);
             } else {
                 isPermissionGranted = false;
-                savedCall.reject("permission failed");
+                notifyPermissionsRequest(isPermissionGranted);
             }
-            this.freeSavedCall();
         }
     }
 
@@ -571,5 +577,25 @@ public class CapacitorSQLite extends Plugin {
             Log.v(TAG, "*** ERROR " + message);
         }
         call.resolve(ret);
+    }
+
+    protected void notifyPermissionsRequest(boolean isPermissionGranted) {
+        final JSObject data = new JSObject();
+        if (isPermissionGranted) {
+            data.put("permissionGranted", Integer.valueOf(1));
+        } else {
+            data.put("permissionGranted", Integer.valueOf(0));
+        }
+        bridge
+            .getActivity()
+            .runOnUiThread(
+                new Runnable() {
+
+                    @Override
+                    public void run() {
+                        notifyListeners("androidPermissionsRequest", data);
+                    }
+                }
+            );
     }
 }

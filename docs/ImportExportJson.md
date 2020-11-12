@@ -1,10 +1,28 @@
-# JSON Import/Export
+<p align="center"><br><img src="https://user-images.githubusercontent.com/236501/85893648-1c92e880-b7a8-11ea-926d-95355b8175c7.png" width="128" height="128" /></p>
+<h2 align="center">JSON Import/Export DOCUMENTATION</h2>
+<p align="center"><strong><code>@capacitor-community/sqlite</code></strong></p>
+<p align="center">
+  Capacitor community plugin for Native and Electron SQLite Databases. For Native, databases could be encrypted with SQLCipher</p>
 
-## Mehods
+## Index
+
+- [`Methods`](#methods)
+  - [`Import From JSON`](#importfromjson)
+  - [`Export To JSON`](#exporttojson)
+  - [`Is JSON Valid`](#isjsonvalid)
+  - [`Create Sync Table`](#createsynctable)
+  - [`Set Sync Date`](#setsyncdate)
+- [`Json Object`](#json-object)
+- [`JSON Template Examples`](#json-template-examples)
+  - [`Full Mode One Step`](#full-mode-one-step)
+  - [`Full Mode Two Steps`](#full-mode-two-steps)
+  - [`Partial Mode`](#partial-mode)
+
+## Methods
 
 All the methods below give you all the bits and pieces to manage in your application the synchronization of SQL databases between a remote server and the mobile device. It can also be used for upgrading the schema of databases by exporting the current database to json, make the schema modifications in the json object and importing it back with the mode "full".
 
-### importFromJson method
+### importFromJson
 
 This method allow to create a database from a JSON Object.
 The created database can be encrypted or not based on the value of the name **_encrypted_**" of the JSON Object.
@@ -24,7 +42,7 @@ if in mode **_partial_**, you include schema of tables which are already existin
 
 Internally the `importFromJson`method is splitted into two SQL Transactions: - transaction building the schema (Tables, Indexes) - transaction creating the Table's Data (Insert, Update)
 
-### exportToJson method
+### exportToJson
 
 This method allow to download a database to a Json object.
 
@@ -79,7 +97,7 @@ export type jsonIndex = {
 
 ## JSON Template Examples
 
-### Full Mode
+### Full Mode One Step
 
 ```js
 const dataToImport: jsonSQLite = {
@@ -162,7 +180,9 @@ const Images: Array<string> = [
 ];
 ```
 
-or first the database schema
+### Full Mode Two Steps
+
+- first the database schema
 
 ```js
 const dataToImport1: jsonSQLite = {
@@ -206,7 +226,7 @@ const dataToImport1: jsonSQLite = {
 };
 ```
 
-followed by an import of the Table' Data
+- followed by an import of the Table' Data
 
 ```js
 const dataToImport2: jsonSQLite = {
