@@ -3,13 +3,29 @@ declare module '@capacitor/core' {
     CapacitorSQLite: CapacitorSQLitePlugin;
   }
 }
-
+/**
+ * CapacitorSQLitePlugin Interface
+ */
 export interface CapacitorSQLitePlugin {
+  /**
+   * create a database connection
+   * @param options capConnectionOptions
+   * @return Promise<capSQLiteResult>
+   * @since 2.9.0 refactor
+   */
+  createConnection(options: capConnectionOptions): Promise<capSQLiteResult>;
+  /**
+   * close a database connection
+   * @param options capSQLiteOptions
+   * @return Promise<capSQLiteResult>
+   * @since 2.9.0 refactor
+   */
+  closeConnection(options: capSQLiteOptions): Promise<capSQLiteResult>;
   /**
    * Echo a given string
    *
    * @param options: capEchoOptions
-   * @return Promise<{ value: string }
+   * @return Promise<capEchoResult>
    * @since 0.0.1
    */
   echo(options: capEchoOptions): Promise<capEchoResult>;
@@ -113,14 +129,14 @@ export interface CapacitorSQLitePlugin {
     options: capSQLiteUpgradeOptions,
   ): Promise<capSQLiteResult>;
 }
+
 export interface capEchoOptions {
   /**
    *  String to be echoed
    */
   value?: string;
 }
-
-export interface capSQLiteOptions {
+export interface capConnectionOptions {
   /**
    * The database name
    */
@@ -131,17 +147,26 @@ export interface capSQLiteOptions {
   version?: number;
   /**
    * Set to true (database encryption) / false
-   * - Open method only
    */
   encrypted?: boolean;
   /**
    * Set the mode for database encryption
    * ["encryption", "secret", "newsecret"]
-   * - Open method only
    */
   mode?: string;
 }
+
+export interface capSQLiteOptions {
+  /**
+   * The database name
+   */
+  database?: string;
+}
 export interface capSQLiteExecuteOptions {
+  /**
+   * The database name
+   */
+  database?: string;
   /**
    * The batch of raw SQL statements as string
    */
@@ -149,11 +174,19 @@ export interface capSQLiteExecuteOptions {
 }
 export interface capSQLiteSetOptions {
   /**
+   * The database name
+   */
+  database?: string;
+  /**
    * The batch of raw SQL statements as Array of capSQLLiteSet
    */
   set?: capSQLiteSet[];
 }
 export interface capSQLiteRunOptions {
+  /**
+   * The database name
+   */
+  database?: string;
   /**
    * A statement
    */
@@ -164,6 +197,10 @@ export interface capSQLiteRunOptions {
   values?: any[];
 }
 export interface capSQLiteQueryOptions {
+  /**
+   * The database name
+   */
+  database?: string;
   /**
    * A statement
    */
@@ -182,6 +219,10 @@ export interface capSQLiteImportOptions {
 }
 export interface capSQLiteExportOptions {
   /**
+   * The database name
+   */
+  database?: string;
+  /**
    * Set the mode to export JSON Object:
    * "full" or "partial"
    *
@@ -189,6 +230,10 @@ export interface capSQLiteExportOptions {
   jsonexportmode?: string;
 }
 export interface capSQLiteSyncDateOptions {
+  /**
+   * The database name
+   */
+  database?: string;
   /**
    * Set the synchronization date
    *
@@ -334,4 +379,133 @@ export interface capSQLiteVersionUpgrade {
   toVersion: number;
   statement: string;
   set?: capSQLiteSet[];
+}
+
+/**
+ * SQLiteConnection Interface
+ */
+export interface ISQLiteConnection {
+  echo(value: string): Promise<capEchoResult>;
+  createConnection(
+    database: string,
+    encrypted: boolean,
+    mode: string,
+    version: number,
+  ): Promise<SQLiteDBConnection | null>;
+  closeConnection(database: string): Promise<capSQLiteResult>;
+}
+/**
+ * SQLiteConnection Class
+ */
+export class SQLiteConnection implements ISQLiteConnection {
+  constructor(private sqlite: any) {}
+  async echo(value: string): Promise<capEchoResult> {
+    return await this.sqlite.echo({ value: value });
+  }
+  async createConnection(
+    database: string,
+    encrypted: boolean,
+    mode: string,
+    version: number,
+  ): Promise<SQLiteDBConnection | null> {
+    const res: any = await this.sqlite.createConnection({
+      database,
+      encrypted,
+      mode,
+      version,
+    });
+    console.log('>>> in SQLiteConnection createConnection ' + res.result);
+    if (res.result) {
+      return new SQLiteDBConnection(database, this.sqlite);
+    } else {
+      return null;
+    }
+  }
+  async closeConnection(database: string): Promise<capSQLiteResult> {
+    return await this.sqlite.closeConnection({ database });
+  }
+}
+
+/**
+ * SQLiteDBConnection Interface
+ */
+export interface ISQLiteDBConnection {
+  open(): Promise<capSQLiteResult>;
+  close(): Promise<capSQLiteResult>;
+  execute(statements: string): Promise<capSQLiteChanges>;
+  query(statement: string, values?: Array<string>): Promise<capSQLiteValues>;
+  run(statement: string, values?: Array<any>): Promise<capSQLiteChanges>;
+  executeSet(set: Array<capSQLiteSet>): Promise<capSQLiteChanges>;
+}
+
+/**
+ * SQLiteDBConnection Class
+ */
+export class SQLiteDBConnection implements ISQLiteDBConnection {
+  constructor(private dbName: string, private sqlite: any) {
+    console.log('>>> in SQLiteDBConnection dbName ' + dbName);
+  }
+  async open(): Promise<capSQLiteResult> {
+    console.log('>>> in SQLiteDBConnection open dbName ' + this.dbName);
+    const res: any = await this.sqlite.open({ database: this.dbName });
+    return res;
+  }
+  async close(): Promise<capSQLiteResult> {
+    const res: any = await this.sqlite.close({ database: this.dbName });
+    return res;
+  }
+  async execute(statements: string): Promise<capSQLiteChanges> {
+    const res: any = await this.sqlite.execute({
+      database: this.dbName,
+      statements: statements,
+    });
+    return res;
+  }
+  async query(
+    statement: string,
+    values?: Array<string>,
+  ): Promise<capSQLiteValues> {
+    let res: any;
+    if (values && values.length > 0) {
+      res = await this.sqlite.query({
+        database: this.dbName,
+        statement: statement,
+        values: values,
+      });
+    } else {
+      res = await this.sqlite.query({
+        database: this.dbName,
+        statement: statement,
+        values: [],
+      });
+    }
+    return res;
+  }
+  //1234567890123456789012345678901234567890123456789012345678901234567890
+  async run(statement: string, values?: Array<any>): Promise<capSQLiteChanges> {
+    let res: any;
+    if (values && values.length > 0) {
+      res = await this.sqlite.run({
+        database: this.dbName,
+        statement: statement,
+        values: values,
+      });
+    } else {
+      res = await this.sqlite.run({
+        database: this.dbName,
+        statement: statement,
+        values: [],
+      });
+    }
+    return res;
+  }
+  async executeSet(set: Array<capSQLiteSet>): Promise<capSQLiteChanges> {
+    const res: any = await this.sqlite.executeSet({
+      database: this.dbName,
+      set: set,
+    });
+    return res;
+  }
+
+  // TODO other commands to importFromJson, exportToJson ...
 }

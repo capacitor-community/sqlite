@@ -23,19 +23,30 @@
 | ----------------- | ----------------------------------------- | ------ |
 | Quéau Jean Pierre | [jepiqueau](https://github.com/jepiqueau) |        |
 
+## REFACTOR
+
+The refactor will be a quite long process.
+
+The aim of the refactor will be to allow
+
+- for multiple database connections
+- for a db connector allowing for easy commands `db.open(), db.close, ...`
+- improve the response time of the encrypted database by removing the internal open and close database for each sqlite query
+- moving to the latest `androidx.sqlite.db.xxx`
+
+This was discussed lengthly in issue#1and issue#52
+
+The first alpha release of the refactor will address the `android` platform only.
+
+The test will be achieved on a Ionic/Angular app. For the other frameworks, it will require an update of the `react-sqlite-hook`and the `vue-sqlite-hook`.
+
 ## Installation
 
 ```bash
-npm install @capacitor-community/sqlite
+npm install @capacitor-community/sqlite@refactor
 npx cap sync
-npx cap add ios
 npx cap add android
-npx cap add @capacitor-community/electron
 ```
-
-### iOS
-
-- On iOS, no further steps are needed.
 
 ### Android
 
@@ -67,47 +78,6 @@ public class MainActivity extends BridgeActivity {
 
 ```
 
-### Electron
-
-- On Electron, go to the Electron folder of YOUR_APPLICATION
-
-```bash
-npm install --save sqlite3
-npm install --save-dev @types/sqlite3
-npm install --save-dev electron-rebuild
-```
-
-Modify the Electron package.json file by adding a script "postinstall"
-
-```json
-  "scripts": {
-    "electron:start": "electron ./",
-    "postinstall": "electron-rebuild -f -w sqlite3"
-  },
-```
-
-Execute the postinstall script
-
-```bash
-npm run postinstall
-```
-
-#### Electron databases location
-
-- There are by default under `User/Databases/APP_NAME/`
-
-Then build YOUR_APPLICATION
-
-```
-npm run build
-npx cap copy
-npx cap copy @capacitor-community/electron
-npx cap copy web
-npx cap open android
-npx cap open ios
-npx cap open @capacitor-community/electron
-```
-
 ## Configuration
 
 No configuration required for this plugin
@@ -116,23 +86,25 @@ No configuration required for this plugin
 
 | Name                    | Android | iOS | Electron | Web |
 | :---------------------- | :------ | :-- | :------- | :-- |
-| open (non-encrypted DB) | ✅      | ✅  | ✅       | ❌  |
-| open (encrypted DB)     | ✅      | ✅  | ❌       | ❌  |
-| close                   | ✅      | ✅  | ✅       | ❌  |
-| execute                 | ✅      | ✅  | ✅       | ❌  |
-| executeSet              | ✅      | ✅  | ✅       | ❌  |
-| run                     | ✅      | ✅  | ✅       | ❌  |
-| query                   | ✅      | ✅  | ✅       | ❌  |
-| deleteDatabase          | ✅      | ✅  | ✅       | ❌  |
-| importFromJson          | ✅      | ✅  | ✅       | ❌  |
-| exportToJson            | ✅      | ✅  | ✅       | ❌  |
-| createSyncTable         | ✅      | ✅  | ✅       | ❌  |
-| setSyncDate             | ✅      | ✅  | ✅       | ❌  |
-| isJsonValid             | ✅      | ✅  | ✅       | ❌  |
-| isDBExists              | ✅      | ✅  | ✅       | ❌  |
-| addUpgradeStatement     | ✅      | ✅  | ✅       | ❌  |
+| createConnection        | ✅      | ❌  | ❌       | ❌  |
+| closeConnection         | ✅      | ❌  | ❌       | ❌  |
+| open (non-encrypted DB) | ✅      | ❌  | ❌       | ❌  |
+| open (encrypted DB)     | ✅      | ❌  | ❌       | ❌  |
+| close                   | ✅      | ❌  | ❌       | ❌  |
+| execute                 | ✅      | ❌  | ❌       | ❌  |
+| executeSet              | ✅      | ❌  | ❌       | ❌  |
+| run                     | ✅      | ❌  | ❌       | ❌  |
+| query                   | ✅      | ❌  | ❌       | ❌  |
+| deleteDatabase          | ❌      | ❌  | ❌       | ❌  |
+| importFromJson          | ❌      | ❌  | ❌       | ❌  |
+| exportToJson            | ❌      | ❌  | ❌       | ❌  |
+| createSyncTable         | ❌      | ❌  | ❌       | ❌  |
+| setSyncDate             | ❌      | ❌  | ❌       | ❌  |
+| isJsonValid             | ❌      | ❌  | ❌       | ❌  |
+| isDBExists              | ✅      | ❌  | ❌       | ❌  |
+| addUpgradeStatement     | ❌      | ❌  | ❌       | ❌  |
 
-## Documentation
+## Documentation (to be updated)
 
 [API_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/API.md)
 
@@ -144,150 +116,254 @@ No configuration required for this plugin
 
 ### Ionic/Angular
 
-- [angular-sqlite-app-starter](https://github.com/jepiqueau/angular-sqlite-app-starter)
+- [angular-sqlite-app-refactor](https://github.com/jepiqueau/angular-sqlite-app-refactor)
 
-- [test-angular-jeep-capacitor-plugins](https://github.com/jepiqueau/capacitor-apps/tree/master/IonicAngular/jeep-test-app)
+### Ionic/React (to come later)
 
-### Ionic/React
+### Ionic/Vue (to come later)
 
-- [react-sqlite-app-starter](https://github.com/jepiqueau/react-sqlite-app-starter)
-
-### Ionic/Vue
-
-- [vue-sqlite-app-starter](https://github.com/jepiqueau/vue-sqlite-app-starter)
-
-### Vue
-
-- [vue-sqlite-app](https://github.com/jepiqueau/vue-sqlite-app)
+### Vue (to come later)
 
 ## Usage
 
 - [see capacitor documentation](https://capacitor.ionicframework.com/docs/getting-started/with-ionic)
 
-- In your code
+- In your Ionic/Angular App
+
+define a service **app/services/sqlite.service.ts**
 
 ```ts
- import { Plugins, Capacitor } from '@capacitor/core';
- import '@capacitor-community/sqlite';
- const { CapacitorSQLite } = Plugins;
+import { Injectable } from '@angular/core';
 
- @Component( ... )
- export class MyPage {
-  _sqlite: any;
-  _platform: string;
-  _isPermission: boolean = true;
+import { Plugins, Capacitor } from '@capacitor/core';
+import '@capacitor-community/sqlite';
+import {
+  SQLiteDBConnection,
+  SQLiteConnection,
+  capEchoResult,
+  capSQLiteResult,
+} from '@capacitor-community/sqlite';
+const { CapacitorSQLite } = Plugins;
 
-  ...
+@Injectable({
+  providedIn: 'root',
+})
+export class SQLiteService {
+  handlerPermissions: any;
+  sqlite: SQLiteConnection;
+  isService: boolean = false;
+  platform: string;
 
-  ngAfterViewInit()() {
-    this._platform = Capacitor.platform;
-    this._sqlite = CapacitorSQLite;
-    if (this._platform === 'android') {
-      const handlerPermissions = this.sqlite.addListener(
-            'androidPermissionsRequest', async (data:any) => {
-        if (data.permissionGranted === 1) {
-          this._isPermission = true;
-        } else {
-          this._isPermission = false;
+  constructor() {}
+  /**
+   * Plugin Initialization
+   */
+  initializePlugin(): Promise<boolean> {
+    return new Promise(resolve => {
+      this.platform = Capacitor.platform;
+      console.log('*** platform ' + this.platform);
+      const sqlitePlugin: any = CapacitorSQLite;
+      if (this.platform === 'android') {
+        this.handlerPermissions = sqlitePlugin.addListener(
+          'androidPermissionsRequest',
+          async (data: any) => {
+            if (data.permissionGranted === 1) {
+              this.handlerPermissions.remove();
+              this.sqlite = new SQLiteConnection(sqlitePlugin);
+              resolve(true);
+            } else {
+              console.log('Permission not granted');
+              this.handlerPermissions.remove();
+              this.sqlite = null;
+              resolve(false);
+            }
+          },
+        );
+        try {
+          sqlitePlugin.requestPermissions();
+        } catch (e) {
+          console.log('Error requesting permissions ' + JSON.stringify(e));
+          resolve(false);
         }
-      });
-      try {
-        this.sqlite.requestPermissions();
-      } catch (e) {
-        console.log('Error requesting permissions!' + JSON.stringify(e));
+      } else {
+        this.sqlite = new SQLiteConnection(sqlitePlugin);
+        resolve(true);
       }
+    });
+  }
+  async echo(value: string): Promise<capEchoResult> {
+    if (this.sqlite != null) {
+      return await this.sqlite.echo(value);
+    } else {
+      return null;
     }
-    ...
+  }
+  async createConnection(
+    database: string,
+    encrypted: boolean,
+    mode: string,
+    version: number,
+  ): Promise<SQLiteDBConnection | null> {
+    if (this.sqlite != null) {
+      const db: SQLiteDBConnection = await this.sqlite.createConnection(
+        database,
+        encrypted,
+        mode,
+        version,
+      );
+      if (db != null) {
+        return db;
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  }
+  async closeConnection(database: string): Promise<capSQLiteResult> {
+    if (this.sqlite != null) {
+      return await this.sqlite.closeConnection(database);
+    } else {
+      return null;
+    }
+  }
+}
+```
 
+Then implement a component (for example the **app/home/home.page.ts** )
+
+```ts
+import { Component, AfterViewInit } from '@angular/core';
+import { SQLiteService } from '../services/sqlite.service';
+import { createSchema, twoUsers } from '../utils/no-encryption-utils';
+import {
+  createSchemaContacts,
+  setContacts,
+} from '../utils/encrypted-set-utils';
+
+@Component({
+  selector: 'app-home',
+  templateUrl: 'home.page.html',
+  styleUrls: ['home.page.scss'],
+})
+export class HomePage implements AfterViewInit {
+  sqlite: any;
+  platform: string;
+  handlerPermissions: any;
+  initPlugin: boolean = false;
+
+  constructor(private _sqlite: SQLiteService) {}
+
+  async ngAfterViewInit() {
+    // Initialize the CapacitorSQLite plugin
+    this.initPlugin = await this._sqlite.initializePlugin();
+    const result: boolean = await this.runTest();
+    if (result) {
+      document.querySelector('.sql-allsuccess').classList.remove('display');
+      console.log('$$$ runTest was successful');
+    } else {
+      document.querySelector('.sql-allfailure').classList.remove('display');
+      console.log('$$$ runTest failed');
+    }
   }
 
-  async testSQLitePlugin(): Promise<void> {
-      if(!this._isPermission) {
-        console.log("Android permissions not granted");
-        return;
-      }
-      let result:any = await this._sqlite.open({database:"testsqlite"});
-      retOpenDB = result.result;
-      if(retOpenDB) {
-        // Create Tables if not exist
-        let sqlcmd: string = `
-        BEGIN TRANSACTION;
-        CREATE TABLE IF NOT EXISTS users (
-          id INTEGER PRIMARY KEY NOT NULL,
-          email TEXT UNIQUE NOT NULL,
-          name TEXT,
-          FirstName TEXT,
-          age INTEGER,
-          MobileNumber TEXT
-        );
-        PRAGMA user_version = 1;
-        COMMIT TRANSACTION;
-        `;
-        var retExe: any = await this._sqlite.execute({statements:sqlcmd});
-        console.log('retExe ',retExe.changes.changes);
-        // Insert some Users
-        sqlcmd = `
-        BEGIN TRANSACTION;
-        DELETE FROM users;
-        INSERT INTO users (name,email,age) VALUES ("Whiteley","Whiteley.com",30);
-        INSERT INTO users (name,email,age) VALUES ("Jones","Jones.com",44);
-        COMMIT TRANSACTION;
-        `;
-        retExe = await this._sqlite.execute({statements:sqlcmd});
-        // will print the changes  2 in that case
-        console.log('retExe ',retExe.changes.changes);
-        // Select all Users
-        sqlcmd = "SELECT * FROM users";
-        const retSelect: any = await this._sqlite.query({statement:sqlcmd,values:[]});
-        console.log('retSelect.values.length ',retSelect.values.length);
-        const row1: any = retSelect.values[0];
-        console.log("row1 users ",JSON.stringify(row1))
-        const row2: any = retSelect.values[1];
-        console.log("row2 users ",JSON.stringify(row2))
+  async runTest(): Promise<boolean> {
+    let result: any = await this._sqlite.echo('Hello World');
+    console.log(' from Echo ' + result.value);
+    // initialize the connection
+    const db = await this._sqlite.createConnection(
+      'testNew',
+      false,
+      'no-encryption',
+      1,
+    );
+    const db1 = await this._sqlite.createConnection(
+      'testSet',
+      true,
+      'secret',
+      1,
+    );
+    // open db
+    let ret: any = await db.open();
+    if (!ret.result) {
+      return false;
+    }
+    // create tables in db
+    ret = await db.execute(createSchema);
+    console.log('$$$ ret.changes.changes in db ' + ret.changes.changes);
+    if (ret.changes.changes < 0) {
+      return false;
+    }
+    // add two users in db
+    ret = await db.execute(twoUsers);
+    if (ret.changes.changes !== 2) {
+      return false;
+    }
+    // select all users in db
+    ret = await db.query('SELECT * FROM users;');
+    if (
+      ret.values.length !== 2 ||
+      ret.values[0].name !== 'Whiteley' ||
+      ret.values[1].name !== 'Jones'
+    ) {
+      return false;
+    }
+    // open db1
+    ret = await db1.open();
+    if (!ret.result) {
+      return false;
+    }
+    // create tables in db1
+    ret = await db1.execute(createSchemaContacts);
+    console.log('$$$ ret.changes.changes in db1' + ret.changes.changes);
+    if (ret.changes.changes < 0) {
+      return false;
+    }
+    // load setContacts in db1
+    ret = await db1.executeSet(setContacts);
+    console.log('$$$ ret.changes.changes in db2' + ret.changes.changes);
+    if (ret.changes.changes !== 5) {
+      return false;
+    }
 
-        // Insert a new User with SQL and Values
+    // select users where company is NULL in db
+    ret = await db.query('SELECT * FROM users WHERE company IS NULL;');
+    if (
+      ret.values.length !== 2 ||
+      ret.values[0].name !== 'Whiteley' ||
+      ret.values[1].name !== 'Jones'
+    ) {
+      return false;
+    }
+    // add one user with statement and values
+    let sqlcmd: string = 'INSERT INTO users (name,email,age) VALUES (?,?,?)';
+    let values: Array<any> = ['Simpson', 'Simpson@example.com', 69];
+    ret = await db.run(sqlcmd, values);
+    console.log();
+    if (ret.changes.lastId !== 3) {
+      return false;
+    }
+    // add one user with statement
+    sqlcmd =
+      `INSERT INTO users (name,email,age) VALUES ` +
+      `("Brown","Brown@example.com",15)`;
+    ret = await db.run(sqlcmd);
+    if (ret.changes.lastId !== 4) {
+      return false;
+    }
 
-        sqlcmd = "INSERT INTO users (name,email,age) VALUES (?,?,?)";
-        let values: Array<any>  = ["Simpson","Simpson@example.com",69];
-        var retRun: any = await this._sqlite.run({statement:sqlcmd,values:values});
-        console.log('retRun ',retRun.changes.changes,retRun.changes.lastId);
-
-        // Select Users with age > 35
-        sqlcmd = "SELECT name,email,age FROM users WHERE age > ?";
-        retSelect = await this._sqlite.query({statement:sqlcmd,values:["35"]});
-        console.log('retSelect ',retSelect.values.length);
-
-        // Execute a Set of raw SQL Statements
-        let set: Array<any>  = [
-          { statement:"INSERT INTO users (name,FirstName,email,age,MobileNumber) VALUES (?,?,?,?,?);",
-            values:["Blackberry","Peter","Blackberry@example.com",69,"4405060708"]
-          },
-          { statement:"INSERT INTO users (name,FirstName,email,age,MobileNumber) VALUES (?,?,?,?,?);",
-            values:["Jones","Helen","HelenJones@example.com",42,"4404030201"]
-          },
-          { statement:"INSERT INTO users (name,FirstName,email,age,MobileNumber) VALUES (?,?,?,?,?);",
-            values:["Davison","Bill","Davison@example.com",45,"4405162732"]
-          },
-          { statement:"INSERT INTO users (name,FirstName,email,age,MobileNumber) VALUES (?,?,?,?,?);",
-            values:["Brown","John","Brown@example.com",35,"4405243853"]
-          },
-          { statement:"UPDATE users SET age = ? , MobileNumber = ? WHERE id = ?;",
-            values:[51,"4404030237",2]
-          }
-        ];
-        result = await this._sqlite.executeSet({set:set});
-        console.log("result.changes.changes ",result.changes.changes);
-        if(result.changes.changes != 5) return;
-
-
-       ...
-      } else {
-        console.log("Error: Open database failed");
-        return;
-      }
-   }
-   ...
- }
+    ret = await this._sqlite.closeConnection('testNew');
+    if (!ret.result) {
+      return false;
+    }
+    ret = await this._sqlite.closeConnection('testSet');
+    if (!ret.result) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+}
 ```
 
 ## Dependencies

@@ -32,8 +32,22 @@ export class CapacitorSQLiteWeb
     console.log('ECHO in Web plugin', options);
     return options;
   }
+  async createConnection(options: capSQLiteOptions): Promise<any> {
+    console.log('createConnection', options);
+    return Promise.resolve({
+      result: false,
+      message: `Not implemented on Web Platform`,
+    });
+  }
   async open(options: capSQLiteOptions): Promise<capSQLiteResult> {
     console.log('open', options);
+    return Promise.resolve({
+      result: false,
+      message: `Not implemented on Web Platform`,
+    });
+  }
+  async closeConnection(options: capSQLiteOptions): Promise<any> {
+    console.log('closeConnection', options);
     return Promise.resolve({
       result: false,
       message: `Not implemented on Web Platform`,

@@ -1,3 +1,12 @@
+## 2.9.0-alpha.1 (2020-11-22) REFACTOR
+
+### Added Features Android platform only
+
+- createConnection method
+- closeConnection method
+- SQLiteConnection Interface & Class
+- SQLiteDBConnection Interface & Class
+
 ## 2.4.2 (2020-11-22)
 
 - Stable release before looking at a refactor for solving issue#1
