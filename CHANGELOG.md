@@ -1,3 +1,7 @@
+## 2.4.2 (2020-11-22)
+
+- Stable release before looking at a refactor for solving issue#1
+
 ## 2.4.2-9 (2020-11-12)
 
 ### Added Features
