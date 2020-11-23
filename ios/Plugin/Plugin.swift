@@ -264,6 +264,8 @@ public class CapacitorSQLite: CAPPlugin {
                             val.append(obj)
                         } else if let obj = value as? Float {
                             val.append(obj)
+                        } else if value is NSNull {
+                            val.append("NULL")
                         } else {
                             var msg: String = "Run command failed : "
                             msg.append("Not a SQL type")

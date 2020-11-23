@@ -50,7 +50,6 @@ class UtilsConnection {
 
     // MARK: - CheckVersion
 
-    // swiftlint:disable function_body_length
     // swiftlint:disable function_parameter_count
     class func checkVersion(
 
@@ -108,7 +107,6 @@ class UtilsConnection {
         return message
     }
     // swiftlint:enable function_parameter_count
-    // swiftlint:enable function_body_length
 
     // MARK: - CheckVersionAndBackup
 

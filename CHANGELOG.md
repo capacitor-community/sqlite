@@ -1,3 +1,13 @@
+## 2.4.3-1 (2020-11-23)
+
+### Chore
+
+- update to @capacitor/core@2.4.3
+
+### Bug Fixes
+
+- Fix issue#56 INSERT null value on iOS
+
 ## 2.4.2 (2020-11-22)
 
 - Stable release before looking at a refactor for solving issue#1
