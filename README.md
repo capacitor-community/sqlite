@@ -95,7 +95,7 @@ No configuration required for this plugin
 | executeSet              | ✅      | ❌  | ❌       | ❌  |
 | run                     | ✅      | ❌  | ❌       | ❌  |
 | query                   | ✅      | ❌  | ❌       | ❌  |
-| deleteDatabase          | ❌      | ❌  | ❌       | ❌  |
+| deleteDatabase          | ✅      | ❌  | ❌       | ❌  |
 | importFromJson          | ❌      | ❌  | ❌       | ❌  |
 | exportToJson            | ❌      | ❌  | ❌       | ❌  |
 | createSyncTable         | ❌      | ❌  | ❌       | ❌  |
@@ -107,6 +107,10 @@ No configuration required for this plugin
 ## Documentation (to be updated)
 
 [API_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/API.md)
+
+[API_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/APIConnection.md)
+
+[API_DB_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/APIDBConnection.md)
 
 [ImportExportJson_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/ImportExportJson.md)
 

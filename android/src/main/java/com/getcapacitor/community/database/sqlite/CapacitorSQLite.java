@@ -11,6 +11,7 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.community.database.sqlite.SQLite.Database;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLite;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Hashtable;
@@ -105,7 +106,6 @@ public class CapacitorSQLite extends Plugin {
             inMode = "no-encryption";
             secret = "";
         }
-        //1234567890123456789012345678901234567890123456789012345678901234567890
 
         Database db = new Database(context, dbName + "SQLite.db", encrypted, inMode, dbVersion);
         dbDict.put(dbName, db);
@@ -466,6 +466,67 @@ public class CapacitorSQLite extends Plugin {
     }
 
     /**
+     * IsDBExists Method
+     * check if the database exists on the database folder
+     * @param call
+     */
+    @PluginMethod
+    public void isDBExists(PluginCall call) {
+        if (!call.getData().has("database")) {
+            String msg = "isDBExists command failed : ";
+            msg += "Must provide a database name";
+            retValues(call, new JSArray(), msg);
+            return;
+        }
+        String dbName = call.getString("database");
+        Database db = dbDict.get(dbName);
+        if (db != null) {
+            File databaseFile = context.getDatabasePath(dbName + "SQLite.db");
+            if (databaseFile.exists()) {
+                retResult(call, true, null);
+            } else {
+                retResult(call, false, null);
+            }
+        } else {
+            String msg = "isDBExists command failed : No available ";
+            msg += "connection for database " + dbName;
+            retResult(call, false, msg);
+            return;
+        }
+    }
+
+    //1234567890123456789012345678901234567890123456789012345678901234567890
+    /**
+     * DeleteDatabase Method
+     * delete a database from the database folder
+     * @param call
+     */
+    @PluginMethod
+    public void deleteDatabase(PluginCall call) {
+        if (!call.getData().has("database")) {
+            String msg = "deleteDatabase command failed : ";
+            msg += "Must provide a database name";
+            retValues(call, new JSArray(), msg);
+            return;
+        }
+        String dbName = call.getString("database");
+        Database db = dbDict.get(dbName);
+        if (db != null) {
+            boolean res = db.deleteDB(dbName + "SQLite.db");
+            if (res) {
+                retResult(call, true, null);
+            } else {
+                retResult(call, false, "deleteDatabase command failed");
+            }
+        } else {
+            String msg = "deleteDatabase command failed : ";
+            msg += " No available connection for database " + dbName;
+            retResult(call, false, msg);
+            return;
+        }
+    }
+
+    /**
      * RequestPermissions Method
      * Request Read and Write permissions
      * @param call
@@ -476,6 +537,8 @@ public class CapacitorSQLite extends Plugin {
             new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE },
             REQUEST_SQLITE_PERMISSION
         );
+        retResult(call, true, null);
+        return;
     }
 
     /**

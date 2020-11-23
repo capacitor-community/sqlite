@@ -385,13 +385,34 @@ export interface capSQLiteVersionUpgrade {
  * SQLiteConnection Interface
  */
 export interface ISQLiteConnection {
+  /**
+   * Echo a value
+   * @param value
+   * @returns Promise<capEchoResult>
+   * @since 2.9.0 refactor
+   */
   echo(value: string): Promise<capEchoResult>;
+  /**
+   * Create a connection to a database
+   * @param database
+   * @param encrypted
+   * @param mode
+   * @param version
+   * @returns Promise<SQLiteDBConnection | null>
+   * @since 2.9.0 refactor
+   */
   createConnection(
     database: string,
     encrypted: boolean,
     mode: string,
     version: number,
   ): Promise<SQLiteDBConnection | null>;
+  /**
+   * Close a database connection
+   * @param database
+   * @returns Promise<capSQLiteResult>
+   * @since 2.9.0 refactor
+   */
   closeConnection(database: string): Promise<capSQLiteResult>;
 }
 /**
@@ -430,12 +451,66 @@ export class SQLiteConnection implements ISQLiteConnection {
  * SQLiteDBConnection Interface
  */
 export interface ISQLiteDBConnection {
+  /**
+   * Get SQLite DB Connection DB name
+   * @returns Promise<string>
+   * @since 2.9.0 refactor
+   */
+  getConnectionDBName(): string;
+  /**
+   * Open a SQLite DB Connection
+   * @returns Promise<capSQLiteResult>
+   * @since 2.9.0 refactor
+   */
   open(): Promise<capSQLiteResult>;
+  /**
+   * Close a SQLite DB Connection
+   * @returns Promise<capSQLiteResult>
+   * @since 2.9.0 refactor
+   */
   close(): Promise<capSQLiteResult>;
+  /**
+   * Execute SQLite DB Connection Statements
+   * @param statements
+   * @returns Promise<capSQLiteChanges>
+   * @since 2.9.0 refactor
+   */
   execute(statements: string): Promise<capSQLiteChanges>;
+  /**
+   * Execute SQLite DB Connection Query
+   * @param statement
+   * @param values (optional)
+   * @returns Promise<Promise<capSQLiteValues>
+   * @since 2.9.0 refactor
+   */
   query(statement: string, values?: Array<string>): Promise<capSQLiteValues>;
+  /**
+   * Execute SQLite DB Connection Raw Statement
+   * @param statement
+   * @param values (optional)
+   * @returns Promise<capSQLiteChanges>
+   * @since 2.9.0 refactor
+   */
   run(statement: string, values?: Array<any>): Promise<capSQLiteChanges>;
+  /**
+   * Execute SQLite DB Connection Set
+   * @param set
+   * @returns Promise<capSQLiteChanges>
+   * @since 2.9.0 refactor
+   */
   executeSet(set: Array<capSQLiteSet>): Promise<capSQLiteChanges>;
+  /**
+   * Check if a SQLite DB Connection exists
+   * @returns Promise<capSQLiteResult>
+   * @since 2.9.0 refactor
+   */
+  isExists(): Promise<capSQLiteResult>;
+  /**
+   * Delete a SQLite DB Connection
+   * @returns Promise<capSQLiteResult>
+   * @since 2.9.0 refactor
+   */
+  delete(): Promise<capSQLiteResult>;
 }
 
 /**
@@ -444,6 +519,9 @@ export interface ISQLiteDBConnection {
 export class SQLiteDBConnection implements ISQLiteDBConnection {
   constructor(private dbName: string, private sqlite: any) {
     console.log('>>> in SQLiteDBConnection dbName ' + dbName);
+  }
+  getConnectionDBName(): string {
+    return this.dbName;
   }
   async open(): Promise<capSQLiteResult> {
     console.log('>>> in SQLiteDBConnection open dbName ' + this.dbName);
@@ -503,6 +581,18 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
     const res: any = await this.sqlite.executeSet({
       database: this.dbName,
       set: set,
+    });
+    return res;
+  }
+  async isExists(): Promise<capSQLiteResult> {
+    const res: any = await this.sqlite.isDBExists({
+      database: this.dbName,
+    });
+    return res;
+  }
+  async delete(): Promise<capSQLiteResult> {
+    const res: any = await this.sqlite.deleteDatabase({
+      database: this.dbName,
     });
     return res;
   }

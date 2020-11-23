@@ -1,3 +1,14 @@
+## 2.9.0-alpha.2 (2020-11-23) REFACTOR
+
+### Chore
+
+- update to @capacitor/core@2.4.3
+
+### Added Features Android platform only
+
+- add Wrappers documentation (APIConnection && APIDBConnection)
+- add `isDBExists`, `deleteDatabase` methods
+
 ## 2.9.0-alpha.1 (2020-11-22) REFACTOR
 
 ### Added Features Android platform only

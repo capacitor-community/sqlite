@@ -37,6 +37,7 @@ public class Database {
     private SupportSQLiteDatabase _db = null;
     private UtilsSQLite _uSqlite;
     private UtilsSQLCipher _uCipher;
+    private UtilsFile _uFile;
 
     public Database(Context context, String dbName, Boolean encrypted, String mode, int version) {
         this._context = context;
@@ -48,6 +49,7 @@ public class Database {
         this._globVar = new GlobalSQLite();
         this._uSqlite = new UtilsSQLite();
         this._uCipher = new UtilsSQLCipher();
+        this._uFile = new UtilsFile();
         InitializeSQLCipher();
         // added for successive runs
         //        this._file.mkdirs();
@@ -357,5 +359,27 @@ public class Database {
             c.close();
         }
         return retArray;
+    }
+
+    /**
+     * DeleteDB Method
+     * Delete the database file
+     * @param dbName
+     * @return
+     */
+    public boolean deleteDB(String dbName) {
+        // open the database
+        boolean ret;
+        if (!_isOpen) {
+            ret = open();
+            if (!ret) return ret;
+        }
+        // close the db
+        ret = close();
+        if (!ret) return ret;
+        // delete the database
+        ret = _uFile.deleteDatabase(_context, dbName);
+        if (ret) _isOpen = false;
+        return ret;
     }
 }

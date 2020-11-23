@@ -14,16 +14,19 @@
     "build-electron": "rimraf ./electron/dist && cd ./electron && tsc && rollup --config rollup.config.js",
     "clean": "rimraf ./dist",
     "watch": "tsc --watch",
-    "docgen": "docgen --api CapacitorSQLitePlugin --output-readme docs/API.md",
+    "docgen": "npm run docgenPlugin && npm run docgenConnection && npm run docgenDBConnection",
+    "docgenPlugin": "docgen --api CapacitorSQLitePlugin --output-readme docs/API.md",
+    "docgenConnection": "docgen --api ISQLiteConnection --output-readme docs/APIConnection.md",
+    "docgenDBConnection": "docgen --api ISQLiteDBConnection --output-readme docs/APIDBConnection.md",
     "prepublishOnly": "npm run build"
   },
   "author": "Jean Pierre Queau",
   "license": "MIT",
   "devDependencies": {
-    "@capacitor/android": "^2.4.2",
-    "@capacitor/core": "^2.4.2",
+    "@capacitor/android": "^2.4.3",
+    "@capacitor/core": "^2.4.3",
     "@capacitor/docgen": "0.0.10",
-    "@capacitor/ios": "^2.4.2",
+    "@capacitor/ios": "^2.4.3",
     "@ionic/prettier-config": "^1.0.0",
     "@ionic/swiftlint-config": "^1.1.1",
     "@rollup/plugin-node-resolve": "^9.0.0",
@@ -47,7 +50,7 @@
     }
   },
   "peerDependencies": {
-    "@capacitor/core": "^2.4.2"
+    "@capacitor/core": "^2.4.3"
   },
   "files": [
     "dist/",

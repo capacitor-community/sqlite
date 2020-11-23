@@ -1,8 +1,16 @@
 <p align="center"><br><img src="https://user-images.githubusercontent.com/236501/85893648-1c92e880-b7a8-11ea-926d-95355b8175c7.png" width="128" height="128" /></p>
-<h2 align="center">API DOCUMENTATION</h2>
+<h2 align="center">API PLUGIN DOCUMENTATION</h2>
 <p align="center"><strong><code>@capacitor-community/sqlite</code></strong></p>
 <p align="center">
   Capacitor community plugin for Native and Electron SQLite Databases. For Native, databases could be encrypted with SQLCipher</p>
+
+## Plugin Wrappers
+
+To easy the way to use the `@capacitor-community/sqlite` plugin and its ability to be use in conjonction with other plugins (`typeorm`, `spatialite`, ...), two connection wrappers have been associated.
+
+- [API_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/APIConnection.md)
+
+- [API_DB_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/APIDBConnection.md)
 
 ## Databases Location
 
@@ -46,6 +54,8 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 
 <docgen-index>
 
+- [`createConnection(...)`](#createconnection)
+- [`closeConnection(...)`](#closeconnection)
 - [`echo(...)`](#echo)
 - [`open(...)`](#open)
 - [`close(...)`](#close)
@@ -62,11 +72,52 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 - [`setSyncDate(...)`](#setsyncdate)
 - [`addUpgradeStatement(...)`](#addupgradestatement)
 - [Interfaces](#interfaces)
-  </docgen-index>
+
+</docgen-index>
 - [Listeners](#listeners)
+
+## API Plugin
 
 <docgen-api class="custom-css">
 <!--Update the source file JSDoc comments and rerun docgen to update the docs below-->
+
+CapacitorSQLitePlugin Interface
+
+### createConnection(...)
+
+```typescript
+createConnection(options: capConnectionOptions) => Promise<capSQLiteResult>
+```
+
+create a database connection
+
+| Param         | Type                                                                  | Description                                              |
+| ------------- | --------------------------------------------------------------------- | -------------------------------------------------------- |
+| **`options`** | <code><a href="#capconnectionoptions">capConnectionOptions</a></code> | <a href="#capconnectionoptions">capConnectionOptions</a> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 2.9.0 refactor
+
+---
+
+### closeConnection(...)
+
+```typescript
+closeConnection(options: capSQLiteOptions) => Promise<capSQLiteResult>
+```
+
+close a database connection
+
+| Param         | Type                                                          | Description                                      |
+| ------------- | ------------------------------------------------------------- | ------------------------------------------------ |
+| **`options`** | <code><a href="#capsqliteoptions">capSQLiteOptions</a></code> | <a href="#capsqliteoptions">capSQLiteOptions</a> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 2.9.0 refactor
+
+---
 
 ### echo(...)
 
@@ -336,6 +387,28 @@ Add the upgrade Statement for database version upgrading
 
 ### Interfaces
 
+#### capSQLiteResult
+
+| Prop          | Type                 | Description                                   |
+| ------------- | -------------------- | --------------------------------------------- |
+| **`result`**  | <code>boolean</code> | result set to true when successful else false |
+| **`message`** | <code>string</code>  | a returned message                            |
+
+#### capConnectionOptions
+
+| Prop            | Type                 | Description                                                                |
+| --------------- | -------------------- | -------------------------------------------------------------------------- |
+| **`database`**  | <code>string</code>  | The database name                                                          |
+| **`version`**   | <code>number</code>  | The database version                                                       |
+| **`encrypted`** | <code>boolean</code> | Set to true (database encryption) / false                                  |
+| **`mode`**      | <code>string</code>  | Set the mode for database encryption ["encryption", "secret", "newsecret"] |
+
+#### capSQLiteOptions
+
+| Prop           | Type                | Description       |
+| -------------- | ------------------- | ----------------- |
+| **`database`** | <code>string</code> | The database name |
+
 #### capEchoResult
 
 | Prop        | Type                | Description     |
@@ -348,22 +421,6 @@ Add the upgrade Statement for database version upgrading
 | ----------- | ------------------- | ------------------- |
 | **`value`** | <code>string</code> | String to be echoed |
 
-#### capSQLiteResult
-
-| Prop          | Type                 | Description                                   |
-| ------------- | -------------------- | --------------------------------------------- |
-| **`result`**  | <code>boolean</code> | result set to true when successful else false |
-| **`message`** | <code>string</code>  | a returned message                            |
-
-#### capSQLiteOptions
-
-| Prop            | Type                 | Description                                                                                   |
-| --------------- | -------------------- | --------------------------------------------------------------------------------------------- |
-| **`database`**  | <code>string</code>  | The database name                                                                             |
-| **`version`**   | <code>number</code>  | The database version                                                                          |
-| **`encrypted`** | <code>boolean</code> | Set to true (database encryption) / false - Open method only                                  |
-| **`mode`**      | <code>string</code>  | Set the mode for database encryption ["encryption", "secret", "newsecret"] - Open method only |
-
 #### capSQLiteChanges
 
 | Prop          | Type                | Description                                          |
@@ -375,13 +432,15 @@ Add the upgrade Statement for database version upgrading
 
 | Prop             | Type                | Description                               |
 | ---------------- | ------------------- | ----------------------------------------- |
+| **`database`**   | <code>string</code> | The database name                         |
 | **`statements`** | <code>string</code> | The batch of raw SQL statements as string |
 
 #### capSQLiteSetOptions
 
-| Prop      | Type                        | Description                                               |
-| --------- | --------------------------- | --------------------------------------------------------- |
-| **`set`** | <code>capSQLiteSet[]</code> | The batch of raw SQL statements as Array of capSQLLiteSet |
+| Prop           | Type                        | Description                                               |
+| -------------- | --------------------------- | --------------------------------------------------------- |
+| **`database`** | <code>string</code>         | The database name                                         |
+| **`set`**      | <code>capSQLiteSet[]</code> | The batch of raw SQL statements as Array of capSQLLiteSet |
 
 #### capSQLiteSet
 
@@ -394,6 +453,7 @@ Add the upgrade Statement for database version upgrading
 
 | Prop            | Type                | Description                     |
 | --------------- | ------------------- | ------------------------------- |
+| **`database`**  | <code>string</code> | The database name               |
 | **`statement`** | <code>string</code> | A statement                     |
 | **`values`**    | <code>any[]</code>  | A set of values for a statement |
 
@@ -408,6 +468,7 @@ Add the upgrade Statement for database version upgrading
 
 | Prop            | Type                  | Description                     |
 | --------------- | --------------------- | ------------------------------- |
+| **`database`**  | <code>string</code>   | The database name               |
 | **`statement`** | <code>string</code>   | A statement                     |
 | **`values`**    | <code>string[]</code> | A set of values for a statement |
 
@@ -462,12 +523,14 @@ Add the upgrade Statement for database version upgrading
 
 | Prop                 | Type                | Description                                             |
 | -------------------- | ------------------- | ------------------------------------------------------- |
+| **`database`**       | <code>string</code> | The database name                                       |
 | **`jsonexportmode`** | <code>string</code> | Set the mode to export JSON Object: "full" or "partial" |
 
 #### capSQLiteSyncDateOptions
 
 | Prop           | Type                | Description                  |
 | -------------- | ------------------- | ---------------------------- |
+| **`database`** | <code>string</code> | The database name            |
 | **`syncdate`** | <code>string</code> | Set the synchronization date |
 
 #### capSQLiteUpgradeOptions

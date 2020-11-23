@@ -5,131 +5,19 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="241f8181-1180-4d41-bd48-9f064589ab4a" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.classpath" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/SQLite/UtilsFile.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/../CHANGELOG.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/caches/build_file_checksums.ser" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/build_file_checksums.ser" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_annotation_annotation_1_1_0_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_code_findbugs_jsr305_2_0_1_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_squareup_javawriter_2_1_1_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__javax_inject_javax_inject_1_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__junit_junit_4_12_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__net_sf_kxml_kxml2_2_3_0_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_hamcrest_hamcrest_core_1_3_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_hamcrest_hamcrest_integration_1_3_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_hamcrest_hamcrest_library_1_3_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/CapacitorSQLite.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/CapacitorSQLite.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/Binding.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/GlobalSQLite.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/ImportExportJson/ExportToJson.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/ImportExportJson/ImportFromJson.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/ImportExportJson/JsonColumn.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/ImportExportJson/JsonIndex.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/ImportExportJson/JsonSQLite.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/ImportExportJson/JsonTable.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/ImportExportJson/UtilsJson.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/SQLiteDatabaseHelper.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/UtilsConnection.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/UtilsDrop.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/UtilsEncryption.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/UtilsFile.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/UtilsSQLite.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/cdssUtils/UtilsUpgrade.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../electron/rollup.config.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../electron/src/definitions.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../electron/src/electron-utils/DatabaseSQLiteHelper.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../electron/src/electron-utils/JsonUtils.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../electron/src/electron-utils/UtilsSQLite.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../electron/src/index.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../electron/src/plugin.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../electron/tsconfig.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/.npmignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin.xcodeproj/project.pbxproj" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin.xcodeproj/xcuserdata/queaujeanpierre.xcuserdatad/xcschemes/xcschememanagement.plist" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin.xcworkspace/contents.xcworkspacedata" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin.xcworkspace/xcuserdata/queaujeanpierre.xcuserdatad/UserInterfaceState.xcuserstate" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/DatabaseSQLiteHelper.swift" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/GlobalSQLite.swift" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/ImportExportJson/ExportToJson.swift" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/ImportExportJson/ImportFromJson.swift" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/ImportExportJson/JsonSQLite.swift" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/Info.plist" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/Plugin.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/Plugin.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/Plugin.swift" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/ReturnHandler.swift" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsBinding.swift" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsConnection.swift" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsDrop.swift" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsEncryption.swift" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsFile.swift" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsJson.swift" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsSQLite.swift" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsUpgrade.swift" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/PluginTests/Info.plist" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/PluginTests/PluginTests.swift" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Podfile" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Podfile.lock" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Local Podspecs/Capacitor.podspec.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Local Podspecs/CapacitorCordova.podspec.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Manifest.lock" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/project.pbxproj" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/xcuserdata/queaujeanpierre.xcuserdatad/xcschemes/Capacitor.xcscheme" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/xcuserdata/queaujeanpierre.xcuserdatad/xcschemes/CapacitorCordova.xcscheme" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/xcuserdata/queaujeanpierre.xcuserdatad/xcschemes/Pods-Plugin.xcscheme" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/xcuserdata/queaujeanpierre.xcuserdatad/xcschemes/Pods-PluginTests.xcscheme" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/xcuserdata/queaujeanpierre.xcuserdatad/xcschemes/SQLCipher.xcscheme" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Pods.xcodeproj/xcuserdata/queaujeanpierre.xcuserdatad/xcschemes/xcschememanagement.plist" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/SQLCipher/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/SQLCipher/LICENSE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/SQLCipher/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/SQLCipher/sqlite3.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/SQLCipher/sqlite3.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/Capacitor/Capacitor-Info.plist" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/Capacitor/Capacitor-dummy.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/Capacitor/Capacitor-prefix.pch" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/Capacitor/Capacitor-umbrella.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/Capacitor/Capacitor.debug.xcconfig" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/Capacitor/Capacitor.modulemap" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/Capacitor/Capacitor.release.xcconfig" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/CapacitorCordova/CapacitorCordova-Info.plist" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/CapacitorCordova/CapacitorCordova-dummy.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/CapacitorCordova/CapacitorCordova-prefix.pch" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/CapacitorCordova/CapacitorCordova-umbrella.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/CapacitorCordova/CapacitorCordova.debug.xcconfig" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/CapacitorCordova/CapacitorCordova.modulemap" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/CapacitorCordova/CapacitorCordova.release.xcconfig" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/Pods-Plugin/Pods-Plugin-Info.plist" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/Pods-Plugin/Pods-Plugin-acknowledgements.markdown" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/Pods-Plugin/Pods-Plugin-acknowledgements.plist" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/Pods-Plugin/Pods-Plugin-dummy.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/Pods-Plugin/Pods-Plugin-umbrella.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/Pods-Plugin/Pods-Plugin.debug.xcconfig" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/Pods-Plugin/Pods-Plugin.modulemap" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/Pods-Plugin/Pods-Plugin.release.xcconfig" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/Pods-PluginTests/Pods-PluginTests-Info.plist" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/Pods-PluginTests/Pods-PluginTests-acknowledgements.markdown" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/Pods-PluginTests/Pods-PluginTests-acknowledgements.plist" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/Pods-PluginTests/Pods-PluginTests-dummy.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/Pods-PluginTests/Pods-PluginTests-frameworks.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/Pods-PluginTests/Pods-PluginTests-umbrella.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/Pods-PluginTests/Pods-PluginTests.debug.xcconfig" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/Pods-PluginTests/Pods-PluginTests.modulemap" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/Pods-PluginTests/Pods-PluginTests.release.xcconfig" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/SQLCipher/SQLCipher-Info.plist" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/SQLCipher/SQLCipher-dummy.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/SQLCipher/SQLCipher-prefix.pch" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/SQLCipher/SQLCipher-umbrella.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/SQLCipher/SQLCipher.debug.xcconfig" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/SQLCipher/SQLCipher.modulemap" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Pods/Target Support Files/SQLCipher/SQLCipher.release.xcconfig" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/SQLite/Database.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/SQLite/Database.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs/API.md" beforeDir="false" afterPath="$PROJECT_DIR$/../docs/API.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/../package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../src/definitions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../src/definitions.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../src/web.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../src/web.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
