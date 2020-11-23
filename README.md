@@ -106,7 +106,7 @@ No configuration required for this plugin
 
 ## Documentation (to be updated)
 
-[API_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/API.md)
+[API_Documentation](https://github.com/capacitor-community/sqlite/blob/refactor/docs/API.md)
 
 [API_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/refactor/docs/APIConnection.md)
 
