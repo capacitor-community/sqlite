@@ -98,11 +98,11 @@ No configuration required for this plugin
 | deleteDatabase          | ✅      | ❌  | ❌       | ❌  |
 | importFromJson          | ❌      | ❌  | ❌       | ❌  |
 | exportToJson            | ❌      | ❌  | ❌       | ❌  |
-| createSyncTable         | ❌      | ❌  | ❌       | ❌  |
-| setSyncDate             | ❌      | ❌  | ❌       | ❌  |
+| createSyncTable         | ✅      | ❌  | ❌       | ❌  |
+| setSyncDate             | ✅      | ❌  | ❌       | ❌  |
 | isJsonValid             | ❌      | ❌  | ❌       | ❌  |
 | isDBExists              | ✅      | ❌  | ❌       | ❌  |
-| addUpgradeStatement     | ❌      | ❌  | ❌       | ❌  |
+| addUpgradeStatement     | ✅      | ❌  | ❌       | ❌  |
 
 ## Documentation (to be updated)
 

@@ -14,10 +14,15 @@ import androidx.sqlite.db.SupportSQLiteStatement;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.community.database.sqlite.SQLite.GlobalSQLite;
+import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.UtilsJson;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLCipher;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLite;
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Dictionary;
+import java.util.Hashtable;
 import net.sqlcipher.Cursor;
 import net.sqlcipher.database.SQLiteDatabase;
 import org.json.JSONArray;
@@ -38,21 +43,37 @@ public class Database {
     private UtilsSQLite _uSqlite;
     private UtilsSQLCipher _uCipher;
     private UtilsFile _uFile;
+    private UtilsJson _uJson;
+    private UtilsUpgrade _uUpg;
+    private Dictionary<Integer, JSONObject> _vUpgObject = new Hashtable<>();
 
-    public Database(Context context, String dbName, Boolean encrypted, String mode, int version) {
+    public Database(
+        Context context,
+        String dbName,
+        Boolean encrypted,
+        String mode,
+        int version,
+        Dictionary<Integer, JSONObject> vUpgObject
+    ) {
         this._context = context;
         this._dbName = dbName;
         this._mode = mode;
         this._encrypted = encrypted;
         this._version = version;
+        this._vUpgObject = vUpgObject;
         this._file = this._context.getDatabasePath(dbName);
         this._globVar = new GlobalSQLite();
         this._uSqlite = new UtilsSQLite();
         this._uCipher = new UtilsSQLCipher();
         this._uFile = new UtilsFile();
+        this._uJson = new UtilsJson();
+        this._uUpg = new UtilsUpgrade();
         InitializeSQLCipher();
+        if (!this._file.getParentFile().exists()) {
+            this._file.getParentFile().mkdirs();
+        }
+        Log.v(TAG, "&&& file path " + this._file.getAbsolutePath());
         // added for successive runs
-        //        this._file.mkdirs();
         //        this._file.delete();
 
     }
@@ -64,6 +85,10 @@ public class Database {
     private void InitializeSQLCipher() {
         Log.d(TAG, " in InitializeSQLCipher: ");
         SQLiteDatabase.loadLibs(_context);
+    }
+
+    public SupportSQLiteDatabase getDb() {
+        return _db;
     }
 
     /**
@@ -101,6 +126,37 @@ public class Database {
         _db = SQLiteDatabase.openOrCreateDatabase(_file, password, null);
         if (_db != null) {
             if (_db.isOpen()) {
+                // set the Foreign Key Pragma ON
+                try {
+                    _db.setForeignKeyConstraintsEnabled(true);
+                } catch (IllegalStateException e) {
+                    String msg = "Error in open database ";
+                    msg += "setForeignKeyConstraintsEnabled failed " + e;
+                    Log.v(TAG, msg);
+                    _isOpen = false;
+                    _db = null;
+                    return false;
+                }
+                int curVersion = _db.getVersion();
+                if (curVersion == 0) {
+                    _db.setVersion(1);
+                    curVersion = _db.getVersion();
+                }
+                if (_version > curVersion) {
+                    try {
+                        _uUpg.onUpgrade(this, _context, _dbName, _vUpgObject, curVersion, _version);
+                    } catch (Exception e) {
+                        Log.v(TAG, e.getMessage());
+                        // restore DB
+                        boolean ret = _uFile.restoreDatabase(_context, _dbName);
+                        if (!ret) {
+                            Log.v(TAG, "Error: restoreDatabase " + _dbName + " failed ");
+                            _isOpen = false;
+                            _db = null;
+                            return false;
+                        }
+                    }
+                }
                 _isOpen = true;
                 return true;
             } else {
@@ -124,6 +180,7 @@ public class Database {
         if (_db.isOpen()) {
             try {
                 _db.close();
+                _isOpen = false;
                 ret = true;
             } catch (Exception e) {
                 Log.v(TAG, "Error Database close failed " + e.getMessage());
@@ -148,6 +205,8 @@ public class Database {
      * @return the existence of the database on folder
      */
     public boolean isDBExists() {
+        Log.v(TAG, "&&& _file.exists() " + _file.exists());
+
         if (_file.exists()) {
             return true;
         } else {
@@ -326,8 +385,8 @@ public class Database {
         if (_db == null) {
             return retArray;
         }
-        c = (Cursor) _db.query(statement, values.toArray(new String[0]));
         try {
+            c = (Cursor) _db.query(statement, values.toArray(new String[0]));
             while (c.moveToNext()) {
                 JSObject row = new JSObject();
                 for (int i = 0; i < c.getColumnCount(); i++) {
@@ -356,7 +415,7 @@ public class Database {
         } catch (Exception e) {
             Log.v(TAG, "Error in selectSQL cursor " + e.getMessage());
         } finally {
-            c.close();
+            if (c != null) c.close();
         }
         return retArray;
     }
@@ -370,16 +429,69 @@ public class Database {
     public boolean deleteDB(String dbName) {
         // open the database
         boolean ret;
-        if (!_isOpen) {
+        if (_file.exists() && !_isOpen) {
             ret = open();
             if (!ret) return ret;
         }
         // close the db
-        ret = close();
-        if (!ret) return ret;
+        if (_isOpen) {
+            ret = close();
+            if (!ret) return ret;
+        }
+
         // delete the database
-        ret = _uFile.deleteDatabase(_context, dbName);
-        if (ret) _isOpen = false;
-        return ret;
+        if (_file.exists()) {
+            ret = _uFile.deleteDatabase(_context, dbName);
+            if (ret) _isOpen = false;
+            return ret;
+        }
+        return true;
+    }
+
+    /**
+     * CreateSyncTable Method
+     * create the synchronization table
+     * @return
+     */
+    public JSObject createSyncTable() {
+        // Open the database for writing
+        JSObject retObj = new JSObject();
+        // check if the table has already been created
+        boolean isExists = _uJson.isTableExists(this, "sync_table");
+        if (!isExists) {
+            Date date = new Date();
+            long syncTime = date.getTime() / 1000L;
+            String[] statements = {
+                "CREATE TABLE IF NOT EXISTS sync_table (" + "id INTEGER PRIMARY KEY NOT NULL," + "sync_date INTEGER);",
+                "INSERT INTO sync_table (sync_date) VALUES ('" + syncTime + "');"
+            };
+            retObj = execute(statements);
+        } else {
+            retObj.put("changes", Integer.valueOf(0));
+        }
+        return retObj;
+    }
+
+    /**
+     * SetSyncDate Method
+     * Set the synchronization date
+     * @param syncDate
+     * @return
+     */
+    public boolean setSyncDate(String syncDate) {
+        boolean ret = false;
+        JSObject retObj = new JSObject();
+        try {
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+            Date date = formatter.parse(syncDate.replaceAll("Z$", "+0000"));
+            long syncTime = date.getTime() / 1000L;
+            String[] statements = { "UPDATE sync_table SET sync_date = " + syncTime + " WHERE id = 1;" };
+            retObj = execute(statements);
+            if (retObj.getInteger("changes") != Integer.valueOf(-1)) ret = true;
+        } catch (Exception e) {
+            Log.e(TAG, "Error: setSyncDate " + e.getLocalizedMessage());
+        } finally {
+            return ret;
+        }
     }
 }

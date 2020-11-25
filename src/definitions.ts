@@ -393,6 +393,23 @@ export interface ISQLiteConnection {
    */
   echo(value: string): Promise<capEchoResult>;
   /**
+   * Add the upgrade Statement for database version upgrading
+   * @param database
+   * @param fromVersion
+   * @param toVersion
+   * @param statement
+   * @param set
+   * @returns Promise<capSQLiteResult>
+   * @since 2.4.9 refactor
+   */
+  addUpgradeStatement(
+    database: string,
+    fromVersion: number,
+    toVersion: number,
+    statement: string,
+    set?: capSQLiteSet[],
+  ): Promise<capSQLiteResult>;
+  /**
    * Create a connection to a database
    * @param database
    * @param encrypted
@@ -423,6 +440,26 @@ export class SQLiteConnection implements ISQLiteConnection {
   async echo(value: string): Promise<capEchoResult> {
     return await this.sqlite.echo({ value: value });
   }
+  async addUpgradeStatement(
+    database: string,
+    fromVersion: number,
+    toVersion: number,
+    statement: string,
+    set?: capSQLiteSet[],
+  ): Promise<capSQLiteResult> {
+    let upgrade: capSQLiteVersionUpgrade = {
+      fromVersion,
+      toVersion,
+      statement,
+      set: set ? set : [],
+    };
+    const res: any = await this.sqlite.addUpgradeStatement({
+      database,
+      upgrade: [upgrade],
+    });
+    return res;
+  }
+
   async createConnection(
     database: string,
     encrypted: boolean,
@@ -435,7 +472,6 @@ export class SQLiteConnection implements ISQLiteConnection {
       mode,
       version,
     });
-    console.log('>>> in SQLiteConnection createConnection ' + res.result);
     if (res.result) {
       return new SQLiteDBConnection(database, this.sqlite);
     } else {
@@ -511,8 +547,20 @@ export interface ISQLiteDBConnection {
    * @since 2.9.0 refactor
    */
   delete(): Promise<capSQLiteResult>;
+  /**
+   * Create a synchronization table
+   * @returns Promise<capSQLiteResult>
+   * @since 2.4.9 refactor
+   */
+  createSyncTable(): Promise<capSQLiteChanges>;
+  /**
+   * Set the synchronization date
+   * @param syncdate
+   * @returns Promise<capSQLiteResult>
+   * @since 2.4.9 refactor
+   */
+  setSyncDate(syncdate: string): Promise<capSQLiteResult>;
 }
-
 /**
  * SQLiteDBConnection Class
  */
@@ -559,7 +607,6 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
     }
     return res;
   }
-  //1234567890123456789012345678901234567890123456789012345678901234567890
   async run(statement: string, values?: Array<any>): Promise<capSQLiteChanges> {
     let res: any;
     if (values && values.length > 0) {
@@ -593,6 +640,19 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
   async delete(): Promise<capSQLiteResult> {
     const res: any = await this.sqlite.deleteDatabase({
       database: this.dbName,
+    });
+    return res;
+  }
+  async createSyncTable(): Promise<capSQLiteChanges> {
+    const res: any = await this.sqlite.createSyncTable({
+      database: this.dbName,
+    });
+    return res;
+  }
+  async setSyncDate(syncdate: string): Promise<capSQLiteResult> {
+    const res: any = await this.sqlite.setSyncDate({
+      database: this.dbName,
+      syncdate: syncdate,
     });
     return res;
   }

@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 @NativePlugin(
     permissions = { Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE },
@@ -28,6 +29,7 @@ public class CapacitorSQLite extends Plugin {
     private boolean isPermissionGranted = false;
     private Dictionary<String, Database> dbDict = new Hashtable<>();
     private UtilsSQLite uSqlite = new UtilsSQLite();
+    private Dictionary<String, Dictionary<Integer, JSONObject>> versionUpgrades = new Hashtable<>();
 
     /**
      * Load Method
@@ -106,8 +108,8 @@ public class CapacitorSQLite extends Plugin {
             inMode = "no-encryption";
             secret = "";
         }
-
-        Database db = new Database(context, dbName + "SQLite.db", encrypted, inMode, dbVersion);
+        Dictionary<Integer, JSONObject> upgDict = versionUpgrades.get(dbName);
+        Database db = new Database(context, dbName + "SQLite.db", encrypted, inMode, dbVersion, upgDict);
         dbDict.put(dbName, db);
 
         if (db != null) {
@@ -475,7 +477,7 @@ public class CapacitorSQLite extends Plugin {
         if (!call.getData().has("database")) {
             String msg = "isDBExists command failed : ";
             msg += "Must provide a database name";
-            retValues(call, new JSArray(), msg);
+            retResult(call, false, msg);
             return;
         }
         String dbName = call.getString("database");
@@ -506,7 +508,7 @@ public class CapacitorSQLite extends Plugin {
         if (!call.getData().has("database")) {
             String msg = "deleteDatabase command failed : ";
             msg += "Must provide a database name";
-            retValues(call, new JSArray(), msg);
+            retResult(call, false, msg);
             return;
         }
         String dbName = call.getString("database");
@@ -523,6 +525,131 @@ public class CapacitorSQLite extends Plugin {
             msg += " No available connection for database " + dbName;
             retResult(call, false, msg);
             return;
+        }
+    }
+
+    /**
+     * CreateSyncTable Method
+     * Create the synchronization table
+     * @param call
+     */
+    @PluginMethod
+    public void createSyncTable(PluginCall call) {
+        JSObject retRes = new JSObject();
+        if (!call.getData().has("database")) {
+            String msg = "createSyncTable command failed : ";
+            msg += "Must provide a database name";
+            retRes.put("changes", Integer.valueOf(-1));
+            retChanges(call, retRes, msg);
+            return;
+        }
+        String dbName = call.getString("database");
+        Database db = dbDict.get(dbName);
+        if (db != null) {
+            retRes.put("changes", Integer.valueOf(-1));
+            JSObject res = db.createSyncTable();
+            if (res.getInteger("changes") == Integer.valueOf(-1)) {
+                String msg = "createSyncTable command failed";
+                retChanges(call, retRes, msg);
+            } else {
+                retChanges(call, res, null);
+            }
+        } else {
+            String msg = "createSyncTable command failed : ";
+            msg += " No available connection for database " + dbName;
+            retResult(call, false, msg);
+            return;
+        }
+    }
+
+    /**
+     * SetSyncDate Method
+     * set the synchronization date
+     * @param call
+     */
+    @PluginMethod
+    public void setSyncDate(PluginCall call) {
+        if (!call.getData().has("database")) {
+            String msg = "setSyncDate command failed : ";
+            msg += "Must provide a database name";
+            retResult(call, false, msg);
+            return;
+        }
+        String dbName = call.getString("database");
+        if (!call.getData().has("syncdate")) {
+            String msg = "setSyncDate command failed : ";
+            msg += "Must provide a sync date";
+            retResult(call, false, msg);
+            return;
+        }
+
+        String syncDate = call.getString("syncdate");
+        Database db = dbDict.get(dbName);
+        if (db != null) {
+            boolean res = db.setSyncDate(syncDate);
+            if (!res) {
+                String msg = "SetSyncDate command failed";
+                retResult(call, false, msg);
+            } else {
+                retResult(call, true, null);
+            }
+        } else {
+            String msg = "SetSyncDate command failed : ";
+            msg += " No available connection for database " + dbName;
+            retResult(call, false, msg);
+            return;
+        }
+    }
+
+    /**
+     * AddUpgradeStatement Method
+     * Define an upgrade object when updating to a new version
+     * @param call
+     */
+    @PluginMethod
+    public void addUpgradeStatement(PluginCall call) {
+        if (!call.getData().has("database")) {
+            String msg = "addUpgradeStatement command failed : ";
+            msg += "Must provide a database name";
+            retResult(call, false, msg);
+            return;
+        }
+        String dbName = call.getString("database");
+        if (!call.getData().has("upgrade")) {
+            String msg = "addUpgradeStatement command failed : ";
+            msg += "Must provide an array with upgrade statement";
+            retResult(call, false, msg);
+            return;
+        }
+        JSArray upgrade = call.getArray("upgrade");
+        Dictionary<Integer, JSONObject> upgDict = new Hashtable<>();
+
+        JSONObject upgObj = null;
+        try {
+            upgObj = (JSONObject) upgrade.get(0);
+        } catch (Exception e) {
+            String msg = "addUpgradeStatement command failed : ";
+            msg += "Must provide an upgrade statement";
+            retResult(call, false, msg);
+            return;
+        }
+
+        if (upgObj == null || !upgObj.has("fromVersion") || !upgObj.has("toVersion") || !upgObj.has("statement")) {
+            String msg = "addUpgradeStatement command failed : ";
+            msg += "Must provide an upgrade statement";
+            msg += "{fromVersion,toVersion,statement}";
+            retResult(call, false, msg);
+            return;
+        }
+        try {
+            int fromVersion = upgObj.getInt("fromVersion");
+            upgDict.put(fromVersion, upgObj);
+            versionUpgrades.put(dbName, upgDict);
+            retResult(call, true, null);
+        } catch (Exception e) {
+            String msg = "addUpgradeStatement command failed : ";
+            msg += "Must provide fromVersion as Integer";
+            retResult(call, false, msg);
         }
     }
 

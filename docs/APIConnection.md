@@ -9,6 +9,7 @@
 <docgen-index>
 
 - [`echo(...)`](#echo)
+- [`addUpgradeStatement(...)`](#addupgradestatement)
 - [`createConnection(...)`](#createconnection)
 - [`closeConnection(...)`](#closeconnection)
 - [Interfaces](#interfaces)
@@ -37,6 +38,28 @@ Echo a value
 **Returns:** <code>Promise&lt;<a href="#capechoresult">capEchoResult</a>&gt;</code>
 
 **Since:** 2.9.0 refactor
+
+---
+
+### addUpgradeStatement(...)
+
+```typescript
+addUpgradeStatement(database: string, fromVersion: number, toVersion: number, statement: string, set?: capSQLiteSet[] | undefined) => Promise<capSQLiteResult>
+```
+
+Add the upgrade Statement for database version upgrading
+
+| Param             | Type                        |
+| ----------------- | --------------------------- |
+| **`database`**    | <code>string</code>         |
+| **`fromVersion`** | <code>number</code>         |
+| **`toVersion`**   | <code>number</code>         |
+| **`statement`**   | <code>string</code>         |
+| **`set`**         | <code>capSQLiteSet[]</code> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 2.4.9 refactor
 
 ---
 
@@ -93,5 +116,12 @@ Close a database connection
 | ------------- | -------------------- | --------------------------------------------- |
 | **`result`**  | <code>boolean</code> | result set to true when successful else false |
 | **`message`** | <code>string</code>  | a returned message                            |
+
+#### capSQLiteSet
+
+| Prop            | Type                | Description                      |
+| --------------- | ------------------- | -------------------------------- |
+| **`statement`** | <code>string</code> | A statement                      |
+| **`values`**    | <code>any[]</code>  | the data values list as an Array |
 
 </docgen-api>

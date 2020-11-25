@@ -1,3 +1,17 @@
+## 2.9.0-alpha.3 (2020-11-25) REFACTOR
+
+### Added Features Android platform only
+
+- add addUpgradeStatement method
+- add createSyncTable method
+- add setSyncDate method
+- update refactor app
+
+### Bug Fixes
+
+- creating database directory in physical device
+- app crash when querying non existing tables or columns
+
 ## 2.9.0-alpha.2 (2020-11-23) REFACTOR
 
 ### Chore
@@ -17,6 +31,16 @@
 - closeConnection method
 - SQLiteConnection Interface & Class
 - SQLiteDBConnection Interface & Class
+
+## 2.4.3-1 (2020-11-23)
+
+### Chore
+
+- update to @capacitor/core@2.4.3
+
+### Bug Fixes
+
+- Fix issue#56 INSERT null value on iOS
 
 ## 2.4.2 (2020-11-22)
 

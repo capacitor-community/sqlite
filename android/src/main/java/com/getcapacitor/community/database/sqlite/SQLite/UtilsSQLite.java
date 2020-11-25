@@ -82,7 +82,11 @@ public class UtilsSQLite {
     public ArrayList<Object> objectJSArrayToArrayList(JSArray jsArray) throws JSONException {
         ArrayList<Object> list = new ArrayList<Object>();
         for (int i = 0; i < jsArray.length(); i++) {
-            list.add(jsArray.get(i));
+            if (jsArray.isNull(i)) {
+                list.add(null);
+            } else {
+                list.add(jsArray.get(i));
+            }
         }
         return list;
     }

@@ -17,6 +17,8 @@
 - [`executeSet(...)`](#executeset)
 - [`isExists()`](#isexists)
 - [`delete()`](#delete)
+- [`createSyncTable()`](#createsynctable)
+- [`setSyncDate(...)`](#setsyncdate)
 - [Interfaces](#interfaces)
 
 </docgen-index>
@@ -169,6 +171,38 @@ Delete a SQLite DB Connection
 **Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
 
 **Since:** 2.9.0 refactor
+
+---
+
+### createSyncTable()
+
+```typescript
+createSyncTable() => Promise<capSQLiteChanges>
+```
+
+Create a synchronization table
+
+**Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
+
+**Since:** 2.4.9 refactor
+
+---
+
+### setSyncDate(...)
+
+```typescript
+setSyncDate(syncdate: string) => Promise<capSQLiteResult>
+```
+
+Set the synchronization date
+
+| Param          | Type                |
+| -------------- | ------------------- |
+| **`syncdate`** | <code>string</code> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 2.4.9 refactor
 
 ---
 

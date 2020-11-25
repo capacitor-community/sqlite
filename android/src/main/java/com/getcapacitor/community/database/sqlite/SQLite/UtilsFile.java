@@ -47,7 +47,37 @@ public class UtilsFile {
             copyFileFromFile(file, toFile);
             return true;
         } catch (Exception e) {
-            Log.v(TAG, "Error: in copyFile " + e);
+            Log.e(TAG, "Error: in copyFile " + e);
+            return false;
+        }
+    }
+
+    public Boolean restoreDatabase(Context context, String databaseName) {
+        // check if the backup file exists
+        boolean isBackup = isFileExists(context, "backup-" + databaseName);
+        if (isBackup) {
+            // check if database exists
+            boolean isDB = isFileExists(context, databaseName);
+            if (isDB) {
+                boolean retD = deleteFile(context, databaseName);
+                if (!retD) {
+                    String msg = "Error: restoreDatabase: delete file ";
+                    msg += databaseName;
+                    Log.e(TAG, msg);
+                    return false;
+                } else {
+                    return copyFile(context, "backup-" + databaseName, databaseName);
+                }
+            } else {
+                String msg = "Error: restoreDatabase: database ";
+                msg += databaseName + "does not exists";
+                Log.e(TAG, msg);
+                return false;
+            }
+        } else {
+            String msg = "Error: restoreDB: backup-" + databaseName;
+            msg += " does not exist";
+            Log.e(TAG, msg);
             return false;
         }
     }
