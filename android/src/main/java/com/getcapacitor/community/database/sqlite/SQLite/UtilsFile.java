@@ -66,7 +66,21 @@ public class UtilsFile {
                     Log.e(TAG, msg);
                     return false;
                 } else {
-                    return copyFile(context, "backup-" + databaseName, databaseName);
+                    boolean retC = copyFile(context, "backup-" + databaseName, databaseName);
+                    if (!retC) {
+                        String msg = "Error: restoreDatabase: copy file ";
+                        msg += databaseName;
+                        Log.e(TAG, msg);
+                        return false;
+                    }
+                    retD = deleteFile(context, "backup-" + databaseName);
+                    if (!retD) {
+                        String msg = "Error: restoreDatabase: delete file ";
+                        msg += "backup-" + databaseName;
+                        Log.e(TAG, msg);
+                        return false;
+                    }
+                    return true;
                 }
             } else {
                 String msg = "Error: restoreDatabase: database ";
@@ -76,6 +90,26 @@ public class UtilsFile {
             }
         } else {
             String msg = "Error: restoreDB: backup-" + databaseName;
+            msg += " does not exist";
+            Log.e(TAG, msg);
+            return false;
+        }
+    }
+
+    public Boolean deleteBackupDB(Context context, String databaseName) {
+        // check if the backup file exists
+        boolean isBackup = isFileExists(context, "backup-" + databaseName);
+        if (isBackup) {
+            boolean retD = deleteFile(context, "backup-" + databaseName);
+            if (!retD) {
+                String msg = "Error: deleteBackupDB: delete file ";
+                msg += "backup-" + databaseName;
+                Log.e(TAG, msg);
+                return false;
+            }
+            return true;
+        } else {
+            String msg = "Error: deleteBackupDB: backup-" + databaseName;
             msg += " does not exist";
             Log.e(TAG, msg);
             return false;

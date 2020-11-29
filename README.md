@@ -86,23 +86,23 @@ No configuration required for this plugin
 
 | Name                    | Android | iOS | Electron | Web |
 | :---------------------- | :------ | :-- | :------- | :-- |
-| createConnection        | ✅      | ❌  | ❌       | ❌  |
-| closeConnection         | ✅      | ❌  | ❌       | ❌  |
-| open (non-encrypted DB) | ✅      | ❌  | ❌       | ❌  |
-| open (encrypted DB)     | ✅      | ❌  | ❌       | ❌  |
-| close                   | ✅      | ❌  | ❌       | ❌  |
-| execute                 | ✅      | ❌  | ❌       | ❌  |
-| executeSet              | ✅      | ❌  | ❌       | ❌  |
-| run                     | ✅      | ❌  | ❌       | ❌  |
-| query                   | ✅      | ❌  | ❌       | ❌  |
-| deleteDatabase          | ✅      | ❌  | ❌       | ❌  |
+| createConnection        | ✅      | ✅  | ❌       | ❌  |
+| closeConnection         | ✅      | ✅  | ❌       | ❌  |
+| open (non-encrypted DB) | ✅      | ✅  | ❌       | ❌  |
+| open (encrypted DB)     | ✅      | ✅  | ❌       | ❌  |
+| close                   | ✅      | ✅  | ❌       | ❌  |
+| execute                 | ✅      | ✅  | ❌       | ❌  |
+| executeSet              | ✅      | ✅  | ❌       | ❌  |
+| run                     | ✅      | ✅  | ❌       | ❌  |
+| query                   | ✅      | ✅  | ❌       | ❌  |
+| deleteDatabase          | ✅      | ✅  | ❌       | ❌  |
 | importFromJson          | ❌      | ❌  | ❌       | ❌  |
 | exportToJson            | ❌      | ❌  | ❌       | ❌  |
-| createSyncTable         | ✅      | ❌  | ❌       | ❌  |
-| setSyncDate             | ✅      | ❌  | ❌       | ❌  |
+| createSyncTable         | ✅      | ✅  | ❌       | ❌  |
+| setSyncDate             | ✅      | ✅  | ❌       | ❌  |
 | isJsonValid             | ❌      | ❌  | ❌       | ❌  |
-| isDBExists              | ✅      | ❌  | ❌       | ❌  |
-| addUpgradeStatement     | ✅      | ❌  | ❌       | ❌  |
+| isDBExists              | ✅      | ✅  | ❌       | ❌  |
+| addUpgradeStatement     | ✅      | ✅  | ❌       | ❌  |
 
 ## Documentation (to be updated)
 

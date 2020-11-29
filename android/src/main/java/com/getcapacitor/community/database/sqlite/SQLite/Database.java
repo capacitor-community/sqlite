@@ -133,7 +133,7 @@ public class Database {
                     String msg = "Error in open database ";
                     msg += "setForeignKeyConstraintsEnabled failed " + e;
                     Log.v(TAG, msg);
-                    _isOpen = false;
+                    close();
                     _db = null;
                     return false;
                 }
@@ -145,16 +145,22 @@ public class Database {
                 if (_version > curVersion) {
                     try {
                         _uUpg.onUpgrade(this, _context, _dbName, _vUpgObject, curVersion, _version);
-                    } catch (Exception e) {
-                        Log.v(TAG, e.getMessage());
-                        // restore DB
-                        boolean ret = _uFile.restoreDatabase(_context, _dbName);
+                        boolean ret = _uFile.deleteBackupDB(_context, _dbName);
                         if (!ret) {
-                            Log.v(TAG, "Error: restoreDatabase " + _dbName + " failed ");
-                            _isOpen = false;
+                            Log.v(TAG, "Error: deleteBackupDB backup-" + _dbName + " failed ");
+                            close();
                             _db = null;
                             return false;
                         }
+                    } catch (Exception e) {
+                        // restore DB
+                        boolean ret = _uFile.restoreDatabase(_context, _dbName);
+                        String msg = e.getMessage();
+                        if (!ret) msg += " restoreDatabase " + _dbName + " failed ";
+                        Log.v(TAG, msg);
+                        close();
+                        _db = null;
+                        return false;
                     }
                 }
                 _isOpen = true;

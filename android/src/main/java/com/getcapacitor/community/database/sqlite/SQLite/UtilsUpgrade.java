@@ -72,7 +72,14 @@ public class UtilsUpgrade {
             msg += "setForeignKeyConstraintsEnabled failed " + e;
             throw new Exception(msg);
         }
+        // backup the database
 
+        Boolean ret = this._uFile.copyFile(context, dbName, "backup-" + dbName);
+        if (!ret) {
+            String msg = "Error: onUpgrade ";
+            msg += "copy backup file failed ";
+            throw new Exception(msg);
+        }
         // Here we assume all the tables schema are given in
         // the upgrade statement
         if (statement.length() > 0) {

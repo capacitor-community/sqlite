@@ -33,7 +33,7 @@
     "@types/node": "^12.12.62",
     "electron": "^10.1.2",
     "husky": "^4.2.5",
-    "np": "^6.3.2",
+    "np": "^6.5.0",
     "prettier": "^2.0.5",
     "prettier-plugin-java": "^0.8.1",
     "pretty-quick": "^2.0.1",
