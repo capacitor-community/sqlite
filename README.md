@@ -36,7 +36,7 @@ The aim of the refactor will be to allow
 
 This was discussed lengthly in issue#1and issue#52
 
-The first alpha release of the refactor will address the `android` platform only.
+Refactor available for `Android` and `iOS` platforms only.
 
 The test will be achieved on a Ionic/Angular app. For the other frameworks, it will require an update of the `react-sqlite-hook`and the `vue-sqlite-hook`.
 
@@ -46,7 +46,12 @@ The test will be achieved on a Ionic/Angular app. For the other frameworks, it w
 npm install @capacitor-community/sqlite@refactor
 npx cap sync
 npx cap add android
+npx cap add ios
 ```
+
+### IOS
+
+- on iOS no further steps needed.
 
 ### Android
 

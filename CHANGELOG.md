@@ -1,3 +1,26 @@
+## 2.9.0-alpha.4 (2020-11-29) REFACTOR
+
+### Added Features iOS platform
+
+- createConnection
+- closeConnection
+- open (non-encrypted DB)
+- open (encrypted DB)
+- close
+- execute
+- executeSet
+- run
+- query
+- deleteDatabase
+- createSyncTable
+- setSyncDate
+- isDBExists
+- addUpgradeStatement
+
+### Bug Fixes
+
+- Android addUpgradeStatement backup and restore
+
 ## 2.9.0-alpha.3 (2020-11-25) REFACTOR
 
 ### Added Features Android platform only
