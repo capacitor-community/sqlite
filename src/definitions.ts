@@ -425,17 +425,39 @@ export interface ISQLiteConnection {
     version: number,
   ): Promise<SQLiteDBConnection | null>;
   /**
+   * Retrieve an existing database connection
+   * @param database
+   * @returns Promise<capSQLiteResult>
+   * @since 2.9.0 refactor
+   */
+  retrieveConnection(
+    database: string,
+  ): Promise<SQLiteDBConnection | null | undefined>;
+  /**
+   * Retrieve all database connections
+   * @returns Promise<capSQLiteResult>
+   * @since 2.9.0 refactor
+   */
+  retrieveAllConnections(): Promise<Map<string, SQLiteDBConnection>>;
+  /**
    * Close a database connection
    * @param database
    * @returns Promise<capSQLiteResult>
    * @since 2.9.0 refactor
    */
   closeConnection(database: string): Promise<capSQLiteResult>;
+  /**
+   * Close all database connections
+   * @returns Promise<capSQLiteResult>
+   * @since 2.9.0 refactor
+   */
+  closeAllConnections(): Promise<capSQLiteResult>;
 }
 /**
  * SQLiteConnection Class
  */
 export class SQLiteConnection implements ISQLiteConnection {
+  private _connectionDict: Map<string, SQLiteDBConnection> = new Map();
   constructor(private sqlite: any) {}
   async echo(value: string): Promise<capEchoResult> {
     return await this.sqlite.echo({ value: value });
@@ -459,7 +481,6 @@ export class SQLiteConnection implements ISQLiteConnection {
     });
     return res;
   }
-
   async createConnection(
     database: string,
     encrypted: boolean,
@@ -473,13 +494,43 @@ export class SQLiteConnection implements ISQLiteConnection {
       version,
     });
     if (res.result) {
-      return new SQLiteDBConnection(database, this.sqlite);
+      const conn = new SQLiteDBConnection(database, this.sqlite);
+      this._connectionDict.set(database, conn);
+      return conn;
     } else {
       return null;
     }
   }
   async closeConnection(database: string): Promise<capSQLiteResult> {
-    return await this.sqlite.closeConnection({ database });
+    const res: any = await this.sqlite.closeConnection({ database });
+    if (res.result) {
+      this._connectionDict.delete(database);
+    }
+    return res;
+  }
+  async retrieveConnection(
+    database: string,
+  ): Promise<SQLiteDBConnection | null | undefined> {
+    const conn = this._connectionDict.has(database)
+      ? this._connectionDict.get(database)
+      : null;
+    return conn;
+  }
+  async retrieveAllConnections(): Promise<Map<string, SQLiteDBConnection>> {
+    return this._connectionDict;
+  }
+  async closeAllConnections(): Promise<capSQLiteResult> {
+    const delDict: Map<string, SQLiteDBConnection | null> = new Map();
+    let res: any;
+    for (let database of this._connectionDict.keys()) {
+      res = await this.sqlite.closeConnection({ database });
+      if (!res.result) break;
+      delDict.set(database, null);
+    }
+    for (let database of delDict.keys()) {
+      this._connectionDict.delete(database);
+    }
+    return res;
   }
 }
 

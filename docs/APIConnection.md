@@ -11,7 +11,10 @@
 - [`echo(...)`](#echo)
 - [`addUpgradeStatement(...)`](#addupgradestatement)
 - [`createConnection(...)`](#createconnection)
+- [`retrieveConnection(...)`](#retrieveconnection)
+- [`retrieveAllConnections()`](#retrieveallconnections)
 - [`closeConnection(...)`](#closeconnection)
+- [`closeAllConnections()`](#closeallconnections)
 - [Interfaces](#interfaces)
 
 </docgen-index>
@@ -84,6 +87,38 @@ Create a connection to a database
 
 ---
 
+### retrieveConnection(...)
+
+```typescript
+retrieveConnection(database: string) => Promise<SQLiteDBConnection | null | undefined>
+```
+
+Retrieve an existing database connection
+
+| Param          | Type                |
+| -------------- | ------------------- |
+| **`database`** | <code>string</code> |
+
+**Returns:** <code>Promise&lt;SQLiteDBConnection | null&gt;</code>
+
+**Since:** 2.9.0 refactor
+
+---
+
+### retrieveAllConnections()
+
+```typescript
+retrieveAllConnections() => Promise<Map<string, SQLiteDBConnection>>
+```
+
+Retrieve all database connections
+
+**Returns:** <code>Promise&lt;<a href="#map">Map</a>&lt;string, SQLiteDBConnection&gt;&gt;</code>
+
+**Since:** 2.9.0 refactor
+
+---
+
 ### closeConnection(...)
 
 ```typescript
@@ -95,6 +130,20 @@ Close a database connection
 | Param          | Type                |
 | -------------- | ------------------- |
 | **`database`** | <code>string</code> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 2.9.0 refactor
+
+---
+
+### closeAllConnections()
+
+```typescript
+closeAllConnections() => Promise<capSQLiteResult>
+```
+
+Close all database connections
 
 **Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
 
@@ -123,5 +172,20 @@ Close a database connection
 | --------------- | ------------------- | -------------------------------- |
 | **`statement`** | <code>string</code> | A statement                      |
 | **`values`**    | <code>any[]</code>  | the data values list as an Array |
+
+#### Map
+
+| Prop       | Type                |
+| ---------- | ------------------- |
+| **`size`** | <code>number</code> |
+
+| Method      | Signature                                                                                                      |
+| ----------- | -------------------------------------------------------------------------------------------------------------- |
+| **clear**   | () =&gt; void                                                                                                  |
+| **delete**  | (key: K) =&gt; boolean                                                                                         |
+| **forEach** | (callbackfn: (value: V, key: K, map: <a href="#map">Map</a>&lt;K, V&gt;) =&gt; void, thisArg?: any) =&gt; void |
+| **get**     | (key: K) =&gt; V \| undefined                                                                                  |
+| **has**     | (key: K) =&gt; boolean                                                                                         |
+| **set**     | (key: K, value: V) =&gt; this                                                                                  |
 
 </docgen-api>

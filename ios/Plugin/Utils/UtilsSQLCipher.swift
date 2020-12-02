@@ -19,6 +19,7 @@ enum UtilsSQLCipherError: Error {
     case closeDB(message: String)
     case close(message: String)
     case changePassword(message: String)
+    case rollbackTransaction(message: String)
     case beginTransaction(message: String)
     case commitTransaction(message: String)
     case execute(message: String)
@@ -240,9 +241,29 @@ class UtilsSQLCipher {
         if returnCode != SQLITE_OK {
             let errmsg: String = String(
                                     cString: sqlite3_errmsg(mDB.mDb))
-            var msg = "Error: Begin Transaction failed rc: "
+            msg.append("failed rc: ")
             msg.append("\(returnCode) message: \(errmsg)")
             throw UtilsSQLCipherError.beginTransaction(
+                message: msg)
+        }
+    }
+
+    // MARK: - RollBackTransaction
+
+    class func rollbackTransaction(mDB: Database) throws {
+        var msg: String = "Error rollbackTransaction: "
+        if !mDB.isDBOpen() {
+            msg.append("Database not opened")
+            throw UtilsSQLCipherError.rollbackTransaction(message: msg)
+        }
+        let sql: String = "ROLLBACK TRANSACTION;"
+        let returnCode = sqlite3_exec(mDB.mDb, sql, nil, nil, nil)
+        if returnCode != SQLITE_OK {
+            let errmsg: String = String(
+                                    cString: sqlite3_errmsg(mDB.mDb))
+            msg.append("failed rc: ")
+            msg.append("\(returnCode) message: \(errmsg)")
+            throw UtilsSQLCipherError.rollbackTransaction(
                 message: msg)
         }
     }
@@ -260,7 +281,7 @@ class UtilsSQLCipher {
         if returnCode != SQLITE_OK {
             let errmsg: String = String(
                                     cString: sqlite3_errmsg(mDB.mDb))
-            var msg = "Error: Commit Transaction failed rc: "
+            msg.append("failed rc: ")
             msg.append("\(returnCode) message: \(errmsg)")
             throw UtilsSQLCipherError.commitTransaction(
                 message: msg)

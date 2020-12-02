@@ -21,6 +21,7 @@ enum DatabaseError: Error {
     case createSyncTable(message: String)
     case createSyncDate(message: String)
 }
+// swiftlint:disable file_length
 // swiftlint:disable type_body_length
 class Database {
     var isOpen: Bool = false
@@ -182,6 +183,7 @@ class Database {
     // MARK: - ExecuteSQL
 
     func executeSQL(sql: String) throws -> Int {
+        var msg: String = "Failed in executeSQL : "
         var changes: Int = -1
         let initChanges = UtilsSQLCipher.dbChanges(mDB: mDb)
 
@@ -189,16 +191,24 @@ class Database {
         do {
             try UtilsSQLCipher.beginTransaction(mDB: self)
         } catch UtilsSQLCipherError.beginTransaction(let message) {
-            let msg: String = "Failed in executeSQL : \(message)"
+            msg.append(" \(message)")
             throw DatabaseError.executeSQL(message: msg)
         }
         // Execute the query
         do {
             try UtilsSQLCipher.execute(mDB: self, sql: sql)
             changes = UtilsSQLCipher.dbChanges(mDB: mDb) - initChanges
-        } catch UtilsSQLCipherError.execute(let msg) {
-            throw DatabaseError.executeSQL(
-                message: "Failed in executeSQL : \(msg)" )
+        } catch UtilsSQLCipherError
+                                .execute(let message) {
+            do {
+                try UtilsSQLCipher
+                        .rollbackTransaction(mDB: self)
+            } catch UtilsSQLCipherError
+                        .rollbackTransaction(let message) {
+                msg.append(" rollback: \(message)")
+            }
+            msg.append(" \(message)")
+            throw DatabaseError.executeSQL(message: msg)
         }
         if changes != -1 {
             // commit the transaction
@@ -215,6 +225,7 @@ class Database {
     // MARK: - ExecSet
 
     func execSet(set: [[String: Any]]) throws -> [String: Int64] {
+        var msg: String = "Failed in execSet : "
         let initChanges = UtilsSQLCipher.dbChanges(mDB: mDb)
         var changes: Int = -1
         var lastId: Int64 = -1
@@ -225,20 +236,30 @@ class Database {
         do {
             try UtilsSQLCipher.beginTransaction(mDB: self)
         } catch UtilsSQLCipherError.beginTransaction(let message) {
-            let msg: String = "Failed in execSet : \(message)"
+            msg.append(" \(message)")
             throw DatabaseError.execSet(message: msg)
         }
         // Execute the query
         do {
-            lastId = try UtilsSQLCipher.executeSet(mDB: self,
-                                                   set: set)
-            changes = UtilsSQLCipher.dbChanges(mDB: mDb) - initChanges
+            lastId = try UtilsSQLCipher
+                .executeSet(mDB: self, set: set)
+            changes = UtilsSQLCipher
+                        .dbChanges(mDB: mDb) - initChanges
             changesDict["changes"] = Int64(changes)
             changesDict["lastId"] = lastId
 
-        } catch UtilsSQLCipherError.executeSet(let msg) {
-            throw DatabaseError.execSet(
-                message: "Failed in execSet : \(msg)" )
+        } catch UtilsSQLCipherError
+                            .executeSet(let message) {
+            do {
+                try UtilsSQLCipher
+                        .rollbackTransaction(mDB: self)
+            } catch UtilsSQLCipherError
+                        .rollbackTransaction(let message) {
+                msg.append(" rollback: \(message)")
+            }
+
+            msg.append(" \(message)")
+            throw DatabaseError.execSet(message: msg )
         }
         if changes > 0 {
             // commit the transaction
@@ -246,7 +267,7 @@ class Database {
                 try UtilsSQLCipher.commitTransaction(mDB: self)
             } catch UtilsSQLCipherError.commitTransaction(let msg) {
                 throw DatabaseError.execSet(
-                    message: "Failed in execSet : \(msg)" )
+                                        message: msg )
            }
         }
         return changesDict
@@ -255,6 +276,7 @@ class Database {
     // MARK: - RunSQL
 
     func runSQL(sql: String, values: [Any]) throws -> [String: Int64] {
+        var msg: String = "Failed in runSQL : "
         var changes: Int = -1
         var lastId: Int64 = -1
         let initChanges = UtilsSQLCipher.dbChanges(mDB: mDb)
@@ -263,14 +285,24 @@ class Database {
         do {
             try UtilsSQLCipher.beginTransaction(mDB: self)
         } catch UtilsSQLCipherError.beginTransaction(let message) {
-            let msg: String = "Failed in runSQL : \(message)"
+
+            msg.append(" \(message)")
             throw DatabaseError.runSQL(message: msg)
         }
         // Execute the query
         do {
             lastId = try UtilsSQLCipher
                 .prepareSQL(mDB: self, sql: sql, values: values)
-        } catch UtilsSQLCipherError.prepareSQL(let msg) {
+        } catch UtilsSQLCipherError
+                                .prepareSQL(let message) {
+            do {
+                try UtilsSQLCipher
+                        .rollbackTransaction(mDB: self)
+            } catch UtilsSQLCipherError
+                        .rollbackTransaction(let message) {
+                msg.append(" rollback: \(message)")
+            }
+            msg.append(" \(message)")
             print("\(msg)")
             lastId = -1
         }
@@ -281,9 +313,9 @@ class Database {
                 try UtilsSQLCipher.commitTransaction(mDB: self)
                 changes = UtilsSQLCipher.dbChanges(mDB: mDb) -
                                                    initChanges
-            } catch UtilsSQLCipherError.commitTransaction(let msg) {
-                throw DatabaseError.runSQL(
-                    message: "Failed in runSQL : \(msg)" )
+            } catch UtilsSQLCipherError.commitTransaction(let message) {
+                msg.append(" \(message)")
+                throw DatabaseError.runSQL(message: msg )
            }
         }
         let result: [String: Int64] = ["changes": Int64(changes),
@@ -390,3 +422,4 @@ class Database {
 
 }
 // swiftlint:enable type_body_length
+// swiftlint:enable file_length

@@ -1,3 +1,15 @@
+## 2.9.0-alpha.5 (2020-12-02) REFACTOR
+
+### Added Features
+
+- retrieveConnection (Wrapper Connection)
+- retrieveAllConnections (Wrapper Connection)
+- closeAllConnections (Wrapper Connection)
+
+### Bug Fixes
+
+- fix rollback transaction in iOS
+
 ## 2.9.0-alpha.4 (2020-11-29) REFACTOR
 
 ### Added Features iOS platform
