@@ -58,10 +58,8 @@ export class CapacitorSQLiteElectronWeb
     const encrypted: boolean = options.encrypted ? options.encrypted : false;
     const inMode: string = options.mode ? options.mode : 'no-encryption';
     let upgDict: Record<number, capSQLiteVersionUpgrade> = {};
-    if (
-      Object.keys(this._versionUpgrades).length !== 0 &&
-      Object.keys(this._versionUpgrades[dbName]).length !== 0
-    ) {
+    const vUpgKeys: string[] = Object.keys(this._versionUpgrades);
+    if (vUpgKeys.length !== 0 && vUpgKeys.includes(dbName)) {
       upgDict = this._versionUpgrades[dbName];
     }
     let mDb: Database = new Database(

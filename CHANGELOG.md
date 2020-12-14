@@ -1,3 +1,9 @@
+## 2.9.0-alpha.7 (2020-12-14) REFACTOR
+
+### Bug Fixes
+
+- Update the README and add a link to a Ionic/React app.
+
 ## 2.9.0-alpha.6 (2020-12-14) REFACTOR
 
 ### Chore
