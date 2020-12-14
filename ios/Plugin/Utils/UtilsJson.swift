@@ -22,7 +22,7 @@ class UtilsJson {
 
     class func isTableExists(mDB: Database, tableName: String)
                                                     throws -> Bool {
-        var msg: String = "Error executeSet: "
+        var msg: String = "Error isTableExists: "
         if !mDB.isDBOpen() {
             msg.append("Database not opened")
             throw UtilsJsonError.tableNotExists(message: msg)

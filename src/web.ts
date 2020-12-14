@@ -17,7 +17,7 @@ import {
   capSQLiteJson,
   capSQLiteUpgradeOptions,
 } from './definitions';
-
+//1234567890123456789012345678901234567890123456789012345678901234567890
 export class CapacitorSQLiteWeb
   extends WebPlugin
   implements CapacitorSQLitePlugin {
@@ -32,7 +32,7 @@ export class CapacitorSQLiteWeb
     console.log('ECHO in Web plugin', options);
     return options;
   }
-  async createConnection(options: capSQLiteOptions): Promise<any> {
+  async createConnection(options: capSQLiteOptions): Promise<capSQLiteResult> {
     console.log('createConnection', options);
     return Promise.resolve({
       result: false,
@@ -46,7 +46,7 @@ export class CapacitorSQLiteWeb
       message: `Not implemented on Web Platform`,
     });
   }
-  async closeConnection(options: capSQLiteOptions): Promise<any> {
+  async closeConnection(options: capSQLiteOptions): Promise<capSQLiteResult> {
     console.log('closeConnection', options);
     return Promise.resolve({
       result: false,
@@ -63,28 +63,28 @@ export class CapacitorSQLiteWeb
   async execute(options: capSQLiteExecuteOptions): Promise<capSQLiteChanges> {
     console.log('execute', options);
     return Promise.resolve({
-      result: false,
+      changes: { changes: -1 },
       message: `Not implemented on Web Platform`,
     });
   }
   async executeSet(options: capSQLiteSetOptions): Promise<capSQLiteChanges> {
     console.log('execute', options);
     return Promise.resolve({
-      result: false,
+      changes: { changes: -1 },
       message: `Not implemented on Web Platform`,
     });
   }
   async run(options: capSQLiteRunOptions): Promise<capSQLiteChanges> {
     console.log('run', options);
     return Promise.resolve({
-      result: false,
+      changes: { changes: -1 },
       message: `Not implemented on Web Platform`,
     });
   }
   async query(options: capSQLiteQueryOptions): Promise<capSQLiteValues> {
     console.log('query', options);
     return Promise.resolve({
-      result: false,
+      values: [],
       message: `Not implemented on Web Platform`,
     });
   }
@@ -122,14 +122,13 @@ export class CapacitorSQLiteWeb
   async exportToJson(options: capSQLiteExportOptions): Promise<capSQLiteJson> {
     console.log('exportToJson', options);
     return Promise.resolve({
-      result: false,
       message: `Not implemented on Web Platform`,
     });
   }
-  async createSyncTable(): Promise<capSQLiteChanges> {
-    console.log('createSyncTable');
+  async createSyncTable(options: capSQLiteOptions): Promise<capSQLiteChanges> {
+    console.log('createSyncTable', options);
     return Promise.resolve({
-      result: false,
+      changes: { changes: -1 },
       message: `Not implemented on Web Platform`,
     });
   }

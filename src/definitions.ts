@@ -108,10 +108,11 @@ export interface CapacitorSQLitePlugin {
   exportToJson(options: capSQLiteExportOptions): Promise<capSQLiteJson>;
   /**
    * Create a synchronization table
+   * @param options: capSQLiteOptions
    * @returns Promise<capSQLiteChanges>
    * @since 2.0.1-1
    */
-  createSyncTable(): Promise<capSQLiteChanges>;
+  createSyncTable(options: capSQLiteOptions): Promise<capSQLiteChanges>;
   /**
    * Set the synchronization date
    * @param options: capSQLiteSyncDateOptions
@@ -279,13 +280,23 @@ export interface capSQLiteResult {
 }
 export interface capSQLiteChanges {
   /**
-   * the number of changes from an execute or run command
+   * a returned Changes
    */
-  changes?: any;
+  changes?: Changes;
   /**
    * a returned message
    */
   message?: string;
+}
+export interface Changes {
+  /**
+   * the number of changes from an execute or run command
+   */
+  changes?: number;
+  /**
+   * the lastId created from a run command
+   */
+  lastId?: number;
 }
 export interface capSQLiteValues {
   /**

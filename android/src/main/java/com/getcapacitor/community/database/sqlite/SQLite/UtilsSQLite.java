@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import net.sqlcipher.Cursor;
+import org.json.JSONArray;
 import org.json.JSONException;
 
 public class UtilsSQLite {
@@ -102,5 +103,13 @@ public class UtilsSQLite {
             }
         }
         return list;
+    }
+
+    public Boolean parse(Object mVar) {
+        boolean ret = false;
+        if (mVar instanceof JSONArray) {
+            ret = true;
+        }
+        return ret;
     }
 }

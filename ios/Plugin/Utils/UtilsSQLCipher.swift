@@ -609,12 +609,28 @@ class UtilsSQLCipher {
                     throw UtilsSQLCipherError.executeSet(
                         message: "No values given")
                 }
-                lastId = try UtilsSQLCipher
+                let isArray = UtilsSQLCipher.parse(mVar: values[0])
+                if isArray {
+                    if let arrValues = values as? [[Any]] {
+                        for vals in arrValues {
+                            lastId = try UtilsSQLCipher
+                                        .prepareSQL(mDB: mDB, sql: sql,
+                                                    values: vals)
+                            if  lastId == -1 {
+                                let message: String = "lastId < 0"
+                                throw UtilsSQLCipherError
+                                        .executeSet(message: message)
+                            }
+                       }
+                    }
+                } else {
+                    lastId = try UtilsSQLCipher
                         .prepareSQL(mDB: mDB, sql: sql, values: values)
-                if  lastId == -1 {
-                    let message: String = "failed in prepareSQL"
-                    throw UtilsSQLCipherError.executeSet(
-                                            message: message)
+                    if  lastId == -1 {
+                        let message: String = "lastId < 0"
+                        throw UtilsSQLCipherError.executeSet(
+                                                message: message)
+                    }
                 }
             }
 
@@ -707,6 +723,13 @@ class UtilsSQLCipher {
                 message: msg)
         }
 
+    }
+    class func parse(mVar: Any) -> Bool {
+        var ret: Bool = false
+        if mVar is NSArray {
+            ret = true
+        }
+        return ret
     }
 
 }

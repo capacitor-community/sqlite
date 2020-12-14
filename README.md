@@ -36,17 +36,27 @@ The aim of the refactor will be to allow
 
 This was discussed lengthly in issue#1and issue#52
 
-Refactor available for `Android` and `iOS` platforms only.
+Refactor available for `Android`, `iOS` and `Electron` platforms.
 
-The test will be achieved on a Ionic/Angular app. For the other frameworks, it will require an update of the `react-sqlite-hook`and the `vue-sqlite-hook`.
+The test has been achieved on:
+
+- a [Ionic/Angular app](#ionic/angular)
+- a [Ionic/React app](#ionic/react)
+
+Other frameworks will be tested later
+
+- Ionic/Vue will require an update of the `vue-sqlite-hook`.
+- Stencil
 
 ## Installation
 
 ```bash
 npm install @capacitor-community/sqlite@refactor
+npm run build
 npx cap sync
 npx cap add android
 npx cap add ios
+npx cap add @capacitor-community/electron
 ```
 
 ### IOS
@@ -83,6 +93,40 @@ public class MainActivity extends BridgeActivity {
 
 ```
 
+### Electron
+
+- On Electron, go to the Electron folder of YOUR_APPLICATION
+
+```
+npm install --save @journeyapps/sqlcipher
+```
+
+## Build & Run
+
+```
+npm run build
+npx cap copy
+npx cap copy @capacitor-community/electron
+```
+
+### IOS
+
+```
+npx cap open ios
+```
+
+### Android
+
+```
+npx cap open android
+```
+
+### Electron
+
+```
+npx cap open @capacitor-community/electron
+```
+
 ## Configuration
 
 No configuration required for this plugin
@@ -91,23 +135,23 @@ No configuration required for this plugin
 
 | Name                    | Android | iOS | Electron | Web |
 | :---------------------- | :------ | :-- | :------- | :-- |
-| createConnection        | ✅      | ✅  | ❌       | ❌  |
-| closeConnection         | ✅      | ✅  | ❌       | ❌  |
-| open (non-encrypted DB) | ✅      | ✅  | ❌       | ❌  |
-| open (encrypted DB)     | ✅      | ✅  | ❌       | ❌  |
-| close                   | ✅      | ✅  | ❌       | ❌  |
-| execute                 | ✅      | ✅  | ❌       | ❌  |
-| executeSet              | ✅      | ✅  | ❌       | ❌  |
-| run                     | ✅      | ✅  | ❌       | ❌  |
-| query                   | ✅      | ✅  | ❌       | ❌  |
-| deleteDatabase          | ✅      | ✅  | ❌       | ❌  |
+| createConnection        | ✅      | ✅  | ✅       | ❌  |
+| closeConnection         | ✅      | ✅  | ✅       | ❌  |
+| open (non-encrypted DB) | ✅      | ✅  | ✅       | ❌  |
+| open (encrypted DB)     | ✅      | ✅  | ✅       | ❌  |
+| close                   | ✅      | ✅  | ✅       | ❌  |
+| execute                 | ✅      | ✅  | ✅       | ❌  |
+| executeSet              | ✅      | ✅  | ✅       | ❌  |
+| run                     | ✅      | ✅  | ✅       | ❌  |
+| query                   | ✅      | ✅  | ✅       | ❌  |
+| deleteDatabase          | ✅      | ✅  | ✅       | ❌  |
 | importFromJson          | ❌      | ❌  | ❌       | ❌  |
 | exportToJson            | ❌      | ❌  | ❌       | ❌  |
-| createSyncTable         | ✅      | ✅  | ❌       | ❌  |
-| setSyncDate             | ✅      | ✅  | ❌       | ❌  |
+| createSyncTable         | ✅      | ✅  | ✅       | ❌  |
+| setSyncDate             | ✅      | ✅  | ✅       | ❌  |
 | isJsonValid             | ❌      | ❌  | ❌       | ❌  |
-| isDBExists              | ✅      | ✅  | ❌       | ❌  |
-| addUpgradeStatement     | ✅      | ✅  | ❌       | ❌  |
+| isDBExists              | ✅      | ✅  | ✅       | ❌  |
+| addUpgradeStatement     | ✅      | ✅  | ✅       | ❌  |
 
 ## Documentation (to be updated)
 
@@ -127,7 +171,9 @@ No configuration required for this plugin
 
 - [angular-sqlite-app-refactor](https://github.com/jepiqueau/angular-sqlite-app-refactor)
 
-### Ionic/React (to come later)
+### Ionic/React
+
+- [react-sqlite-app-refactor](https://github.com/jepiqueau/react-sqlite-app-starter/tree/refactor)
 
 ### Ionic/Vue (to come later)
 
@@ -377,8 +423,8 @@ export class HomePage implements AfterViewInit {
 
 ## Dependencies
 
-The IOS and Android codes are using SQLCipher allowing for database encryption
-The Electron code use sqlite3
+The IOS and Android codes are using `SQLCipher` allowing for database encryption
+The Electron code use `@journeyapps/sqlcipher` allowing for database encryption
 
 ## Contributors ✨
 

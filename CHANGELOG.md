@@ -1,3 +1,35 @@
+## 2.9.0-alpha.6 (2020-12-14) REFACTOR
+
+### Chore
+
+- update to @capacitor/core@2.4.4
+
+### Added Features Electron platform
+
+- createConnection
+- closeConnection
+- open (non-encrypted DB)
+- open (encrypted DB)
+- close
+- execute
+- executeSet
+- run
+- query
+- deleteDatabase
+- createSyncTable
+- setSyncDate
+- isDBExists
+- addUpgradeStatement
+
+### Added Features All Platforms
+
+- in capSQLiteSet the values can be an any[] or any[][]
+
+### Bug Fixes
+
+- Update the README and add a link to a Ionic/React app.
+- Update the API documentation
+
 ## 2.9.0-alpha.5 (2020-12-02) REFACTOR
 
 ### Added Features

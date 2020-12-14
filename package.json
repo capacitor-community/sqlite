@@ -23,15 +23,15 @@
   "author": "Jean Pierre Queau",
   "license": "MIT",
   "devDependencies": {
-    "@capacitor/android": "^2.4.3",
-    "@capacitor/core": "^2.4.3",
+    "@capacitor/android": "^2.4.4",
+    "@capacitor/core": "^2.4.4",
     "@capacitor/docgen": "0.0.10",
-    "@capacitor/ios": "^2.4.3",
+    "@capacitor/ios": "^2.4.4",
     "@ionic/prettier-config": "^1.0.0",
     "@ionic/swiftlint-config": "^1.1.1",
     "@rollup/plugin-node-resolve": "^9.0.0",
     "@types/node": "^12.12.62",
-    "electron": "^10.1.2",
+    "electron": "^11.1.0",
     "husky": "^4.2.5",
     "np": "^6.5.0",
     "prettier": "^2.0.5",
@@ -50,7 +50,7 @@
     }
   },
   "peerDependencies": {
-    "@capacitor/core": "^2.4.3"
+    "@capacitor/core": "^2.4.4"
   },
   "files": [
     "dist/",

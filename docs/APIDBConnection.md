@@ -217,10 +217,17 @@ Set the synchronization date
 
 #### capSQLiteChanges
 
+| Prop          | Type                                        | Description                               |
+| ------------- | ------------------------------------------- | ----------------------------------------- |
+| **`changes`** | <code><a href="#changes">Changes</a></code> | a returned <a href="#changes">Changes</a> |
+| **`message`** | <code>string</code>                         | a returned message                        |
+
+#### Changes
+
 | Prop          | Type                | Description                                          |
 | ------------- | ------------------- | ---------------------------------------------------- |
-| **`changes`** | <code>any</code>    | the number of changes from an execute or run command |
-| **`message`** | <code>string</code> | a returned message                                   |
+| **`changes`** | <code>number</code> | the number of changes from an execute or run command |
+| **`lastId`**  | <code>number</code> | the lastId created from a run command                |
 
 #### capSQLiteValues
 

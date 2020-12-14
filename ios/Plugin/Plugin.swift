@@ -693,20 +693,20 @@ public class CapacitorSQLite: CAPPlugin {
     @objc func setSyncDate(_ call: CAPPluginCall) {
         var msg: String = "setSyncDate command failed: "
         guard let dbName = call.options["database"] as? String else {
-            retHandler.rChanges(
-                call: call, ret: ["changes": -1],
+            retHandler.rResult(
+                call: call, ret: false,
                 message: msg + "Must provide a database name")
             return
         }
         guard let syncDate = call.options["syncdate"] as? String else {
-            retHandler.rChanges(
-                call: call, ret: ["changes": -1],
+            retHandler.rResult(
+                call: call, ret: false,
                 message: msg + "Must provide a synchronization name")
             return
         }
         guard let mDb: Database = dbDict[dbName] else {
-            retHandler.rChanges(
-                call: call, ret: ["changes": -1],
+            retHandler.rResult(
+                call: call, ret: false,
                 message: msg + "available connection for \(dbName)")
             return
         }

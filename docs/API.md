@@ -2,7 +2,7 @@
 <h2 align="center">API PLUGIN DOCUMENTATION</h2>
 <p align="center"><strong><code>@capacitor-community/sqlite</code></strong></p>
 <p align="center">
-  Capacitor community plugin for Native and Electron SQLite Databases. For Native, databases could be encrypted with SQLCipher</p>
+  Capacitor community plugin for Native and Electron SQLite Databases. For <strong>Native</strong> and <strong>Electron</strong> platforms, databases could be encrypted with SQLCipher</p>
 
 ## Plugin Wrappers
 
@@ -48,7 +48,7 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 - in Android, go to capacitor-sqlite/java/com.jeep.plugin.capacitor/cdssUtils/GlobalSQLite.java
   and update the default values before building your app.
 
-- in Electron not available
+- in Electron, go to YOUR_APP/electron/plugins/plugin.js-xxxx.js and search for `class GlobalSQLite` and modify the `this.secret`and `this.newsecret` parameters.
 
 ## Methods Index
 
@@ -68,7 +68,7 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 - [`isJsonValid(...)`](#isjsonvalid)
 - [`importFromJson(...)`](#importfromjson)
 - [`exportToJson(...)`](#exporttojson)
-- [`createSyncTable()`](#createsynctable)
+- [`createSyncTable(...)`](#createsynctable)
 - [`setSyncDate(...)`](#setsyncdate)
 - [`addUpgradeStatement(...)`](#addupgradestatement)
 - [Interfaces](#interfaces)
@@ -335,13 +335,17 @@ Export to Json Object
 
 ---
 
-### createSyncTable()
+### createSyncTable(...)
 
 ```typescript
-createSyncTable() => Promise<capSQLiteChanges>
+createSyncTable(options: capSQLiteOptions) => Promise<capSQLiteChanges>
 ```
 
 Create a synchronization table
+
+| Param         | Type                                                          | Description                                        |
+| ------------- | ------------------------------------------------------------- | -------------------------------------------------- |
+| **`options`** | <code><a href="#capsqliteoptions">capSQLiteOptions</a></code> | : <a href="#capsqliteoptions">capSQLiteOptions</a> |
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
 
@@ -423,10 +427,17 @@ Add the upgrade Statement for database version upgrading
 
 #### capSQLiteChanges
 
+| Prop          | Type                                        | Description                               |
+| ------------- | ------------------------------------------- | ----------------------------------------- |
+| **`changes`** | <code><a href="#changes">Changes</a></code> | a returned <a href="#changes">Changes</a> |
+| **`message`** | <code>string</code>                         | a returned message                        |
+
+#### Changes
+
 | Prop          | Type                | Description                                          |
 | ------------- | ------------------- | ---------------------------------------------------- |
-| **`changes`** | <code>any</code>    | the number of changes from an execute or run command |
-| **`message`** | <code>string</code> | a returned message                                   |
+| **`changes`** | <code>number</code> | the number of changes from an execute or run command |
+| **`lastId`**  | <code>number</code> | the lastId created from a run command                |
 
 #### capSQLiteExecuteOptions
 

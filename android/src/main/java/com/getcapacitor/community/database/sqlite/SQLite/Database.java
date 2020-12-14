@@ -280,11 +280,21 @@ public class Database {
                     for (int j = 0; j < valuesJson.length(); j++) {
                         values.add(valuesJson.get(j));
                     }
-                    lastId = prepareSQL(statement, values);
-                    if (lastId == -1) {
-                        Log.v(TAG, "*** breaking lastId -1");
-                        break;
+                    Boolean isArray = _uSqlite.parse(values.get(0));
+                    if (isArray) {
+                        for (int j = 0; j < values.size(); j++) {
+                            JSONArray valsJson = (JSONArray) values.get(j);
+                            ArrayList<Object> vals = new ArrayList<>();
+                            for (int k = 0; k < valsJson.length(); k++) {
+                                vals.add(valsJson.get(k));
+                            }
+                            lastId = prepareSQL(statement, vals);
+                            if (lastId == -1) break;
+                        }
+                    } else {
+                        lastId = prepareSQL(statement, values);
                     }
+                    if (lastId == -1) break;
                 }
                 if (lastId != -1) {
                     _db.setTransactionSuccessful();
