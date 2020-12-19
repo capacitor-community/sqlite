@@ -71,11 +71,26 @@ public class ExportToJson {
                     ArrayList<JsonColumn> schema = new ArrayList<JsonColumn>();
                     // get the sqlStmt between the parenthesis sqlStmt
                     sqlStmt = sqlStmt.substring(sqlStmt.indexOf("(") + 1, sqlStmt.lastIndexOf(")"));
+                    boolean isStrfTime = false;
+                    if (sqlStmt.contains("strftime")) isStrfTime = true;
                     String[] sch = sqlStmt.split(",");
+                    if (isStrfTime) {
+                        // look for strftime
+                        List<String> nSch = new ArrayList<String>();
+                        for (int j = 0; j < sch.length; j++) {
+                            if (sch[j].contains("strftime")) {
+                                nSch.add(sch[j] + "," + sch[j + 1]);
+                                j++;
+                            } else {
+                                nSch.add(sch[j]);
+                            }
+                        }
+                        sch = nSch.toArray(new String[0]);
+                    }
                     // for each element of the array split the
                     // first word as key
                     for (int j = 0; j < sch.length; j++) {
-                        String[] row = sch[j].split(" ", 2);
+                        String[] row = sch[j].trim().split(" ", 2);
                         JsonColumn jsonRow = new JsonColumn();
                         if (row[0].toUpperCase().equals("FOREIGN")) {
                             Integer oPar = sch[j].indexOf("(");

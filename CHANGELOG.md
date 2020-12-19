@@ -1,3 +1,9 @@
+## 2.4.3 (2020-12-19)
+
+### Bug Fixes
+
+- Fix issue#59 ExportToJson
+
 ## 2.4.3-1 (2020-11-23)
 
 ### Chore

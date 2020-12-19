@@ -958,8 +958,22 @@ export class DatabaseSQLiteHelper {
 
           let openPar: number = tables[i].sql.indexOf('(');
           let closePar: number = tables[i].sql.lastIndexOf(')');
-          let sstr: String = tables[i].sql.substring(openPar + 1, closePar);
+          let sstr: string = tables[i].sql.substring(openPar + 1, closePar);
+          let isStrfTime: boolean = false;
+          if (sstr.includes('strftime')) isStrfTime = true;
           let sch: Array<string> = sstr.replace(/\n/g, '').split(',');
+          if (isStrfTime) {
+            let nSch: string[] = [];
+            for (let j: number = 0; j < sch.length; j++) {
+              if (sch[j].includes('strftime')) {
+                nSch.push(sch[j] + ',' + sch[j + 1]);
+                j++;
+              } else {
+                nSch.push(sch[j]);
+              }
+            }
+            sch = [...nSch];
+          }
           for (let j: number = 0; j < sch.length; j++) {
             const rstr = sch[j].trim();
             let idx = rstr.indexOf(' ');

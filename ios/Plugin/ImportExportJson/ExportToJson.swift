@@ -522,6 +522,7 @@ class ExportToJson {
     // MARK: - ExportToJson - CreateSchema
 
     // swiftlint:disable function_body_length
+    // swiftlint:disable cyclomatic_complexity
     class func createSchema(stmt: String) throws -> [[String: String]] {
         var retSchema: [[String: String]] = []
         // get the sqlStmt between the parenthesis sqlStmt
@@ -529,7 +530,28 @@ class ExportToJson {
             if let closePar = stmt.lastIndex(of: ")") {
                 let sqlStmt: String = String(
                         stmt[stmt.index(after: openPar)..<closePar])
-                let sch: [String] = sqlStmt.components(separatedBy: ",")
+                var isStrfTime: Bool = false
+                if sqlStmt.contains("strftime") {
+                    isStrfTime = true
+                }
+                var sch: [String] = sqlStmt.components(separatedBy: ",")
+                if isStrfTime {
+                    var nSch: [String] = []
+                    var irem: Int = -1
+                    for ipos in 0..<sch.count {
+                        if sch[ipos].contains("strftime") {
+                            let merge: String = sch[ipos + 1]
+                            nSch.append("\(sch[ipos]),\(merge)")
+                            irem = ipos + 1
+                        } else {
+                            nSch.append(sch[ipos])
+                        }
+                    }
+                    if irem != -1 {
+                        nSch.remove(at: irem)
+                    }
+                    sch = nSch
+                }
                 for ipos in 0..<sch.count {
                     let rstr: String = sch[ipos]
                         .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -577,6 +599,7 @@ class ExportToJson {
         }
         return retSchema
     }
+    // swiftlint:enable cyclomatic_complexity
     // swiftlint:enable function_body_length
 
     // MARK: - ExportToJson - CreateIndexes
