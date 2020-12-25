@@ -16,6 +16,7 @@ import {
   capSQLiteValues,
   capSQLiteJson,
   capSQLiteUpgradeOptions,
+  capSQLiteSyncDate,
 } from './definitions';
 //1234567890123456789012345678901234567890123456789012345678901234567890
 export class CapacitorSQLiteWeb
@@ -138,6 +139,13 @@ export class CapacitorSQLiteWeb
     console.log('setSyncDate', options);
     return Promise.resolve({
       result: false,
+      message: `Not implemented on Web Platform`,
+    });
+  }
+  async getSyncDate(options: capSQLiteOptions): Promise<capSQLiteSyncDate> {
+    console.log('getSyncDate', options);
+    return Promise.resolve({
+      syncDate: 0,
       message: `Not implemented on Web Platform`,
     });
   }

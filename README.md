@@ -4,7 +4,7 @@
 <p align="center">
   Capacitor community plugin for Native and Electron SQLite Databases. In Native databases could be encrypted with SQLCipher
 </p>
-
+<br>
 <p align="center">
   <img src="https://img.shields.io/maintenance/yes/2020?style=flat-square" />
   <a href="https://github.com/capacitor-community/sqlite/actions?query=workflow%3A%22CI%22"><img src="https://img.shields.io/github/workflow/status/capacitor-community/sqlite/CI?style=flat-square" /></a>
@@ -34,19 +34,28 @@ The aim of the refactor will be to allow
 - improve the response time of the encrypted database by removing the internal open and close database for each sqlite query
 - moving to the latest `androidx.sqlite.db.xxx`
 
-This was discussed lengthly in issue#1and issue#52
+This was discussed lengthly in issue#1 and issue#52
 
 Refactor available for `Android`, `iOS` and `Electron` platforms.
 
 The test has been achieved on:
 
 - a [Ionic/Angular app](#ionic/angular)
+
 - a [Ionic/React app](#ionic/react)
 
 Other frameworks will be tested later
 
 - Ionic/Vue will require an update of the `vue-sqlite-hook`.
 - Stencil
+
+## Browser Support
+
+The plugin follows the guidelines from the `Capacitor Team`,
+
+- [Capacitor Browser Support](https://capacitorjs.com/docs/v3/web#browser-support)
+
+meaning that it will not work in IE11 without additional JavaScript transformations, e.g. with [Babel](https://babeljs.io/).
 
 ## Installation
 
@@ -145,15 +154,16 @@ No configuration required for this plugin
 | run                     | ✅      | ✅  | ✅       | ❌  |
 | query                   | ✅      | ✅  | ✅       | ❌  |
 | deleteDatabase          | ✅      | ✅  | ✅       | ❌  |
-| importFromJson          | ❌      | ❌  | ❌       | ❌  |
-| exportToJson            | ❌      | ❌  | ❌       | ❌  |
+| importFromJson          | ✅      | ✅  | ✅       | ❌  |
+| exportToJson            | ✅      | ✅  | ✅       | ❌  |
 | createSyncTable         | ✅      | ✅  | ✅       | ❌  |
 | setSyncDate             | ✅      | ✅  | ✅       | ❌  |
-| isJsonValid             | ❌      | ❌  | ❌       | ❌  |
+| getSyncDate             | ✅      | ✅  | ✅       | ❌  |
+| isJsonValid             | ✅      | ✅  | ✅       | ❌  |
 | isDBExists              | ✅      | ✅  | ✅       | ❌  |
 | addUpgradeStatement     | ✅      | ✅  | ✅       | ❌  |
 
-## Documentation (to be updated)
+## Documentation
 
 [API_Documentation](https://github.com/capacitor-community/sqlite/blob/refactor/docs/API.md)
 
@@ -161,9 +171,9 @@ No configuration required for this plugin
 
 [API_DB_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/refactor/docs/APIDBConnection.md)
 
-[ImportExportJson_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/ImportExportJson.md)
+[ImportExportJson_Documentation](https://github.com/capacitor-community/sqlite/blob/refactor/docs/ImportExportJson.md)
 
-[UpgradeDatabaseVersion_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/UpgradeDatabaseVersion.md)
+[UpgradeDatabaseVersion_Documentation](https://github.com/capacitor-community/sqlite/blob/refactor/docs/UpgradeDatabaseVersion.md)
 
 ## Applications demonstrating the use of the plugin
 
@@ -183,243 +193,11 @@ No configuration required for this plugin
 
 - [see capacitor documentation](https://capacitor.ionicframework.com/docs/getting-started/with-ionic)
 
-- In your Ionic/Angular App
+- [In your Ionic/Angular App](https://github.com/capacitor-community/sqlite/blob/refactor/docs/Ionic-Angular-Usage.md)
 
-define a service **app/services/sqlite.service.ts**
+- [In your Ionic/React App] (to come later)
 
-```ts
-import { Injectable } from '@angular/core';
-
-import { Plugins, Capacitor } from '@capacitor/core';
-import '@capacitor-community/sqlite';
-import {
-  SQLiteDBConnection,
-  SQLiteConnection,
-  capEchoResult,
-  capSQLiteResult,
-} from '@capacitor-community/sqlite';
-const { CapacitorSQLite } = Plugins;
-
-@Injectable({
-  providedIn: 'root',
-})
-export class SQLiteService {
-  handlerPermissions: any;
-  sqlite: SQLiteConnection;
-  isService: boolean = false;
-  platform: string;
-
-  constructor() {}
-  /**
-   * Plugin Initialization
-   */
-  initializePlugin(): Promise<boolean> {
-    return new Promise(resolve => {
-      this.platform = Capacitor.platform;
-      console.log('*** platform ' + this.platform);
-      const sqlitePlugin: any = CapacitorSQLite;
-      if (this.platform === 'android') {
-        this.handlerPermissions = sqlitePlugin.addListener(
-          'androidPermissionsRequest',
-          async (data: any) => {
-            if (data.permissionGranted === 1) {
-              this.handlerPermissions.remove();
-              this.sqlite = new SQLiteConnection(sqlitePlugin);
-              resolve(true);
-            } else {
-              console.log('Permission not granted');
-              this.handlerPermissions.remove();
-              this.sqlite = null;
-              resolve(false);
-            }
-          },
-        );
-        try {
-          sqlitePlugin.requestPermissions();
-        } catch (e) {
-          console.log('Error requesting permissions ' + JSON.stringify(e));
-          resolve(false);
-        }
-      } else {
-        this.sqlite = new SQLiteConnection(sqlitePlugin);
-        resolve(true);
-      }
-    });
-  }
-  async echo(value: string): Promise<capEchoResult> {
-    if (this.sqlite != null) {
-      return await this.sqlite.echo(value);
-    } else {
-      return null;
-    }
-  }
-  async createConnection(
-    database: string,
-    encrypted: boolean,
-    mode: string,
-    version: number,
-  ): Promise<SQLiteDBConnection | null> {
-    if (this.sqlite != null) {
-      const db: SQLiteDBConnection = await this.sqlite.createConnection(
-        database,
-        encrypted,
-        mode,
-        version,
-      );
-      if (db != null) {
-        return db;
-      } else {
-        return null;
-      }
-    } else {
-      return null;
-    }
-  }
-  async closeConnection(database: string): Promise<capSQLiteResult> {
-    if (this.sqlite != null) {
-      return await this.sqlite.closeConnection(database);
-    } else {
-      return null;
-    }
-  }
-}
-```
-
-Then implement a component (for example the **app/home/home.page.ts** )
-
-```ts
-import { Component, AfterViewInit } from '@angular/core';
-import { SQLiteService } from '../services/sqlite.service';
-import { createSchema, twoUsers } from '../utils/no-encryption-utils';
-import {
-  createSchemaContacts,
-  setContacts,
-} from '../utils/encrypted-set-utils';
-
-@Component({
-  selector: 'app-home',
-  templateUrl: 'home.page.html',
-  styleUrls: ['home.page.scss'],
-})
-export class HomePage implements AfterViewInit {
-  sqlite: any;
-  platform: string;
-  handlerPermissions: any;
-  initPlugin: boolean = false;
-
-  constructor(private _sqlite: SQLiteService) {}
-
-  async ngAfterViewInit() {
-    // Initialize the CapacitorSQLite plugin
-    this.initPlugin = await this._sqlite.initializePlugin();
-    const result: boolean = await this.runTest();
-    if (result) {
-      document.querySelector('.sql-allsuccess').classList.remove('display');
-      console.log('$$$ runTest was successful');
-    } else {
-      document.querySelector('.sql-allfailure').classList.remove('display');
-      console.log('$$$ runTest failed');
-    }
-  }
-
-  async runTest(): Promise<boolean> {
-    let result: any = await this._sqlite.echo('Hello World');
-    console.log(' from Echo ' + result.value);
-    // initialize the connection
-    const db = await this._sqlite.createConnection(
-      'testNew',
-      false,
-      'no-encryption',
-      1,
-    );
-    const db1 = await this._sqlite.createConnection(
-      'testSet',
-      true,
-      'secret',
-      1,
-    );
-    // open db
-    let ret: any = await db.open();
-    if (!ret.result) {
-      return false;
-    }
-    // create tables in db
-    ret = await db.execute(createSchema);
-    console.log('$$$ ret.changes.changes in db ' + ret.changes.changes);
-    if (ret.changes.changes < 0) {
-      return false;
-    }
-    // add two users in db
-    ret = await db.execute(twoUsers);
-    if (ret.changes.changes !== 2) {
-      return false;
-    }
-    // select all users in db
-    ret = await db.query('SELECT * FROM users;');
-    if (
-      ret.values.length !== 2 ||
-      ret.values[0].name !== 'Whiteley' ||
-      ret.values[1].name !== 'Jones'
-    ) {
-      return false;
-    }
-    // open db1
-    ret = await db1.open();
-    if (!ret.result) {
-      return false;
-    }
-    // create tables in db1
-    ret = await db1.execute(createSchemaContacts);
-    console.log('$$$ ret.changes.changes in db1' + ret.changes.changes);
-    if (ret.changes.changes < 0) {
-      return false;
-    }
-    // load setContacts in db1
-    ret = await db1.executeSet(setContacts);
-    console.log('$$$ ret.changes.changes in db2' + ret.changes.changes);
-    if (ret.changes.changes !== 5) {
-      return false;
-    }
-
-    // select users where company is NULL in db
-    ret = await db.query('SELECT * FROM users WHERE company IS NULL;');
-    if (
-      ret.values.length !== 2 ||
-      ret.values[0].name !== 'Whiteley' ||
-      ret.values[1].name !== 'Jones'
-    ) {
-      return false;
-    }
-    // add one user with statement and values
-    let sqlcmd: string = 'INSERT INTO users (name,email,age) VALUES (?,?,?)';
-    let values: Array<any> = ['Simpson', 'Simpson@example.com', 69];
-    ret = await db.run(sqlcmd, values);
-    console.log();
-    if (ret.changes.lastId !== 3) {
-      return false;
-    }
-    // add one user with statement
-    sqlcmd =
-      `INSERT INTO users (name,email,age) VALUES ` +
-      `("Brown","Brown@example.com",15)`;
-    ret = await db.run(sqlcmd);
-    if (ret.changes.lastId !== 4) {
-      return false;
-    }
-
-    ret = await this._sqlite.closeConnection('testNew');
-    if (!ret.result) {
-      return false;
-    }
-    ret = await this._sqlite.closeConnection('testSet');
-    if (!ret.result) {
-      return false;
-    } else {
-      return true;
-    }
-  }
-}
-```
+- [In your Ionic/Vue App] (to come later)
 
 ## Dependencies
 

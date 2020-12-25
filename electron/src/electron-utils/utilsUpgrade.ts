@@ -1,7 +1,7 @@
 import { capSQLiteVersionUpgrade, capSQLiteSet } from '../definitions';
 import { UtilsDrop } from './utilsDrop';
 import { UtilsFile } from './utilsFile';
-import { UtilsJson } from './utilsJson';
+import { UtilsJson } from './ImportExportJson/utilsJson';
 import { UtilsSQLite } from './utilsSQLite';
 //1234567890123456789012345678901234567890123456789012345678901234567890
 

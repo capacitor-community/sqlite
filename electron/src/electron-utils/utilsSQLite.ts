@@ -1,8 +1,8 @@
 //1234567890123456789012345678901234567890123456789012345678901234567890
 export class UtilsSQLite {
-  private _JSQlite: any;
+  public JSQlite: any;
   constructor() {
-    this._JSQlite = require('@journeyapps/sqlcipher').verbose();
+    this.JSQlite = require('@journeyapps/sqlcipher').verbose();
   }
   /**
    * OpenOrCreateDatabase
@@ -13,7 +13,7 @@ export class UtilsSQLite {
     return new Promise(async (resolve, reject) => {
       let msg: string = 'OpenOrCreateDatabase: ';
       // open sqlite3 database
-      const mDB: any = new this._JSQlite.Database(pathDB, {
+      const mDB: any = new this.JSQlite.Database(pathDB, {
         verbose: console.log,
       });
       if (mDB != null) {
@@ -22,13 +22,22 @@ export class UtilsSQLite {
         } catch (err) {
           reject(new Error(msg + `dbChanges ${err.message}`));
         }
-        // set the password
-        if (password.length > 0) {
-          try {
+
+        try {
+          // set the password
+          if (password.length > 0) {
             await this.setCipherPragma(mDB, password);
-          } catch (err) {
-            reject(new Error(msg + `${err.message}`));
           }
+          // set Foreign Keys On
+          await this.setForeignKeyConstraintsEnabled(mDB, true);
+
+          // Check Version
+          let curVersion: number = await this.getVersion(mDB);
+          if (curVersion === 0) {
+            await this.setVersion(mDB, 1);
+          }
+        } catch (err) {
+          reject(new Error(msg + `${err.message}`));
         }
         resolve(mDB);
       } else {
@@ -84,7 +93,7 @@ export class UtilsSQLite {
     return new Promise(async (resolve, reject) => {
       let version: number = 0;
       const SELECT_VERSION: string = 'PRAGMA user_version;';
-      mDB.get(SELECT_VERSION, (err: Error, row: any) => {
+      mDB.get(SELECT_VERSION, [], (err: Error, row: any) => {
         // process the row here
         if (err) {
           reject(new Error('getVersion failed: ' + `${err.message}`));
@@ -216,7 +225,7 @@ export class UtilsSQLite {
       const SELECT_CHANGE: string = 'SELECT total_changes()';
       let changes: number = 0;
 
-      db.get(SELECT_CHANGE, (err: Error, row: any) => {
+      db.get(SELECT_CHANGE, [], (err: Error, row: any) => {
         // process the row here
         if (err) {
           reject(new Error(`DbChanges failed: ${err.message}`));
@@ -240,7 +249,7 @@ export class UtilsSQLite {
     return new Promise((resolve, reject) => {
       const SELECT_LAST_ID: string = 'SELECT last_insert_rowid()';
       let lastId: number = -1;
-      db.get(SELECT_LAST_ID, (err: Error, row: any) => {
+      db.get(SELECT_LAST_ID, [], (err: Error, row: any) => {
         // process the row here
         if (err) {
           let msg: string = 'GetLastId failed: ';

@@ -18,9 +18,13 @@ import {
   capSQLiteUpgradeOptions,
   capSQLiteValues,
   capSQLiteVersionUpgrade,
+  capSQLiteSyncDate,
+  JsonSQLite,
 } from './definitions';
 import { Database } from './electron-utils/Database';
 import { UtilsFile } from './electron-utils/utilsFile';
+import { UtilsJson } from './electron-utils/ImportExportJson/utilsJson';
+
 //1234567890123456789012345678901234567890123456789012345678901234567890
 
 const { remote } = require('electron');
@@ -30,6 +34,7 @@ export class CapacitorSQLiteElectronWeb
   RemoteRef: any = null;
   private _dbDict: any = {};
   private _uFile: UtilsFile = new UtilsFile();
+  private _uJson: UtilsJson = new UtilsJson();
   private _versionUpgrades: Record<
     string,
     Record<number, capSQLiteVersionUpgrade>
@@ -115,8 +120,6 @@ export class CapacitorSQLiteElectronWeb
   }
 
   async echo(options: capEchoOptions): Promise<capEchoResult> {
-    console.log('ECHO in CapacitorSQLiteElectronWeb ', options);
-    console.log(this.RemoteRef);
     const ret: any = {};
     ret.value = options.value;
     return ret;
@@ -134,8 +137,7 @@ export class CapacitorSQLiteElectronWeb
     if (!keys.includes(dbName)) {
       return Promise.resolve({
         result: false,
-        message:
-          'Open command failed: No available ' + 'connection for ' + dbName,
+        message: `Open: No available connection for ${dbName}`,
       });
     }
 
@@ -163,8 +165,7 @@ export class CapacitorSQLiteElectronWeb
     if (!keys.includes(dbName)) {
       return Promise.resolve({
         result: false,
-        message:
-          'Close command failed: No available ' + 'connection for ' + dbName,
+        message: `Close: No available connection for ${dbName}`,
       });
     }
 
@@ -199,8 +200,7 @@ export class CapacitorSQLiteElectronWeb
     if (!keys.includes(dbName)) {
       return Promise.resolve({
         changes: { changes: -1 },
-        message:
-          'Execute command failed: No available ' + 'connection for ' + dbName,
+        message: `Execute: No available connection for ${dbName}`,
       });
     }
     const mDB = this._dbDict[dbName];
@@ -241,10 +241,7 @@ export class CapacitorSQLiteElectronWeb
     if (!keys.includes(dbName)) {
       return Promise.resolve({
         changes: { changes: -1 },
-        message:
-          'ExecuteSet command failed: No available ' +
-          'connection for ' +
-          dbName,
+        message: `ExecuteSet: No available connection for ${dbName}`,
       });
     }
     const mDB = this._dbDict[dbName];
@@ -257,7 +254,7 @@ export class CapacitorSQLiteElectronWeb
         return Promise.reject({
           changes: { changes: -1 },
           message:
-            'ExecuteSet command failed : Must provide a set as ' +
+            'ExecuteSet: Must provide a set as ' +
             'Array of {statement,values}',
         });
       }
@@ -307,7 +304,7 @@ export class CapacitorSQLiteElectronWeb
     if (!keys.includes(dbName)) {
       return Promise.resolve({
         changes: { changes: -1, lastId: -1 },
-        message: 'RUN failed: No available ' + 'connection for ' + dbName,
+        message: `Run: No available connection for ${dbName}`,
       });
     }
     const mDB = this._dbDict[dbName];
@@ -348,9 +345,8 @@ export class CapacitorSQLiteElectronWeb
     keys = Object.keys(this._dbDict);
     if (!keys.includes(dbName)) {
       return Promise.resolve({
-        changes: { changes: -1 },
-        message:
-          'Query command failed: No available ' + 'connection for ' + dbName,
+        values: [],
+        message: `Query: No available connection for ${dbName}`,
       });
     }
     const mDB = this._dbDict[dbName];
@@ -399,10 +395,7 @@ export class CapacitorSQLiteElectronWeb
     if (!keys.includes(dbName)) {
       return Promise.resolve({
         result: false,
-        message:
-          'DeleteDatabase command failed: No ' +
-          'available connection for ' +
-          dbName,
+        message: 'deleteDatabase: No available connection for ' + `${dbName}`,
       });
     }
 
@@ -418,29 +411,110 @@ export class CapacitorSQLiteElectronWeb
     }
   }
   async isJsonValid(options: capSQLiteImportOptions): Promise<capSQLiteResult> {
-    const msg: string = JSON.stringify(options);
-    return Promise.resolve({
-      result: false,
-      message: `Method not implemented. ${msg}`,
-    });
+    let keys = Object.keys(options);
+    if (!keys.includes('jsonstring')) {
+      return Promise.resolve({
+        result: false,
+        message: 'Must provide a json object',
+      });
+    }
+    const jsonStrObj: string = options.jsonstring;
+    const jsonObj = JSON.parse(jsonStrObj);
+    const isValid = this._uJson.isJsonSQLite(jsonObj);
+    if (!isValid) {
+      return Promise.resolve({
+        result: false,
+        message: 'Stringify Json Object not Valid',
+      });
+    } else {
+      return Promise.resolve({ result: true });
+    }
   }
   async importFromJson(
     options: capSQLiteImportOptions,
   ): Promise<capSQLiteChanges> {
-    const msg: string = JSON.stringify(options);
     const retRes = { changes: -1 };
-    return Promise.reject({
-      changes: retRes,
-      message: `Method not implemented. ${msg}`,
-    });
+    let keys = Object.keys(options);
+    if (!keys.includes('jsonstring')) {
+      return Promise.resolve({
+        changes: retRes,
+        message: 'Must provide a json object',
+      });
+    }
+    const jsonStrObj: string = options.jsonstring;
+    const jsonObj = JSON.parse(jsonStrObj);
+    const isValid = this._uJson.isJsonSQLite(jsonObj);
+    if (!isValid) {
+      return Promise.resolve({
+        changes: retRes,
+        message: 'Must provide a valid JsonSQLite Object',
+      });
+    }
+    const vJsonObj: JsonSQLite = jsonObj;
+    const dbName: string = `${vJsonObj.database}SQLite.db`;
+    const dbVersion: number = vJsonObj.version ?? 1;
+    const encrypted: boolean = vJsonObj.encrypted ?? false;
+    const mode: string = encrypted ? 'secret' : 'no-encryption';
+
+    // Create the database
+    let mDb: Database = new Database(dbName, encrypted, mode, dbVersion, {});
+    try {
+      // Open the database
+      await mDb.open();
+      // Import the JsonSQLite Object
+      const changes = await mDb.importJson(vJsonObj);
+      // Close the database
+      await mDb.close();
+      return Promise.resolve({ changes: { changes: changes } });
+    } catch (err) {
+      return Promise.resolve({
+        changes: retRes,
+        message: `ImportFromJson: ${err.message}`,
+      });
+    }
   }
   async exportToJson(options: capSQLiteExportOptions): Promise<capSQLiteJson> {
-    const msg: string = JSON.stringify(options);
-    const retRes = {};
-    return Promise.reject({
-      export: retRes,
-      message: `Method not implemented. ${msg}`,
-    });
+    let retRes: JsonSQLite = {} as JsonSQLite;
+    let keys = Object.keys(options);
+    if (!keys.includes('database')) {
+      return Promise.resolve({
+        export: retRes,
+        message: 'Must provide a database name',
+      });
+    }
+    if (!keys.includes('jsonexportmode')) {
+      return Promise.resolve({
+        export: retRes,
+        message: 'Must provide a json export mode',
+      });
+    }
+    const dbName: string = options.database!;
+    const exportMode: string = options.jsonexportmode;
+    keys = Object.keys(this._dbDict);
+    if (!keys.includes(dbName)) {
+      return Promise.resolve({
+        export: retRes,
+        message: 'exportToJson: No available connection for ' + `${dbName}`,
+      });
+    }
+    const mDB = this._dbDict[dbName];
+    try {
+      const ret: any = await mDB.exportJson(exportMode);
+      const keys = Object.keys(ret);
+      if (keys.includes('message')) {
+        return Promise.resolve({
+          export: retRes,
+          message: `exportToJson: ${ret.message}`,
+        });
+      } else {
+        return Promise.resolve({ export: ret });
+      }
+    } catch (err) {
+      return Promise.resolve({
+        export: retRes,
+        message: `exportToJson: ${err.message}`,
+      });
+    }
   }
   async createSyncTable(options: capSQLiteOptions): Promise<capSQLiteChanges> {
     let keys = Object.keys(options);
@@ -455,16 +529,13 @@ export class CapacitorSQLiteElectronWeb
     if (!keys.includes(dbName)) {
       return Promise.resolve({
         changes: { changes: -1 },
-        message:
-          'CreateSyncTable command failed: No ' +
-          'available connection for ' +
-          dbName,
+        message: 'CreateSyncTable: No available connection for ' + `${dbName}`,
       });
     }
 
     const mDB = this._dbDict[dbName];
     const ret: any = await mDB.createSyncTable();
-    if (ret.message == null) {
+    if (ret.message === null) {
       return Promise.resolve({ changes: ret.changes });
     } else {
       return Promise.resolve({ changes: ret.changes, message: ret.message });
@@ -492,15 +563,36 @@ export class CapacitorSQLiteElectronWeb
     if (!keys.includes(dbName)) {
       return Promise.resolve({
         result: false,
-        message:
-          'SetSyncDate command failed: No ' +
-          'available connection for ' +
-          dbName,
+        message: `SetSyncDate: No available connection for ${dbName}`,
       });
     }
 
     const mDB = this._dbDict[dbName];
     const ret: any = await mDB.setSyncDate(syncDate);
+    console.log(`$$$ setSyncDate ${JSON.stringify(ret)}`);
+    return Promise.resolve(ret);
+  }
+  async getSyncDate(
+    options: capSQLiteSyncDateOptions,
+  ): Promise<capSQLiteSyncDate> {
+    let keys = Object.keys(options);
+    if (!keys.includes('database')) {
+      return Promise.resolve({
+        syncDate: 0,
+        message: 'Must provide a database name',
+      });
+    }
+    const dbName: string = options.database!;
+    keys = Object.keys(this._dbDict);
+    if (!keys.includes(dbName)) {
+      return Promise.resolve({
+        syncDate: 0,
+        message: `GetSyncDate: No available connection for ${dbName}`,
+      });
+    }
+
+    const mDB = this._dbDict[dbName];
+    const ret: any = await mDB.getSyncDate();
     return Promise.resolve(ret);
   }
   async addUpgradeStatement(

@@ -19,6 +19,8 @@
 - [`delete()`](#delete)
 - [`createSyncTable()`](#createsynctable)
 - [`setSyncDate(...)`](#setsyncdate)
+- [`getSyncDate()`](#getsyncdate)
+- [`exportToJson(...)`](#exporttojson)
 - [Interfaces](#interfaces)
 
 </docgen-index>
@@ -206,6 +208,38 @@ Set the synchronization date
 
 ---
 
+### getSyncDate()
+
+```typescript
+getSyncDate() => Promise<capSQLiteSyncDate>
+```
+
+Get the synchronization date
+
+**Returns:** <code>Promise&lt;<a href="#capsqlitesyncdate">capSQLiteSyncDate</a>&gt;</code>
+
+**Since:** 2.4.9 refactor
+
+---
+
+### exportToJson(...)
+
+```typescript
+exportToJson(mode: string) => Promise<capSQLiteJson>
+```
+
+Export the given database to a JSON Object
+
+| Param      | Type                |
+| ---------- | ------------------- |
+| **`mode`** | <code>string</code> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqlitejson">capSQLiteJson</a>&gt;</code>
+
+**Since:** 2.9.0 refactor
+
+---
+
 ### Interfaces
 
 #### capSQLiteResult
@@ -291,5 +325,53 @@ Set the synchronization date
 | --------------- | ------------------- | ----------------------------------------------------- |
 | **`statement`** | <code>string</code> | A statement                                           |
 | **`values`**    | <code>any[]</code>  | the data values list as an <a href="#array">Array</a> |
+
+#### capSQLiteSyncDate
+
+| Prop           | Type                | Description              |
+| -------------- | ------------------- | ------------------------ |
+| **`syncDate`** | <code>number</code> | the synchronization date |
+| **`message`**  | <code>string</code> | a returned message       |
+
+#### capSQLiteJson
+
+| Prop          | Type                                              | Description           |
+| ------------- | ------------------------------------------------- | --------------------- |
+| **`export`**  | <code><a href="#jsonsqlite">JsonSQLite</a></code> | an export JSON object |
+| **`message`** | <code>string</code>                               | a returned message    |
+
+#### JsonSQLite
+
+| Prop            | Type                     | Description                                            |
+| --------------- | ------------------------ | ------------------------------------------------------ |
+| **`database`**  | <code>string</code>      | The database name                                      |
+| **`version`**   | <code>number</code>      | The database version                                   |
+| **`encrypted`** | <code>boolean</code>     | Set to true (database encryption) / false              |
+| **`mode`**      | <code>string</code>      | \* Set the mode ["full", "partial"]                    |
+| **`tables`**    | <code>JsonTable[]</code> | \* Array of Table (<a href="#jsontable">JsonTable</a>) |
+
+#### JsonTable
+
+| Prop          | Type                      | Description                                               |
+| ------------- | ------------------------- | --------------------------------------------------------- |
+| **`name`**    | <code>string</code>       | The database name                                         |
+| **`schema`**  | <code>JsonColumn[]</code> | \* Array of Schema (<a href="#jsoncolumn">JsonColumn</a>) |
+| **`indexes`** | <code>JsonIndex[]</code>  | \* Array of Index (<a href="#jsonindex">JsonIndex</a>)    |
+| **`values`**  | <code>any[][]</code>      | \* Array of Table data                                    |
+
+#### JsonColumn
+
+| Prop             | Type                | Description                         |
+| ---------------- | ------------------- | ----------------------------------- |
+| **`column`**     | <code>string</code> | The column name                     |
+| **`value`**      | <code>string</code> | The column data (type, unique, ...) |
+| **`foreignkey`** | <code>string</code> | The column foreign key constraints  |
+
+#### JsonIndex
+
+| Prop         | Type                | Description                   |
+| ------------ | ------------------- | ----------------------------- |
+| **`name`**   | <code>string</code> | The index name                |
+| **`column`** | <code>string</code> | The column name to be indexed |
 
 </docgen-api>

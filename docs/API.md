@@ -70,6 +70,7 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 - [`exportToJson(...)`](#exporttojson)
 - [`createSyncTable(...)`](#createsynctable)
 - [`setSyncDate(...)`](#setsyncdate)
+- [`getSyncDate(...)`](#getsyncdate)
 - [`addUpgradeStatement(...)`](#addupgradestatement)
 - [Interfaces](#interfaces)
 
@@ -371,6 +372,24 @@ Set the synchronization date
 
 ---
 
+### getSyncDate(...)
+
+```typescript
+getSyncDate(options: capSQLiteOptions) => Promise<capSQLiteSyncDate>
+```
+
+Get the synchronization date
+
+| Param         | Type                                                          | Description                                        |
+| ------------- | ------------------------------------------------------------- | -------------------------------------------------- |
+| **`options`** | <code><a href="#capsqliteoptions">capSQLiteOptions</a></code> | : <a href="#capsqliteoptions">capSQLiteOptions</a> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqlitesyncdate">capSQLiteSyncDate</a>&gt;</code>
+
+**Since:** 2.9.0
+
+---
+
 ### addUpgradeStatement(...)
 
 ```typescript
@@ -539,10 +558,17 @@ Add the upgrade Statement for database version upgrading
 
 #### capSQLiteSyncDateOptions
 
-| Prop           | Type                | Description                  |
-| -------------- | ------------------- | ---------------------------- |
-| **`database`** | <code>string</code> | The database name            |
-| **`syncdate`** | <code>string</code> | Set the synchronization date |
+| Prop           | Type                | Description                                                    |
+| -------------- | ------------------- | -------------------------------------------------------------- |
+| **`database`** | <code>string</code> | The database name                                              |
+| **`syncdate`** | <code>string</code> | Set the synchronization date Format yyyy-MM-dd'T'HH:mm:ss.SSSZ |
+
+#### capSQLiteSyncDate
+
+| Prop           | Type                | Description              |
+| -------------- | ------------------- | ------------------------ |
+| **`syncDate`** | <code>number</code> | the synchronization date |
+| **`message`**  | <code>string</code> | a returned message       |
 
 #### capSQLiteUpgradeOptions
 

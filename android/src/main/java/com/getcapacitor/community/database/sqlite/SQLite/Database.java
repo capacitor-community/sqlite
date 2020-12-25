@@ -14,6 +14,9 @@ import androidx.sqlite.db.SupportSQLiteStatement;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.community.database.sqlite.SQLite.GlobalSQLite;
+import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.ExportToJson;
+import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.ImportFromJson;
+import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.JsonSQLite;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.UtilsJson;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLCipher;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLite;
@@ -46,6 +49,8 @@ public class Database {
     private UtilsJson _uJson;
     private UtilsUpgrade _uUpg;
     private Dictionary<Integer, JSONObject> _vUpgObject = new Hashtable<>();
+    private ImportFromJson fromJson = new ImportFromJson();
+    private ExportToJson toJson = new ExportToJson();
 
     public Database(
         Context context,
@@ -432,8 +437,8 @@ public class Database {
             Log.v(TAG, "Error in selectSQL cursor " + e.getMessage());
         } finally {
             if (c != null) c.close();
+            return retArray;
         }
-        return retArray;
     }
 
     /**
@@ -505,9 +510,75 @@ public class Database {
             retObj = execute(statements);
             if (retObj.getInteger("changes") != Integer.valueOf(-1)) ret = true;
         } catch (Exception e) {
-            Log.e(TAG, "Error: setSyncDate " + e.getLocalizedMessage());
+            Log.e(TAG, "Error: setSyncDate " + e.getMessage());
         } finally {
             return ret;
+        }
+    }
+
+    public Long getSyncDate() {
+        long syncDate = 0;
+        try {
+            syncDate = toJson.getSyncDate(this);
+        } catch (Exception e) {
+            Log.e(TAG, "Error: getSyncDate " + e.getMessage());
+        } finally {
+            return syncDate;
+        }
+    }
+
+    /**
+     * Import from Json object
+     * @param jsonSQL
+     * @return
+     */
+    public JSObject importFromJson(JsonSQLite jsonSQL) {
+        Log.d(TAG, "importFromJson:  ");
+        JSObject retObj = new JSObject();
+        int changes = Integer.valueOf(-1);
+        try {
+            // create the database schema
+            changes = fromJson.createDatabaseSchema(this, jsonSQL);
+            if (changes != -1) {
+                changes = fromJson.createDatabaseData(this, jsonSQL);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error: importFromJson " + e.getMessage());
+        } finally {
+            retObj.put("changes", changes);
+            return retObj;
+        }
+    }
+
+    /**
+     * Export to JSON Object
+     * @param mode
+     * @return
+     */
+    public JSObject exportToJson(String mode) {
+        JsonSQLite inJson = new JsonSQLite();
+        JSObject retObj = new JSObject();
+        inJson.setDatabase(_dbName.substring(0, _dbName.length() - 9));
+        inJson.setVersion(_version);
+        inJson.setEncrypted(_encrypted);
+        inJson.setMode(mode);
+        try {
+            JsonSQLite retJson = toJson.createExportObject(this, inJson);
+            //        retJson.print();
+            ArrayList<String> keys = retJson.getKeys();
+            if (keys.contains("tables")) {
+                if (retJson.getTables().size() > 0) {
+                    retObj.put("database", retJson.getDatabase());
+                    retObj.put("version", retJson.getVersion());
+                    retObj.put("encrypted", retJson.getEncrypted());
+                    retObj.put("mode", retJson.getMode());
+                    retObj.put("tables", retJson.getTablesAsJSObject());
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error: exportToJson " + e.getMessage());
+        } finally {
+            return retObj;
         }
     }
 }

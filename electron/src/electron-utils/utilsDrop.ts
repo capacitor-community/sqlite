@@ -52,17 +52,14 @@ export class UtilsDrop {
       stmt += `type = '${type}' AND name NOT LIKE 'sqlite_%';`;
       try {
         let elements: Array<any> = await this._uSQLite.queryAll(db, stmt, []);
-        if (elements.length === 0) {
-          reject(new Error(`${msg}: get ${type}'s names` + ' failed'));
-        }
-        let upType: string = type.toUpperCase();
-        let statements: Array<string> = [];
-        for (let i: number = 0; i < elements.length; i++) {
-          let stmt: string = `DROP ${upType} IF EXISTS `;
-          stmt += `${elements[i].name};`;
-          statements.push(stmt);
-        }
-        if (statements.length > 0) {
+        if (elements.length > 0) {
+          let upType: string = type.toUpperCase();
+          let statements: Array<string> = [];
+          for (let i: number = 0; i < elements.length; i++) {
+            let stmt: string = `DROP ${upType} IF EXISTS `;
+            stmt += `${elements[i].name};`;
+            statements.push(stmt);
+          }
           for (let i: number = 0; i < statements.length; i++) {
             const lastId: number = await this._uSQLite.prepareRun(
               db,
@@ -73,10 +70,32 @@ export class UtilsDrop {
               reject(new Error(`${msg}: lastId < 0`));
             }
           }
-          resolve();
         }
+        resolve();
       } catch (err) {
         reject(new Error(`${msg}: ${err.message}`));
+      }
+    });
+  }
+  /**
+   * DropAll
+   * Drop all database's elements
+   * @param db
+   */
+  public async dropAll(db: any): Promise<void> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        // drop tables
+        await this.dropElements(db, 'table');
+        // drop indexes
+        await this.dropElements(db, 'index');
+        // drop triggers
+        await this.dropElements(db, 'trigger');
+        // vacuum the database
+        await this._uSQLite.prepareRun(db, 'VACUUM;', []);
+        resolve();
+      } catch (err) {
+        reject(new Error(`DropAll: ${err.message}`));
       }
     });
   }

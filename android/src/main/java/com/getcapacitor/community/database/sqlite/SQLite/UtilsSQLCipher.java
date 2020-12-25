@@ -45,7 +45,7 @@ public class UtilsSQLCipher {
                 db.getVersion();
 
                 return (State.UNENCRYPTED);
-            } catch (Exception e) { //1234567890123456789012345678901234567890123456789012345678901234567890
+            } catch (Exception e) {
                 try {
                     db = SQLiteDatabase.openDatabase(dbPath.getAbsolutePath(), globVar.secret, null, SQLiteDatabase.OPEN_READONLY);
                     return (State.ENCRYPTED_SECRET);

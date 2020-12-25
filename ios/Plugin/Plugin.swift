@@ -485,7 +485,7 @@ public class CapacitorSQLite: CAPPlugin {
     }
 
     // MARK: - IsJsonValid
-/*
+
     @objc func isJsonValid(_ call: CAPPluginCall) {
         let parsingData: String = call.getString("jsonstring") ?? ""
         if parsingData.count == 0 {
@@ -500,110 +500,138 @@ public class CapacitorSQLite: CAPPlugin {
                 _ = try JSONDecoder().decode([JsonSQLite].self,
                                              from: data)
                 retHandler.rResult(call: call, ret: true)
+                return
             } catch let error {
                 var msg: String = "IsJsonValid command failed : "
                 msg.append("Stringify Json Object not Valid")
                 msg.append("\(error.localizedDescription)")
-               retHandler.rResult(call: call, ret: false,
+                retHandler.rResult(call: call, ret: false,
                                             message: msg)
+                return
             }
         } else {
             var msg: String = "IsJsonValid command failed : "
             msg.append("Stringify Json Object not Valid")
             retHandler.rResult(call: call, ret: false,
                                             message: msg)
+            return
         }
     }
- */
 
     // MARK: - ImportFromJson
-/*
+
+    // swiftlint:disable function_body_length
     @objc func importFromJson(_ call: CAPPluginCall) {
         let parsingData: String = call.getString("jsonstring") ?? ""
         if parsingData.count == 0 {
             retHandler.rChanges(call: call, ret: ["changes": -1],
-                message: "ImportFromJson command failed : Must provide a Stringify Json Object")
+                message: "ImportFromJson command failed : " +
+                    "Must provide a Stringify Json Object")
             return
         }
+        var mDb: Database
+        var msg: String = "ImportFromJson command failed: "
         if let data = ("["+parsingData+"]").data(using: .utf8) {
             do {
                 let jsonSQLite = try JSONDecoder()
                             .decode([JsonSQLite].self, from: data)
-                let secret: String = jsonSQLite[0].encrypted ?
-                            globalData.secret : ""
-                let inMode: String = jsonSQLite[0].encrypted ?
-                            "secret" : "no-encryption"
+                let encrypted: Bool = jsonSQLite[0].encrypted ?
+                            true : false
+                let inMode: String = encrypted ? "secret"
+                                               : "no-encryption"
                 var dbName: String = jsonSQLite[0].database
                 dbName.append("SQLite.db")
+                // open the database
                 do {
-                    mDb = try DatabaseHelper(
-                        databaseName: dbName,
-                        encrypted: jsonSQLite[0].encrypted,
-                        mode: inMode, secret: secret, newsecret: "")
+                    mDb = try Database(
+                        databaseName: dbName, encrypted: encrypted,
+                        mode: inMode, vUpgDict: [:])
+                    try mDb.open()
+                } catch DatabaseError.open(let message) {
+                    msg.append("\(message)")
+                    retHandler.rChanges(
+                        call: call,
+                        ret: ["changes": -1], message: msg)
+                    return
                 } catch let error {
-                    var msg: String = "ImportFromJson command failed :"
                     msg.append(" \(error.localizedDescription)")
                     retHandler.rChanges(call: call,
                                         ret: ["changes": -1],
                                         message: msg)
+                    return
                 }
-                if mDb != nil && !(mDb?.isOpen ?? true) {
-                    var msg: String = "ImportFromJson command "
-                    msg.append("failed : Database \(dbName)")
-                    msg.append(" not opened")
-                    retHandler.rChanges(call: call,
-                                        ret: ["changes": -1],
-                                        message: msg)
-                } else {
-                    do {
-                        if let res: [String: Int] =
-                                try (mDb?.importFromJson(
-                                        jsonSQLite: jsonSQLite[0])) {
-                            var msg: String = "ImportFromJson command "
-                            msg.append("failed : import JsonObject not")
-                            msg.append(" successful")
-                            if res["changes"] == -1 {
-                                retHandler.rChanges(
-                                            call: call,
+                // import from Json Object
+                do {
+                    let res: [String: Int] = try mDb
+                        .importFromJson(jsonSQLite: jsonSQLite[0])
+                    try mDb.close()
+                    if let result = res["changes"] {
+                        if result < 0 {
+                            msg.append("changes < 0")
+                            retHandler.rChanges(call: call,
+                                                ret: ["changes": -1],
+                                                message: msg )
+                            return
+                        } else {
+                            retHandler.rChanges(call: call,
+                                                ret: res)
+                        }
+                    } else {
+                        let msg: String = "changes not found"
+                        retHandler.rChanges(call: call,
                                             ret: ["changes": -1],
                                             message: msg )
-                            } else {
-                                retHandler.rChanges(call: call,
-                                                    ret: res)
-                            }
-                        }
-                    } catch DatabaseHelperError.importFromJson(
-                                            let message) {
-                        var msg: String = "ImportFromJson command "
-                        msg.append("failed : \(message)")
+                    }
+                } catch DatabaseError.importFromJson(
+                                        let message) {
+                    msg.append("\(message)")
+                    do {
+                        try mDb.close()
                         retHandler.rChanges(
                             call: call,
                             ret: ["changes": -1], message: msg)
-                    } catch DatabaseHelperError.tableNotExists(
-                                            let message) {
+                        return
+                    } catch DatabaseError.close(let message) {
+                        msg.append(" \(message)")
                         retHandler.rChanges(
-                            call: call, ret: ["changes": -1],
-                            message: message)
+                            call: call,
+                            ret: ["changes": -1], message: msg)
+                        return
                     }
+                } catch DatabaseError.close(let message) {
+                    msg.append("\(message)")
+                    retHandler.rChanges(
+                        call: call,
+                        ret: ["changes": -1], message: msg)
+                    return
                 }
             } catch let error {
-                var msg: String = "ImportFromJson command failed : "
                 msg.append("Stringify Json Object not Valid ")
                 msg.append("\(error.localizedDescription)")
                 retHandler.rChanges(
                     call: call, ret: ["changes": -1], message: msg)
+                return
             }
         } else {
-            var msg: String = "ImportFromJson command failed : "
             msg.append("Stringify Json Object not Valid ")
             retHandler.rChanges(call: call, ret: ["changes": -1],
                                 message: msg)
+            return
         }
     }
-*/
+    // swiftlint:enable function_body_length
+
     // MARK: - ExportToJson
-/*
+
+    // swiftlint:disable function_body_length
     @objc func exportToJson(_ call: CAPPluginCall) {
+        guard let dbName = call.options["database"] as? String else {
+            retHandler.rChanges(
+                call: call, ret: ["changes": -1],
+                message: "exportToJson command failed: " +
+                    "Must provide a database name")
+            return
+        }
         let expMode: String = call.getString("jsonexportmode") ?? ""
         if expMode.count == 0 {
             var msg: String = "ExportToJson command failed : "
@@ -619,38 +647,42 @@ public class CapacitorSQLite: CAPPlugin {
                                    message: msg)
             return
         }
-        if mDb != nil {
-            do {
-                if let res: [String: Any] = try
-                                mDb?.exportToJson(expMode: expMode) {
-                    if res.count == 5 {
-                       retHandler.rJsonSQLite(call: call, ret: res)
-                    } else {
-                        var msg: String = "ExportToJson command failed"
-                        msg.append(" : return Object is not a ")
-                        msg.append("JsonSQLite  Object")
-                        retHandler.rJsonSQLite(call: call, ret: [:],
-                                               message: msg)
-                    }
-                } else {
-                    retHandler.rJsonSQLite(
-                            call: call, ret: [:],
-                            message: "ExportToJson command failed ")
-                }
-            } catch let error {
-                retHandler.rJsonSQLite(
-                    call: call, ret: [:],
-                    message: "ExportToJson command failed : \(error)")
-            }
 
-        } else {
-            var msg: String = "ExportToJson command failed : "
-            msg.append("No database connection ")
+        guard let mDb: Database = dbDict[dbName] else {
+            retHandler.rChanges(
+                call: call, ret: ["changes": -1],
+                message: "ExportToJson command failed: No " +
+                    "available connection for \(dbName)")
+            return
+        }
+
+        do {
+            let res: [String: Any] = try
+                            mDb.exportToJson(expMode: expMode)
+                if res.count == 5 {
+                   retHandler.rJsonSQLite(call: call, ret: res)
+                } else {
+                    var msg: String = "ExportToJson command failed"
+                    msg.append(" : return Object is not a ")
+                    msg.append("JsonSQLite  Object")
+                    retHandler.rJsonSQLite(call: call, ret: [:],
+                                           message: msg)
+                }
+        } catch DatabaseError.exportToJson(let message) {
+            retHandler.rJsonSQLite(
+                call: call, ret: [:],
+                message: "ExportToJson command failed : \(message)")
+        } catch let error {
+            var msg: String = "ExportToJson command failed :"
+            msg.append(" \(error.localizedDescription)")
             retHandler.rJsonSQLite(call: call, ret: [:],
                                    message: msg)
+            return
         }
+
     }
-*/
+    // swiftlint:enable function_body_length
+
     // MARK: - CreateSyncTable
 
     @objc func createSyncTable(_ call: CAPPluginCall) {
@@ -725,6 +757,39 @@ public class CapacitorSQLite: CAPPlugin {
         } catch let error {
             msg.append("\(error)")
             retHandler.rResult(call: call, ret: false, message: msg)
+        }
+    }
+
+    // MARK: - SetSyncDate
+
+    @objc func getSyncDate(_ call: CAPPluginCall) {
+        var msg: String = "setSyncDate command failed: "
+        guard let dbName = call.options["database"] as? String else {
+            retHandler.rResult(
+                call: call, ret: false,
+                message: msg + "Must provide a database name")
+            return
+        }
+        guard let mDb: Database = dbDict[dbName] else {
+            retHandler.rResult(
+                call: call, ret: false,
+                message: msg + "available connection for \(dbName)")
+            return
+        }
+        do {
+            let res: Int64 = try mDb.getSyncDate()
+            if res > 0 {
+                retHandler.rSyncDate(call: call, ret: res)
+            } else {
+               retHandler.rSyncDate(
+                    call: call, ret: 0, message: msg)
+            }
+        } catch DatabaseError.getSyncDate(let message) {
+            msg.append("\(message)")
+            retHandler.rSyncDate(call: call, ret: 0, message: msg)
+        } catch let error {
+            msg.append("\(error)")
+            retHandler.rSyncDate(call: call, ret: 0, message: msg)
         }
     }
 

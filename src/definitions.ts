@@ -121,6 +121,13 @@ export interface CapacitorSQLitePlugin {
    */
   setSyncDate(options: capSQLiteSyncDateOptions): Promise<capSQLiteResult>;
   /**
+   * Get the synchronization date
+   * @param options: capSQLiteOptions
+   * @returns Promise<capSQLiteSyncDate>
+   * @since 2.9.0
+   */
+  getSyncDate(options: capSQLiteOptions): Promise<capSQLiteSyncDate>;
+  /**
    * Add the upgrade Statement for database version upgrading
    * @param options: capSQLiteUpgradeOptions
    * @returns Promise<capSQLiteResult>
@@ -237,7 +244,7 @@ export interface capSQLiteSyncDateOptions {
   database?: string;
   /**
    * Set the synchronization date
-   *
+   * Format yyyy-MM-dd'T'HH:mm:ss.SSSZ
    */
   syncdate?: string;
 }
@@ -313,6 +320,16 @@ export interface capSQLiteJson {
    * an export JSON object
    */
   export?: JsonSQLite;
+  /**
+   * a returned message
+   */
+  message?: string;
+}
+export interface capSQLiteSyncDate {
+  /**
+   * the synchronization date
+   */
+  syncDate?: number;
   /**
    * a returned message
    */
@@ -463,6 +480,20 @@ export interface ISQLiteConnection {
    * @since 2.9.0 refactor
    */
   closeAllConnections(): Promise<capSQLiteResult>;
+  /**
+   * Import a database From a JSON
+   * @param jsonstring string
+   * @returns Promise<capSQLiteChanges>
+   * @since 2.9.0 refactor
+   */
+  importFromJson(jsonstring: string): Promise<capSQLiteChanges>;
+  /**
+   * Check the validity of a JSON Object
+   * @param jsonstring string
+   * @returns Promise<capSQLiteResult>
+   * @since 2.9.0 refactor
+   */
+  isJsonValid(jsonstring: string): Promise<capSQLiteResult>;
 }
 /**
  * SQLiteConnection Class
@@ -543,6 +574,12 @@ export class SQLiteConnection implements ISQLiteConnection {
     }
     return res;
   }
+  async importFromJson(jsonstring: string): Promise<capSQLiteChanges> {
+    return await this.sqlite.importFromJson({ jsonstring: jsonstring });
+  }
+  async isJsonValid(jsonstring: string): Promise<capSQLiteResult> {
+    return await this.sqlite.isJsonValid({ jsonstring: jsonstring });
+  }
 }
 
 /**
@@ -622,6 +659,19 @@ export interface ISQLiteDBConnection {
    * @since 2.4.9 refactor
    */
   setSyncDate(syncdate: string): Promise<capSQLiteResult>;
+  /**
+   * Get the synchronization date
+   * @returns Promise<capSQLiteSyncDate>
+   * @since 2.4.9 refactor
+   */
+  getSyncDate(): Promise<capSQLiteSyncDate>;
+  /**
+   * Export the given database to a JSON Object
+   * @param mode
+   * @returns Promise<capSQLiteJson>
+   * @since 2.9.0 refactor
+   */
+  exportToJson(mode: string): Promise<capSQLiteJson>;
 }
 /**
  * SQLiteDBConnection Class
@@ -718,6 +768,17 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
     });
     return res;
   }
-
-  // TODO other commands to importFromJson, exportToJson ...
+  async getSyncDate(): Promise<capSQLiteSyncDate> {
+    const res: any = await this.sqlite.getSyncDate({
+      database: this.dbName,
+    });
+    return res;
+  }
+  async exportToJson(mode: string): Promise<capSQLiteJson> {
+    const res: any = await this.sqlite.exportToJson({
+      database: this.dbName,
+      jsonexportmode: mode,
+    });
+    return res;
+  }
 }

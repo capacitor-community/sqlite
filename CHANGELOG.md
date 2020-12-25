@@ -1,3 +1,16 @@
+## 2.9.0-beta.1 (2020-12-25) REFACTOR
+
+### Added Features
+
+- importFromJson (Android, iOS, Electron)
+- exportToJson (Android, iOS, Electron)
+- isJsonValid (Android, iOS, Electron)
+- getSyncDate (Android, iOS, Electron)
+
+### Bug Fixes
+
+- update README and CHANGELOG
+
 ## 2.9.0-alpha.7 (2020-12-14) REFACTOR
 
 ### Bug Fixes
@@ -104,6 +117,12 @@
 - closeConnection method
 - SQLiteConnection Interface & Class
 - SQLiteDBConnection Interface & Class
+
+## 2.4.3 (2020-12-19)
+
+### Bug Fixes
+
+- Fix issue#59 ExportToJson
 
 ## 2.4.3-1 (2020-11-23)
 

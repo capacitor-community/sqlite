@@ -15,6 +15,8 @@
 - [`retrieveAllConnections()`](#retrieveallconnections)
 - [`closeConnection(...)`](#closeconnection)
 - [`closeAllConnections()`](#closeallconnections)
+- [`importFromJson(...)`](#importfromjson)
+- [`isJsonValid(...)`](#isjsonvalid)
 - [Interfaces](#interfaces)
 
 </docgen-index>
@@ -151,6 +153,42 @@ Close all database connections
 
 ---
 
+### importFromJson(...)
+
+```typescript
+importFromJson(jsonstring: string) => Promise<capSQLiteChanges>
+```
+
+Import a database From a JSON
+
+| Param            | Type                | Description |
+| ---------------- | ------------------- | ----------- |
+| **`jsonstring`** | <code>string</code> | string      |
+
+**Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
+
+**Since:** 2.9.0 refactor
+
+---
+
+### isJsonValid(...)
+
+```typescript
+isJsonValid(jsonstring: string) => Promise<capSQLiteResult>
+```
+
+Check the validity of a JSON Object
+
+| Param            | Type                | Description |
+| ---------------- | ------------------- | ----------- |
+| **`jsonstring`** | <code>string</code> | string      |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 2.9.0 refactor
+
+---
+
 ### Interfaces
 
 #### capEchoResult
@@ -187,5 +225,19 @@ Close all database connections
 | **get**     | (key: K) =&gt; V \| undefined                                                                                  |
 | **has**     | (key: K) =&gt; boolean                                                                                         |
 | **set**     | (key: K, value: V) =&gt; this                                                                                  |
+
+#### capSQLiteChanges
+
+| Prop          | Type                                        | Description                               |
+| ------------- | ------------------------------------------- | ----------------------------------------- |
+| **`changes`** | <code><a href="#changes">Changes</a></code> | a returned <a href="#changes">Changes</a> |
+| **`message`** | <code>string</code>                         | a returned message                        |
+
+#### Changes
+
+| Prop          | Type                | Description                                          |
+| ------------- | ------------------- | ---------------------------------------------------- |
+| **`changes`** | <code>number</code> | the number of changes from an execute or run command |
+| **`lastId`**  | <code>number</code> | the lastId created from a run command                |
 
 </docgen-api>

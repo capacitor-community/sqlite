@@ -164,8 +164,7 @@ class UtilsDrop {
 
     // MARK: - dropAll
 
-    class func dropAll(mDB: Database, path: String,
-                       secret: String) throws -> Int {
+    class func dropAll(mDB: Database) throws -> Int {
         var changes: Int = 0
         let initChanges = UtilsSQLCipher.dbChanges(mDB: mDB.mDb)
 
@@ -179,7 +178,8 @@ class UtilsDrop {
             print("after dropTriggers retChanges: \(retChanges)")
             changes += retChanges
             if changes >= 0 {
-                _ = try mDB.runSQL(sql: "VACUUM;", values: [])
+                _ = try UtilsSQLCipher.prepareSQL(mDB: mDB,
+                                                  sql: "VACUUM;", values: [])
                 changes = UtilsSQLCipher.dbChanges(mDB: mDB.mDb) -
                                                             initChanges
             }
@@ -190,7 +190,7 @@ class UtilsDrop {
             throw UtilsDropError.dropAllFailed(message: message)
         } catch UtilsDropError.dropTriggersFailed(let message) {
             throw UtilsDropError.dropAllFailed(message: message)
-        } catch DatabaseError.runSQL(let message) {
+        } catch UtilsSQLCipherError.prepareSQL(let message) {
             throw UtilsDropError.dropAllFailed(message: message)
         }
         return changes

@@ -20,6 +20,9 @@ enum DatabaseError: Error {
     case execSet(message: String)
     case createSyncTable(message: String)
     case createSyncDate(message: String)
+    case getSyncDate(message: String)
+    case exportToJson(message: String)
+    case importFromJson(message: String)
 }
 // swiftlint:disable file_length
 // swiftlint:disable type_body_length
@@ -403,23 +406,81 @@ class Database {
     func setSyncDate(syncDate: String ) throws -> Bool {
         var retBool: Bool = false
         do {
-            let date = Date()
-            let syncTime: Int = Int(date.timeIntervalSince1970)
-            var stmt: String = "UPDATE sync_table SET sync_date = "
-            stmt.append("\(syncTime) WHERE id = 1;")
-            let retRun = try runSQL(sql: stmt, values: [])
-            if let lastId: Int64 = retRun["lastId"] {
-                if lastId != -1 {
-                    retBool = true
+            let dateFormatter = DateFormatter()
+            dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+            dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+            if let date = dateFormatter.date(from: syncDate) {
+                let syncTime: Int = Int(date.timeIntervalSince1970)
+                var stmt: String = "UPDATE sync_table SET sync_date = "
+                stmt.append("\(syncTime) WHERE id = 1;")
+                let retRun = try runSQL(sql: stmt, values: [])
+                if let lastId: Int64 = retRun["lastId"] {
+                    if lastId != -1 {
+                        retBool = true
+                    }
                 }
+            } else {
+                throw DatabaseError.createSyncDate(message: "wrong syncDate")
             }
-
         } catch DatabaseError.runSQL(let message) {
             throw DatabaseError.createSyncDate(message: message)
         }
         return retBool
     }
 
+    // MARK: - GetSyncDate
+
+    func getSyncDate( ) throws -> Int64 {
+        var syncDate: Int64 = 0
+        do {
+            syncDate = try ExportToJson.getSyncDate(mDB: self)
+        } catch ExportToJsonError.getSyncDate(let message) {
+            throw DatabaseError.getSyncDate(message: message)
+        }
+        return syncDate
+    }
+
+    // MARK: - ExportToJson
+
+    func exportToJson(expMode: String) throws -> [String: Any] {
+        var retObj: [String: Any] = [:]
+
+        do {
+            let data: [String: Any] = [
+                "dbName": dbName, "encrypted": self.encrypted,
+                "expMode": expMode, "version": dbVersion]
+            retObj = try ExportToJson
+                            .createExportObject(mDB: self, data: data)
+        } catch ExportToJsonError.createExportObject(let message) {
+           throw DatabaseError.exportToJson(message: message)
+        }
+        return retObj
+    }
+
+    // MARK: - ImportFromJson
+
+    func importFromJson(jsonSQLite: JsonSQLite)
+                                            throws -> [String: Int] {
+        var changes: Int = -1
+
+        // Create the Database Schema
+        do {
+            changes = try ImportFromJson
+                        .createDatabaseSchema(mDB: self,
+                                              jsonSQLite: jsonSQLite)
+            if changes != -1 {
+                // Create the Database Data
+                changes = try ImportFromJson
+                        .createDatabaseData(mDB: self,
+                                            jsonSQLite: jsonSQLite)
+            }
+            return ["changes": changes]
+        } catch ImportFromJsonError.createDatabaseSchema(let message) {
+            throw DatabaseError.importFromJson(message: message)
+        } catch ImportFromJsonError.createDatabaseData(let message) {
+            throw DatabaseError.importFromJson(message: message)
+        }
+    }
 }
 // swiftlint:enable type_body_length
 // swiftlint:enable file_length

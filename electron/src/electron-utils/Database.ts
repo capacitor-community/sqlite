@@ -1,10 +1,12 @@
 import { UtilsFile } from './utilsFile';
 import { UtilsSQLite } from './utilsSQLite';
-import { UtilsJson } from './utilsJson';
+import { UtilsJson } from './ImportExportJson/utilsJson';
 import { GlobalSQLite } from '../GlobalSQLite';
 import { UtilsEncryption } from './utilsEncryption';
 import { UtilsUpgrade } from './utilsUpgrade';
-import { capSQLiteVersionUpgrade } from '../definitions';
+import { ImportFromJson } from './ImportExportJson/importFromJson';
+import { ExportToJson } from './ImportExportJson/exportToJson';
+import { capSQLiteVersionUpgrade, JsonSQLite } from '../definitions';
 //1234567890123456789012345678901234567890123456789012345678901234567890
 
 export class Database {
@@ -20,6 +22,8 @@ export class Database {
   private _uGlobal: GlobalSQLite = new GlobalSQLite();
   private _uEncrypt: UtilsEncryption = new UtilsEncryption();
   private _uUpg: UtilsUpgrade = new UtilsUpgrade();
+  private _iFJson: ImportFromJson = new ImportFromJson();
+  private _eTJson: ExportToJson = new ExportToJson();
   private _mDB: any;
   private _vUpgDict: Record<number, capSQLiteVersionUpgrade> = {};
 
@@ -87,17 +91,10 @@ export class Database {
           this._pathDB,
           password,
         );
+
+        let curVersion: number = await this._uSQLite.getVersion(this._mDB);
         this._isDBOpen = true;
 
-        // set Foreign Keys On
-        await this._uSQLite.setForeignKeyConstraintsEnabled(this._mDB, true);
-
-        // Check Version
-        let curVersion: number = await this._uSQLite.getVersion(this._mDB);
-        if (curVersion === 0) {
-          await this._uSQLite.setVersion(this._mDB, 1);
-          curVersion = await this._uSQLite.getVersion(this._mDB);
-        }
         if (this._version > curVersion) {
           try {
             // execute the upgrade flow process
@@ -239,7 +236,9 @@ export class Database {
       const sDate: number = Math.round(new Date(syncDate).getTime() / 1000);
       let stmt: string = `UPDATE sync_table SET sync_date = `;
       stmt += `${sDate} WHERE id = 1;`;
+      console.log(`>>> setSyncDate stmt ${stmt}`);
       const changes: number = await this.executeSQL(stmt);
+      console.log(`>>> setSyncDate changes ${changes}`);
       if (changes < 0) {
         return { result: false, message: 'setSyncDate failed' };
       } else {
@@ -247,6 +246,28 @@ export class Database {
       }
     } catch (err) {
       return { result: false, message: `setSyncDate failed: ${err.message}` };
+    }
+  }
+  /**
+   * GetSyncDate
+   * store the synchronization date
+   * @returns Promise<{syncDate: number, message: string}>
+   */
+  async getSyncDate(): Promise<any> {
+    if (!this._isDBOpen) {
+      let msg = `GetSyncDate: Database ${this._dbName} `;
+      msg += `not opened`;
+      return { syncDate: 0, message: msg };
+    }
+    try {
+      const syncDate: number = await this._eTJson.getSyncDate(this._mDB);
+      if (syncDate > 0) {
+        return { syncDate: syncDate };
+      } else {
+        return { syncDate: 0, message: `setSyncDate failed` };
+      }
+    } catch (err) {
+      return { syncDate: 0, message: `setSyncDate failed: ${err.message}` };
     }
   }
   /**
@@ -384,6 +405,56 @@ export class Database {
         } catch (err) {
           reject(new Error(`ExecSet: ${msg}: ` + `${err.message}`));
         }
+      }
+    });
+  }
+  public importJson(jsonData: JsonSQLite): Promise<number> {
+    return new Promise(async (resolve, reject) => {
+      let changes: number = -1;
+      if (this._isDBOpen) {
+        try {
+          // create the database schema
+          changes = await this._iFJson.createDatabaseSchema(
+            this._mDB,
+            jsonData,
+          );
+          if (changes != -1) {
+            // create the tables data
+            changes = await this._iFJson.createTablesData(this._mDB, jsonData);
+          }
+          resolve(changes);
+        } catch (err) {
+          reject(new Error(`ImportJson: ${err.message}`));
+        }
+      } else {
+        reject(new Error(`ImportJson: database is closed`));
+      }
+    });
+  }
+  public exportJson(mode: string): Promise<any> {
+    return new Promise(async (resolve, reject) => {
+      const inJson: JsonSQLite = {} as JsonSQLite;
+      inJson.database = this._dbName.slice(0, -9);
+      inJson.version = this._version;
+      inJson.encrypted = false;
+      inJson.mode = mode;
+      if (this._isDBOpen) {
+        try {
+          const retJson: JsonSQLite = await this._eTJson.createExportObject(
+            this._mDB,
+            inJson,
+          );
+          const isValid = this._uJson.isJsonSQLite(retJson);
+          if (isValid) {
+            resolve(retJson);
+          } else {
+            reject(new Error(`ExportJson: retJson not valid`));
+          }
+        } catch (err) {
+          reject(new Error(`ExportJson: ${err.message}`));
+        }
+      } else {
+        reject(new Error(`ExportJson: database is closed`));
       }
     });
   }

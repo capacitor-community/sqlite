@@ -337,11 +337,11 @@ public class UtilsUpgrade {
                 try {
                     db.runSQL(stmt, new ArrayList<>());
                 } catch (Exception e) {
-                    throw new Exception("update sync date failed");
+                    throw new Exception("executeSetProcess failed" + e.getMessage());
                 }
             }
         } catch (Exception e) {
-            throw new Exception("Error: executeSetProcess failed " + e);
+            throw new Exception("Error: executeSetProcess failed " + e.getMessage());
         }
     }
 

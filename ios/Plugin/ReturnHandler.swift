@@ -73,4 +73,20 @@ class ReturnHandler {
             ])
         }
     }
+
+    // MARK: - rSyncDate
+
+    func rSyncDate(call: CAPPluginCall, ret: Int64,
+                   message: String? = nil) {
+        if let intMessage = message {
+            call.success([
+                "syncDate": ret,
+                "message": intMessage
+            ])
+        } else {
+            call.success([
+                "syncDate": ret
+            ])
+        }
+    }
 }
