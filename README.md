@@ -11,7 +11,7 @@
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/l/@capacitor-community/sqlite?style=flat-square" /></a>
 <br>
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/dw/@capacitor-community/sqlite?style=flat-square" /></a>
-  <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/v/@capacitor-community/sqlite?style=flat-square" /></a>
+  <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/v/@capacitor-community/sqlite/refactor?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 <a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-1-orange?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
@@ -25,14 +25,17 @@
 
 ## REFACTOR
 
-The refactor will be a quite long process.
+The refactor offers now (`2.9.0-beta.1`) all the features that the previous was offering. It has been a quite heavy process, hoping that the developpers will take benefit from it.
 
-The aim of the refactor will be to allow
+The main reasons for it:
 
-- for multiple database connections
-- for a db connector allowing for easy commands `db.open(), db.close, ...`
+- multiple database connections
+- db connector allowing for easy commands `db.open(), db.close, ...`
 - improve the response time of the encrypted database by removing the internal open and close database for each sqlite query
 - moving to the latest `androidx.sqlite.db.xxx`
+- offering encryption for Electron platform by using `@journeyapps/sqlcipher`
+- cleaning and aligning the code between platforms
+- allowing developers to develop `typeorm` or `spatialite` drivers.
 
 This was discussed lengthly in issue#1 and issue#52
 
