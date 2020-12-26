@@ -126,7 +126,7 @@ class UtilsUpgrade {
                     set: [[String: Any]], toVersion: Int) throws {
         do {
             // -> load new data
-            let changesDict: [String: Int] = try
+            let changesDict: [String: Int64] = try
                 dbHelper.executeSet(
                 mDB: mDB,
                 set: set)
@@ -164,7 +164,7 @@ class UtilsUpgrade {
                 var stmt: String = "UPDATE sync_table SET "
                 stmt.append("sync_date = \(syncTime) ")
                 stmt.append("WHERE id = 1;")
-                let lastId: Int = try dbHelper
+                let lastId: Int64 = try dbHelper
                     .prepareSQL(mDB: mDB, sql: stmt, values: [])
                 if lastId == -1 {
                     var msg: String = "Error: onUpgrade  "

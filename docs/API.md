@@ -62,7 +62,8 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 - [`setSyncDate(...)`](#setsyncdate)
 - [`addUpgradeStatement(...)`](#addupgradestatement)
 - [Interfaces](#interfaces)
-  </docgen-index>
+
+</docgen-index>
 - [Listeners](#listeners)
 
 <docgen-api class="custom-css">
@@ -466,9 +467,9 @@ Add the upgrade Statement for database version upgrading
 
 #### capSQLiteSyncDateOptions
 
-| Prop           | Type                | Description                  |
-| -------------- | ------------------- | ---------------------------- |
-| **`syncdate`** | <code>string</code> | Set the synchronization date |
+| Prop           | Type                | Description                                                    |
+| -------------- | ------------------- | -------------------------------------------------------------- |
+| **`syncdate`** | <code>string</code> | Set the synchronization date Format yyyy-MM-dd'T'HH:mm:ss.SSSZ |
 
 #### capSQLiteUpgradeOptions
 

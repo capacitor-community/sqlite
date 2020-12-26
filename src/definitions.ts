@@ -191,7 +191,7 @@ export interface capSQLiteExportOptions {
 export interface capSQLiteSyncDateOptions {
   /**
    * Set the synchronization date
-   *
+   * Format yyyy-MM-dd'T'HH:mm:ss.SSSZ
    */
   syncdate?: string;
 }

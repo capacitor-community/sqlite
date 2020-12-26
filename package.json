@@ -20,26 +20,26 @@
   "author": "Jean Pierre Queau",
   "license": "MIT",
   "devDependencies": {
-    "@capacitor/android": "^2.4.3",
-    "@capacitor/core": "^2.4.3",
-    "@capacitor/docgen": "0.0.10",
-    "@capacitor/ios": "^2.4.3",
-    "@ionic/prettier-config": "^1.0.0",
-    "@ionic/swiftlint-config": "^1.1.1",
+    "@capacitor/android": "^2.4.4",
+    "@capacitor/core": "^2.4.4",
+    "@capacitor/docgen": "0.0.14",
+    "@capacitor/ios": "^2.4.4",
+    "@ionic/prettier-config": "^1.0.1",
+    "@ionic/swiftlint-config": "^1.1.2",
     "@rollup/plugin-node-resolve": "^9.0.0",
-    "@types/node": "^12.12.62",
-    "electron": "^11.0.2",
-    "husky": "^4.2.5",
-    "np": "^6.3.2",
-    "prettier": "^2.0.5",
-    "prettier-plugin-java": "^0.8.1",
-    "pretty-quick": "^2.0.1",
-    "rimraf": "^3.0.0",
-    "rollup": "^2.28.1",
+    "@types/node": "^12.19.11",
+    "electron": "^11.1.1",
+    "husky": "^4.3.6",
+    "np": "^7.0.0",
+    "prettier": "^2.2.1",
+    "prettier-plugin-java": "^0.8.3",
+    "pretty-quick": "^2.0.2",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.35.1",
     "rollup-plugin-node-resolve": "^5.2.0",
     "swiftlint": "^1.0.1",
-    "tslib": "^1.13.0",
-    "typescript": "^3.9.6"
+    "tslib": "^1.14.1",
+    "typescript": "^4.0.5"
   },
   "husky": {
     "hooks": {
@@ -47,7 +47,7 @@
     }
   },
   "peerDependencies": {
-    "@capacitor/core": "^2.4.3"
+    "@capacitor/core": "^2.4.4"
   },
   "files": [
     "dist/",

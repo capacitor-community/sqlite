@@ -1,3 +1,16 @@
+## 2.4.4 (2020-12-26)
+
+### Chore
+
+- update to @capacitor/core@2.4.4
+
+### Bug Fixes
+
+- Fix README
+- Fix setSyncDate (iOS)
+- Fix exportToJson (Android)
+- Fix lastId to Int64 (iOS)
+
 ## 2.4.3 (2020-12-19)
 
 ### Bug Fixes

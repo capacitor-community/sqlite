@@ -279,7 +279,7 @@ class ImportFromJson {
                     row: row, jsonNamesTypes: jsonNamesTypes)
                 let rowValues = UtilsJson.getValuesFromRow(
                                                     rowValues: row)
-                let lastId: Int = try dbHelper.prepareSQL(
+                let lastId: Int64 = try dbHelper.prepareSQL(
                     mDB: mDB, sql: stmt, values: rowValues)
                 success = lastId != -1 ? true : false
             } catch DatabaseHelperError.createRowStatement(

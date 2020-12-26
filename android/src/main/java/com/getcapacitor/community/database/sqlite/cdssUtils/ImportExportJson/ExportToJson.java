@@ -11,6 +11,7 @@ import net.sqlcipher.database.SQLiteDatabase;
 import org.json.JSONException;
 
 public class ExportToJson {
+
     private static final String TAG = ImportFromJson.class.getName();
     private UtilsJson uJson = new UtilsJson();
     private UtilsSQLite uSqlite = new UtilsSQLite();
@@ -154,13 +155,25 @@ public class ExportToJson {
                         for (int k = 0; k < rowNames.size(); k++) {
                             if (rowTypes.get(k).equals("INTEGER")) {
                                 if (lValues.get(j).has(rowNames.get(k))) {
-                                    row.add(lValues.get(j).getLong(rowNames.get(k)));
+                                    Object obj = lValues.get(j).get(rowNames.get(k));
+                                    if (obj instanceof Long) {
+                                        row.add(lValues.get(j).getLong(rowNames.get(k)));
+                                    }
+                                    if (obj instanceof String) {
+                                        row.add(lValues.get(j).getString(rowNames.get(k)));
+                                    }
                                 } else {
                                     row.add("NULL");
                                 }
                             } else if (rowTypes.get(k).equals("REAL")) {
                                 if (lValues.get(j).has(rowNames.get(k))) {
-                                    row.add(lValues.get(j).getDouble(rowNames.get(k)));
+                                    Object obj = lValues.get(j).get(rowNames.get(k));
+                                    if (obj instanceof Long) {
+                                        row.add(lValues.get(j).getDouble(rowNames.get(k)));
+                                    }
+                                    if (obj instanceof String) {
+                                        row.add(lValues.get(j).getString(rowNames.get(k)));
+                                    }
                                 } else {
                                     row.add("NULL");
                                 }

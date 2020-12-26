@@ -184,15 +184,15 @@ class DatabaseHelper {
 
     // MARK: - execSet
 
-    func execSet(set: [[String: Any]]) throws -> [String: Int] {
+    func execSet(set: [[String: Any]]) throws -> [String: Int64] {
         guard let mDB: OpaquePointer =
             try UtilsConnection.getWritableDatabase(
                                             filename: self.path,
                                             secret: secret) else {
-            var msg: String = "Error: DB connection"
+            let msg: String = "Error: DB connection"
             throw DatabaseHelperError.dbConnection(message: msg)
         }
-        var changesDict: [String: Int] = ["lastId": -1, "changes": -1]
+        var changesDict: [String: Int64] = ["lastId": -1, "changes": -1]
         var message: String = ""
         // Start a transaction
         do {
@@ -229,8 +229,8 @@ class DatabaseHelper {
     // MARK: - ExecuteSet
 
     func executeSet(mDB: OpaquePointer, set: [[String: Any]])
-    throws -> [String: Int] {
-        var lastId: Int = -1
+                                            throws -> [String: Int64] {
+        var lastId: Int64 = -1
         var changes: Int = -1
         do {
             for dict  in set {
@@ -254,9 +254,9 @@ class DatabaseHelper {
                 }
             }
             changes = Int(sqlite3_total_changes(mDB))
-            var retDict: [String: Int] = [:]
+            var retDict: [String: Int64] = [:]
             retDict["lastId"] = lastId
-            retDict["changes"] = changes
+            retDict["changes"] = Int64(changes)
             return retDict
         } catch DatabaseHelperError.prepareSql(let message) {
             throw DatabaseHelperError.executeSet(
@@ -265,15 +265,15 @@ class DatabaseHelper {
     }
     // MARK: - RunSQL
 
-    func runSQL(sql: String, values: [Any]) throws -> [String: Int] {
+    func runSQL(sql: String, values: [Any]) throws -> [String: Int64] {
         guard let mDB: OpaquePointer = try
                 UtilsConnection.getWritableDatabase(
                     filename: self.path, secret: secret) else {
-            var msg: String = "Error: DB connection"
+            let msg: String = "Error: DB connection"
             throw DatabaseHelperError.dbConnection(message: msg)
         }
         var message: String = ""
-        var lastId: Int = -1
+        var lastId: Int64 = -1
         var changes: Int = 0
         // Start a transaction
         do {
@@ -300,7 +300,7 @@ class DatabaseHelper {
         if message.count > 0 {
             throw DatabaseHelperError.runSql(message: message)
         } else {
-            let result: [String: Int] = ["changes": changes,
+            let result: [String: Int64] = ["changes": Int64(changes),
                                          "lastId": lastId]
             return result
         }
@@ -309,10 +309,10 @@ class DatabaseHelper {
     // MARK: - PrepareSQL
 
     func prepareSQL(mDB: OpaquePointer,
-                    sql: String, values: [Any]) throws -> Int {
+                    sql: String, values: [Any]) throws -> Int64 {
         var runSQLStatement: OpaquePointer?
         var message: String = ""
-        var lastId: Int = -1
+        var lastId: Int64 = -1
 
         var returnCode: Int32 = sqlite3_prepare_v2(
                                 mDB, sql, -1, &runSQLStatement, nil)
@@ -353,7 +353,7 @@ class DatabaseHelper {
         if message.count > 0 {
             throw DatabaseHelperError.prepareSql(message: message)
         } else {
-            lastId = Int(sqlite3_last_insert_rowid(mDB))
+            lastId = Int64(sqlite3_last_insert_rowid(mDB))
             return lastId
         }
     }
@@ -613,14 +613,22 @@ class DatabaseHelper {
                                     message: "Error: DB connection")
         }
         do {
-            let date = Date()
-            let syncTime: Int = Int(date.timeIntervalSince1970)
-            var stmt: String = "UPDATE sync_table SET sync_date = "
-            stmt.append("\(syncTime) WHERE id = 1;")
-            let lastId: Int = try prepareSQL(
-                                    mDB: mDB, sql: stmt, values: [])
-            if lastId != -1 {retBool = true}
-
+            let dateFormatter = DateFormatter()
+            dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+            dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+            if let date = dateFormatter.date(from: syncDate) {
+                let syncTime: Int = Int(date.timeIntervalSince1970)
+                var stmt: String = "UPDATE sync_table SET sync_date = "
+                stmt.append("\(syncTime) WHERE id = 1;")
+                let retRun = try runSQL(sql: stmt, values: [])
+                if let lastId: Int64 = retRun["lastId"] {
+                    if lastId != -1 {
+                        retBool = true
+                    }
+                }
+            } else {
+                throw DatabaseHelperError.createSyncDate(message: "wrong syncDate")
+            }
         } catch DatabaseHelperError.prepareSql(let message) {
             throw DatabaseHelperError.createSyncDate(message: message)
         }

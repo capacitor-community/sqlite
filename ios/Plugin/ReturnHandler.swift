@@ -28,7 +28,7 @@ class ReturnHandler {
 
     // MARK: - rChanges
 
-    func rChanges(call: CAPPluginCall, ret: [String: Int],
+    func rChanges(call: CAPPluginCall, ret: [String: Any],
                   message: String? = nil) {
         if let intMessage = message {
             call.success([

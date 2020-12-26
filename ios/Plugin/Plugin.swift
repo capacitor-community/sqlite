@@ -215,7 +215,7 @@ public class CapacitorSQLite: CAPPlugin {
                 retHandler.rChanges(call: call, ret: ["changes": -1],
                                     message: msg)
             } catch let error {
-                var msg: String = "ExecuteSet command failed : \(error)"
+                let msg: String = "ExecuteSet command failed : \(error)"
                 retHandler.rChanges(call: call, ret: ["changes": -1],
                                     message: msg)
             }
@@ -280,15 +280,15 @@ public class CapacitorSQLite: CAPPlugin {
                     retHandler.rChanges(call: call, ret: res)
                 }
             } catch DatabaseHelperError.dbConnection(let message) {
-                var msg: String = "Run command failed : \(message)"
+                let msg: String = "Run command failed : \(message)"
                 retHandler.rChanges(call: call, ret: ["changes": -1],
                                     message: msg)
             } catch DatabaseHelperError.runSql(let message) {
-                var msg: String = "Run command failed : \(message)"
+                let msg: String = "Run command failed : \(message)"
                 retHandler.rChanges(call: call, ret: ["changes": -1],
                                     message: msg)
             } catch let error {
-                var msg: String = "Run command failed : \(error)"
+                let msg: String = "Run command failed : \(error)"
                 retHandler.rChanges(call: call, ret: ["changes": -1],
                                     message: msg)
             }

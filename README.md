@@ -13,15 +13,69 @@
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/dw/@capacitor-community/sqlite?style=flat-square" /></a>
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/v/@capacitor-community/sqlite?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-<a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-1-orange?style=flat-square" /></a>
+<a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-3-orange?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 </p>
+<br>
+
+## REFACTOR 🚀
+
+A refactoring has been started more than a month ago to reach the following objectives:
+
+- multiple database connections
+- db connector allowing for easy commands `db.open(), db.close, ...`
+- improve the response time of the encrypted database by removing the internal open and close database for each sqlite query
+- moving to the latest `androidx.sqlite.db.xxx`
+- offering encryption for Electron platform by using `@journeyapps/sqlcipher`
+- cleaning and aligning the code between platforms
+- allowing developers to develop easily `typeorm` or `spatialite` drivers.
+
+This was discussed lengthly in issue#1 and issue#52
+
+It is now available in a beta release `2.9.0-beta.1` for all platforms (Android, iOS & Electron).
+
+Developers are encouraged to start looking at it and using it as this will have some impacts on yours developments. The interface to the plugin is now achieved through the use of connection wrappers
+
+- [API_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/refactor/docs/APIConnection.md)
+
+- [API_DB_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/refactor/docs/APIDBConnection.md)
+
+As you will see it is a `Major`change and the release will become a `3.0.0` as soon as `capacitor@3.0.0` will be released. So both interfaces to the plugin will be kept and maintained to that stage, after this, the `refactor interface` will be released as the master and maintained.
+
+The test has been achieved on:
+
+- a [Ionic/Angular app](#ionic/angular)
+
+- a [Ionic/React app](#ionic/react)
+
+Other frameworks will be tested later
+
+- Ionic/Vue will require an update of the `vue-sqlite-hook`.
+- Stencil
+
+When you will find issues, please report them with the `REFACTOR` word at the start of the issue title.
+
+To install it
+
+```bash
+npm i --save @capacitor-community/sqlite@refactor
+```
+
+Hope you will enjoy it.
 
 ## Maintainers
 
 | Maintainer        | GitHub                                    | Social |
 | ----------------- | ----------------------------------------- | ------ |
 | Quéau Jean Pierre | [jepiqueau](https://github.com/jepiqueau) |        |
+
+## Browser Support
+
+The plugin follows the guidelines from the `Capacitor Team`,
+
+- [Capacitor Browser Support](https://capacitorjs.com/docs/v3/web#browser-support)
+
+meaning that it will not work in IE11 without additional JavaScript transformations, e.g. with [Babel](https://babeljs.io/).
 
 ## Installation
 
@@ -54,7 +108,6 @@ public class MainActivity extends BridgeActivity {
     this.init(
         savedInstanceState,
         new ArrayList<Class<? extends Plugin>>() {
-
           {
             // Additional plugins you've installed go here
             // Ex: add(TotallyAwesomePlugin.class);
