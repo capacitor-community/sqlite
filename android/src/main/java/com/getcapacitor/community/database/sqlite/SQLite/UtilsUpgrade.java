@@ -15,6 +15,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class UtilsUpgrade {
+
     private static final String TAG = UtilsUpgrade.class.getName();
     private UtilsFile _uFile = new UtilsFile();
     private UtilsJson _uJson = new UtilsJson();
@@ -41,8 +42,7 @@ public class UtilsUpgrade {
         Dictionary<Integer, JSONObject> upgDict,
         Integer curVersion,
         Integer targetVersion
-    )
-        throws Exception {
+    ) throws Exception {
         JSONObject upgrade = upgDict.get(curVersion);
         int toVersion = upgrade.has("toVersion") ? upgrade.getInt("toVersion") : -1;
         if (toVersion == -1) {

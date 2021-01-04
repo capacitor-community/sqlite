@@ -9,6 +9,7 @@ import java.util.List;
 import net.sqlcipher.Cursor;
 
 public class UtilsDrop {
+
     private static final String TAG = UtilsDrop.class.getName();
 
     /**

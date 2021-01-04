@@ -1,3 +1,19 @@
+## 2.9.0-beta.2 (2020-12-25) REFACTOR
+
+### Chore
+
+- update to @capacitor/core@2.4.5
+
+### Added Features
+
+- Ionic-React-Usage.md documentation
+- Ionic-Vue-Usage.md documentation
+- copyFromAssets
+
+### Bug Fixes
+
+- update README and CHANGELOG
+
 ## 2.9.0-beta.1 (2020-12-25) REFACTOR
 
 ### Added Features

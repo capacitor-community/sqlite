@@ -11,6 +11,7 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.community.database.sqlite.SQLite.Database;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.JsonSQLite;
+import com.getcapacitor.community.database.sqlite.SQLite.UtilsFile;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLite;
 import java.io.File;
 import java.util.ArrayList;
@@ -24,12 +25,14 @@ import org.json.JSONObject;
     requestCodes = { CapacitorSQLite.REQUEST_SQLITE_PERMISSION }
 )
 public class CapacitorSQLite extends Plugin {
+
     static final int REQUEST_SQLITE_PERMISSION = 9538;
     private static final String TAG = "CapacitorSQLite";
     private Context context;
     private boolean isPermissionGranted = false;
     private Dictionary<String, Database> dbDict = new Hashtable<>();
     private UtilsSQLite uSqlite = new UtilsSQLite();
+    private UtilsFile uFile = new UtilsFile();
     private Dictionary<String, Dictionary<Integer, JSONObject>> versionUpgrades = new Hashtable<>();
 
     /**
@@ -854,6 +857,29 @@ public class CapacitorSQLite extends Plugin {
     }
 
     /**
+     * CopyFromAssets
+     * copy all databases from public/assets/databases to application folder
+     * @param call
+     */
+    @PluginMethod
+    public void copyFromAssets(PluginCall call) {
+        String msg = "copyFromAssets command failed : ";
+        try {
+            Boolean ret = uFile.copyFromAssetsToDatabase(context);
+            if (ret) {
+                retResult(call, true, null);
+                return;
+            } else {
+                retResult(call, false, msg);
+            }
+        } catch (Exception e) {
+            msg += e.getMessage();
+            retResult(call, false, msg);
+            return;
+        }
+    }
+
+    /**
      * RequestPermissions Method
      * Request Read and Write permissions
      * @param call
@@ -999,7 +1025,6 @@ public class CapacitorSQLite extends Plugin {
             .getActivity()
             .runOnUiThread(
                 new Runnable() {
-
                     @Override
                     public void run() {
                         notifyListeners("androidPermissionsRequest", data);

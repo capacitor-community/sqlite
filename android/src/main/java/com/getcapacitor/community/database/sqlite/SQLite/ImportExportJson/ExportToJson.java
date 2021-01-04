@@ -9,6 +9,7 @@ import java.util.List;
 import org.json.JSONException;
 
 public class ExportToJson {
+
     private static final String TAG = ImportFromJson.class.getName();
     private UtilsJson uJson = new UtilsJson();
     private UtilsSQLite uSqlite = new UtilsSQLite();

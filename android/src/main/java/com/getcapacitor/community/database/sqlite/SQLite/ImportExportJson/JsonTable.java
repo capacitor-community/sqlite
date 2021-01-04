@@ -11,6 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class JsonTable {
+
     private static final String TAG = "JsonTable";
     private static final List<String> keyTableLevel = new ArrayList<String>(Arrays.asList("name", "schema", "indexes", "values"));
 

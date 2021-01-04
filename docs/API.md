@@ -72,6 +72,7 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 - [`setSyncDate(...)`](#setsyncdate)
 - [`getSyncDate(...)`](#getsyncdate)
 - [`addUpgradeStatement(...)`](#addupgradestatement)
+- [`copyFromAssets()`](#copyfromassets)
 - [Interfaces](#interfaces)
 
 </docgen-index>
@@ -405,6 +406,20 @@ Add the upgrade Statement for database version upgrading
 **Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
 
 **Since:** 2.4.2-6 iOS & Electron 2.4.2-7 Android
+
+---
+
+### copyFromAssets()
+
+```typescript
+copyFromAssets() => Promise<capSQLiteResult>
+```
+
+Copy databases from public/assets/databases folder to application databases folder
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 2.9.0 refactor
 
 ---
 

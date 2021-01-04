@@ -47,9 +47,10 @@ The test has been achieved on:
 
 - a [Ionic/React app](#ionic/react)
 
+- a [Ionic/Vue app](#ionic/vue)
+
 Other frameworks will be tested later
 
-- Ionic/Vue will require an update of the `vue-sqlite-hook`.
 - Stencil
 
 ## Browser Support
@@ -92,7 +93,6 @@ public class MainActivity extends BridgeActivity {
     this.init(
         savedInstanceState,
         new ArrayList<Class<? extends Plugin>>() {
-
           {
             // Additional plugins you've installed go here
             // Ex: add(TotallyAwesomePlugin.class);
@@ -165,6 +165,7 @@ No configuration required for this plugin
 | isJsonValid             | ✅      | ✅  | ✅       | ❌  |
 | isDBExists              | ✅      | ✅  | ✅       | ❌  |
 | addUpgradeStatement     | ✅      | ✅  | ✅       | ❌  |
+| copyFromAssets          | ✅      | ✅  | ✅       | ❌  |
 
 ## Documentation
 
@@ -178,6 +179,12 @@ No configuration required for this plugin
 
 [UpgradeDatabaseVersion_Documentation](https://github.com/capacitor-community/sqlite/blob/refactor/docs/UpgradeDatabaseVersion.md)
 
+[Ionic/Angular_Usage_Documentation](https://github.com/capacitor-community/sqlite/blob/refactor/docs/Ionic-Angular-Usage.md)
+
+[Ionic/React_Usage_Documentation](https://github.com/capacitor-community/sqlite/blob/refactor/docs/Ionic-React-Usage.md)
+
+[Ionic/Vue_Usage_Documentation](https://github.com/capacitor-community/sqlite/blob/refactor/docs/Ionic-Vue-Usage.md)
+
 ## Applications demonstrating the use of the plugin
 
 ### Ionic/Angular
@@ -188,7 +195,9 @@ No configuration required for this plugin
 
 - [react-sqlite-app-refactor](https://github.com/jepiqueau/react-sqlite-app-starter/tree/refactor)
 
-### Ionic/Vue (to come later)
+### Ionic/Vue
+
+- [vue-sqlite-app-refactor](https://github.com/jepiqueau/vue-sqlite-app-starter/tree/refactor)
 
 ### Vue (to come later)
 
@@ -198,9 +207,9 @@ No configuration required for this plugin
 
 - [In your Ionic/Angular App](https://github.com/capacitor-community/sqlite/blob/refactor/docs/Ionic-Angular-Usage.md)
 
-- [In your Ionic/React App] (to come later)
+- [In your Ionic/React App](https://github.com/capacitor-community/sqlite/blob/refactor/docs/Ionic-React-Usage.md)
 
-- [In your Ionic/Vue App] (to come later)
+- [In your Ionic/Vue App](https://github.com/capacitor-community/sqlite/blob/refactor/docs/Ionic-Vue-Usage.md)
 
 ## Dependencies
 
@@ -218,7 +227,8 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <tr>
     <td align="center"><a href="https://github.com/jepiqueau"><img src="https://avatars3.githubusercontent.com/u/16580653?v=4" width="100px;" alt=""/><br /><sub><b>Jean Pierre Quéau</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=jepiqueau" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/paulantoine2"><img src="https://avatars0.githubusercontent.com/u/22882943?s=64&v=4" width="100px;" alt=""/><br /><sub><b>Paul Antoine</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=jepiqueau" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/paulantoine2"><img src="https://avatars2.githubusercontent.com/u/303016?s=60&u=1ce232ae3c22eac7b0b4778e46fe079939c39b40&v=4" width="100px;" alt=""/><br /><sub><b>Karyfars</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=jepiqueau" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/karyfars"><img src="https://avatars2.githubusercontent.com/u/303016?s=60&u=1ce232ae3c22eac7b0b4778e46fe079939c39b40&v=4" width="100px;" alt=""/><br /><sub><b>Karyfars</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=jepiqueau" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/https://github.com/chriswep"><img src="https://avatars2.githubusercontent.com/u/1055809?s=400&u=e555940f143da8be255743028d6838cb5c020b44&v=4" width="100px;" alt=""/><br /><sub><b>Karyfars</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=jepiqueau" title="Documentation">📖</a></td>    
   </tr>
 </table>
 

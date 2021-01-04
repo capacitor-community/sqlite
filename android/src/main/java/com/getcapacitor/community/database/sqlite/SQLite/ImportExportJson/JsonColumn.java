@@ -10,6 +10,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class JsonColumn {
+
     private static final String TAG = "JsonColumn";
     private static final List<String> keySchemaLevel = new ArrayList<String>(Arrays.asList("column", "value", "foreignkey"));
     private String column = null;

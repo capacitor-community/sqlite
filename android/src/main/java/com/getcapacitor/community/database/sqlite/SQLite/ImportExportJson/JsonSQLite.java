@@ -11,6 +11,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 public class JsonSQLite {
+
     private static final String TAG = "JsonSQLite";
 
     private String database = "";

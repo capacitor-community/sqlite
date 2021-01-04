@@ -17,6 +17,7 @@
 - [`closeAllConnections()`](#closeallconnections)
 - [`importFromJson(...)`](#importfromjson)
 - [`isJsonValid(...)`](#isjsonvalid)
+- [`copyFromAssets()`](#copyfromassets)
 - [Interfaces](#interfaces)
 
 </docgen-index>
@@ -182,6 +183,20 @@ Check the validity of a JSON Object
 | Param            | Type                | Description |
 | ---------------- | ------------------- | ----------- |
 | **`jsonstring`** | <code>string</code> | string      |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 2.9.0 refactor
+
+---
+
+### copyFromAssets()
+
+```typescript
+copyFromAssets() => Promise<capSQLiteResult>
+```
+
+Copy databases from public/assets/databases folder to application databases folder
 
 **Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
 

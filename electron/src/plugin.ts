@@ -635,6 +635,31 @@ export class CapacitorSQLiteElectronWeb
     this._versionUpgrades[dbName] = upgVDict;
     return Promise.resolve({ result: true });
   }
+  async copyFromAssets(): Promise<capSQLiteResult> {
+    // check if the assets/database folder exists
+    const assetsDbPath = this._uFile.getAssetsDatabasesPath();
+    const res: boolean = this._uFile.isPathExists(assetsDbPath);
+    if (res) {
+      // get the database files
+      const dbList: string[] = await this._uFile.getFileList(assetsDbPath);
+      // loop through the database files
+      const toDbList: string[] = [];
+      dbList.forEach(async (db: string) => {
+        console.log(`>>> ${db}`);
+        // for each check if the suffix SQLite.db is there or add it
+        let toDb: string = this._uFile.setPathSuffix(db);
+        toDbList.push(toDb);
+        // for each copy the file to the Application database folder
+        await this._uFile.copyFromAssetToDatabase(db, toDb);
+      });
+      return Promise.resolve({ result: true });
+    } else {
+      return Promise.resolve({
+        result: false,
+        message: 'CopyFromAssets: assets/databases folder does not exist',
+      });
+    }
+  }
 }
 const CapacitorSQLite = new CapacitorSQLiteElectronWeb();
 export { CapacitorSQLite };

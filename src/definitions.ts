@@ -136,6 +136,13 @@ export interface CapacitorSQLitePlugin {
   addUpgradeStatement(
     options: capSQLiteUpgradeOptions,
   ): Promise<capSQLiteResult>;
+  /**
+   * Copy databases from public/assets/databases folder to application databases folder
+   *
+   * @returns Promise<capSQLiteResult>
+   * @since 2.9.0 refactor
+   */
+  copyFromAssets(): Promise<capSQLiteResult>;
 }
 
 export interface capEchoOptions {
@@ -494,6 +501,12 @@ export interface ISQLiteConnection {
    * @since 2.9.0 refactor
    */
   isJsonValid(jsonstring: string): Promise<capSQLiteResult>;
+  /**
+   * Copy databases from public/assets/databases folder to application databases folder
+   * @returns Promise<capSQLiteResult>
+   * @since 2.9.0 refactor
+   */
+  copyFromAssets(): Promise<capSQLiteResult>;
 }
 /**
  * SQLiteConnection Class
@@ -579,6 +592,9 @@ export class SQLiteConnection implements ISQLiteConnection {
   }
   async isJsonValid(jsonstring: string): Promise<capSQLiteResult> {
     return await this.sqlite.isJsonValid({ jsonstring: jsonstring });
+  }
+  async copyFromAssets(): Promise<capSQLiteResult> {
+    return await this.sqlite.copyFromAssets();
   }
 }
 

@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import org.json.JSONException;
 
 public class ImportFromJson {
+
     private static final String TAG = ImportFromJson.class.getName();
     private UtilsJson _uJson = new UtilsJson();
     private UtilsDrop _uDrop = new UtilsDrop();
@@ -336,8 +337,7 @@ public class ImportFromJson {
         int j,
         String tableName,
         String mode
-    )
-        throws Exception {
+    ) throws Exception {
         String msg = "createRowStatement: ";
         msg += "Table" + tableName + " values row";
         if (tColNames.size() != row.size() || row.size() == 0 || tColNames.size() == 0) {

@@ -30,7 +30,6 @@ public class CapacitorSQLite: CAPPlugin {
     }
 
     // MARK: - CreateConnection
-//1234567890123456789012345678901234567890123456789012345678901234567890
     @objc func createConnection(_ call: CAPPluginCall) {
         guard let dbName = call.options["database"] as? String else {
             retHandler.rResult(
@@ -831,9 +830,41 @@ public class CapacitorSQLite: CAPPlugin {
                                                 [fromVersion: upgDict]
         versionUpgrades = ["\(dbName)": upgVersionDict]
         retHandler.rResult(call: call, ret: true)
-
+        return
     }
 
+    // MARK: copyFromAssets
+
+    @objc func copyFromAssets(_ call: CAPPluginCall) {
+        var msg: String = "copyFromAssets command failed: "
+        // check if the assets/database folder exists
+        do {
+            let assetsDbPath: URL = try UtilsFile.getAssetsDatabasesPath()
+            let aPath: String = assetsDbPath.path
+            let bRes: Bool = UtilsFile.isDirExist(dirPath: aPath)
+            if bRes {
+                // get the database files
+                let dbList: [String] = try UtilsFile.getFileList(path: aPath)
+                // loop through the database files
+                for mDb in dbList {
+                    // for each check if the suffix SQLite.db is there or add it
+                    let toDb: String  = UtilsFile.setPathSuffix(sDb: mDb)
+                    // for each copy the file to the Application database folder
+                    _ = try UtilsFile.copyFromAssetToDatabase(fromDb: mDb,
+                                                              toDb: toDb)
+                }
+                retHandler.rResult(call: call, ret: true)
+                return
+            } else {
+                msg += " assets database path does not exist"
+                retHandler.rResult(call: call, ret: false, message: msg)
+                return
+            }
+        } catch {
+            retHandler.rResult(call: call, ret: false, message: msg)
+            return
+        }
+    }
 }
 // swiftlint:enable type_body_length
 // swiftlint:enable file_length

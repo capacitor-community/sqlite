@@ -13,6 +13,7 @@ import net.sqlcipher.database.SQLiteException;
 import net.sqlcipher.database.SQLiteStatement;
 
 public class UtilsSQLCipher {
+
     private static final String TAG = UtilsSQLCipher.class.getName();
 
     /**

@@ -10,6 +10,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class JsonIndex {
+
     private static final String TAG = "JsonIndex";
     private static final List<String> keyIndexesLevel = new ArrayList<String>(Arrays.asList("name", "column"));
     private String name;

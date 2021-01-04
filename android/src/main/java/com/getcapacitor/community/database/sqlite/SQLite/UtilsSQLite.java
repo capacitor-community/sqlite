@@ -11,6 +11,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 public class UtilsSQLite {
+
     private static final String TAG = UtilsSQLite.class.getName();
 
     public int dbChanges(SupportSQLiteDatabase db) {

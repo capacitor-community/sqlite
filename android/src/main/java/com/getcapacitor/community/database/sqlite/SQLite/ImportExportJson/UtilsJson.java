@@ -11,6 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class UtilsJson {
+
     private JsonColumn uJCol = new JsonColumn();
     private JsonIndex uJIdx = new JsonIndex();
 
@@ -218,8 +219,7 @@ public class UtilsJson {
         ArrayList<Object> row,
         int j,
         String tableName
-    )
-        throws Exception {
+    ) throws Exception {
         if (tColNames.size() != row.size() || row.size() == 0 || tColNames.size() == 0) {
             throw new Exception("checkRowValidity: Table" + tableName + " values row " + j + " not correct length");
         }

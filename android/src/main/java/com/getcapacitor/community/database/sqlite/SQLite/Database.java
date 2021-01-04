@@ -32,6 +32,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class Database {
+
     private static final String TAG = Database.class.getName();
     private Boolean _isOpen = false;
     private String _dbName;

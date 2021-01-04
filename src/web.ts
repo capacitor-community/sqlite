@@ -158,6 +158,12 @@ export class CapacitorSQLiteWeb
       message: `Not implemented on Web Platform`,
     });
   }
+  async copyFromAssets(): Promise<capSQLiteResult> {
+    return Promise.resolve({
+      result: false,
+      message: `Not implemented on Web Platform`,
+    });
+  }
 }
 
 const CapacitorSQLite = new CapacitorSQLiteWeb();

@@ -48,6 +48,13 @@ export class UtilsFile {
    * @param fileName
    */
   public getFilePath(fileName: string): string {
+    return this.Path.join(this.getDatabasesPath(), fileName);
+  }
+  /**
+   * GetDatabasesPath
+   * get the database folder path
+   */
+  public getDatabasesPath(): string {
     let retPath: string = '';
     const dbFolder: string = this.pathDB;
     if (this.AppName == null) {
@@ -58,13 +65,13 @@ export class UtilsFile {
         0,
         __dirname.lastIndexOf(sep) + 1,
       );
-      retPath = this.Path.join(dir, dbFolder, fileName);
+      retPath = this.Path.join(dir, dbFolder);
       const retB: boolean = this._createFolderIfNotExists(
         this.Path.join(dir, dbFolder),
       );
       if (!retB) retPath = '';
     } else {
-      retPath = this.Path.join(this.HomeDir, dbFolder, this.AppName, fileName);
+      retPath = this.Path.join(this.HomeDir, dbFolder, this.AppName);
       let retB: boolean = this._createFolderIfNotExists(
         this.Path.join(this.HomeDir, dbFolder),
       );
@@ -77,7 +84,66 @@ export class UtilsFile {
         retPath = '';
       }
     }
+
     return retPath;
+  }
+  /**
+   * GetAssetsDatabasesPath
+   * get the assets databases folder path
+   */
+  public getAssetsDatabasesPath(): string {
+    let retPath: string = '';
+    let sep: string = '/';
+    const idx: number = __dirname.indexOf('\\');
+    if (idx != -1) sep = '\\';
+    const dir: string = __dirname.substring(0, __dirname.lastIndexOf(sep) + 1);
+    retPath = this.Path.join(dir, 'app', 'assets', this.pathDB.toLowerCase());
+    console.log(`$$$ AssetsDatabases ${retPath}`);
+    return retPath;
+  }
+  /**
+   * SetPathSuffix
+   * @param db
+   */
+  public setPathSuffix(db: string): string {
+    let toDb: string = db;
+    if (db.length > 9) {
+      const last9: string = db.slice(-9);
+      if (last9 != 'SQLite.db') {
+        toDb = this.Path.parse(db).name + 'SQLite.db';
+      }
+    } else {
+      toDb = toDb + 'SQLite.db';
+    }
+    return toDb;
+  }
+  /**
+   * GetFileList
+   * get the file list for a given folder
+   * @param path
+   */
+  public getFileList(path: string): Promise<string[]> {
+    return new Promise(async resolve => {
+      const filenames = this.NodeFs.readdirSync(path);
+      let dbs: string[] = [];
+      filenames.forEach((file: string) => {
+        if (this.Path.extname(file) == '.db') dbs.push(file);
+      });
+      resolve(dbs);
+    });
+  }
+  /**
+   * CopyFromAssetToDatabase
+   * @param db
+   * @param toDb
+   */
+  public copyFromAssetToDatabase(db: string, toDb: string): Promise<void> {
+    return new Promise(async resolve => {
+      const pAsset: string = this.Path.join(this.getAssetsDatabasesPath(), db);
+      const pDb: string = this.Path.join(this.getDatabasesPath(), toDb);
+      await this.copyFilePath(pAsset, pDb);
+      resolve();
+    });
   }
   /**
    * CopyFileName
@@ -115,6 +181,7 @@ export class UtilsFile {
         const isPath = this.isPathExists(filePath);
         if (isPath) {
           try {
+            await this.deleteFilePath(toFilePath);
             this.NodeFs.copyFileSync(filePath, toFilePath);
             resolve();
           } catch (err) {
