@@ -1,3 +1,13 @@
+## 2.4.5-1 (2021-01-05)
+
+### Chore
+
+- update to @capacitor/core@2.4.5
+
+### Bug Fixes
+
+- Fix README and CHANGELOG
+
 ## 2.4.4 (2020-12-26)
 
 ### Chore

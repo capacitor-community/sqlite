@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/maintenance/yes/2020?style=flat-square" />
+  <img src="https://img.shields.io/maintenance/yes/2021?style=flat-square" />
   <a href="https://github.com/capacitor-community/sqlite/actions?query=workflow%3A%22CI%22"><img src="https://img.shields.io/github/workflow/status/capacitor-community/sqlite/CI?style=flat-square" /></a>
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/l/@capacitor-community/sqlite?style=flat-square" /></a>
 <br>
@@ -44,13 +44,14 @@ As you will see it is a `Major`change and the release will become a `3.0.0` as s
 
 The test has been achieved on:
 
-- a [Ionic/Angular app](#ionic/angular)
+- a [Ionic/Angular app](https://github.com/jepiqueau/angular-sqlite-app-refactor)
 
-- a [Ionic/React app](#ionic/react)
+- a [Ionic/React app](https://github.com/jepiqueau/react-sqlite-app-starter/tree/refactor)
+
+- a [Ionic/Vue app](https://github.com/jepiqueau/vue-sqlite-app-starter/tree/refactor)
 
 Other frameworks will be tested later
 
-- Ionic/Vue will require an update of the `vue-sqlite-hook`.
 - Stencil
 
 When you will find issues, please report them with the `REFACTOR` word at the start of the issue title.
