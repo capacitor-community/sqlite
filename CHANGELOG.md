@@ -1,4 +1,12 @@
-## 2.9.0-beta.2 (2020-12-25) REFACTOR
+## 2.9.0-beta.3 (2021-01-05) REFACTOR
+
+### Bug Fixes
+
+- fix Ionic-React-Usage.md documentation
+- fix Ionic-Vue-Usage.md documentation
+- update README and CHANGELOG
+
+## 2.9.0-beta.2 (2021-01-04) REFACTOR
 
 ### Chore
 
@@ -133,6 +141,29 @@
 - closeConnection method
 - SQLiteConnection Interface & Class
 - SQLiteDBConnection Interface & Class
+
+## 2.4.5-1 (2021-01-05)
+
+### Chore
+
+- update to @capacitor/core@2.4.5
+
+### Bug Fixes
+
+- Fix README and CHANGELOG
+
+## 2.4.4 (2020-12-26)
+
+### Chore
+
+- update to @capacitor/core@2.4.4
+
+### Bug Fixes
+
+- Fix README
+- Fix setSyncDate (iOS)
+- Fix exportToJson (Android)
+- Fix lastId to Int64 (iOS)
 
 ## 2.4.3 (2020-12-19)
 
