@@ -1,3 +1,11 @@
+## 2.4.5-2 (2021-01-13)
+
+### Bug Fixes
+
+- Fix Permission request Android issue#60
+- Fix README and CHANGELOG
+- Fix API.md
+
 ## 2.4.5-1 (2021-01-05)
 
 ### Chore

@@ -229,37 +229,17 @@ No configuration required for this plugin
  export class MyPage {
   _sqlite: any;
   _platform: string;
-  _isPermission: boolean = true;
 
   ...
 
   ngAfterViewInit()() {
     this._platform = Capacitor.platform;
     this._sqlite = CapacitorSQLite;
-    if (this._platform === 'android') {
-      const handlerPermissions = this.sqlite.addListener(
-            'androidPermissionsRequest', async (data:any) => {
-        if (data.permissionGranted === 1) {
-          this._isPermission = true;
-        } else {
-          this._isPermission = false;
-        }
-      });
-      try {
-        this.sqlite.requestPermissions();
-      } catch (e) {
-        console.log('Error requesting permissions!' + JSON.stringify(e));
-      }
-    }
     ...
 
   }
 
   async testSQLitePlugin(): Promise<void> {
-      if(!this._isPermission) {
-        console.log("Android permissions not granted");
-        return;
-      }
       let result:any = await this._sqlite.open({database:"testsqlite"});
       retOpenDB = result.result;
       if(retOpenDB) {

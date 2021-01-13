@@ -64,7 +64,6 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 - [Interfaces](#interfaces)
 
 </docgen-index>
-- [Listeners](#listeners)
 
 <docgen-api class="custom-css">
 <!--Update the source file JSDoc comments and rerun docgen to update the docs below-->
@@ -488,20 +487,6 @@ Add the upgrade Statement for database version upgrading
 | **`set`**         | <code>capSQLiteSet[]</code> |
 
 </docgen-api>
-
-## Listeners
-
-A listener for granted permissions is now available ( since release 2.4.2-9 ) for the Android plugin.
-
-| Listener                      | Type                                        | Description                                        |
-| ----------------------------- | ------------------------------------------- | -------------------------------------------------- |
-| **androidPermissionsRequest** | [permissionsListener](#permissionslistener) | Emitted when the permissions are granted or denied |
-
-#### permissionsListener
-
-| Prop                  | Type   | Description                 |
-| --------------------- | ------ | --------------------------- |
-| **permissionGranted** | number | = 1 : granted, = 0 : denied |
 
 ## Remote Server databases Synchronization Process
 
