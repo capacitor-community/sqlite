@@ -1,3 +1,9 @@
+## 2.4.5 (2021-01-13)
+
+### Bug Fixes
+
+- Fix README and CHANGELOG
+
 ## 2.4.5-3 (2021-01-13)
 
 ### Bug Fixes
