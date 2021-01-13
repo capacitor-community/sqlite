@@ -1,3 +1,9 @@
+## 2.4.5-3 (2021-01-13)
+
+### Bug Fixes
+
+- Fix Electron rebuild
+
 ## 2.4.5-2 (2021-01-13)
 
 ### Bug Fixes
