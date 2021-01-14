@@ -42,7 +42,7 @@ const App: React.FC = () => {
   existingConn = {existConn: existConn, setExistConn: setExistConn};
   const {echo, getPlatform, createConnection, closeConnection,
          retrieveConnection, retrieveAllConnections, closeAllConnections,
-         addUpgradeStatement, importFromJson, isJsonValid, requestPermissions, copyFromAssets,
+         addUpgradeStatement, importFromJson, isJsonValid, copyFromAssets,
          isAvailable} = useSQLite();
   sqlite = {echo: echo, getPlatform: getPlatform,
             createConnection: createConnection,
@@ -53,7 +53,6 @@ const App: React.FC = () => {
             addUpgradeStatement: addUpgradeStatement,
             importFromJson: importFromJson,
             isJsonValid: isJsonValid,
-            requestPermissions: requestPermissions,
             copyFromAssets: copyFromAssets,
             isAvailable:isAvailable};
 ...

@@ -1,3 +1,15 @@
+## 2.9.0 (2021-01-14) REFACTOR
+
+### Chore
+
+- update to @capacitor/core@2.4.6
+
+### Bug Fixes
+
+- remove Android permissions issue#60
+- update usage docs
+- update README and CHANGELOG
+
 ## 2.9.0-beta.3 (2021-01-05) REFACTOR
 
 ### Bug Fixes
@@ -141,6 +153,26 @@
 - closeConnection method
 - SQLiteConnection Interface & Class
 - SQLiteDBConnection Interface & Class
+
+## 2.4.5 (2021-01-13)
+
+### Bug Fixes
+
+- Fix README and CHANGELOG
+
+## 2.4.5-3 (2021-01-13)
+
+### Bug Fixes
+
+- Fix Electron rebuild
+
+## 2.4.5-2 (2021-01-13)
+
+### Bug Fixes
+
+- Fix Permission request Android issue#60
+- Fix README and CHANGELOG
+- Fix API.md
 
 ## 2.4.5-1 (2021-01-05)
 

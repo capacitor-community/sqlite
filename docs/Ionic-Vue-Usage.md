@@ -37,7 +37,7 @@ import { useState } from '@/composables/state';
 // SQLite Hook
 const {echo, getPlatform, createConnection, closeConnection,
   retrieveConnection, retrieveAllConnections, closeAllConnections,
-  addUpgradeStatement, importFromJson, isJsonValid, requestPermissions,
+  addUpgradeStatement, importFromJson, isJsonValid,
   copyFromAssets, isAvailable} = useSQLite();
 //Existing Connections
 const [existConn, setExistConn] = useState(false);
@@ -56,7 +56,6 @@ app.config.globalProperties.$sqlite = {echo: echo, getPlatform: getPlatform,
   addUpgradeStatement: addUpgradeStatement,
   importFromJson: importFromJson,
   isJsonValid: isJsonValid,
-  requestPermissions: requestPermissions,
   copyFromAssets: copyFromAssets,
   isAvailable:isAvailable};
 
@@ -97,7 +96,6 @@ import { defineComponent, onMounted, getCurrentInstance } from 'vue';
 import { createTablesNoEncryption, importTwoUsers } from '@/utils/utils-db-no-encryption';
 import { useState } from '@/composables/state';
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
-import { isPermissions } from 'vue-sqlite-hook/dist';
 import { deleteDatabase } from '@/utils/utils-delete-db';
 import { createSchemaContacts, setContacts } from '@/utils/utils-db-encrypted-set';
 
@@ -115,8 +113,6 @@ export default defineComponent({
 
             setLog(log.value
                 .concat("* Starting testDatabaseTwoDbs *\n"));
-            setLog(log.value
-                    .concat(` isPermissions ${isPermissions.granted} \n`));
 
             // initialize the connection
             const db = await sqlite

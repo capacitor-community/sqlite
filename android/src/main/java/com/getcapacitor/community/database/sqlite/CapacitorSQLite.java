@@ -20,16 +20,11 @@ import java.util.Hashtable;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-@NativePlugin(
-    permissions = { Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE },
-    requestCodes = { CapacitorSQLite.REQUEST_SQLITE_PERMISSION }
-)
+@NativePlugin
 public class CapacitorSQLite extends Plugin {
 
-    static final int REQUEST_SQLITE_PERMISSION = 9538;
     private static final String TAG = "CapacitorSQLite";
     private Context context;
-    private boolean isPermissionGranted = false;
     private Dictionary<String, Database> dbDict = new Hashtable<>();
     private UtilsSQLite uSqlite = new UtilsSQLite();
     private UtilsFile uFile = new UtilsFile();
@@ -40,13 +35,6 @@ public class CapacitorSQLite extends Plugin {
      * Load the plugin
      */
     public void load() {
-        Log.v(TAG, "*** in load " + isPermissionGranted + " ***");
-        if (hasRequiredPermissions()) {
-            isPermissionGranted = true;
-        } else {
-            isPermissionGranted = false;
-        }
-
         // Get singleton instance of database
         context = getContext();
     }
@@ -79,11 +67,6 @@ public class CapacitorSQLite extends Plugin {
         String newsecret = null;
         String inMode = null;
         JSObject ret = new JSObject();
-        Log.v(TAG, "*** in createConnection " + isPermissionGranted + " ***");
-        if (!isPermissionGranted) {
-            retResult(call, false, "createConnection command failed: Permissions " + "not granted");
-            return;
-        }
         dbName = call.getString("database");
         if (dbName == null) {
             String msg = "createConnection command failed: Must " + "provide a database";
@@ -880,50 +863,6 @@ public class CapacitorSQLite extends Plugin {
     }
 
     /**
-     * RequestPermissions Method
-     * Request Read and Write permissions
-     * @param call
-     */
-    @PluginMethod
-    public void requestPermissions(PluginCall call) {
-        pluginRequestPermissions(
-            new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE },
-            REQUEST_SQLITE_PERMISSION
-        );
-        retResult(call, true, null);
-        return;
-    }
-
-    /**
-     * HandleRequestPermissionsResult Method
-     *
-     * @param requestCode
-     * @param permissions
-     * @param grantResults
-     */
-    @Override
-    protected void handleRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.handleRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_SQLITE_PERMISSION) {
-            boolean permissionsGranted = true;
-            for (int grantResult : grantResults) {
-                if (grantResult != 0) {
-                    permissionsGranted = false;
-                }
-            }
-
-            JSObject data = new JSObject();
-            if (permissionsGranted) {
-                isPermissionGranted = true;
-                notifyPermissionsRequest(isPermissionGranted);
-            } else {
-                isPermissionGranted = false;
-                notifyPermissionsRequest(isPermissionGranted);
-            }
-        }
-    }
-
-    /**
      * RetResult Method
      * Create and return the capSQLiteResult object
      * @param call
@@ -1006,30 +945,5 @@ public class CapacitorSQLite extends Plugin {
             Log.v(TAG, "*** ERROR " + message);
         }
         call.resolve(ret);
-    }
-
-    /**
-     * NotifyPermissionsRequest Method
-     * Create and Send the notification to
-     * the 'permissionGranted' listener
-     * @param isPermissionGranted
-     */
-    protected void notifyPermissionsRequest(boolean isPermissionGranted) {
-        final JSObject data = new JSObject();
-        if (isPermissionGranted) {
-            data.put("permissionGranted", Integer.valueOf(1));
-        } else {
-            data.put("permissionGranted", Integer.valueOf(0));
-        }
-        bridge
-            .getActivity()
-            .runOnUiThread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        notifyListeners("androidPermissionsRequest", data);
-                    }
-                }
-            );
     }
 }
