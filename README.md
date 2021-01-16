@@ -148,28 +148,27 @@ No configuration required for this plugin
 
 ## Supported methods
 
-| Name | Android | iOS | Electron | Web |
-| | | | MacOs | Windows | |
-| :---------------------- | :------ | :-- | :-------------- | :-- |
-| createConnection | ✅ | ✅ | ✅ | ✅ | ❌ |
-| closeConnection | ✅ | ✅ | ✅ | ✅ | ❌ |
-| open (non-encrypted DB) | ✅ | ✅ | ✅ | ✅ | ❌ |
-| open (encrypted DB) | ✅ | ✅ | ✅ | ❌ | ❌ |
-| close | ✅ | ✅ | ✅ | ✅ | ❌ |
-| execute | ✅ | ✅ | ✅ | ✅ | ❌ |
-| executeSet | ✅ | ✅ | ✅ | ✅ | ❌ |
-| run | ✅ | ✅ | ✅ | ✅ | ❌ |
-| query | ✅ | ✅ | ✅ | ✅ | ❌ |
-| deleteDatabase | ✅ | ✅ | ✅ | ✅ | ❌ |
-| importFromJson | ✅ | ✅ | ✅ | ✅ | ❌ |
-| exportToJson | ✅ | ✅ | ✅ | ✅ | ❌ |
-| createSyncTable | ✅ | ✅ | ✅ | ✅ | ❌ |
-| setSyncDate | ✅ | ✅ | ✅ | ✅ | ❌ |
-| getSyncDate | ✅ | ✅ | ✅ | ✅ | ❌ |
-| isJsonValid | ✅ | ✅ | ✅ | ✅ | ❌ |
-| isDBExists | ✅ | ✅ | ✅ | ✅ | ❌ |
-| addUpgradeStatement | ✅ | ✅ | ✅ | ✅ | ❌ |
-| copyFromAssets | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Name                    | Android | iOS | Electron Mac | Electron Windows | Web |
+| :---------------------- | :------ | :-- | :----------- | :--------------- | :-- |
+| createConnection        | ✅      | ✅  | ✅           | ✅               | ❌  |
+| closeConnection         | ✅      | ✅  | ✅           | ✅               | ❌  |
+| open (non-encrypted DB) | ✅      | ✅  | ✅           | ✅               | ❌  |
+| open (encrypted DB)     | ✅      | ✅  | ✅           | ❌               | ❌  |
+| close                   | ✅      | ✅  | ✅           | ✅               | ❌  |
+| execute                 | ✅      | ✅  | ✅           | ✅               | ❌  |
+| executeSet              | ✅      | ✅  | ✅           | ✅               | ❌  |
+| run                     | ✅      | ✅  | ✅           | ✅               | ❌  |
+| query                   | ✅      | ✅  | ✅           | ✅               | ❌  |
+| deleteDatabase          | ✅      | ✅  | ✅           | ✅               | ❌  |
+| importFromJson          | ✅      | ✅  | ✅           | ✅               | ❌  |
+| exportToJson            | ✅      | ✅  | ✅           | ✅               | ❌  |
+| createSyncTable         | ✅      | ✅  | ✅           | ✅               | ❌  |
+| setSyncDate             | ✅      | ✅  | ✅           | ✅               | ❌  |
+| getSyncDate             | ✅      | ✅  | ✅           | ✅               | ❌  |
+| isJsonValid             | ✅      | ✅  | ✅           | ✅               | ❌  |
+| isDBExists              | ✅      | ✅  | ✅           | ✅               | ❌  |
+| addUpgradeStatement     | ✅      | ✅  | ✅           | ✅               | ❌  |
+| copyFromAssets          | ✅      | ✅  | ✅           | ✅               | ❌  |
 
 ## Documentation
 
