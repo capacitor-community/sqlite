@@ -3,15 +3,27 @@ export class UtilsFile {
   Path: any = null;
   NodeFs: any = null;
   Os: any = null;
-  AppName: String = '';
-  HomeDir: String = '';
+  AppName: string = '';
+  HomeDir: string = '';
+  appPath: string = null;
+  osType: string;
 
   constructor() {
     this.Path = require('path');
     this.NodeFs = require('fs');
     this.Os = require('os');
     this.HomeDir = this.Os.homedir();
-    this.AppName = require('../../package.json').name;
+    const app = require('electron').remote.app;
+    this.appPath = app.getAppPath();
+    let sep: string = '/';
+    const idx: number = this.appPath.indexOf('\\');
+    if (idx != -1) sep = '\\';
+    const mypath = this.appPath.substring(
+      0,
+      this.appPath.indexOf('electron') - 1,
+    );
+    this.AppName = mypath.substring(mypath.lastIndexOf(sep) + 1);
+    this.osType = this.Os.type();
   }
   /**
    * IsPathExists
@@ -57,7 +69,7 @@ export class UtilsFile {
   public getDatabasesPath(): string {
     let retPath: string = '';
     const dbFolder: string = this.pathDB;
-    if (this.AppName == null) {
+    if (this.AppName == null || this.AppName.length === 0) {
       let sep: string = '/';
       const idx: number = __dirname.indexOf('\\');
       if (idx != -1) sep = '\\';

@@ -36,7 +36,7 @@ The main reasons for it:
 - db connector allowing for easy commands `db.open(), db.close, ...`
 - improve the response time of the encrypted database by removing the internal open and close database for each sqlite query
 - moving to the latest `androidx.sqlite.db.xxx`
-- offering encryption for Electron platform by using `@journeyapps/sqlcipher`
+- offering encryption for Electron platform by using `@journeyapps/sqlcipher` on MacOs, !!! NOT ON WINDOWS !!!
 - cleaning and aligning the code between platforms
 - allowing developers to develop `typeorm` or `spatialite` drivers.
 
@@ -148,27 +148,28 @@ No configuration required for this plugin
 
 ## Supported methods
 
-| Name                    | Android | iOS | Electron | Web |
-| :---------------------- | :------ | :-- | :------- | :-- |
-| createConnection        | ✅      | ✅  | ✅       | ❌  |
-| closeConnection         | ✅      | ✅  | ✅       | ❌  |
-| open (non-encrypted DB) | ✅      | ✅  | ✅       | ❌  |
-| open (encrypted DB)     | ✅      | ✅  | ✅       | ❌  |
-| close                   | ✅      | ✅  | ✅       | ❌  |
-| execute                 | ✅      | ✅  | ✅       | ❌  |
-| executeSet              | ✅      | ✅  | ✅       | ❌  |
-| run                     | ✅      | ✅  | ✅       | ❌  |
-| query                   | ✅      | ✅  | ✅       | ❌  |
-| deleteDatabase          | ✅      | ✅  | ✅       | ❌  |
-| importFromJson          | ✅      | ✅  | ✅       | ❌  |
-| exportToJson            | ✅      | ✅  | ✅       | ❌  |
-| createSyncTable         | ✅      | ✅  | ✅       | ❌  |
-| setSyncDate             | ✅      | ✅  | ✅       | ❌  |
-| getSyncDate             | ✅      | ✅  | ✅       | ❌  |
-| isJsonValid             | ✅      | ✅  | ✅       | ❌  |
-| isDBExists              | ✅      | ✅  | ✅       | ❌  |
-| addUpgradeStatement     | ✅      | ✅  | ✅       | ❌  |
-| copyFromAssets          | ✅      | ✅  | ✅       | ❌  |
+| Name | Android | iOS | Electron | Web |
+| | | | MacOs | Windows | |
+| :---------------------- | :------ | :-- | :-------------- | :-- |
+| createConnection | ✅ | ✅ | ✅ | ✅ | ❌ |
+| closeConnection | ✅ | ✅ | ✅ | ✅ | ❌ |
+| open (non-encrypted DB) | ✅ | ✅ | ✅ | ✅ | ❌ |
+| open (encrypted DB) | ✅ | ✅ | ✅ | ❌ | ❌ |
+| close | ✅ | ✅ | ✅ | ✅ | ❌ |
+| execute | ✅ | ✅ | ✅ | ✅ | ❌ |
+| executeSet | ✅ | ✅ | ✅ | ✅ | ❌ |
+| run | ✅ | ✅ | ✅ | ✅ | ❌ |
+| query | ✅ | ✅ | ✅ | ✅ | ❌ |
+| deleteDatabase | ✅ | ✅ | ✅ | ✅ | ❌ |
+| importFromJson | ✅ | ✅ | ✅ | ✅ | ❌ |
+| exportToJson | ✅ | ✅ | ✅ | ✅ | ❌ |
+| createSyncTable | ✅ | ✅ | ✅ | ✅ | ❌ |
+| setSyncDate | ✅ | ✅ | ✅ | ✅ | ❌ |
+| getSyncDate | ✅ | ✅ | ✅ | ✅ | ❌ |
+| isJsonValid | ✅ | ✅ | ✅ | ✅ | ❌ |
+| isDBExists | ✅ | ✅ | ✅ | ✅ | ❌ |
+| addUpgradeStatement | ✅ | ✅ | ✅ | ✅ | ❌ |
+| copyFromAssets | ✅ | ✅ | ✅ | ✅ | ❌ |
 
 ## Documentation
 

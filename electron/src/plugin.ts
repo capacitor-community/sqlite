@@ -35,6 +35,7 @@ export class CapacitorSQLiteElectronWeb
   private _dbDict: any = {};
   private _uFile: UtilsFile = new UtilsFile();
   private _uJson: UtilsJson = new UtilsJson();
+  private _osType: string;
   private _versionUpgrades: Record<
     string,
     Record<number, capSQLiteVersionUpgrade>
@@ -47,6 +48,7 @@ export class CapacitorSQLiteElectronWeb
     });
     console.log('CapacitorSQLite Electron');
     this.RemoteRef = remote;
+    this._osType = this._uFile.osType;
   }
   async createConnection(
     options: capConnectionOptions,
@@ -60,8 +62,14 @@ export class CapacitorSQLiteElectronWeb
     }
     const dbName: string = options.database!;
     const version: number = options.version ? options.version : 1;
-    const encrypted: boolean = options.encrypted ? options.encrypted : false;
-    const inMode: string = options.mode ? options.mode : 'no-encryption';
+    const encrypted: boolean =
+      options.encrypted && this._osType === 'Darwin'
+        ? options.encrypted
+        : false;
+    const inMode: string =
+      options.mode && this._osType === 'Darwin'
+        ? options.mode
+        : 'no-encryption';
     let upgDict: Record<number, capSQLiteVersionUpgrade> = {};
     const vUpgKeys: string[] = Object.keys(this._versionUpgrades);
     if (vUpgKeys.length !== 0 && vUpgKeys.includes(dbName)) {

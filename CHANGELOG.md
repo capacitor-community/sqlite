@@ -1,3 +1,10 @@
+## 2.9.1 (2021-01-14) REFACTOR
+
+### Bug Fixes
+
+- Fix issue#63 by removing encryption for Windows
+- update README and CHANGELOG
+
 ## 2.9.0 (2021-01-14) REFACTOR
 
 ### Chore
