@@ -266,11 +266,17 @@ public class UtilsJson {
         for (int i = 0; i < indexes.size(); i++) {
             JSONObject jsIdx = new JSONObject();
             ArrayList<String> keys = indexes.get(i).getKeys();
-            if (keys.contains("column")) {
-                jsIdx.put("column", indexes.get(i).getColumn());
+            if (keys.contains("value")) {
+                jsIdx.put("value", indexes.get(i).getValue());
             }
             if (keys.contains("name")) {
                 jsIdx.put("name", indexes.get(i).getName());
+            }
+            if (keys.contains("mode")) {
+                String mode = indexes.get(i).getMode();
+                if (mode.length() > 0 && mode.equals("UNIQUE")) {
+                    jsIdx.put("name", mode);
+                }
             }
             boolean isValid = uJIdx.isIndexes(jsIdx);
             if (!isValid) {

@@ -651,7 +651,10 @@ class ExportToJson {
                                 throw ExportToJsonError
                                         .createIndexes(message: msg)
                             }
-                            row["column"] = String(sql[sql.index(
+                            if sql.contains("UNIQUE") {
+                                row["mode"] = "UNIQUE"
+                            }
+                            row["value"] = String(sql[sql.index(
                                                 after: oPar)..<cPar])
                             row["name"] = name
                             retIndexes.append(row)

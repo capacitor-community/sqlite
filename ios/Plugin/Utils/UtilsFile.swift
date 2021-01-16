@@ -94,7 +94,7 @@ class UtilsFile {
 
     class func setPathSuffix(sDb: String ) -> String {
         var toDb: String = sDb
-        if(sDb.count > 9) {
+        if sDb.count > 9 {
             let last9: String = String(sDb.suffix(9))
             let ext: String = ".db"
             if last9 != "SQLite.db" {

@@ -204,13 +204,21 @@ class ImportFromJson {
                                   tableName: String) -> [String] {
         var statements: [String] = []
         for jpos in 0..<mIndexes.count {
+            var mUnique: String = ""
+            if let mMode = mIndexes[jpos].mode {
+                if mMode == "UNIQUE" {
+                    mUnique = mMode + " "
+                }
+            }
             var stmt: String
-            stmt = "CREATE INDEX IF NOT EXISTS "
+            stmt = "CREATE "
+            stmt.append(mUnique)
+            stmt.append("INDEX IF NOT EXISTS ")
             stmt.append(mIndexes[jpos].name)
             stmt.append(" ON ")
             stmt.append(tableName)
             stmt.append(" (")
-            stmt.append(mIndexes[jpos].column)
+            stmt.append(mIndexes[jpos].value)
             stmt.append(");")
             statements.append(stmt)
         }

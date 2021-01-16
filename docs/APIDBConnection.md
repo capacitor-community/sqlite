@@ -369,9 +369,10 @@ Export the given database to a JSON Object
 
 #### JsonIndex
 
-| Prop         | Type                | Description                   |
-| ------------ | ------------------- | ----------------------------- |
-| **`name`**   | <code>string</code> | The index name                |
-| **`column`** | <code>string</code> | The column name to be indexed |
+| Prop        | Type                | Description                                                                                                             |
+| ----------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **`name`**  | <code>string</code> | The index name                                                                                                          |
+| **`value`** | <code>string</code> | The value of the index can have the following formats: email email ASC email, MobileNumber email ASC, MobileNumber DESC |
+| **`mode`**  | <code>string</code> | the mode (Optional) UNIQUE                                                                                              |
 
 </docgen-api>

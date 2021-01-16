@@ -405,9 +405,18 @@ export interface JsonIndex {
    */
   name: string;
   /**
-   * The column name to be indexed
+   * The value of the index can have the following formats:
+   * email
+   * email ASC
+   * email, MobileNumber
+   * email ASC, MobileNumber DESC
    */
-  column: string;
+  value: string;
+  /**
+   * the mode (Optional)
+   * UNIQUE
+   */
+  mode?: string;
 }
 export interface capSQLiteVersionUpgrade {
   fromVersion: number;

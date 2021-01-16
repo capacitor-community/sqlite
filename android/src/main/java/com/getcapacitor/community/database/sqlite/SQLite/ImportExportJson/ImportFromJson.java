@@ -209,12 +209,16 @@ public class ImportFromJson {
     private ArrayList<String> createTableIndexes(ArrayList<JsonIndex> mIndexes, String tableName, String mode) {
         ArrayList<String> statements = new ArrayList<>();
         for (int j = 0; j < mIndexes.size(); j++) {
-            String stmt = new StringBuilder("CREATE INDEX IF NOT EXISTS ")
+            String mMode = mIndexes.get(j).getMode();
+            String mUnique = mMode.length() > 0 ? mMode + " " : "";
+            String stmt = new StringBuilder("CREATE ")
+                .append(mUnique)
+                .append("INDEX IF NOT EXISTS ")
                 .append(mIndexes.get(j).getName())
                 .append(" ON ")
                 .append(tableName)
                 .append(" (")
-                .append(mIndexes.get(j).getColumn())
+                .append(mIndexes.get(j).getValue())
                 .append(");")
                 .toString();
             statements.add(stmt);

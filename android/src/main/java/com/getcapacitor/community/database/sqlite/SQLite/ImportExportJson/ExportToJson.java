@@ -194,9 +194,12 @@ public class ExportToJson {
                     if (lIndexes.get(j).getString("tbl_name").equals(tableName)) {
                         jsonRow.setName(lIndexes.get(j).getString("name"));
                         String sql = lIndexes.get(j).getString("sql");
+                        if (sql.contains("UNIQUE")) {
+                            jsonRow.setMode("UNIQUE");
+                        }
                         Integer oPar = sql.lastIndexOf("(");
                         Integer cPar = sql.lastIndexOf(")");
-                        jsonRow.setColumn(sql.substring(oPar + 1, cPar));
+                        jsonRow.setValue(sql.substring(oPar + 1, cPar));
                         indexes.add(jsonRow);
                     } else {
                         throw new Exception(msg + "table name doesn't match");

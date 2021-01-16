@@ -12,17 +12,22 @@ import org.json.JSONObject;
 public class JsonIndex {
 
     private static final String TAG = "JsonIndex";
-    private static final List<String> keyIndexesLevel = new ArrayList<String>(Arrays.asList("name", "column"));
-    private String name;
-    private String column;
+    private static final List<String> keyIndexesLevel = new ArrayList<String>(Arrays.asList("name", "value", "mode"));
+    private String name = "";
+    private String value = "";
+    private String mode = "";
 
     // Getter
     public String getName() {
         return name;
     }
 
-    public String getColumn() {
-        return column;
+    public String getValue() {
+        return value;
+    }
+
+    public String getMode() {
+        return mode;
     }
 
     // Setter
@@ -30,14 +35,21 @@ public class JsonIndex {
         this.name = newName;
     }
 
-    public void setColumn(String newColumn) {
-        this.column = newColumn;
+    public void setValue(String newValue) {
+        this.value = newValue;
+    }
+
+    public void setMode(String newMode) {
+        if (newMode.equals("UNIQUE")) {
+            this.mode = newMode;
+        }
     }
 
     public ArrayList<String> getKeys() {
         ArrayList<String> retArray = new ArrayList<String>();
         if (getName().length() > 0) retArray.add("name");
-        if (getColumn().length() > 0) retArray.add("column");
+        if (getValue().length() > 0) retArray.add("value");
+        if (getMode().length() > 0 && getMode().equals("UNIQUE")) retArray.add("mode");
         return retArray;
     }
 
@@ -48,19 +60,26 @@ public class JsonIndex {
             String key = keys.next();
             if (!keyIndexesLevel.contains(key)) return false;
             try {
-                Object value = jsObj.get(key);
+                Object objValue = jsObj.get(key);
                 if (key.equals("name")) {
-                    if (!(value instanceof String)) {
+                    if (!(objValue instanceof String)) {
                         return false;
                     } else {
-                        name = (String) value;
+                        name = (String) objValue;
                     }
                 }
-                if (key.equals("column")) {
-                    if (!(value instanceof String)) {
+                if (key.equals("value")) {
+                    if (!(objValue instanceof String)) {
                         return false;
                     } else {
-                        column = (String) value;
+                        value = (String) objValue;
+                    }
+                }
+                if (key.equals("mode")) {
+                    if (!(objValue instanceof String) || !(objValue.equals("UNIQUE"))) {
+                        return false;
+                    } else {
+                        mode = (String) objValue;
                     }
                 }
             } catch (JSONException e) {
@@ -72,13 +91,16 @@ public class JsonIndex {
     }
 
     public void print() {
-        Log.d(TAG, "name: " + this.getName() + " column: " + this.getColumn());
+        String toPrint = "name: " + this.getName() + " value: " + this.getValue();
+        if (this.getMode().length() > 0) toPrint += " mode: " + this.getMode();
+        Log.d(TAG, toPrint);
     }
 
     public JSObject getIndexAsJSObject() {
         JSObject retObj = new JSObject();
         retObj.put("name", this.name);
-        retObj.put("column", this.column);
+        retObj.put("value", this.value);
+        if (this.mode.length() > 0) retObj.put("mode", this.mode);
         return retObj;
     }
 }

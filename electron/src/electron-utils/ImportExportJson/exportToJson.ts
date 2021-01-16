@@ -258,12 +258,14 @@ export class ExportToJson {
             if (keys.length === 3) {
               if (retIndexes[j]['tbl_name'] === tableName) {
                 const sql: string = retIndexes[j]['sql'];
+                const mode: string = sql.includes('UNIQUE') ? 'UNIQUE' : '';
                 const oPar: number = sql.lastIndexOf('(');
                 const cPar: number = sql.lastIndexOf(')');
-                indexes.push({
-                  name: retIndexes[j]['name'],
-                  column: sql.slice(oPar + 1, cPar),
-                });
+                let index: JsonIndex = {} as JsonIndex;
+                index.name = retIndexes[j]['name'];
+                index.value = sql.slice(oPar + 1, cPar);
+                if (mode.length > 0) index.mode = mode;
+                indexes.push(index);
               } else {
                 reject(
                   new Error(`GetIndexes: Table ${tableName} doesn't match`),

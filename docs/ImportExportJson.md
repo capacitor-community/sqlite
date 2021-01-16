@@ -89,9 +89,13 @@ export type jsonColumn = {
   foreignkey?: string,
   value: string,
 };
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Modified in 2.9.2 to allow for INDEX UNIQUE and with combined columns
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 export type jsonIndex = {
   name: string,
-  column: string,
+  value: string,
+  mode?: string
 };
 ```
 
@@ -116,8 +120,13 @@ const dataToImport: jsonSQLite = {
         { column: 'last_modified', value: 'INTEGER' },
       ],
       indexes: [
-        { name: 'index_user_on_name', column: 'name' },
-        { name: 'index_user_on_last_modified', column: 'last_modified' },
+        { name: 'index_user_on_name', value: 'name' },
+        { name: 'index_user_on_last_modified', value: 'last_modified DESC' },
+        {
+          name: 'index_user_on_email_name',
+          value: 'email ASC, name',
+          mode: 'UNIQUE',
+        },
       ],
       values: [
         [1, 'Whiteley.com', 'Whiteley', 30, 1582536810],
@@ -140,8 +149,11 @@ const dataToImport: jsonSQLite = {
         },
       ],
       indexes: [
-        { name: 'index_messages_on_title', column: 'title' },
-        { name: 'index_messages_on_last_modified', column: 'last_modified' },
+        { name: 'index_messages_on_title', value: 'title' },
+        {
+          name: 'index_messages_on_last_modified',
+          value: 'last_modified DESC',
+        },
       ],
       values: [
         [1, 1, 'test post 1', 'content test post 1', 1587310030],
@@ -160,7 +172,7 @@ const dataToImport: jsonSQLite = {
         { column: 'last_modified', value: 'INTEGER' },
       ],
       indexes: [
-        { name: 'index_images_on_last_modified', column: 'last_modified' },
+        { name: 'index_images_on_last_modified', value: 'last_modified DESC' },
       ],
       values: [
         [1, 'meowth', 'png', 'NULL', Images[0], 1590388825],
@@ -201,8 +213,13 @@ const dataToImport1: jsonSQLite = {
         { column: 'last_modified', value: 'INTEGER' },
       ],
       indexes: [
-        { name: 'index_user_on_name', column: 'name' },
-        { name: 'index_user_on_last_modified', column: 'last_modified' },
+        { name: 'index_user_on_name', value: 'name' },
+        { name: 'index_user_on_last_modified', value: 'last_modified DESC' },
+        {
+          name: 'index_user_on_email_name',
+          value: 'email ASC, name',
+          mode: 'UNIQUE',
+        },
       ],
     },
     {
@@ -219,7 +236,10 @@ const dataToImport1: jsonSQLite = {
         },
       ],
       indexes: [
-        { name: 'index_messages_on_last_modified', column: 'last_modified' },
+        {
+          name: 'index_messages_on_last_modified',
+          value: 'last_modified DESC',
+        },
       ],
     },
   ],
@@ -276,9 +296,7 @@ const partialImport1: any = {
         {
           name: "messages",
           indexes: [
-              {name: "index_messages_on_title",
-              column: "title"
-              }
+              {name: "index_messages_on_title", value: "title"}
           ],
           values: [
               [4,1"test post 4","content test post 4",1601983742],
@@ -294,8 +312,8 @@ const partialImport1: any = {
             { column:"last_modified", value:"INTEGER"},
           ],
           indexes: [
-            { name: 'index_fruits_on_name', column: 'name' },
-            { name: "index_fruits_on_last_modified",column: "last_modified"},
+            { name: 'index_fruits_on_name', value: 'name' },
+            { name: "index_fruits_on_last_modified",value: "last_modified DESC"},
           ],
           values: [
             [1, 'orange', 200.3,1601995573],

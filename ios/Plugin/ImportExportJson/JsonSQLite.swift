@@ -82,11 +82,17 @@ public struct JsonColumn: Codable {
 
 public struct JsonIndex: Codable {
     let name: String
-    let column: String
+    let value: String
+    let mode: String?
 
     public func show() {
         print("name: \(name) ")
-        print("column: \(column) ")
+        print("value: \(value) ")
+        if let mMode = mode {
+            if mMode.count > 0 {
+                print("mode: \(mMode) ")
+            }
+        }
     }
 }
 

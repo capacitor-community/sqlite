@@ -1,4 +1,12 @@
-## 2.9.1 (2021-01-14) REFACTOR
+## 2.9.2 (2021-01-16) REFACTOR
+
+### Bug Fixes
+
+- Fix issue#64 create UNIQUE Indexes with combined columns
+- update ImportExport documentation
+- update README and CHANGELOG
+
+## 2.9.1 (2021-01-16) REFACTOR
 
 ### Bug Fixes
 

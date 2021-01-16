@@ -153,13 +153,13 @@ export class UtilsJson {
           jsonData.tables[i].indexes!.length >= 1
         ) {
           for (let j: number = 0; j < jsonData.tables[i].indexes!.length; j++) {
-            statements.push(
-              `CREATE INDEX IF NOT EXISTS ${
-                jsonData.tables[i].indexes![j].name
-              } ON ${jsonData.tables[i].name} (${
-                jsonData.tables[i].indexes![j].column
-              });`,
-            );
+            const index = jsonData.tables[i].indexes![j];
+            const tableName = jsonData.tables[i].name;
+            let stmt: string = `CREATE ${
+              Object.keys(index).includes('mode') ? index.mode + ' ' : ''
+            }INDEX `;
+            stmt += `${index.name} ON ${tableName} (${index.value});`;
+            statements.push(stmt);
           }
         }
       }
@@ -529,7 +529,7 @@ export class UtilsJson {
    * @param obj
    */
   private isIndexes(obj: any): boolean {
-    const keyIndexesLevel: Array<string> = ['name', 'column'];
+    const keyIndexesLevel: Array<string> = ['name', 'value', 'mode'];
     if (
       obj == null ||
       (Object.keys(obj).length === 0 && obj.constructor === Object)
@@ -538,7 +538,12 @@ export class UtilsJson {
     for (var key of Object.keys(obj)) {
       if (keyIndexesLevel.indexOf(key) === -1) return false;
       if (key === 'name' && typeof obj[key] != 'string') return false;
-      if (key === 'column' && typeof obj[key] != 'string') return false;
+      if (key === 'value' && typeof obj[key] != 'string') return false;
+      if (
+        key === 'mode' &&
+        (typeof obj[key] != 'string' || obj[key] != 'UNIQUE')
+      )
+        return false;
     }
     return true;
   }
@@ -578,12 +583,16 @@ export class UtilsJson {
       for (let i: number = 0; i < indexes.length; i++) {
         let index: JsonIndex = {} as JsonIndex;
         let keys: string[] = Object.keys(indexes[i]);
-        if (keys.includes('column')) {
-          index.column = indexes[i].column;
+        if (keys.includes('value')) {
+          index.value = indexes[i].value;
         }
         if (keys.includes('name')) {
           index.name = indexes[i].name;
         }
+        if (keys.includes('mode')) {
+          index.mode = indexes[i].mode;
+        }
+
         let isValid: boolean = this.isIndexes(index);
         if (!isValid) {
           reject(new Error(`CheckIndexesValidity: indexes[${i}] not valid`));
