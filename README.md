@@ -26,7 +26,7 @@ A refactoring has been started more than a month ago to reach the following obje
 - db connector allowing for easy commands `db.open(), db.close, ...`
 - improve the response time of the encrypted database by removing the internal open and close database for each sqlite query
 - moving to the latest `androidx.sqlite.db.xxx`
-- offering encryption for Electron platform by using `@journeyapps/sqlcipher`
+- offering encryption for Electron MacOs platform by using `@journeyapps/sqlcipher`. !!! NOT WORKING for Electron Windows platform !!!
 - cleaning and aligning the code between platforms
 - allowing developers to develop easily `typeorm` or `spatialite` drivers.
 
