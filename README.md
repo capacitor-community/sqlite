@@ -11,7 +11,7 @@
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/l/@capacitor-community/sqlite?style=flat-square" /></a>
 <br>
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/dw/@capacitor-community/sqlite?style=flat-square" /></a>
-  <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/v/@capacitor-community/sqlite?style=flat-square" /></a>
+  <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/v/@capacitor-community/sqlite/2.4.x?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 <a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-3-orange?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
@@ -36,9 +36,9 @@ It is now available in a beta release `2.9.0-beta.1` for all platforms (Android,
 
 Developers are encouraged to start looking at it and using it as this will have some impacts on yours developments. The interface to the plugin is now achieved through the use of connection wrappers
 
-- [API_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/refactor/docs/APIConnection.md)
+- [API_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/APIConnection.md)
 
-- [API_DB_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/refactor/docs/APIDBConnection.md)
+- [API_DB_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/APIDBConnection.md)
 
 As you will see it is a `Major`change and the release will become a `3.0.0` as soon as `capacitor@3.0.0` will be released. So both interfaces to the plugin will be kept and maintained to that stage, after this, the `refactor interface` will be released as the master and maintained.
 
@@ -81,7 +81,7 @@ meaning that it will not work in IE11 without additional JavaScript transformati
 ## Installation
 
 ```bash
-npm install @capacitor-community/sqlite
+npm install @capacitor-community/sqlite@latest
 npx cap sync
 npx cap add ios
 npx cap add android
@@ -162,6 +162,13 @@ npx cap open ios
 npx cap open @capacitor-community/electron
 ```
 
+## Issues
+
+When you will find issues, please report them with the `2.4.x` word at the start of the issue title.
+
+[issues](https://github.com/capacitor-community/sqlite/issues)
+
+
 ## Configuration
 
 No configuration required for this plugin
@@ -188,11 +195,11 @@ No configuration required for this plugin
 
 ## Documentation
 
-[API_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/API.md)
+[API_Documentation](https://github.com/capacitor-community/sqlite/blob/2.4.x/docs/API.md)
 
-[ImportExportJson_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/ImportExportJson.md)
+[ImportExportJson_Documentation](https://github.com/capacitor-community/sqlite/blob/2.4.x/docs/ImportExportJson.md)
 
-[UpgradeDatabaseVersion_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/UpgradeDatabaseVersion.md)
+[UpgradeDatabaseVersion_Documentation](https://github.com/capacitor-community/sqlite/blob/2.4.x/docs/UpgradeDatabaseVersion.md)
 
 ## Applications demonstrating the use of the plugin
 
@@ -200,7 +207,6 @@ No configuration required for this plugin
 
 - [angular-sqlite-app-starter](https://github.com/jepiqueau/angular-sqlite-app-starter)
 
-- [test-angular-jeep-capacitor-plugins](https://github.com/jepiqueau/capacitor-apps/tree/master/IonicAngular/jeep-test-app)
 
 ### Ionic/React
 
