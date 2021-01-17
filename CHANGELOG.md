@@ -1,3 +1,13 @@
+## 2.9.3 (2021-01-17) REFACTOR 
+
+### Move to Master
+
+### Bug Fixes
+
+- Fix in definition.ts Since 2.4.9 in 2.9.0
+- Fix documentation links from 'refactor' to 'master'
+- update README and CHANGELOG
+
 ## 2.9.2 (2021-01-16) REFACTOR
 
 ### Bug Fixes
