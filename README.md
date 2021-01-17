@@ -46,11 +46,11 @@ Refactor available for `Android`, `iOS` and `Electron` platforms.
 
 The test has been achieved on:
 
-- a [Ionic/Angular app](#ionic/angular)
+- a [Ionic/Angular app]((https://github.com/jepiqueau/angular-sqlite-app-refactor))
 
-- a [Ionic/React app](#ionic/react)
+- a [Ionic/React app](https://github.com/jepiqueau/react-sqlite-app-starter/tree/refactor)
 
-- a [Ionic/Vue app](#ionic/vue)
+- a [Ionic/Vue app](https://github.com/jepiqueau/vue-sqlite-app-starter/tree/refactor)
 
 Other frameworks will be tested later
 

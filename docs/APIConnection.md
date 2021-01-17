@@ -65,7 +65,7 @@ Add the upgrade Statement for database version upgrading
 
 **Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
 
-**Since:** 2.4.9 refactor
+**Since:** 2.9.0 refactor
 
 ---
 

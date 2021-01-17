@@ -444,7 +444,7 @@ export interface ISQLiteConnection {
    * @param statement
    * @param set
    * @returns Promise<capSQLiteResult>
-   * @since 2.4.9 refactor
+   * @since 2.9.0 refactor
    */
   addUpgradeStatement(
     database: string,
@@ -674,20 +674,20 @@ export interface ISQLiteDBConnection {
   /**
    * Create a synchronization table
    * @returns Promise<capSQLiteResult>
-   * @since 2.4.9 refactor
+   * @since 2.9.0 refactor
    */
   createSyncTable(): Promise<capSQLiteChanges>;
   /**
    * Set the synchronization date
    * @param syncdate
    * @returns Promise<capSQLiteResult>
-   * @since 2.4.9 refactor
+   * @since 2.9.0 refactor
    */
   setSyncDate(syncdate: string): Promise<capSQLiteResult>;
   /**
    * Get the synchronization date
    * @returns Promise<capSQLiteSyncDate>
-   * @since 2.4.9 refactor
+   * @since 2.9.0 refactor
    */
   getSyncDate(): Promise<capSQLiteSyncDate>;
   /**

@@ -186,7 +186,7 @@ Create a synchronization table
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
 
-**Since:** 2.4.9 refactor
+**Since:** 2.9.0 refactor
 
 ---
 
@@ -204,7 +204,7 @@ Set the synchronization date
 
 **Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
 
-**Since:** 2.4.9 refactor
+**Since:** 2.9.0 refactor
 
 ---
 
@@ -218,7 +218,7 @@ Get the synchronization date
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitesyncdate">capSQLiteSyncDate</a>&gt;</code>
 
-**Since:** 2.4.9 refactor
+**Since:** 2.9.0 refactor
 
 ---
 

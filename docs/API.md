@@ -8,9 +8,9 @@
 
 To easy the way to use the `@capacitor-community/sqlite` plugin and its ability to be use in conjonction with other plugins (`typeorm`, `spatialite`, ...), two connection wrappers have been associated.
 
-- [API_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/refactor/docs/APIConnection.md)
+- [API_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/APIConnection.md)
 
-- [API_DB_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/refactor/docs/APIDBConnection.md)
+- [API_DB_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/APIDBConnection.md)
 
 ## Databases Location
 
