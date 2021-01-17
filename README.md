@@ -141,6 +141,12 @@ npx cap open android
 ```
 npx cap open @capacitor-community/electron
 ```
+## Issues
+
+When you will find issues, please report them with the `REFACTOR` word at the start of the issue title.
+
+[issues](https://github.com/capacitor-community/sqlite/issues)
+
 
 ## Configuration
 
@@ -172,21 +178,21 @@ No configuration required for this plugin
 
 ## Documentation
 
-[API_Documentation](https://github.com/capacitor-community/sqlite/blob/refactor/docs/API.md)
+[API_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/API.md)
 
-[API_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/refactor/docs/APIConnection.md)
+[API_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/APIConnection.md)
 
-[API_DB_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/refactor/docs/APIDBConnection.md)
+[API_DB_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/APIDBConnection.md)
 
-[ImportExportJson_Documentation](https://github.com/capacitor-community/sqlite/blob/refactor/docs/ImportExportJson.md)
+[ImportExportJson_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/ImportExportJson.md)
 
-[UpgradeDatabaseVersion_Documentation](https://github.com/capacitor-community/sqlite/blob/refactor/docs/UpgradeDatabaseVersion.md)
+[UpgradeDatabaseVersion_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/UpgradeDatabaseVersion.md)
 
-[Ionic/Angular_Usage_Documentation](https://github.com/capacitor-community/sqlite/blob/refactor/docs/Ionic-Angular-Usage.md)
+[Ionic/Angular_Usage_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-Angular-Usage.md)
 
-[Ionic/React_Usage_Documentation](https://github.com/capacitor-community/sqlite/blob/refactor/docs/Ionic-React-Usage.md)
+[Ionic/React_Usage_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-React-Usage.md)
 
-[Ionic/Vue_Usage_Documentation](https://github.com/capacitor-community/sqlite/blob/refactor/docs/Ionic-Vue-Usage.md)
+[Ionic/Vue_Usage_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-Vue-Usage.md)
 
 ## Applications demonstrating the use of the plugin
 
@@ -208,16 +214,16 @@ No configuration required for this plugin
 
 - [see capacitor documentation](https://capacitor.ionicframework.com/docs/getting-started/with-ionic)
 
-- [In your Ionic/Angular App](https://github.com/capacitor-community/sqlite/blob/refactor/docs/Ionic-Angular-Usage.md)
+- [In your Ionic/Angular App](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-Angular-Usage.md)
 
-- [In your Ionic/React App](https://github.com/capacitor-community/sqlite/blob/refactor/docs/Ionic-React-Usage.md)
+- [In your Ionic/React App](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-React-Usage.md)
 
-- [In your Ionic/Vue App](https://github.com/capacitor-community/sqlite/blob/refactor/docs/Ionic-Vue-Usage.md)
+- [In your Ionic/Vue App](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-Vue-Usage.md)
 
 ## Dependencies
 
 The IOS and Android codes are using `SQLCipher` allowing for database encryption
-The Electron code use `@journeyapps/sqlcipher` allowing for database encryption
+The Electron code use `@journeyapps/sqlcipher` allowing for database encryption for MacOS !!! NOT for Windows !!!  
 
 ## Contributors ✨
 
