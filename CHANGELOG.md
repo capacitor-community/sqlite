@@ -1,4 +1,11 @@
-## 2.9.3 (2021-01-17) REFACTOR 
+## 2.9.4 (2021-01-17) REFACTOR
+
+### Bug Fixes
+
+- Fix 'build-electron' missing before publish
+- update CHANGELOG
+
+## 2.9.3 (2021-01-17) REFACTOR
 
 ### Move to Master
 

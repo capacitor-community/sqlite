@@ -18,7 +18,7 @@
     "docgenPlugin": "docgen --api CapacitorSQLitePlugin --output-readme docs/API.md",
     "docgenConnection": "docgen --api ISQLiteConnection --output-readme docs/APIConnection.md",
     "docgenDBConnection": "docgen --api ISQLiteDBConnection --output-readme docs/APIDBConnection.md",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build && npm run build-electron && npm run docgen"
   },
   "author": "Jean Pierre Queau",
   "license": "MIT",
