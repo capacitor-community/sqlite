@@ -244,12 +244,16 @@ public class ImportFromJson {
                 for (int i = 0; i < jsonSQL.getTables().size(); i++) {
                     if (jsonSQL.getTables().get(i).getValues().size() > 0) {
                         isValues = true;
-                        createTableData(
-                            mDb,
-                            jsonSQL.getMode(),
-                            jsonSQL.getTables().get(i).getValues(),
-                            jsonSQL.getTables().get(i).getName()
-                        );
+                        try {
+                            createTableData(
+                                mDb,
+                                jsonSQL.getMode(),
+                                jsonSQL.getTables().get(i).getValues(),
+                                jsonSQL.getTables().get(i).getName()
+                            );
+                        } catch (Exception e) {
+                            throw new Exception(e);
+                        }
                     }
                 }
                 if (!isValues) {
@@ -272,8 +276,8 @@ public class ImportFromJson {
             throw e;
         } finally {
             if (db != null && db.inTransaction()) db.endTransaction();
-            return changes;
         }
+        return changes;
     }
 
     /**
@@ -313,12 +317,11 @@ public class ImportFromJson {
                     throw new Exception("createTableData: lastId < 0");
                 }
             }
+            return;
         } catch (JSONException e) {
             throw new Exception("createTableData: " + e.getMessage());
         } catch (Exception e) {
             throw new Exception("createTableData: " + e.getMessage());
-        } finally {
-            return;
         }
     }
 

@@ -296,7 +296,7 @@ class ImportFromJson {
     // swiftlint:disable function_body_length
     class func createTableData(
                         mDB: Database, mode: String,
-                        mValues: [[UncertainValue<String, Int, Float>]],
+                        mValues: [[UncertainValue<String, Int, Double>]],
                         tableName: String) throws {
         // Check if table exists
         do {
@@ -323,7 +323,7 @@ class ImportFromJson {
         }
         for jpos in 0..<mValues.count {
             // Check row validity
-            let row: [UncertainValue<String, Int, Float>] =
+            let row: [UncertainValue<String, Int, Double>] =
                                                         mValues[jpos]
             do {
                 try UtilsJson.checkRowValidity(
@@ -368,7 +368,7 @@ class ImportFromJson {
     class func createRowStatement(
                     mDB: Database,
                     data: [String: Any],
-                    row: [UncertainValue<String, Int, Float>],
+                    row: [UncertainValue<String, Int, Double>],
                     jsonNamesTypes: JsonNamesTypes) throws -> String {
         var stmt: String = ""
         var retisIdExists: Bool = false

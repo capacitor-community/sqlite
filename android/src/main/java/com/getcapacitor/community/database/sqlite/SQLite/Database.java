@@ -545,6 +545,7 @@ public class Database {
             }
         } catch (Exception e) {
             Log.e(TAG, "Error: importFromJson " + e.getMessage());
+            changes = -1;
         } finally {
             retObj.put("changes", changes);
             return retObj;

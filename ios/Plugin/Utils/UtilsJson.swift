@@ -87,7 +87,7 @@ class UtilsJson {
 
     class func checkColumnTypes (
                 mDB: Database, types: [String],
-                values: [UncertainValue<String, Int, Float>]) -> Bool {
+                values: [UncertainValue<String, Int, Double>]) -> Bool {
         var isRetType: Bool = true
         for ipos in 0..<values.count {
             if let val = values[ipos].value {
@@ -107,19 +107,20 @@ class UtilsJson {
     // MARK: - ImportFromJson - IsType
 
     class func isType(stype: String,
-                      avalue: UncertainValue<String, Int, Float>)
+                      avalue: UncertainValue<String, Int, Double>)
                                                         -> Bool {
         var ret: Bool = false
         // swiftlint:disable force_unwrapping
-        if stype == "NULL" && type(of: avalue.tValue!) == String.self {
+        if stype == "NULL" && type(of: avalue.value!) == String.self {
             ret = true }
-        if stype == "TEXT" && type(of: avalue.tValue!) == String.self {
+        if stype == "TEXT" && type(of: avalue.value!) == String.self {
             ret = true }
-        if stype == "INTEGER" && type(of: avalue.uValue!) == Int.self {
+        if stype == "INTEGER" && type(of: avalue.value!) == Int.self {
             ret = true }
-        if stype == "REAL" && type(of: avalue.vValue!) == Float.self {
+        if stype == "REAL" && (type(of: avalue.value!) == Double.self ||
+                                type(of: avalue.value!) == Int.self) {
             ret = true }
-        if stype == "BLOB" && type(of: avalue.tValue!) == String.self {
+        if stype == "BLOB" && type(of: avalue.value!) == String.self {
             ret = true }
 
         // swiftlint:enable force_unwrapping
@@ -165,11 +166,12 @@ class UtilsJson {
     // MARK: - ImportFromJson - GetValuesFromRow
 
     class func getValuesFromRow(
-        rowValues: [ UncertainValue<String, Int, Float>]) -> [Any] {
+        rowValues: [ UncertainValue<String, Int, Double>]) -> [Any] {
         var retArray: [Any] = []
         // swiftlint:disable force_unwrapping
         for ipos in 0..<rowValues.count {
-            retArray.append(rowValues[ipos].value!)
+            let value = rowValues[ipos].value!
+            retArray.append(value)
         }
         // swiftlint:enable force_unwrapping
         return retArray
@@ -190,7 +192,7 @@ class UtilsJson {
 
     class func checkRowValidity(
         mDB: Database, jsonNamesTypes: JsonNamesTypes,
-        row: [UncertainValue<String, Int, Float>], pos: Int,
+        row: [UncertainValue<String, Int, Double>], pos: Int,
         tableName: String) throws {
         if jsonNamesTypes.names.count != row.count {
             let message: String = """
