@@ -30,7 +30,7 @@ public struct JsonTable: Codable {
     let name: String
     var schema: [JsonColumn]?
     var indexes: [JsonIndex]?
-    var values: [[UncertainValue<String, Int, Float>]]?
+    var values: [[UncertainValue<String, Int, Double>]]?
 
     public func show() {
         print("name: \(name) ")
@@ -100,11 +100,9 @@ public struct UncertainValue<T: Codable, U: Codable, V: Codable>: Codable {
     public var tValue: T?
     public var uValue: U?
     public var vValue: V?
-
     public var value: Any? {
         return tValue ?? uValue ?? vValue
     }
-
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         tValue = try? container.decode(T.self)
@@ -112,6 +110,7 @@ public struct UncertainValue<T: Codable, U: Codable, V: Codable>: Codable {
         if uValue == nil {
             vValue = try? container.decode(V.self)
         }
+
         if tValue == nil && uValue == nil && vValue == nil {
             //Type mismatch
             throw DecodingError.typeMismatch(type(of: self), DecodingError.Context(codingPath: [],

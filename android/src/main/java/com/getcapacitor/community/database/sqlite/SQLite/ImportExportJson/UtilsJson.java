@@ -155,7 +155,7 @@ public class UtilsJson {
             if (type.equals("TEXT") && value instanceof String) ret = true;
             if (type.equals("INTEGER") && value instanceof Integer) ret = true;
             if (type.equals("INTEGER") && value instanceof Long) ret = true;
-            if (type.equals("REAL") && value instanceof Float) ret = true;
+            if (type.equals("REAL") && (value instanceof Double || value instanceof Integer)) ret = true;
             if (type.equals("BLOB") && value instanceof Blob) ret = true;
         }
         return ret;

@@ -1,3 +1,9 @@
+## 2.9.5 (2021-01-20) REFACTOR
+
+### Bug Fixes
+
+- importFromJson not working with REAL
+
 ## 2.9.4 (2021-01-17) REFACTOR
 
 ### Bug Fixes
