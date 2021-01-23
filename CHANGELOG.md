@@ -1,4 +1,15 @@
+## 3.0.0-beta.2 (2021-01-23)
+
+### Bug Fixes
+
+- add SQLCipher dependency in CapacitorCommunitySqlite.pod
+
 ## 3.0.0-beta.1 (2021-01-23)
+
+### Bug Fixes
+
+- update API Docs
+- update README, CHANGELOG
 
 ### Chore
 
