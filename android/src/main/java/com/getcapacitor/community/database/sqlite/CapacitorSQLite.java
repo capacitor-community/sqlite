@@ -1,14 +1,8 @@
 package com.getcapacitor.community.database.sqlite;
 
-import android.Manifest;
 import android.content.Context;
-import android.util.Log;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
-import com.getcapacitor.NativePlugin;
-import com.getcapacitor.Plugin;
-import com.getcapacitor.PluginCall;
-import com.getcapacitor.PluginMethod;
 import com.getcapacitor.community.database.sqlite.SQLite.Database;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.JsonSQLite;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsFile;
@@ -17,345 +11,198 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Hashtable;
-import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
-@NativePlugin
-public class CapacitorSQLite extends Plugin {
+public class CapacitorSQLite {
 
-    private static final String TAG = "CapacitorSQLite";
     private Context context;
     private Dictionary<String, Database> dbDict = new Hashtable<>();
     private UtilsSQLite uSqlite = new UtilsSQLite();
     private UtilsFile uFile = new UtilsFile();
-    private Dictionary<String, Dictionary<Integer, JSONObject>> versionUpgrades = new Hashtable<>();
 
-    /**
-     * Load Method
-     * Load the plugin
-     */
-    public void load() {
-        // Get singleton instance of database
-        context = getContext();
+    public CapacitorSQLite(Context context) {
+        this.context = context;
     }
 
     /**
-     * Echo Method
-     * test the plugin
-     * @param call
+     * Echo
+     * @param value
+     * @return
      */
-    @PluginMethod
-    public void echo(PluginCall call) {
-        String value = call.getString("value");
-
-        JSObject ret = new JSObject();
-        ret.put("value", value);
-        call.success(ret);
-        return;
+    public String echo(String value) {
+        return value;
     }
 
     /**
-     * CreateConnection Method
-     * Create a connection to a database
-     * @param call
+     * CreateConnection
+     * @param dbName
+     * @param encrypted
+     * @param mode
+     * @param version
+     * @param vUpgObject
+     * @throws Exception
      */
-    @PluginMethod
-    public void createConnection(PluginCall call) {
-        String dbName = null;
-        int dbVersion = Integer.valueOf(-1);
-        String secret = null;
-        String newsecret = null;
-        String inMode = null;
-        JSObject ret = new JSObject();
-        dbName = call.getString("database");
-        if (dbName == null) {
-            String msg = "createConnection command failed: Must " + "provide a database";
-            msg += " name";
-            retResult(call, false, msg);
-            return;
+    public void createConnection(String dbName, boolean encrypted, String mode, int version, Dictionary<Integer, JSONObject> vUpgObject)
+        throws Exception {
+        // check if connection already exists
+        Database conn = dbDict.get(dbName);
+        if (conn != null) {
+            String msg = "Connection " + dbName + " already exists";
+            throw new Exception(msg);
         }
-        dbVersion = call.getInt("version", 1);
-        boolean encrypted = call.getBoolean("encrypted", false);
-        if (encrypted) {
-            inMode = call.getString("mode", "no-encryption");
-            if (
-                !inMode.equals("no-encryption") &&
-                !inMode.equals("encryption") &&
-                !inMode.equals("secret") &&
-                !inMode.equals("newsecret") &&
-                !inMode.equals("wrongsecret")
-            ) {
-                String msg = "createConnection command failed: ";
-                msg += "Error inMode must ";
-                msg += "be in ['encryption','secret','newsecret']";
-                retResult(call, false, msg);
-                return;
-            }
-        } else {
-            inMode = "no-encryption";
-            secret = "";
-        }
-        Dictionary<Integer, JSONObject> upgDict = versionUpgrades.get(dbName);
-        Database db = new Database(context, dbName + "SQLite.db", encrypted, inMode, dbVersion, upgDict);
-        dbDict.put(dbName, db);
-
-        if (db != null) {
-            retResult(call, true, null);
-            return;
-        } else {
-            String msg = "createConnection command failed";
-            retResult(call, false, msg);
-            return;
-        }
-    }
-
-    /**
-     * Open Method
-     * Open a database
-     * @param call
-     */
-    @PluginMethod
-    public void open(PluginCall call) {
-        if (!call.getData().has("database")) {
-            retResult(call, false, "Must provide a database name");
-            return;
-        }
-        String dbName = call.getString("database");
-
-        Database db = dbDict.get(dbName);
-        if (db != null) {
-            boolean ret = db.open();
-            if (!ret) {
-                retResult(call, false, "database " + dbName + " not opened");
+        try {
+            Database db = new Database(context, dbName + "SQLite.db", encrypted, mode, version, vUpgObject);
+            if (db != null) {
+                dbDict.put(dbName, db);
                 return;
             } else {
-                retResult(call, true, null);
-                return;
+                String msg = "db is null";
+                throw new Exception(msg);
             }
-        } else {
-            retResult(call, false, "No available connection for database " + dbName);
-            return;
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
         }
     }
 
     /**
-     * Close Method
-     * Close a Database
-     * @param call
+     * Open
+     * @param dbName
+     * @throws Exception
      */
-    @PluginMethod
-    public void close(PluginCall call) {
-        if (!call.getData().has("database")) {
-            retResult(call, false, "Must provide a database name");
-            return;
+    public void open(String dbName) throws Exception {
+        Database db = dbDict.get(dbName);
+        if (db != null) {
+            try {
+                db.open();
+                return;
+            } catch (Exception e) {
+                throw new Exception(e.getMessage());
+            }
+        } else {
+            String msg = "No available connection for database " + dbName;
+            throw new Exception(msg);
         }
-        String dbName = call.getString("database");
+    }
 
+    /**
+     * Close
+     * @param dbName
+     * @throws Exception
+     */
+    public void close(String dbName) throws Exception {
         Database db = dbDict.get(dbName);
         if (db != null) {
             if (db.isOpen()) {
                 if (!db.inTransaction()) {
-                    boolean ret = db.close();
-                    if (!ret) {
-                        retResult(call, false, "database " + dbName + " failed to close");
+                    try {
+                        db.close();
                         return;
-                    } else {
-                        retResult(call, true, null);
-                        return;
+                    } catch (Exception e) {
+                        throw new Exception(e.getMessage());
                     }
                 } else {
-                    retResult(call, false, "database " + dbName + " failed to close still in " + " transaction");
-                    return;
+                    String msg = "database " + dbName + " failed to close still in transaction";
+                    throw new Exception(msg);
                 }
             } else {
-                retResult(call, false, "database " + dbName + " not opened");
-                return;
+                String msg = "database " + dbName + " not opened";
+                throw new Exception(msg);
             }
         } else {
-            retResult(call, false, "No available connection for database " + dbName);
-            return;
+            String msg = "No available connection for database " + dbName;
+            throw new Exception(msg);
         }
     }
 
     /**
-     * CloseConnection Method
-     * Close the connection to a database
-     * @param call
+     * CloseConnection
+     * @param dbName
+     * @throws Exception
      */
-    @PluginMethod
-    public void closeConnection(PluginCall call) {
-        if (!call.getData().has("database")) {
-            retResult(call, false, "Must provide a database name");
-            return;
-        }
-        String dbName = call.getString("database");
-
+    public void closeConnection(String dbName) throws Exception {
         Database db = dbDict.get(dbName);
         if (db != null) {
             if (db.isOpen()) {
-                Boolean ret = db.close();
-                if (!ret) {
-                    retResult(call, false, "database " + dbName + " failed to close");
-                    return;
+                try {
+                    close(dbName);
+                } catch (Exception e) {
+                    throw new Exception(e.getMessage());
                 }
             }
             dbDict.remove(dbName);
-            retResult(call, true, null);
             return;
         } else {
-            retResult(call, false, "No available connection for database " + dbName);
-            return;
+            String msg = "No available connection for database " + dbName;
+            throw new Exception(msg);
         }
     }
 
     /**
-     * Execute Method
-     * Execute SQL statements provided in a String
-     * @param call
+     * Execute
+     * @param dbName
+     * @param statements
+     * @return
+     * @throws Exception
      */
-    @PluginMethod
-    public void execute(PluginCall call) {
-        JSObject retRes = new JSObject();
-        retRes.put("changes", Integer.valueOf(-1));
-        if (!call.getData().has("database")) {
-            String msg = "Execute command failed : ";
-            msg += "Must provide a database name";
-            retChanges(call, retRes, msg);
-            return;
-        }
-        String dbName = call.getString("database");
-        if (!call.getData().has("statements")) {
-            String msg = "Execute command failed : ";
-            msg += "Must provide raw SQL statements";
-            retChanges(call, retRes, msg);
-            return;
-        }
-        String statements = call.getString("statements");
+    public JSObject execute(String dbName, String statements) throws Exception {
         Database db = dbDict.get(dbName);
         if (db != null) {
             if (db.isOpen()) {
                 // convert string in string[]
                 String[] sqlCmdArray = uSqlite.getStatementsArray(statements);
-                JSObject res = db.execute(sqlCmdArray);
-                if (res.getInteger("changes") == Integer.valueOf(-1)) {
-                    retChanges(call, retRes, res.getString("message"));
-                    return;
-                } else {
-                    retChanges(call, res, null);
-                    return;
+                try {
+                    JSObject res = db.execute(sqlCmdArray);
+                    return res;
+                } catch (Exception e) {
+                    throw new Exception(e.getMessage());
                 }
             } else {
-                String msg = "Execute command failed : database ";
-                msg += dbName + " not opened";
-                retChanges(call, retRes, msg);
-                return;
+                String msg = "database " + dbName + " not opened";
+                throw new Exception(msg);
             }
         } else {
-            String msg = "Execute command failed : No available ";
-            msg += "connection for database " + dbName;
-            retChanges(call, retRes, msg);
-            return;
+            String msg = "No available connection for database " + dbName;
+            throw new Exception(msg);
         }
     }
 
     /**
-     * ExecuteSet Method
-     * Execute a Set of raw sql statement
-     * @param call
+     * ExecuteSet
+     * @param dbName
+     * @param set
+     * @return
      * @throws Exception
      */
-    @PluginMethod
-    public void executeSet(PluginCall call) throws Exception {
-        JSObject retRes = new JSObject();
-        retRes.put("changes", Integer.valueOf(-1));
-        if (!call.getData().has("database")) {
-            String msg = "Run command failed : ";
-            msg += "Must provide a database name";
-            retChanges(call, retRes, msg);
-            return;
-        }
-        String dbName = call.getString("database");
-        if (!call.getData().has("set")) {
-            String msg = "ExecuteSet command failed : ";
-            msg += "Must provide a set of SQL statements";
-            retChanges(call, retRes, msg);
-            return;
-        }
-        JSArray set = call.getArray("set");
-        if (set.length() == 0) {
-            String msg = "ExecuteSet command failed : ";
-            msg += "Must provide a non-empty set of SQL statements";
-            retChanges(call, retRes, msg);
-            return;
-        }
-        for (int i = 0; i < set.length(); i++) {
-            JSONArray keys = set.getJSONObject(i).names();
-            for (int j = 0; j < keys.length(); ++j) {
-                String key = keys.getString(j);
-                if (!(key.equals("statement")) && !(key.equals("values"))) {
-                    String msg = "ExecuteSet command failed : ";
-                    msg += "Must provide a set as Array of {statement,";
-                    msg += "values}";
-                    retChanges(call, retRes, msg);
-                    return;
-                }
-            }
-        }
+    public JSObject executeSet(String dbName, JSArray set) throws Exception {
         Database db = dbDict.get(dbName);
         if (db != null) {
             if (db.isOpen()) {
-                JSObject res = db.executeSet(set);
-                if (res.getInteger("changes") == Integer.valueOf(-1)) {
-                    retChanges(call, retRes, res.getString("message"));
-                    return;
-                } else {
-                    retChanges(call, res, null);
-                    return;
+                try {
+                    JSObject res = db.executeSet(set);
+                    return res;
+                } catch (Exception e) {
+                    throw new Exception(e.getMessage());
                 }
             } else {
-                String msg = "Execute command failed : database ";
-                msg += dbName + " not opened";
-                retChanges(call, retRes, msg);
-                return;
+                String msg = "database " + dbName + " not opened";
+                throw new Exception(msg);
             }
         } else {
-            String msg = "Execute command failed : No available ";
-            msg += "connection for database " + dbName;
-            retChanges(call, retRes, msg);
-            return;
+            String msg = "No available connection for database " + dbName;
+            throw new Exception(msg);
         }
     }
 
     /**
-     * Run method
-     * Execute a raw sql statement
-     * @param call
+     * Run
+     * @param dbName
+     * @param statement
+     * @param values
+     * @return
+     * @throws Exception
      */
-    @PluginMethod
-    public void run(PluginCall call) {
-        JSObject retRes = new JSObject();
-        retRes.put("changes", Integer.valueOf(-1));
-        if (!call.getData().has("database")) {
-            String msg = "Run command failed : ";
-            msg += "Must provide a database name";
-            retChanges(call, retRes, msg);
-            return;
-        }
-        String dbName = call.getString("database");
-        if (!call.getData().has("statement")) {
-            String msg = "Run command failed : ";
-            msg += "Must provide a SQL statement";
-            retChanges(call, retRes, msg);
-            return;
-        }
-        String statement = call.getString("statement");
-        if (!call.getData().has("values")) {
-            String msg = "Run command failed : ";
-            msg += "Must provide an Array of values";
-            retChanges(call, retRes, msg);
-            return;
-        }
-        JSArray values = call.getArray("values");
+    public JSObject run(String dbName, String statement, JSArray values) throws Exception {
         JSObject res;
         Database db = dbDict.get(dbName);
         if (db != null) {
@@ -364,65 +211,39 @@ public class CapacitorSQLite extends Plugin {
                     try {
                         ArrayList<Object> arrValues = uSqlite.objectJSArrayToArrayList(values);
                         res = db.runSQL(statement, arrValues);
+                        return res;
+                    } catch (JSONException e) {
+                        throw new Exception(e.getMessage());
                     } catch (Exception e) {
-                        String msg = "Run command failed : could not ";
-                        msg += dbName + "convert JSArray";
-                        retChanges(call, retRes, msg);
-                        return;
+                        throw new Exception(e.getMessage());
                     }
                 } else {
-                    res = db.runSQL(statement, null);
-                }
-                if (res.getInteger("changes") == Integer.valueOf(-1)) {
-                    retChanges(call, retRes, res.getString("message"));
-                    return;
-                } else {
-                    retChanges(call, res, null);
-                    return;
+                    try {
+                        res = db.runSQL(statement, null);
+                        return res;
+                    } catch (Exception e) {
+                        throw new Exception(e.getMessage());
+                    }
                 }
             } else {
-                String msg = "Run command failed : database ";
-                msg += dbName + " not opened";
-                retChanges(call, retRes, msg);
-                return;
+                String msg = "database " + dbName + " not opened";
+                throw new Exception(msg);
             }
         } else {
-            String msg = "Run command failed : No available ";
-            msg += "connection for database " + dbName;
-            retChanges(call, retRes, msg);
-            return;
+            String msg = "No available connection for database " + dbName;
+            throw new Exception(msg);
         }
     }
 
     /**
-     * Query Method
-     * Execute an sql query
-     * @param call
+     * Query
+     * @param dbName
+     * @param statement
+     * @param values
+     * @return
+     * @throws Exception
      */
-    @PluginMethod
-    public void query(PluginCall call) {
-        if (!call.getData().has("database")) {
-            String msg = "Query command failed : ";
-            msg += "Must provide a database name";
-            retValues(call, new JSArray(), msg);
-            return;
-        }
-        String dbName = call.getString("database");
-        if (!call.getData().has("statement")) {
-            String msg = "Query command failed : ";
-            msg += "Must provide a SQL statement";
-            retValues(call, new JSArray(), msg);
-            return;
-        }
-        String statement = call.getString("statement");
-        if (!call.getData().has("values")) {
-            String msg = "Query command failed : ";
-            msg += "Must provide an Array of Strings";
-            retValues(call, new JSArray(), msg);
-            return;
-        }
-        JSArray values = call.getArray("values");
-
+    public JSArray query(String dbName, String statement, JSArray values) throws Exception {
         JSArray res;
         Database db = dbDict.get(dbName);
         if (db != null) {
@@ -431,519 +252,214 @@ public class CapacitorSQLite extends Plugin {
                     try {
                         ArrayList<String> arrValues = uSqlite.stringJSArrayToArrayList(values);
                         res = db.selectSQL(statement, arrValues);
+                        return res;
+                    } catch (JSONException e) {
+                        throw new Exception(e.getMessage());
                     } catch (Exception e) {
-                        String msg = "Query command failed : could ";
-                        msg += dbName + "not convert JSArray";
-                        retValues(call, new JSArray(), msg);
-                        return;
+                        throw new Exception(e.getMessage());
                     }
                 } else {
-                    res = db.selectSQL(statement, new ArrayList<String>());
-                }
-                if (res.length() > 0) {
-                    retValues(call, res, null);
-                    return;
-                } else {
-                    retValues(call, res, "Query command failed");
-                    return;
+                    try {
+                        res = db.selectSQL(statement, new ArrayList<String>());
+                        return res;
+                    } catch (Exception e) {
+                        throw new Exception(e.getMessage());
+                    }
                 }
             } else {
-                String msg = "Query command failed : database ";
-                msg += dbName + " not opened";
-                retValues(call, new JSArray(), msg);
-                return;
+                String msg = "database " + dbName + " not opened";
+                throw new Exception(msg);
             }
         } else {
-            String msg = "Query command failed : No available ";
-            msg += "connection for database " + dbName;
-            retValues(call, new JSArray(), msg);
-            return;
+            String msg = "No available connection for database " + dbName;
+            throw new Exception(msg);
         }
     }
 
-    /**
-     * IsDBExists Method
-     * check if the database exists on the database folder
-     * @param call
-     */
-    @PluginMethod
-    public void isDBExists(PluginCall call) {
-        if (!call.getData().has("database")) {
-            String msg = "isDBExists command failed : ";
-            msg += "Must provide a database name";
-            retResult(call, false, msg);
-            return;
-        }
-        String dbName = call.getString("database");
+    public Boolean isDBExists(String dbName) throws Exception {
         Database db = dbDict.get(dbName);
         if (db != null) {
             File databaseFile = context.getDatabasePath(dbName + "SQLite.db");
             if (databaseFile.exists()) {
-                retResult(call, true, null);
-                return;
+                return true;
             } else {
-                retResult(call, false, null);
-                return;
+                return false;
             }
         } else {
-            String msg = "isDBExists command failed : No available ";
-            msg += "connection for database " + dbName;
-            retResult(call, false, msg);
-            return;
+            String msg = "No available connection for database " + dbName;
+            throw new Exception(msg);
         }
     }
 
-    /**
-     * DeleteDatabase Method
-     * delete a database from the database folder
-     * @param call
-     */
-    @PluginMethod
-    public void deleteDatabase(PluginCall call) {
-        if (!call.getData().has("database")) {
-            String msg = "deleteDatabase command failed : ";
-            msg += "Must provide a database name";
-            retResult(call, false, msg);
-            return;
-        }
-        String dbName = call.getString("database");
+    public void deleteDatabase(String dbName) throws Exception {
         Database db = dbDict.get(dbName);
         if (db != null) {
-            boolean res = db.deleteDB(dbName + "SQLite.db");
-            if (res) {
-                retResult(call, true, null);
+            try {
+                db.deleteDB(dbName + "SQLite.db");
                 return;
-            } else {
-                retResult(call, false, "deleteDatabase command failed");
-                return;
+            } catch (Exception e) {
+                throw new Exception(e.getMessage());
             }
         } else {
-            String msg = "deleteDatabase command failed : ";
-            msg += " No available connection for database " + dbName;
-            retResult(call, false, msg);
-            return;
+            String msg = "No available connection for database " + dbName;
+            throw new Exception(msg);
         }
     }
 
-    /**
-     * CreateSyncTable Method
-     * Create the synchronization table
-     * @param call
-     */
-    @PluginMethod
-    public void createSyncTable(PluginCall call) {
-        JSObject retRes = new JSObject();
-        if (!call.getData().has("database")) {
-            String msg = "createSyncTable command failed : ";
-            msg += "Must provide a database name";
-            retRes.put("changes", Integer.valueOf(-1));
-            retChanges(call, retRes, msg);
-            return;
-        }
-        String dbName = call.getString("database");
+    public JSObject createSyncTable(String dbName) throws Exception {
         Database db = dbDict.get(dbName);
         if (db != null) {
-            retRes.put("changes", Integer.valueOf(-1));
-            JSObject res = db.createSyncTable();
-            if (res.getInteger("changes") == Integer.valueOf(-1)) {
-                String msg = "createSyncTable command failed";
-                retChanges(call, retRes, msg);
-                return;
-            } else {
-                retChanges(call, res, null);
-                return;
+            try {
+                JSObject res = db.createSyncTable();
+                return res;
+            } catch (Exception e) {
+                throw new Exception(e.getMessage());
             }
         } else {
-            String msg = "createSyncTable command failed : ";
-            msg += " No available connection for database " + dbName;
-            retResult(call, false, msg);
-            return;
+            String msg = "No available connection for database " + dbName;
+            throw new Exception(msg);
         }
     }
 
-    /**
-     * SetSyncDate Method
-     * set the synchronization date
-     * @param call
-     */
-    @PluginMethod
-    public void setSyncDate(PluginCall call) {
-        if (!call.getData().has("database")) {
-            String msg = "setSyncDate command failed : ";
-            msg += "Must provide a database name";
-            retResult(call, false, msg);
-            return;
-        }
-        String dbName = call.getString("database");
-        if (!call.getData().has("syncdate")) {
-            String msg = "setSyncDate command failed : ";
-            msg += "Must provide a sync date";
-            retResult(call, false, msg);
-            return;
-        }
-
-        String syncDate = call.getString("syncdate");
+    public void setSyncDate(String dbName, String syncDate) throws Exception {
         Database db = dbDict.get(dbName);
         if (db != null) {
-            boolean res = db.setSyncDate(syncDate);
-            if (!res) {
-                String msg = "SetSyncDate command failed";
-                retResult(call, false, msg);
+            try {
+                db.setSyncDate(syncDate);
                 return;
-            } else {
-                retResult(call, true, null);
-                return;
+            } catch (Exception e) {
+                throw new Exception(e.getMessage());
             }
         } else {
-            String msg = "SetSyncDate command failed : ";
-            msg += " No available connection for database " + dbName;
-            retResult(call, false, msg);
-            return;
+            String msg = "No available connection for database " + dbName;
+            throw new Exception(msg);
         }
     }
 
-    /**
-     * GetSyncDate Method
-     * Get the synchronization date
-     * @param call
-     */
-    @PluginMethod
-    public void getSyncDate(PluginCall call) {
-        JSObject retRes = new JSObject();
-        if (!call.getData().has("database")) {
-            String msg = "createSyncTable command failed : ";
-            msg += "Must provide a database name";
-            retRes.put("changes", Integer.valueOf(-1));
-            retSyncDate(call, new Long(0), msg);
-            return;
-        }
-        String dbName = call.getString("database");
+    public Long getSyncDate(String dbName) throws Exception {
         Database db = dbDict.get(dbName);
         if (db != null) {
-            long syncDate = db.getSyncDate();
-            if (syncDate > 0) {
-                retSyncDate(call, syncDate, null);
-            } else {
-                String msg = "GetSyncDate command failed";
-                retSyncDate(call, new Long(0), msg);
+            try {
+                long syncDate = db.getSyncDate();
+                return syncDate;
+            } catch (Exception e) {
+                throw new Exception(e.getMessage());
             }
         } else {
-            String msg = "getSyncDate command failed : ";
-            msg += " No available connection for database " + dbName;
-            retSyncDate(call, new Long(0), msg);
-            return;
+            String msg = "No available connection for database " + dbName;
+            throw new Exception(msg);
         }
     }
 
-    /**
-     * AddUpgradeStatement Method
-     * Define an upgrade object when updating to a new version
-     * @param call
-     */
-    @PluginMethod
-    public void addUpgradeStatement(PluginCall call) {
-        if (!call.getData().has("database")) {
-            String msg = "addUpgradeStatement command failed : ";
-            msg += "Must provide a database name";
-            retResult(call, false, msg);
-            return;
-        }
-        String dbName = call.getString("database");
-        if (!call.getData().has("upgrade")) {
-            String msg = "addUpgradeStatement command failed : ";
-            msg += "Must provide an array with upgrade statement";
-            retResult(call, false, msg);
-            return;
-        }
-        JSArray upgrade = call.getArray("upgrade");
+    public Dictionary<Integer, JSONObject> addUpgradeStatement(JSArray upgrade) throws Exception {
         Dictionary<Integer, JSONObject> upgDict = new Hashtable<>();
 
         JSONObject upgObj = null;
         try {
             upgObj = (JSONObject) upgrade.get(0);
         } catch (Exception e) {
-            String msg = "addUpgradeStatement command failed : ";
-            msg += "Must provide an upgrade statement";
-            retResult(call, false, msg);
-            return;
+            String msg = "Must provide an upgrade statement " + e.getMessage();
+            throw new Exception(msg);
         }
 
         if (upgObj == null || !upgObj.has("fromVersion") || !upgObj.has("toVersion") || !upgObj.has("statement")) {
-            String msg = "addUpgradeStatement command failed : ";
-            msg += "Must provide an upgrade statement";
-            msg += "{fromVersion,toVersion,statement}";
-            retResult(call, false, msg);
-            return;
+            String msg = "Must provide an upgrade statement";
+            msg += " {fromVersion,toVersion,statement}";
+            throw new Exception(msg);
         }
         try {
             int fromVersion = upgObj.getInt("fromVersion");
             upgDict.put(fromVersion, upgObj);
-            versionUpgrades.put(dbName, upgDict);
-            retResult(call, true, null);
-            return;
+            return upgDict;
         } catch (Exception e) {
-            String msg = "addUpgradeStatement command failed : ";
-            msg += "Must provide fromVersion as Integer";
-            retResult(call, false, msg);
-            return;
+            String msg = "Must provide fromVersion as Integer" + e.getMessage();
+            throw new Exception(msg);
         }
     }
 
-    /**
-     * IsJsonValid
-     * Check the validity of a given Json object
-     * @param call
-     */
-    @PluginMethod
-    public void isJsonValid(PluginCall call) {
-        if (!call.getData().has("jsonstring")) {
-            String msg = "isJsonValid command failed : ";
-            msg += "Must provide a Stringify Json Object";
-            retResult(call, false, msg);
-            return;
+    public Boolean isJsonValid(String parsingData) throws Exception {
+        try {
+            JSObject jsonObject = new JSObject(parsingData);
+            JsonSQLite jsonSQL = new JsonSQLite();
+            Boolean isValid = jsonSQL.isJsonSQLite(jsonObject);
+            return isValid;
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
         }
-        String parsingData = call.getString("jsonstring");
+    }
 
+    public JSObject importFromJson(String parsingData) throws Exception {
         try {
             JSObject jsonObject = new JSObject(parsingData);
             JsonSQLite jsonSQL = new JsonSQLite();
             Boolean isValid = jsonSQL.isJsonSQLite(jsonObject);
             if (!isValid) {
-                String msg = "isJsonValid command failed : ";
-                msg += "Stringify Json Object not Valid";
-                retResult(call, false, msg);
-                return;
-            } else {
-                retResult(call, true, null);
-                return;
-            }
-        } catch (Exception e) {
-            String msg = "isJsonValid command failed : ";
-            msg += e.getMessage();
-            retResult(call, false, msg);
-            return;
-        }
-    }
-
-    /**
-     * ImportFromJson Method
-     * Import from a given Json object
-     * @param call
-     */
-    @PluginMethod
-    public void importFromJson(PluginCall call) {
-        JSObject retRes = new JSObject();
-        retRes.put("changes", Integer.valueOf(-1));
-        if (!call.getData().has("jsonstring")) {
-            String msg = "importFromJson command failed : ";
-            msg += "Must provide a Stringify Json Object";
-            retChanges(call, retRes, msg);
-            return;
-        }
-        String parsingData = call.getString("jsonstring");
-        try {
-            JSObject jsonObject = new JSObject(parsingData);
-            JsonSQLite jsonSQL = new JsonSQLite();
-            Boolean isValid = jsonSQL.isJsonSQLite(jsonObject);
-            if (!isValid) {
-                String msg = "importFromJson command failed : ";
-                msg += "Stringify Json Object not Valid";
-                retChanges(call, retRes, msg);
-                return;
+                String msg = "Stringify Json Object not Valid";
+                throw new Exception(msg);
             }
             String dbName = new StringBuilder(jsonSQL.getDatabase()).append("SQLite.db").toString();
             int dbVersion = jsonSQL.getVersion();
             //            jsonSQL.print();
             Boolean encrypted = jsonSQL.getEncrypted();
-            String secret = null;
             String inMode = "no-encryption";
             if (encrypted) {
                 inMode = "secret";
             }
-            Database db = new Database(context, dbName, encrypted, inMode, dbVersion, new Hashtable<Integer, JSONObject>());
+            Database db = new Database(context, dbName, encrypted, inMode, dbVersion, new Hashtable<>());
             db.open();
             if (!db.isOpen()) {
-                String msg = "importFromJson command failed : ";
-                msg += dbName + "SQLite.db not opened";
-                retChanges(call, retRes, msg);
-                return;
+                String msg = dbName + "SQLite.db not opened";
+                throw new Exception(msg);
             } else {
                 JSObject res = db.importFromJson(jsonSQL);
                 db.close();
                 if (res.getInteger("changes") == Integer.valueOf(-1)) {
-                    String msg = "importFromJson command failed : ";
-                    msg += "import JsonObject not successful";
-                    retChanges(call, retRes, msg);
-                    return;
+                    String msg = "importFromJson: import JsonObject not successful";
+                    throw new Exception(msg);
                 } else {
-                    retChanges(call, res, null);
-                    return;
+                    return res;
                 }
             }
         } catch (Exception e) {
-            String msg = "importFromJson command failed : ";
-            msg += e.getMessage();
-            retChanges(call, retRes, msg);
-            return;
+            String msg = "importFromJson : " + e.getMessage();
+            throw new Exception(msg);
         }
     }
 
-    /**
-     * ExportToJson Method
-     * Export the database to Json Object
-     * @param call
-     */
-    @PluginMethod
-    public void exportToJson(PluginCall call) {
-        JSObject retObj = new JSObject();
-        JsonSQLite retJson = new JsonSQLite();
-        if (!call.getData().has("database")) {
-            String msg = "exportToJson command failed : ";
-            msg += "Must provide a database name";
-            retJSObject(call, retObj, msg);
-            return;
-        }
-        String dbName = call.getString("database");
-        if (!call.getData().has("jsonexportmode")) {
-            String msg = "exportToJson command failed : ";
-            msg += "Must provide an export mode";
-            retJSObject(call, retObj, msg);
-            return;
-        }
-        String expMode = call.getString("jsonexportmode");
-
-        if (!expMode.equals("full") && !expMode.equals("partial")) {
-            String msg = "exportToJson command failed : ";
-            msg += "Json export mode should be 'full' or 'partial'";
-            retJSObject(call, retObj, msg);
-            return;
-        }
+    public JSObject exportToJson(String dbName, String expMode) throws Exception {
         Database db = dbDict.get(dbName);
         if (db != null) {
-            JSObject ret = db.exportToJson(expMode);
+            try {
+                JSObject ret = db.exportToJson(expMode);
 
-            if (ret.length() == 5) {
-                retJSObject(call, ret, null);
-                return;
-            } else {
-                String msg = "exportToJson command failed : ";
-                msg += "return Obj is not a JsonSQLite Obj";
-                retJSObject(call, retObj, msg);
-                return;
+                if (ret.length() == 5) {
+                    return ret;
+                } else {
+                    String msg = "ExportToJson: return Obj is not a JsonSQLite Obj";
+                    throw new Exception(msg);
+                }
+            } catch (Exception e) {
+                String msg = "ExportToJson " + e.getMessage();
+                throw new Exception(msg);
             }
         } else {
-            String msg = "ExportToJson command failed : ";
-            msg += " No available connection for database " + dbName;
-            retJSObject(call, retObj, msg);
-            return;
+            String msg = "No available connection for database " + dbName;
+            throw new Exception(msg);
         }
     }
 
-    /**
-     * CopyFromAssets
-     * copy all databases from public/assets/databases to application folder
-     * @param call
-     */
-    @PluginMethod
-    public void copyFromAssets(PluginCall call) {
-        String msg = "copyFromAssets command failed : ";
+    public void copyFromAssets() throws Exception {
+        String msg = "copy failed : ";
         try {
             Boolean ret = uFile.copyFromAssetsToDatabase(context);
             if (ret) {
-                retResult(call, true, null);
                 return;
             } else {
-                retResult(call, false, msg);
+                throw new Exception(msg);
             }
         } catch (Exception e) {
             msg += e.getMessage();
-            retResult(call, false, msg);
-            return;
+            throw new Exception(msg);
         }
-    }
-
-    /**
-     * RetResult Method
-     * Create and return the capSQLiteResult object
-     * @param call
-     * @param res
-     * @param message
-     */
-    private void retResult(PluginCall call, Boolean res, String message) {
-        JSObject ret = new JSObject();
-        ret.put("result", res);
-        if (message != null) {
-            ret.put("message", message);
-            Log.v(TAG, "*** ERROR " + message);
-        }
-        call.resolve(ret);
-    }
-
-    /**
-     * RetChanges Method
-     * Create and return the capSQLiteChanges object
-     * @param call
-     * @param res
-     * @param message
-     */
-    private void retChanges(PluginCall call, JSObject res, String message) {
-        JSObject ret = new JSObject();
-        ret.put("changes", res);
-        if (message != null) {
-            ret.put("message", message);
-            Log.v(TAG, "*** ERROR " + message);
-        }
-        call.resolve(ret);
-    }
-
-    /**
-     * RetValues Method
-     * Create and return the capSQLiteValues object
-     * @param call
-     * @param res
-     * @param message
-     */
-    private void retValues(PluginCall call, JSArray res, String message) {
-        JSObject ret = new JSObject();
-        ret.put("values", res);
-        if (message != null) {
-            ret.put("message", message);
-            Log.v(TAG, "*** ERROR " + message);
-        }
-        call.resolve(ret);
-    }
-
-    /**
-     * RetSyncDate Method
-     * Create and return the capSQLiteSyncDate object
-     * @param call
-     * @param res
-     * @param message
-     */
-    private void retSyncDate(PluginCall call, Long res, String message) {
-        JSObject ret = new JSObject();
-        ret.put("syncDate", res);
-        if (message != null) {
-            ret.put("message", message);
-            Log.v(TAG, "*** ERROR " + message);
-        }
-        call.resolve(ret);
-    }
-
-    /**
-     * RetJSObject Method
-     * Create and return the capSQLiteJson object
-     * @param call
-     * @param res
-     * @param message
-     */
-    private void retJSObject(PluginCall call, JSObject res, String message) {
-        JSObject ret = new JSObject();
-        ret.put("export", res);
-        if (message != null) {
-            ret.put("message", message);
-            Log.v(TAG, "*** ERROR " + message);
-        }
-        call.resolve(ret);
     }
 }

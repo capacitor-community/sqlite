@@ -1,8 +1,9 @@
 //
 //  UtilsUpgrade.swift
-//  CapacitorCommunitySqlite
+//  Plugin
 //
-//  Created by  Quéau Jean Pierre on 12/10/2020.
+//  Created by  Quéau Jean Pierre on 18/01/2021.
+//  Copyright © 2021 Max Lynch. All rights reserved.
 //
 
 import Foundation
@@ -39,7 +40,7 @@ class UtilsUpgrade {
 
         var changes: Int = -1
         guard let upgrade: [String: Any] = upgDict[currentVersion]
-                                                                else {
+        else {
             var message: String = "Error: onUpgrade No upgrade "
             message.append("statement for database \(dbName) ")
             message.append("and version \(currentVersion)")
@@ -56,7 +57,7 @@ class UtilsUpgrade {
         var set: [[String: Any]] = [[:]]
         if (upgrade["set"] as? [[String: Any]]) != nil {
             if let set1: [[String: Any]] =
-                            upgrade["set"] as? [[String: Any]] {
+                upgrade["set"] as? [[String: Any]] {
                 set = set1
             }
         }
@@ -72,7 +73,7 @@ class UtilsUpgrade {
             // Set pragma FOREIGN KEY OFF
             try UtilsSQLCipher
                 .setForeignKeyConstraintsEnabled(mDB: mDB,
-                                                toggle: false)
+                                                 toggle: false)
             // backup the database
             _ = try UtilsFile.copyFile(fileName: dbName,
                                        toFileName: "backup-\(dbName)")
@@ -100,13 +101,13 @@ class UtilsUpgrade {
                                                  toggle: true)
             // get the number of changes
             changes = UtilsSQLCipher.dbChanges(mDB: mDB.mDb) -
-                                                        initChanges
+                initChanges
             return changes
         } catch UtilsFileError.copyFileFailed {
             let msg: String = "Failed in copy file"
             throw UtilsUpgradeError.onUpgradeFailed(message: msg)
         } catch UtilsSQLCipherError
-                       .setForeignKeyConstraintsEnabled(let message) {
+                    .setForeignKeyConstraintsEnabled(let message) {
             var msg: String = "Failed in "
             msg.append("setForeignKeyConstraintsEnabled \(message)")
             throw UtilsUpgradeError.onUpgradeFailed(message: msg)
@@ -155,7 +156,7 @@ class UtilsUpgrade {
                 stmt.append("sync_date = \(syncTime) ")
                 stmt.append("WHERE id = 1;")
                 let retRun: [String: Int64] = try mDB.runSQL(
-                                                sql: stmt, values: [])
+                    sql: stmt, values: [])
                 guard let lastId: Int64 = retRun["lastId"] else {
                     msg.append("Update Sync Date lastId not returned")
                     throw UtilsUpgradeError.executeSetProcessFailed(
@@ -186,7 +187,7 @@ class UtilsUpgrade {
     // MARK: - ExecuteStatementProcess
 
     func executeStatementProcess(mDB: Database, statement: String)
-                                                            throws {
+    throws {
         var changes: Int = -1
         do {
             // -> backup all existing tables  "tableName" in
@@ -213,8 +214,8 @@ class UtilsUpgrade {
 
             // -> Drop _temp_tables
             _ = try UtilsDrop
-                        .dropTempTables(mDB: mDB,
-                                        alterTables: self.alterTables)
+                .dropTempTables(mDB: mDB,
+                                alterTables: self.alterTables)
             // -> Do some cleanup
             self.alterTables = [:]
             self.commonColumns = [:]
@@ -235,7 +236,7 @@ class UtilsUpgrade {
             throw UtilsUpgradeError.executeStatementProcessFailed(
                 message: message)
         } catch UtilsUpgradeError.updateNewTablesDataFailed(
-                let message) {
+                    let message) {
             throw UtilsUpgradeError.executeStatementProcessFailed(
                 message: message)
         } catch UtilsDropError.dropTempTablesFailed(let message) {
@@ -250,7 +251,7 @@ class UtilsUpgrade {
     func backupTables(mDB: Database) throws {
         do {
             let tables: [String] = try UtilsDrop
-                                    .getTablesNames(mDB: mDB)
+                .getTablesNames(mDB: mDB)
             for table in tables {
                 try backupTable(mDB: mDB, tableName: table)
             }
@@ -275,7 +276,7 @@ class UtilsUpgrade {
             var stmt: String = "ALTER TABLE \(tableName) RENAME "
             stmt.append("TO _temp_\(tableName);")
             let retRun: [String: Int64] = try mDB.runSQL(
-                                            sql: stmt, values: [])
+                sql: stmt, values: [])
             guard let changes: Int64 = retRun["changes"] else {
                 msg.append("changes not returned")
                 throw UtilsUpgradeError.backupTableFailed(
@@ -288,7 +289,7 @@ class UtilsUpgrade {
             }
 
         } catch UtilsUpgradeError
-                            .getTableColumnNamesFailed(let message) {
+                    .getTableColumnNamesFailed(let message) {
             throw UtilsUpgradeError.backupTableFailed(message: message)
         } catch DatabaseError.runSQL(let message) {
             throw UtilsUpgradeError.backupTableFailed(message: message)
@@ -298,18 +299,18 @@ class UtilsUpgrade {
     // MARK: - getTableColumnNames
 
     func getTableColumnNames(mDB: Database, tableName: String)
-                                                throws -> [String] {
+    throws -> [String] {
         var retNames: [String] = []
         let query: String = "PRAGMA table_info('\(tableName)');"
         do {
             let resColumns: [[String: Any]] =  try
-                    mDB.selectSQL(sql: query, values: [])
+                mDB.selectSQL(sql: query, values: [])
             if resColumns.count > 0 {
                 for rColumn in resColumns {
                     guard let columnName: String = rColumn["name"] as?
                             String else {
                         throw
-                            UtilsUpgradeError.getTableColumnNamesFailed(
+                        UtilsUpgradeError.getTableColumnNamesFailed(
                             message: "Error did not find column name")
                     }
                     retNames.append(columnName)
@@ -328,7 +329,7 @@ class UtilsUpgrade {
         var columnNames: [String] = []
         do {
             let tables: [String] = try UtilsDrop
-                                            .getTablesNames(mDB: mDB)
+                .getTablesNames(mDB: mDB)
             for table in tables {
                 columnNames = try getTableColumnNames(mDB: mDB,
                                                       tableName: table)
@@ -350,7 +351,7 @@ class UtilsUpgrade {
         }
     }
     func arrayIntersection( array1: [String], array2: [String])
-                -> [String] {
+    -> [String] {
         let array1Set = Set(array1)
         let array2Set = Set(array2)
         return Array(array1Set.intersection(array2Set))

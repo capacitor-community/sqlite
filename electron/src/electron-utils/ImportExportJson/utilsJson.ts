@@ -1,5 +1,5 @@
+import type { JsonColumn, JsonIndex } from '../../definitions';
 import { UtilsSQLite } from '../utilsSQLite';
-import { JsonColumn, JsonIndex } from '../../definitions';
 
 export class UtilsJson {
   private _uSQLite: UtilsSQLite = new UtilsSQLite();
@@ -18,7 +18,7 @@ export class UtilsJson {
       if (!isOpen) {
         reject('isTableExists: database not opened');
       }
-      let query: string = 'SELECT name FROM sqlite_master WHERE ';
+      let query = 'SELECT name FROM sqlite_master WHERE ';
       query += `type='table' AND name='${tableName}';`;
       db.all(query, [], (err: Error, rows: any[]) => {
         // process the row here
@@ -40,51 +40,49 @@ export class UtilsJson {
    * @param jsonData
    */
   public async createSchema(mDB: any, jsonData: any): Promise<number> {
-    return new Promise(async (resolve, reject) => {
-      // create the database schema
-      let changes: number = 0;
-      try {
-        // start a transaction
-        await this._uSQLite.beginTransaction(mDB, true);
-      } catch (err) {
-        reject(new Error(`CreateDatabaseSchema: ${err.message}`));
-      }
+    // create the database schema
+    let changes = 0;
+    try {
+      // start a transaction
+      await this._uSQLite.beginTransaction(mDB, true);
+    } catch (err) {
+      return Promise.reject(new Error(`CreateDatabaseSchema: ${err.message}`));
+    }
 
-      const stmts = await this.createSchemaStatement(jsonData);
-      if (stmts.length > 0) {
-        const schemaStmt: string = stmts.join('\n');
-        try {
-          changes = await this._uSQLite.execute(mDB, schemaStmt);
-          if (changes < 0) {
-            try {
-              await this._uSQLite.rollbackTransaction(mDB, true);
-            } catch (err) {
-              reject(
-                new Error('CreateSchema: changes < 0 ' + `${err.message}`),
-              );
-            }
-          }
-        } catch (err) {
-          const msg = err.message;
+    const stmts = await this.createSchemaStatement(jsonData);
+    if (stmts.length > 0) {
+      const schemaStmt: string = stmts.join('\n');
+      try {
+        changes = await this._uSQLite.execute(mDB, schemaStmt);
+        if (changes < 0) {
           try {
             await this._uSQLite.rollbackTransaction(mDB, true);
-            reject(new Error(`CreateSchema: ${msg}`));
           } catch (err) {
-            reject(
-              new Error(
-                'CreateSchema: changes < 0 ' + `${err.message}: ${msg}`,
-              ),
+            return Promise.reject(
+              new Error('CreateSchema: changes < 0 ' + `${err.message}`),
             );
           }
         }
-      }
-      try {
-        await this._uSQLite.commitTransaction(mDB, true);
-        resolve(changes);
       } catch (err) {
-        reject(new Error('CreateSchema: commit ' + `${err.message}`));
+        const msg = err.message;
+        try {
+          await this._uSQLite.rollbackTransaction(mDB, true);
+          return Promise.reject(new Error(`CreateSchema: ${msg}`));
+        } catch (err) {
+          return Promise.reject(
+            new Error('CreateSchema: changes < 0 ' + `${err.message}: ${msg}`),
+          );
+        }
       }
-    });
+    }
+    try {
+      await this._uSQLite.commitTransaction(mDB, true);
+      return Promise.resolve(changes);
+    } catch (err) {
+      return Promise.reject(
+        new Error('CreateSchema: commit ' + `${err.message}`),
+      );
+    }
   }
 
   /**
@@ -92,79 +90,64 @@ export class UtilsJson {
    * @param jsonData
    */
   public async createSchemaStatement(jsonData: any): Promise<string[]> {
-    return new Promise(resolve => {
-      let statements: string[] = [];
-      // Prepare the statement to execute
-      for (let i: number = 0; i < jsonData.tables.length; i++) {
-        if (
-          jsonData.tables[i].schema != null &&
-          jsonData.tables[i].schema!.length >= 1
-        ) {
+    const statements: string[] = [];
+    // Prepare the statement to execute
+    try {
+      for (const jTable of jsonData.tables) {
+        if (jTable.schema != null && jTable.schema.length >= 1) {
           // create table
-          statements.push(
-            'CREATE TABLE IF NOT EXISTS ' + `${jsonData.tables[i].name} (`,
-          );
-          for (let j: number = 0; j < jsonData.tables[i].schema!.length; j++) {
-            if (j === jsonData.tables[i].schema!.length - 1) {
-              if (jsonData.tables[i].schema![j].column) {
+          statements.push('CREATE TABLE IF NOT EXISTS ' + `${jTable.name} (`);
+          for (let j = 0; j < jTable.schema.length; j++) {
+            if (j === jTable.schema.length - 1) {
+              if (jTable.schema.column) {
                 statements.push(
-                  `${jsonData.tables[i].schema![j].column} ${
-                    jsonData.tables[i].schema![j].value
-                  }`,
+                  `${jTable.schema.column} ${jTable.schema[j].value}`,
                 );
-              } else if (jsonData.tables[i].schema![j].foreignkey) {
+              } else if (jTable.schema[j].foreignkey) {
                 statements.push(
-                  `FOREIGN KEY (${jsonData.tables[i].schema![j].foreignkey}) ${
-                    jsonData.tables[i].schema![j].value
-                  }`,
+                  `FOREIGN KEY (${jTable.schema[j].foreignkey}) ${jTable.schema[j].value}`,
                 );
               }
             } else {
-              if (jsonData.tables[i].schema![j].column) {
+              if (jTable.schema[j].column) {
                 statements.push(
-                  `${jsonData.tables[i].schema![j].column} ${
-                    jsonData.tables[i].schema![j].value
-                  },`,
+                  `${jTable.schema[j].column} ${jTable.schema[j].value},`,
                 );
-              } else if (jsonData.tables[i].schema![j].foreignkey) {
+              } else if (jTable.schema[j].foreignkey) {
                 statements.push(
-                  `FOREIGN KEY (${jsonData.tables[i].schema![j].foreignkey}) ${
-                    jsonData.tables[i].schema![j].value
-                  },`,
+                  `FOREIGN KEY (${jTable.schema[j].foreignkey}) ${jTable.schema[j].value},`,
                 );
               }
             }
           }
           statements.push(');');
           // create trigger last_modified associated with the table
-          let trig: string = 'CREATE TRIGGER IF NOT EXISTS ';
-          trig += `${jsonData.tables[i].name}`;
+          let trig = 'CREATE TRIGGER IF NOT EXISTS ';
+          trig += `${jTable.name}`;
           trig += `_trigger_last_modified `;
-          trig += `AFTER UPDATE ON ${jsonData.tables[i].name} `;
+          trig += `AFTER UPDATE ON ${jTable.name} `;
           trig += 'FOR EACH ROW WHEN NEW.last_modified <= ';
           trig += 'OLD.last_modified BEGIN UPDATE ';
-          trig += `${jsonData.tables[i].name} `;
+          trig += `${jTable.name} `;
           trig += `SET last_modified = `;
           trig += "(strftime('%s','now')) WHERE id=OLD.id; END;";
           statements.push(trig);
         }
-        if (
-          jsonData.tables[i].indexes != null &&
-          jsonData.tables[i].indexes!.length >= 1
-        ) {
-          for (let j: number = 0; j < jsonData.tables[i].indexes!.length; j++) {
-            const index = jsonData.tables[i].indexes![j];
-            const tableName = jsonData.tables[i].name;
-            let stmt: string = `CREATE ${
-              Object.keys(index).includes('mode') ? index.mode + ' ' : ''
+        if (jTable.indexes != null && jTable.indexes.length >= 1) {
+          for (const jIndex of jTable.indexes) {
+            const tableName = jTable.name;
+            let stmt = `CREATE ${
+              Object.keys(jIndex).includes('mode') ? jIndex.mode + ' ' : ''
             }INDEX `;
-            stmt += `${index.name} ON ${tableName} (${index.value});`;
+            stmt += `${jIndex.name} ON ${tableName} (${jIndex.value});`;
             statements.push(stmt);
           }
         }
       }
-      resolve(statements);
-    });
+      return Promise.resolve(statements);
+    } catch (err) {
+      return Promise.reject(err);
+    }
   }
 
   /**
@@ -178,99 +161,95 @@ export class UtilsJson {
     table: any,
     mode: string,
   ): Promise<number> {
-    return new Promise(async (resolve, reject) => {
-      let lastId: number = -1;
-      try {
-        // Check if the table exists
-        const tableExists = await this.isTableExists(mDB, true, table.name);
-        if (!tableExists) {
-          reject(
+    let lastId = -1;
+    try {
+      // Check if the table exists
+      const tableExists = await this.isTableExists(mDB, true, table.name);
+      if (!tableExists) {
+        return Promise.reject(
+          new Error('CreateDataTable: Table ' + `${table.name} does not exist`),
+        );
+      }
+
+      // Get the column names and types
+      const tableNamesTypes: any = await this.getTableColumnNamesTypes(
+        mDB,
+        table.name,
+      );
+      const tableColumnTypes: string[] = tableNamesTypes.types;
+      const tableColumnNames: string[] = tableNamesTypes.names;
+      if (tableColumnTypes.length === 0) {
+        return Promise.reject(
+          new Error(
+            'CreateDataTable: Table ' + `${table.name} info does not exist`,
+          ),
+        );
+      }
+      // Loop on Table Values
+      for (let j = 0; j < table.values.length; j++) {
+        // Check the row number of columns
+        if (table.values[j].length != tableColumnTypes.length) {
+          return Promise.reject(
             new Error(
-              'CreateDataTable: Table ' + `${table.name} does not exist`,
+              `CreateDataTable: Table ${table.name} ` +
+                `values row ${j} not correct length`,
             ),
           );
         }
-
-        // Get the column names and types
-        const tableNamesTypes: any = await this.getTableColumnNamesTypes(
+        // Check the column's type before proceeding
+        const isColumnTypes: boolean = await this.checkColumnTypes(
+          tableColumnTypes,
+          table.values[j],
+        );
+        if (!isColumnTypes) {
+          return Promise.reject(
+            new Error(
+              `CreateDataTable: Table ${table.name} ` +
+                `values row ${j} not correct types`,
+            ),
+          );
+        }
+        const retisIdExists: boolean = await this.isIdExists(
           mDB,
           table.name,
+          tableColumnNames[0],
+          table.values[j][0],
         );
-        const tableColumnTypes: Array<string> = tableNamesTypes.types;
-        const tableColumnNames: Array<string> = tableNamesTypes.names;
-        if (tableColumnTypes.length === 0) {
-          reject(
-            new Error(
-              'CreateDataTable: Table ' + `${table.name} info does not exist`,
-            ),
+        let stmt: string;
+        if (mode === 'full' || (mode === 'partial' && !retisIdExists)) {
+          // Insert
+          const nameString: string = tableColumnNames.join();
+          const questionMarkString = await this.createQuestionMarkString(
+            tableColumnNames.length,
           );
-        }
-        // Loop on Table Values
-        for (let j: number = 0; j < table.values!.length; j++) {
-          // Check the row number of columns
-          if (table.values![j].length != tableColumnTypes.length) {
-            reject(
+          stmt = `INSERT INTO ${table.name} (${nameString}) VALUES (`;
+          stmt += `${questionMarkString});`;
+        } else {
+          // Update
+          const setString: string = await this.setNameForUpdate(
+            tableColumnNames,
+          );
+          if (setString.length === 0) {
+            return Promise.reject(
               new Error(
                 `CreateDataTable: Table ${table.name} ` +
-                  `values row ${j} not correct length`,
+                  `values row ${j} not set to String`,
               ),
             );
           }
-          // Check the column's type before proceeding
-          const isColumnTypes: boolean = await this.checkColumnTypes(
-            tableColumnTypes,
-            table.values![j],
-          );
-          if (!isColumnTypes) {
-            reject(
-              new Error(
-                `CreateDataTable: Table ${table.name} ` +
-                  `values row ${j} not correct types`,
-              ),
-            );
-          }
-          const retisIdExists: boolean = await this.isIdExists(
-            mDB,
-            table.name,
-            tableColumnNames[0],
-            table.values![j][0],
-          );
-          let stmt: string;
-          if (mode === 'full' || (mode === 'partial' && !retisIdExists)) {
-            // Insert
-            const nameString: string = tableColumnNames.join();
-            const questionMarkString = await this.createQuestionMarkString(
-              tableColumnNames.length,
-            );
-            stmt = `INSERT INTO ${table.name} (${nameString}) VALUES (`;
-            stmt += `${questionMarkString});`;
-          } else {
-            // Update
-            const setString: string = await this.setNameForUpdate(
-              tableColumnNames,
-            );
-            if (setString.length === 0) {
-              reject(
-                new Error(
-                  `CreateDataTable: Table ${table.name} ` +
-                    `values row ${j} not set to String`,
-                ),
-              );
-            }
-            stmt =
-              `UPDATE ${table.name} SET ${setString} WHERE ` +
-              `${tableColumnNames[0]} = ${table.values![j][0]};`;
-          }
-          lastId = await this._uSQLite.prepareRun(mDB, stmt, table.values![j]);
-          if (lastId < 0) {
-            reject(new Error('CreateDataTable: lastId < 0'));
-          }
+          stmt =
+            `UPDATE ${table.name} SET ${setString} WHERE ` +
+            `${tableColumnNames[0]} = ${table.values[j][0]};`;
         }
-        resolve(lastId);
-      } catch (err) {
-        reject(new Error(`CreateDataTable: ${err.message}`));
+        lastId = await this._uSQLite.prepareRun(mDB, stmt, table.values[j]);
+        if (lastId < 0) {
+          return Promise.reject(new Error('CreateDataTable: lastId < 0'));
+        }
       }
-    });
+      return Promise.resolve(lastId);
+    } catch (err) {
+      return Promise.reject(new Error(`CreateDataTable: ${err.message}`));
+    }
   }
 
   /**
@@ -278,25 +257,28 @@ export class UtilsJson {
    * @param mDB
    * @param tableName
    */
-  public getTableColumnNamesTypes(mDB: any, tableName: string): Promise<any> {
-    return new Promise(async (resolve, reject) => {
-      let resQuery: any[] = [];
-      let retNames: string[] = [];
-      let retTypes: Array<string> = [];
-      const query: string = `PRAGMA table_info('${tableName}');`;
-      try {
-        resQuery = await this._uSQLite.queryAll(mDB, query, []);
-        if (resQuery.length > 0) {
-          for (let i: number = 0; i < resQuery.length; i++) {
-            retNames.push(resQuery[i].name);
-            retTypes.push(resQuery[i].type);
-          }
+  public async getTableColumnNamesTypes(
+    mDB: any,
+    tableName: string,
+  ): Promise<any> {
+    let resQuery: any[] = [];
+    const retNames: string[] = [];
+    const retTypes: string[] = [];
+    const query = `PRAGMA table_info('${tableName}');`;
+    try {
+      resQuery = await this._uSQLite.queryAll(mDB, query, []);
+      if (resQuery.length > 0) {
+        for (const query of resQuery) {
+          retNames.push(query.name);
+          retTypes.push(query.type);
         }
-        resolve({ names: retNames, types: retTypes });
-      } catch (err) {
-        reject(new Error('GetTableColumnNamesTypes: ' + `${err.message}`));
       }
-    });
+      return Promise.resolve({ names: retNames, types: retTypes });
+    } catch (err) {
+      return Promise.reject(
+        new Error('GetTableColumnNamesTypes: ' + `${err.message}`),
+      );
+    }
   }
 
   /**
@@ -304,23 +286,21 @@ export class UtilsJson {
    * @param tableTypes
    * @param rowValues
    */
-  private checkColumnTypes(
-    tableTypes: Array<any>,
-    rowValues: Array<any>,
+  private async checkColumnTypes(
+    tableTypes: any[],
+    rowValues: any[],
   ): Promise<boolean> {
-    return new Promise(async (resolve, reject) => {
-      let isType: boolean = true;
-      for (let i: number = 0; i < rowValues.length; i++) {
-        if (rowValues[i].toString().toUpperCase() != 'NULL') {
-          try {
-            await this.isType(tableTypes[i], rowValues[i]);
-          } catch (err) {
-            reject(new Error('checkColumnTypes: Type not found'));
-          }
+    const isType = true;
+    for (let i = 0; i < rowValues.length; i++) {
+      if (rowValues[i].toString().toUpperCase() != 'NULL') {
+        try {
+          await this.isType(tableTypes[i], rowValues[i]);
+        } catch (err) {
+          return Promise.reject(new Error('checkColumnTypes: Type not found'));
         }
       }
-      resolve(isType);
-    });
+    }
+    return Promise.resolve(isType);
   }
 
   /**
@@ -328,20 +308,18 @@ export class UtilsJson {
    * @param type
    * @param value
    */
-  private isType(type: string, value: any): Promise<void> {
-    return new Promise((resolve, reject) => {
-      let ret: boolean = false;
-      if (type === 'NULL' && typeof value === 'object') ret = true;
-      if (type === 'TEXT' && typeof value === 'string') ret = true;
-      if (type === 'INTEGER' && typeof value === 'number') ret = true;
-      if (type === 'REAL' && typeof value === 'number') ret = true;
-      if (type === 'BLOB' && typeof value === 'string') ret = true;
-      if (ret) {
-        resolve();
-      } else {
-        reject(new Error('IsType: not a SQL Type'));
-      }
-    });
+  private async isType(type: string, value: any): Promise<void> {
+    let ret = false;
+    if (type === 'NULL' && typeof value === 'object') ret = true;
+    if (type === 'TEXT' && typeof value === 'string') ret = true;
+    if (type === 'INTEGER' && typeof value === 'number') ret = true;
+    if (type === 'REAL' && typeof value === 'number') ret = true;
+    if (type === 'BLOB' && typeof value === 'string') ret = true;
+    if (ret) {
+      return Promise.resolve();
+    } else {
+      return Promise.reject(new Error('IsType: not a SQL Type'));
+    }
   }
 
   /**
@@ -351,25 +329,23 @@ export class UtilsJson {
    * @param firstColumnName
    * @param key
    */
-  private isIdExists(
+  private async isIdExists(
     db: any,
     dbName: string,
     firstColumnName: string,
     key: any,
   ): Promise<boolean> {
-    return new Promise(async (resolve, reject) => {
-      let ret: boolean = false;
-      const query: string =
-        `SELECT ${firstColumnName} FROM ` +
-        `${dbName} WHERE ${firstColumnName} = ${key};`;
-      try {
-      } catch (err) {
-        reject(new Error(`IsIdExists: ${err.message}`));
-      }
-      const resQuery: Array<any> = await this._uSQLite.queryAll(db, query, []);
+    let ret = false;
+    const query: string =
+      `SELECT ${firstColumnName} FROM ` +
+      `${dbName} WHERE ${firstColumnName} = ${key};`;
+    try {
+      const resQuery: any[] = await this._uSQLite.queryAll(db, query, []);
       if (resQuery.length === 1) ret = true;
-      resolve(ret);
-    });
+      return Promise.resolve(ret);
+    } catch (err) {
+      return Promise.reject(new Error(`IsIdExists: ${err.message}`));
+    }
   }
 
   /**
@@ -378,8 +354,8 @@ export class UtilsJson {
    */
   private createQuestionMarkString(length: number): Promise<string> {
     return new Promise((resolve, reject) => {
-      var retString: string = '';
-      for (let i: number = 0; i < length; i++) {
+      let retString = '';
+      for (let i = 0; i < length; i++) {
         retString += '?,';
       }
       if (retString.length > 1) {
@@ -395,19 +371,17 @@ export class UtilsJson {
    * SetNameForUpdate
    * @param names
    */
-  private setNameForUpdate(names: String[]): Promise<string> {
-    return new Promise((resolve, reject) => {
-      var retString: string = '';
-      for (let i: number = 0; i < names.length; i++) {
-        retString += `${names[i]} = ? ,`;
-      }
-      if (retString.length > 1) {
-        retString = retString.slice(0, -1);
-        resolve(retString);
-      } else {
-        reject(new Error('SetNameForUpdate: length = 0'));
-      }
-    });
+  private async setNameForUpdate(names: string[]): Promise<string> {
+    let retString = '';
+    for (const name of names) {
+      retString += `${name} = ? ,`;
+    }
+    if (retString.length > 1) {
+      retString = retString.slice(0, -1);
+      return Promise.resolve(retString);
+    } else {
+      return Promise.reject(new Error('SetNameForUpdate: length = 0'));
+    }
   }
 
   /**
@@ -415,7 +389,7 @@ export class UtilsJson {
    * @param obj
    */
   public isJsonSQLite(obj: any): boolean {
-    const keyFirstLevel: Array<string> = [
+    const keyFirstLevel: string[] = [
       'database',
       'version',
       'encrypted',
@@ -427,7 +401,7 @@ export class UtilsJson {
       (Object.keys(obj).length === 0 && obj.constructor === Object)
     )
       return false;
-    for (var key of Object.keys(obj)) {
+    for (const key of Object.keys(obj)) {
       if (keyFirstLevel.indexOf(key) === -1) return false;
       if (key === 'database' && typeof obj[key] != 'string') return false;
       if (key === 'version' && typeof obj[key] != 'number') return false;
@@ -435,8 +409,8 @@ export class UtilsJson {
       if (key === 'mode' && typeof obj[key] != 'string') return false;
       if (key === 'tables' && typeof obj[key] != 'object') return false;
       if (key === 'tables') {
-        for (let i: number = 0; i < obj[key].length; i++) {
-          const retTable: boolean = this.isTable(obj[key][i]);
+        for (const oKey of obj[key]) {
+          const retTable: boolean = this.isTable(oKey);
           if (!retTable) return false;
         }
       }
@@ -449,19 +423,14 @@ export class UtilsJson {
    * @param obj
    */
   private isTable(obj: any): boolean {
-    const keyTableLevel: Array<string> = [
-      'name',
-      'schema',
-      'indexes',
-      'values',
-    ];
-    let nbColumn: number = 0;
+    const keyTableLevel: string[] = ['name', 'schema', 'indexes', 'values'];
+    let nbColumn = 0;
     if (
       obj == null ||
       (Object.keys(obj).length === 0 && obj.constructor === Object)
     )
       return false;
-    for (var key of Object.keys(obj)) {
+    for (const key of Object.keys(obj)) {
       if (keyTableLevel.indexOf(key) === -1) return false;
       if (key === 'name' && typeof obj[key] != 'string') return false;
       if (key === 'schema' && typeof obj[key] != 'object') return false;
@@ -479,24 +448,21 @@ export class UtilsJson {
             }
           },
         );
-        for (let i: number = 0; i < nbColumn; i++) {
+        for (let i = 0; i < nbColumn; i++) {
           const retSchema: boolean = this.isSchema(obj[key][i]);
           if (!retSchema) return false;
         }
       }
       if (key === 'indexes') {
-        for (let i: number = 0; i < obj[key].length; i++) {
-          const retIndexes: boolean = this.isIndexes(obj[key][i]);
+        for (const oKey of obj[key]) {
+          const retIndexes: boolean = this.isIndexes(oKey);
           if (!retIndexes) return false;
         }
       }
       if (key === 'values') {
         if (nbColumn > 0) {
-          for (let i: number = 0; i < obj[key].length; i++) {
-            if (
-              typeof obj[key][i] != 'object' ||
-              obj[key][i].length != nbColumn
-            )
+          for (const oKey of obj[key]) {
+            if (typeof oKey != 'object' || oKey.length != nbColumn)
               return false;
           }
         }
@@ -510,13 +476,13 @@ export class UtilsJson {
    * @param obj
    */
   private isSchema(obj: any): boolean {
-    const keySchemaLevel: Array<string> = ['column', 'value', 'foreignkey'];
+    const keySchemaLevel: string[] = ['column', 'value', 'foreignkey'];
     if (
       obj == null ||
       (Object.keys(obj).length === 0 && obj.constructor === Object)
     )
       return false;
-    for (var key of Object.keys(obj)) {
+    for (const key of Object.keys(obj)) {
       if (keySchemaLevel.indexOf(key) === -1) return false;
       if (key === 'column' && typeof obj[key] != 'string') return false;
       if (key === 'value' && typeof obj[key] != 'string') return false;
@@ -529,13 +495,13 @@ export class UtilsJson {
    * @param obj
    */
   private isIndexes(obj: any): boolean {
-    const keyIndexesLevel: Array<string> = ['name', 'value', 'mode'];
+    const keyIndexesLevel: string[] = ['name', 'value', 'mode'];
     if (
       obj == null ||
       (Object.keys(obj).length === 0 && obj.constructor === Object)
     )
       return false;
-    for (var key of Object.keys(obj)) {
+    for (const key of Object.keys(obj)) {
       if (keyIndexesLevel.indexOf(key) === -1) return false;
       if (key === 'name' && typeof obj[key] != 'string') return false;
       if (key === 'value' && typeof obj[key] != 'string') return false;
@@ -553,52 +519,52 @@ export class UtilsJson {
    * @param schema
    */
   public async checkSchemaValidity(schema: JsonColumn[]): Promise<void> {
-    return new Promise(async (resolve, reject) => {
-      for (let i: number = 0; i < schema.length; i++) {
-        let sch: JsonColumn = {} as JsonColumn;
-        let keys: string[] = Object.keys(schema[i]);
-        if (keys.includes('column')) {
-          sch.column = schema[i].column;
-        }
-        if (keys.includes('value')) {
-          sch.value = schema[i].value;
-        }
-        if (keys.includes('foreignkey')) {
-          sch.foreignkey = schema[i].foreignkey;
-        }
-        let isValid: boolean = this.isSchema(sch);
-        if (!isValid) {
-          reject(new Error(`CheckSchemaValidity: schema[${i}] not valid`));
-        }
+    for (let i = 0; i < schema.length; i++) {
+      const sch: JsonColumn = {} as JsonColumn;
+      const keys: string[] = Object.keys(schema[i]);
+      if (keys.includes('column')) {
+        sch.column = schema[i].column;
       }
-      resolve();
-    });
+      if (keys.includes('value')) {
+        sch.value = schema[i].value;
+      }
+      if (keys.includes('foreignkey')) {
+        sch.foreignkey = schema[i].foreignkey;
+      }
+      const isValid: boolean = this.isSchema(sch);
+      if (!isValid) {
+        return Promise.reject(
+          new Error(`CheckSchemaValidity: schema[${i}] not valid`),
+        );
+      }
+    }
+    return Promise.resolve();
   }
   /**
    * checkIndexesSchemaValidity
    * @param indexes
    */
   public async checkIndexesValidity(indexes: JsonIndex[]): Promise<void> {
-    return new Promise(async (resolve, reject) => {
-      for (let i: number = 0; i < indexes.length; i++) {
-        let index: JsonIndex = {} as JsonIndex;
-        let keys: string[] = Object.keys(indexes[i]);
-        if (keys.includes('value')) {
-          index.value = indexes[i].value;
-        }
-        if (keys.includes('name')) {
-          index.name = indexes[i].name;
-        }
-        if (keys.includes('mode')) {
-          index.mode = indexes[i].mode;
-        }
-
-        let isValid: boolean = this.isIndexes(index);
-        if (!isValid) {
-          reject(new Error(`CheckIndexesValidity: indexes[${i}] not valid`));
-        }
+    for (let i = 0; i < indexes.length; i++) {
+      const index: JsonIndex = {} as JsonIndex;
+      const keys: string[] = Object.keys(indexes[i]);
+      if (keys.includes('value')) {
+        index.value = indexes[i].value;
       }
-      resolve();
-    });
+      if (keys.includes('name')) {
+        index.name = indexes[i].name;
+      }
+      if (keys.includes('mode')) {
+        index.mode = indexes[i].mode;
+      }
+
+      const isValid: boolean = this.isIndexes(index);
+      if (!isValid) {
+        return Promise.reject(
+          new Error(`CheckIndexesValidity: indexes[${i}] not valid`),
+        );
+      }
+    }
+    return Promise.resolve();
   }
 }

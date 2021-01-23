@@ -19,188 +19,209 @@ Define a `singleton` service (**app/services/sqlite.service.ts**) as follows
 ```ts
 import { Injectable } from '@angular/core';
 
-import { Plugins, Capacitor } from '@capacitor/core';
-import '@capacitor-community/sqlite';
-import {
-  SQLiteDBConnection,
-  SQLiteConnection,
-  capSQLiteSet,
-  capSQLiteChanges,
-  capEchoResult,
-  capSQLiteResult,
-} from '@capacitor-community/sqlite';
-const { CapacitorSQLite } = Plugins;
+import { Capacitor } from '@capacitor/core';
+import { CapacitorSQLite, SQLiteDBConnection, SQLiteConnection, capSQLiteSet,
+         capSQLiteChanges, capEchoResult, capSQLiteResult 
+        } from '@capacitor-community/sqlite';
 
 @Injectable()
-export class SQLiteService {
-  sqlite: SQLiteConnection;
-  isService: boolean = false;
-  platform: string;
 
-  constructor() {}
-  /**
-   * Plugin Initialization
-   */
-  initializePlugin(): Promise<boolean> {
-    return new Promise(resolve => {
-      this.platform = Capacitor.platform;
-      console.log('*** platform ' + this.platform);
-      const sqlitePlugin: any = CapacitorSQLite;
-      this.sqlite = new SQLiteConnection(sqlitePlugin);
-      this.isService = true;
-      console.log('$$$ in service this.isService ' + this.isService + ' $$$');
-      resolve(true);
-    });
-  }
-  /**
-   * Echo a value
-   * @param value
-   */
-  async echo(value: string): Promise<capEchoResult> {
-    console.log('&&&& in echo this.sqlite ' + this.sqlite + ' &&&&');
-    if (this.sqlite != null) {
-      return await this.sqlite.echo(value);
-    } else {
-      return null;
+export class SQLiteService {
+    sqlite: SQLiteConnection;
+    isService: boolean = false;
+    platform: string;
+
+    constructor() {
     }
-  }
-  /**
-   * addUpgradeStatement
-   * @param database
-   * @param fromVersion
-   * @param toVersion
-   * @param statement
-   * @param set
-   */
-  async addUpgradeStatement(
-    database: string,
-    fromVersion: number,
-    toVersion: number,
-    statement: string,
-    set?: capSQLiteSet[],
-  ): Promise<capSQLiteResult> {
-    if (this.sqlite != null) {
-      return await this.sqlite.addUpgradeStatement(
-        database,
-        fromVersion,
-        toVersion,
-        statement,
-        set ? set : [],
-      );
-    } else {
-      return null;
+    /**
+     * Plugin Initialization
+     */
+    initializePlugin(): Promise<boolean> {
+        return new Promise (resolve => {
+            this.platform = Capacitor.getPlatform();
+            console.log("*** platform " + this.platform)
+            const sqlitePlugin: any = CapacitorSQLite;
+            this.sqlite = new SQLiteConnection(sqlitePlugin);
+            this.isService = true;
+            console.log("$$$ in service this.isService " + this.isService + " $$$")
+            resolve(true);
+        });
     }
-  }
-  /**
-   * Create a connection to a database
-   * @param database
-   * @param encrypted
-   * @param mode
-   * @param version
-   */
-  async createConnection(
-    database: string,
-    encrypted: boolean,
-    mode: string,
-    version: number,
-  ): Promise<SQLiteDBConnection | null> {
-    if (this.sqlite != null) {
-      const db: SQLiteDBConnection = await this.sqlite.createConnection(
-        database,
-        encrypted,
-        mode,
-        version,
-      );
-      if (db != null) {
-        return db;
-      } else {
-        return null;
+    /**
+     * Echo a value
+     * @param value 
+     */
+    async echo(value: string): Promise<capEchoResult> {
+        console.log("&&&& in echo this.sqlite " + this.sqlite + " &&&&")
+        if(this.sqlite != null) {
+            return await this.sqlite.echo(value);
+        } else {
+            return null;
+        }
+    }
+    /**
+     * addUpgradeStatement
+     * @param database 
+     * @param fromVersion 
+     * @param toVersion 
+     * @param statement 
+     * @param set 
+     */
+    async addUpgradeStatement(database:string, fromVersion: number,
+                              toVersion: number, statement: string,
+                              set?: capSQLiteSet[])
+                                        : Promise<void> {
+        if(this.sqlite != null) {
+            try {
+                await this.sqlite.addUpgradeStatement(database, fromVersion, toVersion,
+                                                      statement, set ? set : []);
+                return Promise.resolve();
+            } catch (err) {
+                return Promise.reject(err);
+            }
+        } else {
+            return Promise.reject(new Error(`no connection open for ${database}`));
+        }                             
+    }
+    /**
+     * Create a connection to a database
+     * @param database 
+     * @param encrypted 
+     * @param mode 
+     * @param version 
+     */
+    async createConnection(database:string, encrypted: boolean,
+                           mode: string, version: number
+                           ): Promise<SQLiteDBConnection> {
+        if(this.sqlite != null) {
+            try {
+                const db: SQLiteDBConnection = await this.sqlite.createConnection(
+                                database, encrypted, mode, version);
+                if (db != null) {
+                    return Promise.resolve(db);
+                } else {
+                    return Promise.reject(new Error(`no db returned is null`));
+                }
+            } catch (err) {
+                return Promise.reject(err);
+            }
+        } else {
+            return Promise.reject(new Error(`no connection open for ${database}`));
+        }
+    }
+    /**
+     * Close a connection to a database
+     * @param database 
+     */
+    async closeConnection(database:string): Promise<void> {
+        if(this.sqlite != null) {
+            try {
+                await this.sqlite.closeConnection(database);
+                return Promise.resolve();
+            } catch (err) {
+                return Promise.reject(err);
+            }
+        } else {
+            return Promise.reject(new Error(`no connection open for ${database}`));
+        }
+    }
+    /**
+     * Retrieve an existing connection to a database
+     * @param database 
+     */
+    async retrieveConnection(database:string): 
+            Promise<SQLiteDBConnection> {
+        if(this.sqlite != null) {
+            try {
+                return Promise.resolve(await this.sqlite.retrieveConnection(database));
+            } catch (err) {
+                return Promise.reject(err);
+            }
+        } else {
+            return Promise.reject(new Error(`no connection open for ${database}`));
+        }
+    }
+    /**
+     * Retrieve all existing connections
+     */
+    async retrieveAllConnections(): 
+                    Promise<Map<string, SQLiteDBConnection>> {
+        if(this.sqlite != null) {
+            try {
+                const myConns =  await this.sqlite.retrieveAllConnections();
+                let keys = [...myConns.keys()];
+                keys.forEach( (value) => {
+                    console.log("Connection: " + value);
+                }); 
+                return Promise.resolve(myConns);
+            } catch (err) {
+                return Promise.reject(err);
+            }
+        } else {
+            return Promise.reject(new Error(`no connection open`));
+        }               
+    }
+    /**
+     * Close all existing connections
+     */
+    async closeAllConnections(): Promise<void> {
+        if(this.sqlite != null) {
+            try {
+                return Promise.resolve(await this.sqlite.closeAllConnections());
+            } catch (err) {
+                return Promise.reject(err);
+            }
+        } else {
+            return Promise.reject(new Error(`no connection open`));
+        }
+    }
+    /**
+     * Import from a Json Object
+     * @param jsonstring 
+     */
+    async importFromJson(jsonstring:string): Promise<capSQLiteChanges> {
+        if(this.sqlite != null) {
+            try {
+                return Promise.resolve(await this.sqlite.importFromJson(jsonstring));
+            } catch (err) {
+                return Promise.reject(err);
+            }
+        } else {
+            return Promise.reject(new Error(`no connection open`));
+        }
+                    
+    }
+    /**
+     * Is Json Object Valid
+     * @param jsonstring Check the validity of a given Json Object
+     */
+    async isJsonValid(jsonstring:string): Promise<capSQLiteResult> {
+        if(this.sqlite != null) {
+            try {
+                return Promise.resolve(await this.sqlite.isJsonValid(jsonstring));
+            } catch (err) {
+                return Promise.reject(err);
+            }
+        } else {
+            return Promise.reject(new Error(`no connection open`));
+        }
+
+    }
+    /**
+     * Copy databases from public/assets/databases folder to application databases folder
+     */
+    async copyFromAssets(): Promise<void> { 
+        if (this.sqlite != null) {
+            try {
+                return Promise.resolve(await this.sqlite.copyFromAssets());
+            } catch (err) {
+                return Promise.reject(err);
+            }
+        } else {
+            return Promise.reject(new Error(`no connection open`));
+        }
       }
-    } else {
-      return null;
-    }
-  }
-  /**
-   * Close a connection to a database
-   * @param database
-   */
-  async closeConnection(database: string): Promise<capSQLiteResult> {
-    if (this.sqlite != null) {
-      return await this.sqlite.closeConnection(database);
-    } else {
-      return null;
-    }
-  }
-  /**
-   * Retrieve an existing connection to a database
-   * @param database
-   */
-  async retrieveConnection(
-    database: string,
-  ): Promise<SQLiteDBConnection | null | undefined> {
-    if (this.sqlite != null) {
-      return await this.sqlite.retrieveConnection(database);
-    } else {
-      return null;
-    }
-  }
-  /**
-   * Retrieve all existing connections
-   */
-  async retrieveAllConnections(): Promise<Map<string, SQLiteDBConnection>> {
-    if (this.sqlite != null) {
-      const myConns = await this.sqlite.retrieveAllConnections();
-      let keys = [...myConns.keys()];
-      keys.forEach(value => {
-        console.log('Connection: ' + value);
-      });
-      return myConns;
-    } else {
-      return null;
-    }
-  }
-  /**
-   * Close all existing connections
-   */
-  async closeAllConnections(): Promise<capSQLiteResult> {
-    if (this.sqlite != null) {
-      return await this.sqlite.closeAllConnections();
-    } else {
-      return null;
-    }
-  }
-  /**
-   * Import from a Json Object
-   * @param jsonstring
-   */
-  async importFromJson(jsonstring: string): Promise<capSQLiteChanges> {
-    if (this.sqlite != null) {
-      return await this.sqlite.importFromJson(jsonstring);
-    } else {
-      return null;
-    }
-  }
-  /**
-   * Is Json Object Valid
-   * @param jsonstring Check the validity of a given Json Object
-   */
-  async isJsonValid(jsonstring: string): Promise<capSQLiteResult> {
-    if (this.sqlite != null) {
-      return await this.sqlite.isJsonValid(jsonstring);
-    } else {
-      return null;
-    }
-  }
-  /**
-   * Copy databases from public/assets/databases folder to application databases folder
-   */
-  async copyFromAssets(): Promise<capSQLiteResult> {
-    if (this.sqlite != null) {
-      return await this.sqlite.copyFromAssets();
-    } else {
-      return null;
-    }
-  }
+    
 }
 ```
 
@@ -285,164 +306,164 @@ export class AppComponent {
 ```ts
 import { Component, AfterViewInit } from '@angular/core';
 import { SQLiteService } from '../services/sqlite.service';
-import { createSchema, twoUsers } from '../utils/no-encryption-utils';
+import { createSchema, twoUsers} from '../utils/no-encryption-utils';
+import { deleteDatabase } from '../utils/db-utils';
 
 @Component({
   selector: 'app-testencryption',
   templateUrl: 'testencryption.page.html',
-  styleUrls: ['testencryption.page.scss'],
+  styleUrls: ['testencryption.page.scss']
 })
 export class TestencryptionPage implements AfterViewInit {
   sqlite: any;
   platform: string;
+  handlerPermissions: any;
   initPlugin: boolean = false;
 
   constructor(private _sqlite: SQLiteService) {}
 
   async ngAfterViewInit() {
-    console.log('%%%% in TestencryptionPage this._sqlite ' + this._sqlite);
-
-    const result: boolean = await this.runTest();
-    if (result) {
-      document.querySelector('.sql-allsuccess').classList.remove('display');
-      console.log('$$$ runTest was successful');
-    } else {
-      document.querySelector('.sql-allfailure').classList.remove('display');
-      console.log('$$$ runTest failed');
+    console.log("%%%% in TestencryptionPage this._sqlite " + this._sqlite)
+    try {
+      await this.runTest();
+      document.querySelector('.sql-allsuccess').classList
+      .remove('display');
+      console.log("$$$ runTest was successful");
+    } catch (err) {
+      document.querySelector('.sql-allfailure').classList
+      .remove('display');
+      console.log(`$$$ runTest failed ${err.message}`);
     }
   }
 
-  async runTest(): Promise<boolean> {
-    let result: any = await this._sqlite.echo('Hello World');
-    console.log(' from Echo ' + result.value);
 
-    // ************************************************
-    // Create Database No Encryption
-    // ************************************************
+  async runTest(): Promise<void> {
+    try {
+      let result: any = await this._sqlite.echo("Hello World");
+      console.log(" from Echo " + result.value);
 
-    // initialize the connection
-    let db = await this._sqlite.createConnection(
-      'testEncryption',
-      false,
-      'no-encryption',
-      1,
-    );
+      // ************************************************
+      // Create Database No Encryption
+      // ************************************************
 
-    // open db testEncryption
-    let ret: any = await db.open();
-    if (!ret.result) {
-      return false;
+      // initialize the connection
+      let db = await this._sqlite
+                  .createConnection("testEncryption", false, "no-encryption", 1);
+
+      // open db testEncryption
+      await db.open();
+
+      // create tables in db
+      let ret: any = await db.execute(createSchema);
+      console.log('$$$ ret.changes.changes in db ' + ret.changes.changes)
+      if (ret.changes.changes < 0) {
+        return Promise.reject(new Error("Execute createSchema failed"));
+      }
+
+      // create synchronization table 
+      ret = await db.createSyncTable();
+      if (ret.changes.changes < 0) {
+        return Promise.reject(new Error("Execute createSyncTable failed"));
+      }
+      
+      // set the synchronization date
+      const syncDate: string = "2020-11-25T08:30:25.000Z";
+      await db.setSyncDate(syncDate);
+
+      // add two users in db
+      ret = await db.execute(twoUsers);
+      if (ret.changes.changes !== 2) {
+        return Promise.reject(new Error("Execute twoUsers failed"));
+      }
+      // select all users in db
+      ret = await db.query("SELECT * FROM users;");
+      if(ret.values.length !== 2 || ret.values[0].name !== "Whiteley" ||
+                                    ret.values[1].name !== "Jones") {
+        return Promise.reject(new Error("Query1 twoUsers failed"));
+      }
+
+      // select users where company is NULL in db
+      ret = await db.query("SELECT * FROM users WHERE company IS NULL;");
+      if(ret.values.length !== 2 || ret.values[0].name !== "Whiteley" ||
+                                    ret.values[1].name !== "Jones") {
+        return Promise.reject(new Error("Query2 Users where Company null failed"));
+      }
+      // add one user with statement and values              
+      let sqlcmd: string = 
+                  "INSERT INTO users (name,email,age) VALUES (?,?,?)";
+      let values: Array<any>  = ["Simpson","Simpson@example.com",69];
+      ret = await db.run(sqlcmd,values);
+      console.log()
+      if(ret.changes.lastId !== 3) {
+        return Promise.reject(new Error("Run1 add 1 User failed"));
+      }
+      // add one user with statement              
+      sqlcmd = `INSERT INTO users (name,email,age) VALUES ` + 
+                                `("Brown","Brown@example.com",15)`;
+      ret = await db.run(sqlcmd);
+      if(ret.changes.lastId !== 4) {
+        return Promise.reject(new Error("Run2 add 1 User failed"));
+      }
+
+      await this._sqlite.closeConnection("testEncryption"); 
+
+      // ************************************************
+      // Encrypt the existing database
+      // ************************************************
+
+      // initialize the connection
+      db = await this._sqlite
+                  .createConnection("testEncryption", true, "encryption", 1);
+
+      // open db testEncryption
+      await db.open();
+      // close the connection
+      await this._sqlite.closeConnection("testEncryption"); 
+      console.log("closeConnection encrypted ")
+      // ************************************************
+      // Work with the encrypted  database
+      // ************************************************
+
+      // initialize the connection
+      db = await this._sqlite
+                  .createConnection("testEncryption", true, "secret", 1);
+
+      // open db testEncryption
+      await db.open();
+
+      // add one user with statement and values              
+      sqlcmd = 
+                  "INSERT INTO users (name,email,age) VALUES (?,?,?)";
+      values = ["Jackson","Jackson@example.com",32];
+      ret = await db.run(sqlcmd,values);
+      if(ret.changes.lastId !== 5) {
+        return Promise.reject(new Error("Run3 add 1 User failed"));
+      }
+
+      // select all users in db
+      ret = await db.query("SELECT * FROM users;");
+      console.log("query encrypted " + ret.values.length )
+      if(ret.values.length !== 5 || ret.values[0].name !== "Whiteley" ||
+                                    ret.values[1].name !== "Jones" ||
+                                    ret.values[2].name !== "Simpson" ||
+                                    ret.values[3].name !== "Brown" ||
+                                    ret.values[4].name !== "Jackson") {
+        return Promise.reject(new Error("Query3  5 Users failed"));
+      }
+
+      // delete it for multiple successive tests
+      await deleteDatabase(db);
+      
+      await this._sqlite.closeConnection("testEncryption"); 
+
+      return Promise.resolve();
+
+    } catch (err) {
+      return Promise.reject(err);
     }
 
-    // create tables in db
-    ret = await db.execute(createSchema);
-    console.log('$$$ ret.changes.changes in db ' + ret.changes.changes);
-    if (ret.changes.changes < 0) {
-      return false;
-    }
-
-    // create synchronization table
-    ret = await db.createSyncTable();
-    if (ret.changes.changes < 0) {
-      return false;
-    }
-
-    // set the synchronization date
-    const syncDate: string = '2020-11-25T08:30:25.000Z';
-    ret = await db.setSyncDate(syncDate);
-    if (!ret.result) return false;
-
-    // add two users in db
-    ret = await db.execute(twoUsers);
-    if (ret.changes.changes !== 2) {
-      return false;
-    }
-    // select all users in db
-    ret = await db.query('SELECT * FROM users;');
-    if (
-      ret.values.length !== 2 ||
-      ret.values[0].name !== 'Whiteley' ||
-      ret.values[1].name !== 'Jones'
-    ) {
-      return false;
-    }
-
-    // select users where company is NULL in db
-    ret = await db.query('SELECT * FROM users WHERE company IS NULL;');
-    if (
-      ret.values.length !== 2 ||
-      ret.values[0].name !== 'Whiteley' ||
-      ret.values[1].name !== 'Jones'
-    ) {
-      return false;
-    }
-    // add one user with statement and values
-    let sqlcmd: string = 'INSERT INTO users (name,email,age) VALUES (?,?,?)';
-    let values: Array<any> = ['Simpson', 'Simpson@example.com', 69];
-    ret = await db.run(sqlcmd, values);
-    console.log();
-    if (ret.changes.lastId !== 3) {
-      return false;
-    }
-    // add one user with statement
-    sqlcmd =
-      `INSERT INTO users (name,email,age) VALUES ` +
-      `("Brown","Brown@example.com",15)`;
-    ret = await db.run(sqlcmd);
-    if (ret.changes.lastId !== 4) {
-      return false;
-    }
-
-    ret = await this._sqlite.closeConnection('testEncryption');
-    if (!ret.result) {
-      return false;
-    }
-
-    // ************************************************
-    // Encrypt the existing database
-    // ************************************************
-
-    // initialize the connection
-    db = await this._sqlite.createConnection(
-      'testEncryption',
-      true,
-      'encryption',
-      1,
-    );
-
-    // open db testEncryption
-    ret = await db.open();
-    if (!ret.result) {
-      return false;
-    }
-    // add one user with statement and values
-    sqlcmd = 'INSERT INTO users (name,email,age) VALUES (?,?,?)';
-    values = ['Jackson', 'Jackson@example.com', 32];
-    ret = await db.run(sqlcmd, values);
-    console.log();
-    if (ret.changes.lastId !== 5) {
-      return false;
-    }
-
-    // select all users in db
-    ret = await db.query('SELECT * FROM users;');
-    if (
-      ret.values.length !== 5 ||
-      ret.values[0].name !== 'Whiteley' ||
-      ret.values[1].name !== 'Jones' ||
-      ret.values[2].name !== 'Simpson' ||
-      ret.values[3].name !== 'Brown' ||
-      ret.values[4].name !== 'Jackson'
-    ) {
-      return false;
-    }
-    ret = await this._sqlite.closeConnection('testEncryption');
-    if (!ret.result) {
-      return false;
-    } else {
-      return true;
-    }
   }
+
 }
 ```
 
@@ -456,7 +477,7 @@ CREATE TABLE IF NOT EXISTS users (
     email TEXT UNIQUE NOT NULL,
     name TEXT,
     company TEXT,
-    size FLOAT,
+    size REAL,
     age INTEGER,
     last_modified INTEGER DEFAULT (strftime('%s', 'now'))
 );
@@ -510,7 +531,7 @@ PRAGMA user_version = 1;
 
 // Insert some Users
 const row: Array<Array<any>> = [
-  ['Whiteley', 'Whiteley.com', 30],
+  ['Whiteley', 'Whiteley.com', 30.2],
   ['Jones', 'Jones.com', 44],
 ];
 export const twoUsers: string = `

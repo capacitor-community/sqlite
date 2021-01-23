@@ -1,3 +1,19 @@
+## 3.0.0-alpha.1 (2021-01-23)
+
+### Chore
+
+- update to @capacitor/core@3.0.0-beta.1
+
+### Added Features
+
+- better Error handling throught try...catch
+
+## 2.9.5 (2021-01-20) REFACTOR
+
+### Bug Fixes
+
+- importFromJson not working with REAL
+
 ## 2.9.4 (2021-01-17) REFACTOR
 
 ### Bug Fixes

@@ -1,12 +1,12 @@
 //
 //  UtilsJson.swift
-//  CapacitorCommunitySqlite
+//  Plugin
 //
-//  Created by  Quéau Jean Pierre on 30/07/2020.
+//  Created by  Quéau Jean Pierre on 18/01/2021.
+//  Copyright © 2021 Max Lynch. All rights reserved.
 //
 
 import Foundation
-
 enum UtilsJsonError: Error {
     case tableNotExists(message: String)
     case getTableColumnNamesTypes(message: String)
@@ -21,7 +21,7 @@ class UtilsJson {
     // MARK: - ImportFromJson - IsTableExists
 
     class func isTableExists(mDB: Database, tableName: String)
-                                                    throws -> Bool {
+    throws -> Bool {
         var msg: String = "Error isTableExists: "
         if !mDB.isDBOpen() {
             msg.append("Database not opened")
@@ -34,7 +34,7 @@ class UtilsJson {
         query.append("';")
         do {
             let resQuery: [Any] = try UtilsSQLCipher
-                    .querySQL(mDB: mDB, sql: query, values: [])
+                .querySQL(mDB: mDB, sql: query, values: [])
             if resQuery.count > 0 {ret = true}
         } catch UtilsSQLCipherError.querySQL(let message) {
             throw UtilsJsonError.tableNotExists(message: message)
@@ -46,7 +46,7 @@ class UtilsJson {
 
     class func getTableColumnNamesTypes(mDB: Database,
                                         tableName: String)
-                                        throws -> JsonNamesTypes {
+    throws -> JsonNamesTypes {
         var ret: JsonNamesTypes = JsonNamesTypes(names: [], types: [])
         var msg: String = "Error: getTableColumnNamesTypes "
         var query: String = "PRAGMA table_info("
@@ -86,8 +86,8 @@ class UtilsJson {
     // MARK: - ImportFromJson - CheckColumnTypes
 
     class func checkColumnTypes (
-                mDB: Database, types: [String],
-                values: [UncertainValue<String, Int, Float>]) -> Bool {
+        mDB: Database, types: [String],
+        values: [UncertainValue<String, Int, Double>]) -> Bool {
         var isRetType: Bool = true
         for ipos in 0..<values.count {
             if let val = values[ipos].value {
@@ -107,19 +107,20 @@ class UtilsJson {
     // MARK: - ImportFromJson - IsType
 
     class func isType(stype: String,
-                      avalue: UncertainValue<String, Int, Float>)
-                                                        -> Bool {
+                      avalue: UncertainValue<String, Int, Double>)
+    -> Bool {
         var ret: Bool = false
         // swiftlint:disable force_unwrapping
-        if stype == "NULL" && type(of: avalue.tValue!) == String.self {
+        if stype == "NULL" && type(of: avalue.value!) == String.self {
             ret = true }
-        if stype == "TEXT" && type(of: avalue.tValue!) == String.self {
+        if stype == "TEXT" && type(of: avalue.value!) == String.self {
             ret = true }
-        if stype == "INTEGER" && type(of: avalue.uValue!) == Int.self {
+        if stype == "INTEGER" && type(of: avalue.value!) == Int.self {
             ret = true }
-        if stype == "REAL" && type(of: avalue.vValue!) == Float.self {
+        if stype == "REAL" && (type(of: avalue.value!) == Double.self ||
+                                type(of: avalue.value!) == Int.self) {
             ret = true }
-        if stype == "BLOB" && type(of: avalue.tValue!) == String.self {
+        if stype == "BLOB" && type(of: avalue.value!) == String.self {
             ret = true }
 
         // swiftlint:enable force_unwrapping
@@ -146,7 +147,7 @@ class UtilsJson {
             }
         } catch DatabaseError.selectSQL(let message) {
             throw UtilsJsonError.isIdExists(
-                            message: "isIdExists: \(message)")
+                message: "isIdExists: \(message)")
         }
         return ret
     }
@@ -165,7 +166,7 @@ class UtilsJson {
     // MARK: - ImportFromJson - GetValuesFromRow
 
     class func getValuesFromRow(
-        rowValues: [ UncertainValue<String, Int, Float>]) -> [Any] {
+        rowValues: [ UncertainValue<String, Int, Double>]) -> [Any] {
         var retArray: [Any] = []
         // swiftlint:disable force_unwrapping
         for ipos in 0..<rowValues.count {
@@ -190,7 +191,7 @@ class UtilsJson {
 
     class func checkRowValidity(
         mDB: Database, jsonNamesTypes: JsonNamesTypes,
-        row: [UncertainValue<String, Int, Float>], pos: Int,
+        row: [UncertainValue<String, Int, Double>], pos: Int,
         tableName: String) throws {
         if jsonNamesTypes.names.count != row.count {
             let message: String = """
@@ -213,7 +214,7 @@ class UtilsJson {
     // MARK: - ExportToJson - validateSchema
 
     class func validateSchema(schema: [[String: String]])
-                                    throws -> Bool {
+    throws -> Bool {
         var isSchema = false
         do {
             let eSchema = try JSONEncoder().encode(schema)
@@ -237,7 +238,7 @@ class UtilsJson {
     // MARK: - ExportToJson - validateIndexes
 
     class func validateIndexes(indexes: [[String: String]])
-                                throws -> Bool {
+    throws -> Bool {
 
         var isIndexes = false
         do {

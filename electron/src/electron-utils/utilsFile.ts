@@ -1,11 +1,14 @@
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const app = require('electron').remote.app;
+
 export class UtilsFile {
-  pathDB: string = 'Databases';
+  pathDB = 'Databases';
   Path: any = null;
   NodeFs: any = null;
   Os: any = null;
-  AppName: string = '';
-  HomeDir: string = '';
-  appPath: string = null;
+  AppName = '';
+  HomeDir = '';
+  appPath: string;
   osType: string;
 
   constructor() {
@@ -13,9 +16,8 @@ export class UtilsFile {
     this.NodeFs = require('fs');
     this.Os = require('os');
     this.HomeDir = this.Os.homedir();
-    const app = require('electron').remote.app;
     this.appPath = app.getAppPath();
-    let sep: string = '/';
+    let sep = '/';
     const idx: number = this.appPath.indexOf('\\');
     if (idx != -1) sep = '\\';
     const mypath = this.appPath.substring(
@@ -30,7 +32,7 @@ export class UtilsFile {
    * @param filePath
    */
   public isPathExists(filePath: string): boolean {
-    let ret: boolean = false;
+    let ret = false;
     try {
       if (this.NodeFs.existsSync(filePath)) {
         ret = true;
@@ -46,7 +48,7 @@ export class UtilsFile {
    * @param fileName
    */
   public isFileExists(fileName: string): boolean {
-    let ret: boolean = false;
+    let ret = false;
     const filePath: string = this.getFilePath(fileName);
     if (filePath.length > 0) {
       ret = this.isPathExists(filePath);
@@ -67,10 +69,10 @@ export class UtilsFile {
    * get the database folder path
    */
   public getDatabasesPath(): string {
-    let retPath: string = '';
+    let retPath = '';
     const dbFolder: string = this.pathDB;
     if (this.AppName == null || this.AppName.length === 0) {
-      let sep: string = '/';
+      let sep = '/';
       const idx: number = __dirname.indexOf('\\');
       if (idx != -1) sep = '\\';
       const dir: string = __dirname.substring(
@@ -104,8 +106,8 @@ export class UtilsFile {
    * get the assets databases folder path
    */
   public getAssetsDatabasesPath(): string {
-    let retPath: string = '';
-    let sep: string = '/';
+    let retPath = '';
+    let sep = '/';
     const idx: number = __dirname.indexOf('\\');
     if (idx != -1) sep = '\\';
     const dir: string = __dirname.substring(0, __dirname.lastIndexOf(sep) + 1);
@@ -134,28 +136,27 @@ export class UtilsFile {
    * get the file list for a given folder
    * @param path
    */
-  public getFileList(path: string): Promise<string[]> {
-    return new Promise(async resolve => {
-      const filenames = this.NodeFs.readdirSync(path);
-      let dbs: string[] = [];
-      filenames.forEach((file: string) => {
-        if (this.Path.extname(file) == '.db') dbs.push(file);
-      });
-      resolve(dbs);
+  public async getFileList(path: string): Promise<string[]> {
+    const filenames = this.NodeFs.readdirSync(path);
+    const dbs: string[] = [];
+    filenames.forEach((file: string) => {
+      if (this.Path.extname(file) == '.db') dbs.push(file);
     });
+    return Promise.resolve(dbs);
   }
   /**
    * CopyFromAssetToDatabase
    * @param db
    * @param toDb
    */
-  public copyFromAssetToDatabase(db: string, toDb: string): Promise<void> {
-    return new Promise(async resolve => {
-      const pAsset: string = this.Path.join(this.getAssetsDatabasesPath(), db);
-      const pDb: string = this.Path.join(this.getDatabasesPath(), toDb);
-      await this.copyFilePath(pAsset, pDb);
-      resolve();
-    });
+  public async copyFromAssetToDatabase(
+    db: string,
+    toDb: string,
+  ): Promise<void> {
+    const pAsset: string = this.Path.join(this.getAssetsDatabasesPath(), db);
+    const pDb: string = this.Path.join(this.getDatabasesPath(), toDb);
+    await this.copyFilePath(pAsset, pDb);
+    return Promise.resolve();
   }
   /**
    * CopyFileName
@@ -163,22 +164,25 @@ export class UtilsFile {
    * @param fileName
    * @param toFileName
    */
-  public copyFileName(fileName: string, toFileName: string): Promise<void> {
-    return new Promise(async (resolve, reject) => {
-      // get File Paths
-      const filePath = this.getFilePath(fileName);
-      const toFilePath = this.getFilePath(toFileName);
-      if (filePath.length !== 0 && toFilePath.length !== 0) {
-        try {
-          await this.copyFilePath(filePath, toFilePath);
-          resolve();
-        } catch (err) {
-          reject(new Error(`CopyFileName: ${err.message}`));
-        }
-      } else {
-        reject(new Error('CopyFileName: cannot get the ' + 'filePath'));
+  public async copyFileName(
+    fileName: string,
+    toFileName: string,
+  ): Promise<void> {
+    // get File Paths
+    const filePath = this.getFilePath(fileName);
+    const toFilePath = this.getFilePath(toFileName);
+    if (filePath.length !== 0 && toFilePath.length !== 0) {
+      try {
+        await this.copyFilePath(filePath, toFilePath);
+        return Promise.resolve();
+      } catch (err) {
+        return Promise.reject(new Error(`CopyFileName: ${err.message}`));
       }
-    });
+    } else {
+      return Promise.reject(
+        new Error('CopyFileName: cannot get the ' + 'filePath'),
+      );
+    }
   }
   /**
    * CopyFilePath
@@ -186,153 +190,175 @@ export class UtilsFile {
    * @param filePath
    * @param toFilePath
    */
-  public copyFilePath(filePath: string, toFilePath: string): Promise<void> {
-    return new Promise(async (resolve, reject) => {
-      if (filePath.length !== 0 && toFilePath.length !== 0) {
-        // check filePath exists
-        const isPath = this.isPathExists(filePath);
-        if (isPath) {
-          try {
-            await this.deleteFilePath(toFilePath);
-            this.NodeFs.copyFileSync(filePath, toFilePath);
-            resolve();
-          } catch (err) {
-            reject(new Error(`CopyFilePath: ${err.message}`));
-          }
-        } else {
-          reject(new Error('CopyFilePath: filePath does not ' + 'exist'));
+  public async copyFilePath(
+    filePath: string,
+    toFilePath: string,
+  ): Promise<void> {
+    if (filePath.length !== 0 && toFilePath.length !== 0) {
+      // check filePath exists
+      const isPath = this.isPathExists(filePath);
+      if (isPath) {
+        try {
+          await this.deleteFilePath(toFilePath);
+          this.NodeFs.copyFileSync(filePath, toFilePath);
+          return Promise.resolve();
+        } catch (err) {
+          return Promise.reject(new Error(`CopyFilePath: ${err.message}`));
         }
       } else {
-        reject(new Error('CopyFilePath: cannot get the ' + 'filePath'));
+        return Promise.reject(
+          new Error('CopyFilePath: filePath does not ' + 'exist'),
+        );
       }
-    });
+    } else {
+      return Promise.reject(
+        new Error('CopyFilePath: cannot get the ' + 'filePath'),
+      );
+    }
   }
   /**
    * DeleteFileName
    * Delete a file by its name
    * @param fileName
    */
-  public deleteFileName(fileName: string): Promise<void> {
-    return new Promise(async (resolve, reject) => {
-      // get file path
-      const filePath = this.getFilePath(fileName);
-      if (filePath.length !== 0) {
-        try {
-          await this.deleteFilePath(filePath);
-          resolve();
-        } catch (err) {
-          reject(
-            new Error(
-              'DeleteFileName: delete filePath ' + `failed ${err.message}`,
-            ),
-          );
-        }
-      } else {
-        reject(new Error('DeleteFileName: get filePath ' + 'failed'));
+  public async deleteFileName(fileName: string): Promise<void> {
+    // get file path
+    const filePath = this.getFilePath(fileName);
+    if (filePath.length !== 0) {
+      try {
+        await this.deleteFilePath(filePath);
+        return Promise.resolve();
+      } catch (err) {
+        return Promise.reject(
+          new Error(
+            'DeleteFileName: delete filePath ' + `failed ${err.message}`,
+          ),
+        );
       }
-    });
+    } else {
+      return Promise.reject(
+        new Error('DeleteFileName: get filePath ' + 'failed'),
+      );
+    }
   }
   /**
    * DeleteFilePath
    * Delete a file by its path
    * @param filePath
    */
-  public deleteFilePath(filePath: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (filePath.length !== 0) {
-        // check if path exists
-        const isPath = this.isPathExists(filePath);
-        if (isPath) {
-          try {
-            this.NodeFs.unlinkSync(filePath);
-            resolve();
-          } catch (err) {
-            reject(new Error('DeleteFilePath: ' + `${err.message}`));
-          }
-        } else {
-          resolve();
+  public async deleteFilePath(filePath: string): Promise<void> {
+    if (filePath.length !== 0) {
+      // check if path exists
+      const isPath = this.isPathExists(filePath);
+      if (isPath) {
+        try {
+          this.NodeFs.unlinkSync(filePath);
+          return Promise.resolve();
+        } catch (err) {
+          return Promise.reject(
+            new Error('DeleteFilePath: ' + `${err.message}`),
+          );
         }
       } else {
-        reject(new Error('DeleteFilePath: delete filePath' + 'failed'));
+        return Promise.resolve();
       }
-    });
+    } else {
+      return Promise.reject(
+        new Error('DeleteFilePath: delete filePath' + 'failed'),
+      );
+    }
   }
   /**
    * RenameFileName
    * @param fileName
    * @param toFileName
    */
-  public renameFileName(fileName: string, toFileName: string): Promise<void> {
-    return new Promise(async (resolve, reject) => {
-      // get File Paths
-      const filePath = this.getFilePath(fileName);
-      const toFilePath = this.getFilePath(toFileName);
-      if (filePath.length !== 0 && toFilePath.length !== 0) {
-        try {
-          await this.renameFilePath(filePath, toFilePath);
-          resolve();
-        } catch (err) {
-          reject(new Error(`RenameFileName: ${err.message}`));
-        }
-      } else {
-        reject(new Error('RenameFileName: filePaths do not ' + 'exist'));
+  public async renameFileName(
+    fileName: string,
+    toFileName: string,
+  ): Promise<void> {
+    // get File Paths
+    const filePath = this.getFilePath(fileName);
+    const toFilePath = this.getFilePath(toFileName);
+    if (filePath.length !== 0 && toFilePath.length !== 0) {
+      try {
+        await this.renameFilePath(filePath, toFilePath);
+        return Promise.resolve();
+      } catch (err) {
+        return Promise.reject(new Error(`RenameFileName: ${err.message}`));
       }
-    });
+    } else {
+      return Promise.reject(
+        new Error('RenameFileName: filePaths do not ' + 'exist'),
+      );
+    }
   }
   /**
    * RenameFilePath
    * @param filePath
    * @param toFilePath
    */
-  public renameFilePath(filePath: string, toFilePath: string): Promise<void> {
-    return new Promise(async (resolve, reject) => {
-      if (filePath.length !== 0 && toFilePath.length !== 0) {
-        // check filePath exists
-        const isPath = this.isPathExists(filePath);
-        if (isPath) {
-          // delete toFilePath if exists
-          try {
-            await this.deleteFilePath(toFilePath);
-            this.NodeFs.renameSync(filePath, toFilePath);
-            resolve();
-          } catch (err) {
-            reject(new Error('RenameFilePath: ' + `${err.message}`));
-          }
-        } else {
-          reject(new Error('RenameFilePath: filePath ' + 'does not exist'));
+  public async renameFilePath(
+    filePath: string,
+    toFilePath: string,
+  ): Promise<void> {
+    if (filePath.length !== 0 && toFilePath.length !== 0) {
+      // check filePath exists
+      const isPath = this.isPathExists(filePath);
+      if (isPath) {
+        // delete toFilePath if exists
+        try {
+          await this.deleteFilePath(toFilePath);
+          this.NodeFs.renameSync(filePath, toFilePath);
+          return Promise.resolve();
+        } catch (err) {
+          return Promise.reject(
+            new Error('RenameFilePath: ' + `${err.message}`),
+          );
         }
       } else {
-        reject(new Error('RenameFilePath: filePath not found'));
+        return Promise.reject(
+          new Error('RenameFilePath: filePath ' + 'does not exist'),
+        );
       }
-    });
+    } else {
+      return Promise.reject(new Error('RenameFilePath: filePath not found'));
+    }
   }
   /**
    * RestoreFileName
    * @param fileName
    * @param prefix
    */
-  public restoreFileName(fileName: string, prefix: string): Promise<void> {
-    return new Promise(async (resolve, reject) => {
-      const mFileName = `${prefix}-${fileName}`;
-      // check if file exists
-      const isFilePre: boolean = this.isFileExists(mFileName);
-      if (isFilePre) {
-        const isFile: boolean = this.isFileExists(fileName);
-        if (isFile) {
-          try {
-            await this.deleteFileName(fileName);
-            await this.renameFileName(mFileName, fileName);
-            resolve();
-          } catch (err) {
-            reject(new Error('RestoreFileName: ' + `${err.message}`));
-          }
-        } else {
-          reject(new Error(`RestoreFileName: ${fileName} ` + 'does not exist'));
+  public async restoreFileName(
+    fileName: string,
+    prefix: string,
+  ): Promise<void> {
+    const mFileName = `${prefix}-${fileName}`;
+    // check if file exists
+    const isFilePre: boolean = this.isFileExists(mFileName);
+    if (isFilePre) {
+      const isFile: boolean = this.isFileExists(fileName);
+      if (isFile) {
+        try {
+          await this.deleteFileName(fileName);
+          await this.renameFileName(mFileName, fileName);
+          return Promise.resolve();
+        } catch (err) {
+          return Promise.reject(
+            new Error('RestoreFileName: ' + `${err.message}`),
+          );
         }
       } else {
-        reject(new Error(`RestoreFileName: ${mFileName} ` + 'does not exist'));
+        return Promise.reject(
+          new Error(`RestoreFileName: ${fileName} ` + 'does not exist'),
+        );
       }
-    });
+    } else {
+      return Promise.reject(
+        new Error(`RestoreFileName: ${mFileName} ` + 'does not exist'),
+      );
+    }
   }
   /**
    * CreateFolderIfNotExists
@@ -358,9 +384,9 @@ export class UtilsFile {
    * @param directory
    */
   private _mkdirSyncRecursive(directory: string): void {
-    var path = directory.replace(/\/$/, '').split('/');
-    for (var i = 1; i <= path.length; i++) {
-      var segment = path.slice(0, i).join('/');
+    const path = directory.replace(/\/$/, '').split('/');
+    for (let i = 1; i <= path.length; i++) {
+      const segment = path.slice(0, i).join('/');
       segment.length > 0 && !this.NodeFs.existsSync(segment)
         ? this.NodeFs.mkdirSync(segment)
         : null;

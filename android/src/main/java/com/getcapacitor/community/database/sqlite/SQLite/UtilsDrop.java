@@ -35,7 +35,7 @@ public class UtilsDrop {
                 cursor.moveToNext();
             }
         } catch (Exception e) {
-            throw new Exception("Error getTablesNames failed " + e);
+            throw new Exception("GetTablesNames failed " + e);
         } finally {
             cursor.close();
             return tables;
@@ -53,7 +53,7 @@ public class UtilsDrop {
                 db.getDb().execSQL("DROP TABLE IF EXISTS " + tableName);
             }
         } catch (Exception e) {
-            String msg = "Error: dropAllTables failed: " + e;
+            String msg = "DropAllTables failed: " + e;
             Log.d(TAG, msg);
             throw new Exception(msg);
         }
@@ -92,7 +92,7 @@ public class UtilsDrop {
                 db.getDb().execSQL("DROP INDEX IF EXISTS " + indexName);
             }
         } catch (Exception e) {
-            String msg = "Error: dropAllIndexes failed: " + e;
+            String msg = "DropAllIndexes failed: " + e;
             Log.d(TAG, msg);
             throw new Exception(msg);
         }
@@ -131,7 +131,7 @@ public class UtilsDrop {
                 db.getDb().execSQL("DROP TRIGGER IF EXISTS " + triggerName);
             }
         } catch (Exception e) {
-            String msg = "Error: dropAllTriggers failed: " + e;
+            String msg = "DropAllTriggers failed: " + e;
             Log.d(TAG, msg);
             throw new Exception(msg);
         }
@@ -151,7 +151,7 @@ public class UtilsDrop {
             db.getDb().setTransactionSuccessful();
             success = true;
         } catch (Exception e) {
-            String msg = "Error: dropAll failed: " + e;
+            String msg = "DropAll failed: " + e;
             Log.d(TAG, msg);
             throw new Exception(msg);
         } finally {
@@ -179,11 +179,11 @@ public class UtilsDrop {
                 JSObject retObj = db.execute(statements.toArray(new String[0]));
                 changes = retObj.getInteger("changes");
                 if (changes < Integer.valueOf(0)) {
-                    throw new Exception("dropTempTables failed");
+                    throw new Exception("DropTempTables failed");
                 }
             }
         } catch (Exception e) {
-            String msg = "Error: dropTempTables failed: " + e;
+            String msg = "DropTempTables failed: " + e;
             Log.d(TAG, msg);
             throw new Exception(msg);
         }

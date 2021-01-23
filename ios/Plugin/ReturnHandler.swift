@@ -2,8 +2,8 @@
 //  ReturnHandler.swift
 //  Plugin
 //
-//  Created by  Quéau Jean Pierre on 28/07/2020.
-//  Copyright © 2020 Max Lynch. All rights reserved.
+//  Created by  Quéau Jean Pierre on 18/01/2021.
+//  Copyright © 2021 Max Lynch. All rights reserved.
 //
 
 import Foundation
@@ -12,17 +12,20 @@ import Capacitor
 class ReturnHandler {
     // MARK: - rResult
 
-    func rResult(call: CAPPluginCall, ret: Bool,
+    func rResult(call: CAPPluginCall, ret: Bool? = nil,
                  message: String? = nil) {
         if let intMessage = message {
-            call.success([
-                "result": ret,
-                "message": intMessage
-            ])
+            call.reject(intMessage)
+            return
         } else {
-            call.success([
-                "result": ret
-            ])
+            if let res = ret {
+                call.resolve(["result": res])
+                return
+
+            } else {
+                call.resolve()
+                return
+            }
         }
     }
 
@@ -31,14 +34,11 @@ class ReturnHandler {
     func rChanges(call: CAPPluginCall, ret: [String: Any],
                   message: String? = nil) {
         if let intMessage = message {
-            call.success([
-                "changes": ret,
-                "message": intMessage
-            ])
+            call.reject(intMessage)
+            return
         } else {
-            call.success([
-                "changes": ret
-            ])
+            call.resolve(["changes": ret])
+            return
         }
     }
 
@@ -47,14 +47,11 @@ class ReturnHandler {
     func rValues(call: CAPPluginCall, ret: [[String: Any]],
                  message: String? = nil) {
         if let intMessage = message {
-            call.success([
-                "values": ret,
-                "message": intMessage
-            ])
+            call.reject(intMessage)
+            return
         } else {
-            call.success([
-                "values": ret
-            ])
+            call.resolve(["values": ret])
+            return
         }
     }
 
@@ -63,14 +60,11 @@ class ReturnHandler {
     func rJsonSQLite(call: CAPPluginCall, ret: [String: Any],
                      message: String? = nil) {
         if let intMessage = message {
-            call.success([
-                "export": ret,
-                "message": intMessage
-            ])
+            call.reject(intMessage)
+            return
         } else {
-            call.success([
-                "export": ret
-            ])
+            call.resolve(["export": ret])
+            return
         }
     }
 
@@ -79,14 +73,11 @@ class ReturnHandler {
     func rSyncDate(call: CAPPluginCall, ret: Int64,
                    message: String? = nil) {
         if let intMessage = message {
-            call.success([
-                "syncDate": ret,
-                "message": intMessage
-            ])
+            call.reject(intMessage)
+            return
         } else {
-            call.success([
-                "syncDate": ret
-            ])
+            call.resolve(["syncDate": ret])
+            return
         }
     }
 }

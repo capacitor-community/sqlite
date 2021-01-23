@@ -2,8 +2,8 @@
 //  ExportToJson.swift
 //  Plugin
 //
-//  Created by  Quéau Jean Pierre on 18/12/2020.
-//  Copyright © 2020 Max Lynch. All rights reserved.
+//  Created by  Quéau Jean Pierre on 18/01/2021.
+//  Copyright © 2021 Max Lynch. All rights reserved.
 //
 
 import Foundation
@@ -33,7 +33,7 @@ class ExportToJson {
     // swiftlint:disable cyclomatic_complexity
     class func createExportObject(mDB: Database,
                                   data: [String: Any])
-                                            throws -> [String: Any] {
+    throws -> [String: Any] {
         var retObj: [String: Any] = [:]
         let message = "exportToJson: createExportObject miss data: "
         guard let expMode = data["expMode"] as? String else {
@@ -61,7 +61,7 @@ class ExportToJson {
         query.append("AND name NOT LIKE 'sync_table';")
         do {
             let resTables =  try UtilsSQLCipher.querySQL(
-                                    mDB: mDB, sql: query, values: [])
+                mDB: mDB, sql: query, values: [])
             if resTables.count > 0 {
                 switch expMode {
                 case "partial" :
@@ -70,7 +70,7 @@ class ExportToJson {
                                           resTables: resTables)
                 case "full":
                     tables = try ExportToJson.getTablesFull(mDB: mDB,
-                        resTables: resTables)
+                                                            resTables: resTables)
 
                 default:
                     throw ExportToJsonError.createExportObject(
@@ -84,9 +84,9 @@ class ExportToJson {
             throw ExportToJsonError.createExportObject(
                 message: "Error get tables 'Full' failed : \(message)")
         } catch ExportToJsonError.getTablesPartial(let message) {
-                   throw ExportToJsonError.createExportObject(
-                        message: "Error get tables 'Partial' failed :" +
-                        " \(message)")
+            throw ExportToJsonError.createExportObject(
+                message: "Error get tables 'Partial' failed :" +
+                    " \(message)")
         }
         if tables.count > 0 {
             retObj["database"] = dbName.dropLast(9)
@@ -105,7 +105,7 @@ class ExportToJson {
 
     class func getSchemaIndexes(mDB: Database,
                                 stmt: String, table: [String: Any] )
-                                            throws -> [String: Any] {
+    throws -> [String: Any] {
         var retTable: [String: Any] = table
         var isSchema: Bool  = false
         var isIndexes: Bool = false
@@ -152,7 +152,7 @@ class ExportToJson {
 
     class func getValues(mDB: Database, stmt: String,
                          table: [String: Any] )
-                                            throws -> [String: Any] {
+    throws -> [String: Any] {
         var retTable: [String: Any] = table
         var isValues: Bool  = false
         do {
@@ -163,8 +163,8 @@ class ExportToJson {
                 throw ExportToJsonError.getValues(message: message)
             }
             let jsonNamesTypes: JsonNamesTypes = try UtilsJson
-                    .getTableColumnNamesTypes(mDB: mDB,
-                                              tableName: tableName)
+                .getTableColumnNamesTypes(mDB: mDB,
+                                          tableName: tableName)
             let rowNames = jsonNamesTypes.names
             let rowTypes = jsonNamesTypes.types
 
@@ -192,7 +192,7 @@ class ExportToJson {
     // swiftlint:disable function_body_length
     class func getTablesFull(mDB: Database,
                              resTables: [[String: Any]])
-                                            throws -> [[String: Any]] {
+    throws -> [[String: Any]] {
         var tables: [[String: Any]] = []
         for rTable in resTables {
             guard let tableName: String = rTable["name"] as? String
@@ -210,8 +210,8 @@ class ExportToJson {
             do {
                 // create schema and indexes
                 result = try ExportToJson
-                        .getSchemaIndexes(mDB: mDB,
-                                          stmt: sqlStmt, table: table)
+                    .getSchemaIndexes(mDB: mDB,
+                                      stmt: sqlStmt, table: table)
                 guard let isSchema: Bool = result["isSchema"] as? Bool
                 else {
                     throw ExportToJsonError.getTablesFull(
@@ -232,8 +232,8 @@ class ExportToJson {
                 // create the table data
                 let query: String = "SELECT * FROM \(tableName);"
                 result = try ExportToJson
-                            .getValues(mDB: mDB, stmt: query,
-                                       table: table)
+                    .getValues(mDB: mDB, stmt: query,
+                               table: table)
                 guard let isValues: Bool = result["isValues"] as? Bool
                 else {
                     throw ExportToJsonError.getTablesFull(
@@ -250,7 +250,7 @@ class ExportToJson {
                 tableKeys.append(contentsOf: table.keys)
 
                 if tableKeys.count <= 1 ||
-                        (!isSchema && !isIndexes && !isValues) {
+                    (!isSchema && !isIndexes && !isValues) {
                     throw ExportToJsonError.getTablesFull(
                         message: "Error table \(tableName) is not a jsonTable")
                 }
@@ -275,7 +275,7 @@ class ExportToJson {
     // swiftlint:disable cyclomatic_complexity
     class func getTablesPartial(mDB: Database,
                                 resTables: [[String: Any]])
-                                        throws -> [[String: Any]] {
+    throws -> [[String: Any]] {
         var tables: [[String: Any]] = []
         var syncDate: Int64 = 0
         var modTables: [String: String] = [:]
@@ -316,8 +316,8 @@ class ExportToJson {
                         message: "Error did not find sql statement")
                 }
                 if modTablesKeys.count == 0 ||
-                        !modTablesKeys.contains(tableName) ||
-                        modTables[tableName] == "No" {
+                    !modTablesKeys.contains(tableName) ||
+                    modTables[tableName] == "No" {
                     continue
                 }
                 var table: [String: Any] = [:]
@@ -352,17 +352,17 @@ class ExportToJson {
                     : "SELECT * FROM \(tableName) WHERE last_modified" +
                     " > \(syncDate);"
                 result = try ExportToJson
-                                    .getValues(mDB: mDB, stmt: query,
-                                               table: table)
+                    .getValues(mDB: mDB, stmt: query,
+                               table: table)
                 guard let isValues: Bool = result["isValues"] as? Bool
                 else {
                     throw ExportToJsonError.getTablesFull(
                         message: "Error did not find isValues")
                 }
                 guard let retTable1: [String: Any] = result["table"]
-                                                as? [String: Any] else {
+                        as? [String: Any] else {
                     throw ExportToJsonError.getTablesFull(
-                                message: "Error did not find table")
+                        message: "Error did not find table")
                 }
                 table = retTable1
                 // check the table object validity
@@ -370,9 +370,9 @@ class ExportToJson {
                 tableKeys.append(contentsOf: table.keys)
 
                 if tableKeys.count <= 1 ||
-                        (!isSchema && !isIndexes && !isValues) {
+                    (!isSchema && !isIndexes && !isValues) {
                     throw ExportToJsonError.getTablesPartial(
-                            message: "Error table \(tableName) is not a jsonTable")
+                        message: "Error table \(tableName) is not a jsonTable")
                 }
                 tables.append(table)
             }
@@ -390,7 +390,7 @@ class ExportToJson {
 
     class func getPartialModeData(mDB: Database,
                                   tables: [[String: Any]])
-                                        throws -> [String: Any] {
+    throws -> [String: Any] {
         var retData: [String: Any] = [:]
         var syncDate: Int64 = 0
         var modTables: [String: String] = [:]
@@ -402,15 +402,15 @@ class ExportToJson {
                 message: "Error did not find a sync_date")
         }
         do {
-            // get the tables which have been updated 
+            // get the tables which have been updated
             // since last synchronization
             modTables = try ExportToJson
-                    .getTablesModified(mDB: mDB, tables: tables,
-                                       syncDate: syncDate)
+                .getTablesModified(mDB: mDB, tables: tables,
+                                   syncDate: syncDate)
             retData = ["syncDate": syncDate, "modTables": modTables]
         } catch ExportToJsonError.getTablesModified(let message) {
             throw ExportToJsonError
-                                .getPartialModeData(message: message)
+            .getPartialModeData(message: message)
         }
         return retData
     }
@@ -422,18 +422,18 @@ class ExportToJson {
         let query: String = "SELECT sync_date FROM sync_table;"
         do {
             let resSyncDate =  try UtilsSQLCipher.querySQL(
-                                mDB: mDB, sql: query, values: [])
+                mDB: mDB, sql: query, values: [])
             if resSyncDate.count > 0 {
                 guard let res: Int64 = resSyncDate[0]["sync_date"] as?
-                                        Int64 else {
+                        Int64 else {
                     throw ExportToJsonError.getSyncDate(
-                                message: "Error get sync date failed")
+                        message: "Error get sync date failed")
                 }
                 if res > 0 {ret = res}
             }
         } catch UtilsSQLCipherError.querySQL(let message) {
             throw ExportToJsonError.getSyncDate(
-                    message: "Error get sync date failed : \(message)")
+                message: "Error get sync date failed : \(message)")
         }
         return ret
     }
@@ -444,14 +444,14 @@ class ExportToJson {
     class func getTablesModified(mDB: Database,
                                  tables: [[String: Any]],
                                  syncDate: Int64)
-                                        throws -> [String: String] {
+    throws -> [String: String] {
         var retObj: [String: String] = [:]
         if tables.count > 0 {
             for ipos in 0..<tables.count {
                 var mode: String
                 // get total count of the table
                 guard let tableName: String = tables[ipos]["name"] as?
-                                                String else {
+                        String else {
                     var msg: String = "Error get modified tables "
                     msg.append("failed: No statement given")
                     throw ExportToJsonError.getTablesModified(
@@ -461,35 +461,35 @@ class ExportToJson {
                 query.append("\(tableName);")
                 do {
                     var resQuery =  try UtilsSQLCipher.querySQL(
-                                    mDB: mDB, sql: query, values: [])
+                        mDB: mDB, sql: query, values: [])
                     if resQuery.count != 1 {
                         break
                     } else {
                         guard let totalCount: Int64 =
-                            resQuery[0]["count"]  as? Int64 else {
+                                resQuery[0]["count"]  as? Int64 else {
                             var msg: String = "Error get modified "
                             msg.append("tables failed: totalCount not")
                             msg.append(" defined")
                             throw ExportToJsonError
-                                    .getTablesModified(message: msg)
+                            .getTablesModified(message: msg)
                         }
                         query = "SELECT count(*) AS count FROM \(tableName) "
                         query.append("WHERE last_modified > ")
                         query.append("\(syncDate);")
                         resQuery =  try UtilsSQLCipher.querySQL(
-                                    mDB: mDB, sql: query, values: [])
+                            mDB: mDB, sql: query, values: [])
                         if resQuery.count != 1 {
                             break
                         } else {
                             guard let totalModifiedCount: Int64 =
                                     (resQuery[0]["count"]  as?
-                                                    Int64) else {
+                                        Int64) else {
                                 var msg: String = "Error get modified "
                                 msg.append("tables failed:")
                                 msg.append("totalModifiedCount not ")
                                 msg.append("defined")
                                 throw ExportToJsonError
-                                    .getTablesModified(message: msg)
+                                .getTablesModified(message: msg)
                             }
                             if totalModifiedCount == 0 {
                                 mode = "No"
@@ -523,7 +523,7 @@ class ExportToJson {
         if let openPar = stmt.firstIndex(of: "(") {
             if let closePar = stmt.lastIndex(of: ")") {
                 let sqlStmt: String = String(
-                        stmt[stmt.index(after: openPar)..<closePar])
+                    stmt[stmt.index(after: openPar)..<closePar])
                 var isStrfTime: Bool = false
                 if sqlStmt.contains("strftime") {
                     isStrfTime = true
@@ -556,23 +556,23 @@ class ExportToJson {
                             columns["column"] =  String(row[0])
                         } else {
                             guard let oPar = rstr.firstIndex(of: "(")
-                                    else {
+                            else {
                                 var msg: String = "Create Schema "
                                 msg.append("FOREIGN KEYS no '('")
                                 throw ExportToJsonError
-                                        .createSchema(message: msg)
+                                .createSchema(message: msg)
                             }
                             guard let cPar = rstr.firstIndex(of: ")")
-                                    else {
+                            else {
                                 var msg: String = "Create Schema "
                                 msg.append("FOREIGN KEYS no ')'")
                                 throw ExportToJsonError
-                                        .createSchema(message: msg)
+                                .createSchema(message: msg)
                             }
                             row[0] = rstr[rstr.index(
                                             after: oPar)..<cPar]
                             row[1] = rstr[rstr.index(
-                                    cPar, offsetBy: 2)..<rstr.endIndex]
+                                            cPar, offsetBy: 2)..<rstr.endIndex]
                             print("row[0] \(row[0]) row[1] \(row[1]) ")
                             columns["foreignkey"] = String(row[0])
                         }
@@ -585,11 +585,11 @@ class ExportToJson {
                 }
             } else {
                 throw ExportToJsonError.createSchema(
-                            message: "No ')' in the query result")
+                    message: "No ')' in the query result")
             }
         } else {
             throw ExportToJsonError.createSchema(
-                        message: "No '(' in the query result")
+                message: "No '(' in the query result")
         }
         return retSchema
     }
@@ -599,15 +599,16 @@ class ExportToJson {
     // MARK: - ExportToJson - CreateIndexes
 
     // swiftlint:disable function_body_length
+    // swiftlint:disable cyclomatic_complexity
     class func createIndexes(mDB: Database, tableName: String)
-                                    throws -> [[String: String]] {
+    throws -> [[String: String]] {
         var retIndexes: [[String: String]] = []
         var query = "SELECT name,tbl_name,sql FROM sqlite_master WHERE "
         query.append("type = 'index' AND tbl_name = '\(tableName)' ")
         query.append("AND sql NOTNULL;")
         do {
             let resIndexes =  try UtilsSQLCipher.querySQL(
-                                mDB: mDB, sql: query, values: [])
+                mDB: mDB, sql: query, values: [])
             if resIndexes.count > 0 {
                 for ipos in 0..<resIndexes.count {
                     var row: [String: String] = [:]
@@ -615,54 +616,54 @@ class ExportToJson {
                     if keys.count == 3 {
                         guard let tblName =
                                 resIndexes[ipos]["tbl_name"] as? String
-                                        else {
+                        else {
                             var msg: String = "Error indexes tbl_name "
                             msg.append("not found")
                             throw ExportToJsonError
-                                    .createIndexes(message: msg)
+                            .createIndexes(message: msg)
                         }
                         if tblName == tableName {
                             guard let sql: String =
                                     resIndexes[ipos]["sql"] as? String
-                                        else {
+                            else {
                                 var msg: String = "Error indexes sql "
                                 msg.append("not found")
                                 throw ExportToJsonError
-                                    .createIndexes(message: msg)
+                                .createIndexes(message: msg)
                             }
                             guard let name = resIndexes[ipos]["name"]
                                     as? String else {
                                 var msg: String = "Error indexes name "
                                 msg.append("not found")
-                                 throw ExportToJsonError
-                                        .createIndexes(message: msg)
+                                throw ExportToJsonError
+                                .createIndexes(message: msg)
                             }
                             guard let oPar = sql.lastIndex(of: "(")
-                                        else {
+                            else {
                                 var msg: String = "Create Indexes no "
                                 msg.append("'('")
                                 throw ExportToJsonError
-                                        .createIndexes(message: msg)
+                                .createIndexes(message: msg)
                             }
                             guard let cPar = sql.lastIndex(of: ")")
-                                        else {
+                            else {
                                 var msg: String = "Create Indexes no "
                                 msg.append("')'")
                                 throw ExportToJsonError
-                                        .createIndexes(message: msg)
+                                .createIndexes(message: msg)
                             }
                             if sql.contains("UNIQUE") {
                                 row["mode"] = "UNIQUE"
                             }
                             row["value"] = String(sql[sql.index(
-                                                after: oPar)..<cPar])
+                                                        after: oPar)..<cPar])
                             row["name"] = name
                             retIndexes.append(row)
                         } else {
                             var msg: String = "Error indexes table name"
                             msg.append(" doesn't match")
                             throw ExportToJsonError
-                                    .createIndexes(message: msg)
+                            .createIndexes(message: msg)
                         }
                     } else {
                         throw ExportToJsonError.createIndexes(
@@ -677,6 +678,7 @@ class ExportToJson {
 
         return retIndexes
     }
+    // swiftlint:enable cyclomatic_complexity
     // swiftlint:enable function_body_length
 
     // MARK: - ExportToJson - CreateValues
@@ -688,7 +690,7 @@ class ExportToJson {
         var retValues: [[Any]] = []
         do {
             let resValues =  try UtilsSQLCipher.querySQL(
-                                mDB: mDB, sql: query, values: [])
+                mDB: mDB, sql: query, values: [])
             if resValues.count > 0 {
                 for ipos in 0..<resValues.count {
                     var row: [Any] = []
@@ -697,7 +699,7 @@ class ExportToJson {
                             values: resValues, pos: ipos, names: names,
                             types: types)
                     } catch ExportToJsonError
-                                        .createRowValues(let message) {
+                                .createRowValues(let message) {
                         var msg: String = "Error create row values "
                         msg.append("failed : \(message)")
                         throw ExportToJsonError.createValues(
@@ -724,14 +726,14 @@ class ExportToJson {
             if types[jpos] == "INTEGER" {
                 if values[pos][names[jpos]] is String {
                     guard let val = values[pos][names[jpos]] as? String
-                                else {
+                    else {
                         throw ExportToJsonError.createValues(
                             message: "Error value must be String")
                     }
                     row.append(val)
                 } else {
                     guard let val = values[pos][names[jpos]] as? Int64
-                                else {
+                    else {
                         throw ExportToJsonError.createValues(
                             message: "Error value must be String")
                     }
@@ -740,14 +742,14 @@ class ExportToJson {
             } else if types[jpos] == "REAL" {
                 if values[pos][names[jpos]] is String {
                     guard let val = values[pos][names[jpos]] as? String
-                                else {
+                    else {
                         throw ExportToJsonError.createValues(
                             message: "Error value must be String")
                     }
                     row.append(val)
                 } else {
                     guard let val = values[pos][names[jpos]] as? Double
-                                else {
+                    else {
                         throw ExportToJsonError.createValues(
                             message: "Error value must be Double")
                     }
@@ -755,7 +757,7 @@ class ExportToJson {
                 }
             } else {
                 guard let val = values[pos][names[jpos]] as? String
-                            else {
+                else {
                     throw ExportToJsonError.createValues(
                         message: "Error value must be String")
                 }
