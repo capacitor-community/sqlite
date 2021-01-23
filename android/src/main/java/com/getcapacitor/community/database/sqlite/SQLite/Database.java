@@ -28,6 +28,7 @@ import java.util.Dictionary;
 import java.util.Hashtable;
 import net.sqlcipher.Cursor;
 import net.sqlcipher.database.SQLiteDatabase;
+import net.sqlcipher.database.SQLiteException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -109,23 +110,27 @@ public class Database {
      * Open method
      * @return open status
      */
-    public boolean open() {
+    public void open() throws Exception {
+        int curVersion;
+
         String password = _encrypted && (_mode.equals("secret") || _mode.equals("encryption")) ? _globVar.secret : "";
         if (_mode.equals("newsecret")) {
             try {
                 _uCipher.changePassword(_context, _file, _globVar.secret, _globVar.newsecret);
                 password = _globVar.newsecret;
             } catch (Exception e) {
-                Log.v(TAG, "Error in open database change password" + e.getMessage());
-                return false;
+                String msg = "Failed in change password" + e.getMessage();
+                Log.v(TAG, msg);
+                throw new Exception(msg);
             }
         }
         if (_mode.equals("encryption")) {
             try {
                 _uCipher.encrypt(_context, _file, SQLiteDatabase.getBytes(password.toCharArray()));
             } catch (Exception e) {
-                Log.v(TAG, "Error in open database encryption " + e.getMessage());
-                return false;
+                String msg = "Failed in encryption " + e.getMessage();
+                Log.v(TAG, msg);
+                throw new Exception(msg);
             }
         }
 
@@ -136,49 +141,63 @@ public class Database {
                 try {
                     _db.setForeignKeyConstraintsEnabled(true);
                 } catch (IllegalStateException e) {
-                    String msg = "Error in open database ";
-                    msg += "setForeignKeyConstraintsEnabled failed " + e;
+                    String msg = "Failed in setForeignKeyConstraintsEnabled " + e.getMessage();
                     Log.v(TAG, msg);
                     close();
                     _db = null;
-                    return false;
+                    throw new Exception(msg);
                 }
-                int curVersion = _db.getVersion();
-                if (curVersion == 0) {
-                    _db.setVersion(1);
+                try {
                     curVersion = _db.getVersion();
+                    if (curVersion == 0) {
+                        _db.setVersion(1);
+                        curVersion = _db.getVersion();
+                    }
+                } catch (IllegalStateException e) {
+                    String msg = "Failed in get/setVersion " + e.getMessage();
+                    Log.v(TAG, msg);
+                    close();
+                    _db = null;
+                    throw new Exception(msg);
+                } catch (SQLiteException e) {
+                    String msg = "Failed in setVersion " + e.getMessage();
+                    Log.v(TAG, msg);
+                    close();
+                    _db = null;
+                    throw new Exception(msg);
                 }
                 if (_version > curVersion) {
                     try {
                         _uUpg.onUpgrade(this, _context, _dbName, _vUpgObject, curVersion, _version);
                         boolean ret = _uFile.deleteBackupDB(_context, _dbName);
                         if (!ret) {
-                            Log.v(TAG, "Error: deleteBackupDB backup-" + _dbName + " failed ");
+                            String msg = "Failed in deleteBackupDB backup-\" + _dbName";
+                            Log.v(TAG, msg);
                             close();
                             _db = null;
-                            return false;
+                            throw new Exception(msg);
                         }
                     } catch (Exception e) {
                         // restore DB
                         boolean ret = _uFile.restoreDatabase(_context, _dbName);
                         String msg = e.getMessage();
-                        if (!ret) msg += " restoreDatabase " + _dbName + " failed ";
+                        if (!ret) msg += "Failed in restoreDatabase " + _dbName;
                         Log.v(TAG, msg);
                         close();
                         _db = null;
-                        return false;
+                        throw new Exception(msg);
                     }
                 }
                 _isOpen = true;
-                return true;
+                return;
             } else {
                 _isOpen = false;
                 _db = null;
-                return false;
+                throw new Exception("Database not opened");
             }
         } else {
             _isOpen = false;
-            return false;
+            throw new Exception("No database returned");
         }
     }
 
@@ -187,20 +206,19 @@ public class Database {
      * @return close status
      */
 
-    public boolean close() {
-        Boolean ret = false;
+    public void close() throws Exception {
         if (_db.isOpen()) {
             try {
                 _db.close();
                 _isOpen = false;
-                ret = true;
+                return;
             } catch (Exception e) {
-                Log.v(TAG, "Error Database close failed " + e.getMessage());
-            } finally {
-                return ret;
+                String msg = "Failed in database close" + e.getMessage();
+                Log.v(TAG, msg);
+                throw new Exception(msg);
             }
         } else {
-            return ret;
+            throw new Exception("Database not opened");
         }
     }
 
@@ -217,8 +235,6 @@ public class Database {
      * @return the existence of the database on folder
      */
     public boolean isDBExists() {
-        Log.v(TAG, "&&& _file.exists() " + _file.exists());
-
         if (_file.exists()) {
             return true;
         } else {
@@ -232,13 +248,12 @@ public class Database {
      * @param statements Array of Strings
      * @return
      */
-    public JSObject execute(String[] statements) {
+    public JSObject execute(String[] statements) throws Exception {
         JSObject retObj = new JSObject();
         Integer changes = Integer.valueOf(-1);
         try {
             if (_db != null && _db.isOpen()) {
                 Integer initChanges = _uSqlite.dbChanges(_db);
-                Log.v(TAG, "Execute InitChanges " + initChanges);
                 _db.beginTransaction();
                 for (String cmd : statements) {
                     if (!cmd.endsWith(";")) cmd += ";";
@@ -246,20 +261,18 @@ public class Database {
                     _db.execSQL(cmd);
                 }
                 changes = _uSqlite.dbChanges(_db) - initChanges;
-                Log.v(TAG, "Execute Changes " + changes);
-
                 if (changes != -1) {
                     _db.setTransactionSuccessful();
                     retObj.put("changes", changes);
                 }
+                return retObj;
             } else {
                 throw new Exception("Database not opened");
             }
         } catch (Exception e) {
-            retObj.put("changes", changes);
+            throw new Exception(e.getMessage());
         } finally {
             if (_db != null && _db.inTransaction()) _db.endTransaction();
-            return retObj;
         }
     }
 
@@ -269,7 +282,7 @@ public class Database {
      * @param set JSArray of statements
      * @return
      */
-    public JSObject executeSet(JSArray set) {
+    public JSObject executeSet(JSArray set) throws Exception {
         JSObject retObj = new JSObject();
         Long lastId = Long.valueOf(-1);
         Integer changes = Integer.valueOf(-1);
@@ -308,6 +321,7 @@ public class Database {
                     Log.v(TAG, "Execute Changes " + changes);
                     retObj.put("changes", changes);
                     retObj.put("lastId", lastId);
+                    return retObj;
                 } else {
                     throw new Exception("lastId equals -1");
                 }
@@ -315,12 +329,9 @@ public class Database {
                 throw new Exception("Database not opened");
             }
         } catch (Exception e) {
-            Log.v(TAG, "Error executeSet: " + e.getLocalizedMessage());
-            retObj.put("changes", Integer.valueOf(-1));
-            retObj.put("lastId", Long.valueOf(-1));
+            throw new Exception(e.getMessage());
         } finally {
             if (_db != null && _db.inTransaction()) _db.endTransaction();
-            return retObj;
         }
     }
 
@@ -339,9 +350,10 @@ public class Database {
      * @param values Array of Strings to bind to the statement
      * @return
      */
-    public JSObject runSQL(String statement, ArrayList<Object> values) {
+    public JSObject runSQL(String statement, ArrayList<Object> values) throws Exception {
         JSObject retObj = new JSObject();
         long lastId = Long.valueOf(-1);
+        int changes = Integer.valueOf(-1);
         try {
             if (_db != null && _db.isOpen() && statement.length() > 0) {
                 Integer initChanges = _uSqlite.dbChanges(_db);
@@ -349,19 +361,18 @@ public class Database {
                 _db.beginTransaction();
                 lastId = prepareSQL(statement, values);
                 if (lastId != -1) _db.setTransactionSuccessful();
-                Integer changes = _uSqlite.dbChanges(_db) - initChanges;
+                changes = _uSqlite.dbChanges(_db) - initChanges;
                 Log.v(TAG, "runSQL Changes " + changes);
                 retObj.put("changes", changes);
                 retObj.put("lastId", lastId);
+                return retObj;
             } else {
                 throw new Exception("Database not opened");
             }
         } catch (Exception e) {
-            retObj.put("changes", Integer.valueOf(-1));
-            retObj.put("message", "Error: runSQL failed: " + e.getLocalizedMessage());
+            throw new Exception(e.getMessage());
         } finally {
             if (_db != null && _db.inTransaction()) _db.endTransaction();
-            return retObj;
         }
     }
 
@@ -371,11 +382,16 @@ public class Database {
      * @param values
      * @return
      */
-    public long prepareSQL(String statement, ArrayList<Object> values) {
+    public long prepareSQL(String statement, ArrayList<Object> values) throws Exception {
         String stmtType = statement.substring(0, 6).toUpperCase();
-
-        SupportSQLiteStatement stmt = _db.compileStatement(statement);
+        SupportSQLiteStatement stmt;
         try {
+            stmt = _db.compileStatement(statement);
+        } catch (IllegalStateException e) {
+            throw new Exception(e.getMessage());
+        }
+        try {
+            stmt = _db.compileStatement(statement);
             if (values != null && values.size() > 0) {
                 SimpleSQLiteQuery.bind(stmt, values.toArray(new Object[0]));
             }
@@ -384,13 +400,14 @@ public class Database {
             } else {
                 return Long.valueOf(stmt.executeUpdateDelete());
             }
+        } catch (IllegalStateException e) {
+            throw new Exception(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            throw new Exception(e.getMessage());
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
         } finally {
-            try {
-                stmt.close();
-            } catch (Exception e) {
-                Log.v(TAG, "Exception attempting to close statement", e);
-                return Long.valueOf(-1);
-            }
+            stmt.close();
         }
     }
 
@@ -401,7 +418,7 @@ public class Database {
      * @param values
      * @return
      */
-    public JSArray selectSQL(String statement, ArrayList<String> values) {
+    public JSArray selectSQL(String statement, ArrayList<String> values) throws Exception {
         JSArray retArray = new JSArray();
         Cursor c = null;
         if (_db == null) {
@@ -434,11 +451,11 @@ public class Database {
                 }
                 retArray.put(row);
             }
+            return retArray;
         } catch (Exception e) {
-            Log.v(TAG, "Error in selectSQL cursor " + e.getMessage());
+            throw new Exception("in selectSQL cursor " + e.getMessage());
         } finally {
             if (c != null) c.close();
-            return retArray;
         }
     }
 
@@ -448,26 +465,29 @@ public class Database {
      * @param dbName
      * @return
      */
-    public boolean deleteDB(String dbName) {
-        // open the database
-        boolean ret;
-        if (_file.exists() && !_isOpen) {
-            ret = open();
-            if (!ret) return ret;
+    public void deleteDB(String dbName) throws Exception {
+        try {
+            // open the database
+            if (_file.exists() && !_isOpen) {
+                open();
+            }
+            // close the db
+            if (_isOpen) {
+                close();
+            }
+            // delete the database
+            if (_file.exists()) {
+                Boolean ret = _uFile.deleteDatabase(_context, dbName);
+                if (ret) {
+                    _isOpen = false;
+                } else {
+                    throw new Exception("Failed in deleteDB ");
+                }
+            }
+            return;
+        } catch (Exception e) {
+            throw new Exception("Failed in deleteDB " + e.getMessage());
         }
-        // close the db
-        if (_isOpen) {
-            ret = close();
-            if (!ret) return ret;
-        }
-
-        // delete the database
-        if (_file.exists()) {
-            ret = _uFile.deleteDatabase(_context, dbName);
-            if (ret) _isOpen = false;
-            return ret;
-        }
-        return true;
     }
 
     /**
@@ -475,7 +495,7 @@ public class Database {
      * create the synchronization table
      * @return
      */
-    public JSObject createSyncTable() {
+    public JSObject createSyncTable() throws Exception {
         // Open the database for writing
         JSObject retObj = new JSObject();
         // check if the table has already been created
@@ -487,11 +507,16 @@ public class Database {
                 "CREATE TABLE IF NOT EXISTS sync_table (" + "id INTEGER PRIMARY KEY NOT NULL," + "sync_date INTEGER);",
                 "INSERT INTO sync_table (sync_date) VALUES ('" + syncTime + "');"
             };
-            retObj = execute(statements);
+            try {
+                retObj = execute(statements);
+                return retObj;
+            } catch (Exception e) {
+                throw new Exception(e.getMessage());
+            }
         } else {
             retObj.put("changes", Integer.valueOf(0));
+            return retObj;
         }
-        return retObj;
     }
 
     /**
@@ -500,8 +525,7 @@ public class Database {
      * @param syncDate
      * @return
      */
-    public boolean setSyncDate(String syncDate) {
-        boolean ret = false;
+    public void setSyncDate(String syncDate) throws Exception {
         JSObject retObj = new JSObject();
         try {
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
@@ -509,22 +533,23 @@ public class Database {
             long syncTime = date.getTime() / 1000L;
             String[] statements = { "UPDATE sync_table SET sync_date = " + syncTime + " WHERE id = 1;" };
             retObj = execute(statements);
-            if (retObj.getInteger("changes") != Integer.valueOf(-1)) ret = true;
+            if (retObj.getInteger("changes") != Integer.valueOf(-1)) {
+                return;
+            } else {
+                throw new Exception("changes < 0");
+            }
         } catch (Exception e) {
-            Log.e(TAG, "Error: setSyncDate " + e.getMessage());
-        } finally {
-            return ret;
+            throw new Exception(e.getMessage());
         }
     }
 
-    public Long getSyncDate() {
+    public Long getSyncDate() throws Exception {
         long syncDate = 0;
         try {
             syncDate = toJson.getSyncDate(this);
-        } catch (Exception e) {
-            Log.e(TAG, "Error: getSyncDate " + e.getMessage());
-        } finally {
             return syncDate;
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
         }
     }
 
@@ -533,7 +558,7 @@ public class Database {
      * @param jsonSQL
      * @return
      */
-    public JSObject importFromJson(JsonSQLite jsonSQL) {
+    public JSObject importFromJson(JsonSQLite jsonSQL) throws Exception {
         Log.d(TAG, "importFromJson:  ");
         JSObject retObj = new JSObject();
         int changes = Integer.valueOf(-1);
@@ -543,11 +568,10 @@ public class Database {
             if (changes != -1) {
                 changes = fromJson.createDatabaseData(this, jsonSQL);
             }
-        } catch (Exception e) {
-            Log.e(TAG, "Error: importFromJson " + e.getMessage());
-        } finally {
             retObj.put("changes", changes);
             return retObj;
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
         }
     }
 

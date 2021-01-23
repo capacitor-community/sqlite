@@ -2,13 +2,11 @@
 //  Database.swift
 //  Plugin
 //
-//  Created by  Quéau Jean Pierre on 26/11/2020.
-//  Copyright © 2020 Max Lynch. All rights reserved.
+//  Created by  Quéau Jean Pierre on 18/01/2021.
+//  Copyright © 2021 Max Lynch. All rights reserved.
 //
 
 import Foundation
-
-//1234567890123456789012345678901234567890123456789012345678901234567890
 enum DatabaseError: Error {
     case filePath(message: String)
     case open(message: String)
@@ -50,10 +48,10 @@ class Database {
         self.vUpgDict = vUpgDict
         do {
             self.path = try UtilsFile.getFilePath(
-                                            fileName: databaseName)
+                fileName: databaseName)
         } catch UtilsFileError.getFilePathFailed {
             throw DatabaseError.filePath(
-                        message: "Could not generate the file path")
+                message: "Could not generate the file path")
         }
         print("database path \(self.path)")
     }
@@ -71,7 +69,7 @@ class Database {
     func open () throws {
         var password: String = ""
         if encrypted && (mode == "secret"
-                        || mode == "encryption") {
+                            || mode == "encryption") {
             password = globalData.secret
         }
         if mode == "newsecret" {
@@ -112,9 +110,9 @@ class Database {
             // PRAGMA foreign_keys = ON;
             try UtilsSQLCipher
                 .setForeignKeyConstraintsEnabled(mDB: self,
-                                                toggle: true)
+                                                 toggle: true)
             var curVersion: Int = try UtilsSQLCipher
-                                        .getVersion(mDB: self)
+                .getVersion(mDB: self)
             if curVersion == 0 {
                 try UtilsSQLCipher.setVersion(mDB: self, version: 1)
                 curVersion = try UtilsSQLCipher.getVersion(mDB: self)
@@ -202,10 +200,10 @@ class Database {
             try UtilsSQLCipher.execute(mDB: self, sql: sql)
             changes = UtilsSQLCipher.dbChanges(mDB: mDb) - initChanges
         } catch UtilsSQLCipherError
-                                .execute(let message) {
+                    .execute(let message) {
             do {
                 try UtilsSQLCipher
-                        .rollbackTransaction(mDB: self)
+                    .rollbackTransaction(mDB: self)
             } catch UtilsSQLCipherError
                         .rollbackTransaction(let message) {
                 msg.append(" rollback: \(message)")
@@ -220,7 +218,7 @@ class Database {
             } catch UtilsSQLCipherError.commitTransaction(let msg) {
                 throw DatabaseError.executeSQL(
                     message: "Failed in executeSQL : \(msg)" )
-           }
+            }
         }
         return changes
     }
@@ -247,15 +245,15 @@ class Database {
             lastId = try UtilsSQLCipher
                 .executeSet(mDB: self, set: set)
             changes = UtilsSQLCipher
-                        .dbChanges(mDB: mDb) - initChanges
+                .dbChanges(mDB: mDb) - initChanges
             changesDict["changes"] = Int64(changes)
             changesDict["lastId"] = lastId
 
         } catch UtilsSQLCipherError
-                            .executeSet(let message) {
+                    .executeSet(let message) {
             do {
                 try UtilsSQLCipher
-                        .rollbackTransaction(mDB: self)
+                    .rollbackTransaction(mDB: self)
             } catch UtilsSQLCipherError
                         .rollbackTransaction(let message) {
                 msg.append(" rollback: \(message)")
@@ -270,8 +268,8 @@ class Database {
                 try UtilsSQLCipher.commitTransaction(mDB: self)
             } catch UtilsSQLCipherError.commitTransaction(let msg) {
                 throw DatabaseError.execSet(
-                                        message: msg )
-           }
+                    message: msg )
+            }
         }
         return changesDict
     }
@@ -297,17 +295,17 @@ class Database {
             lastId = try UtilsSQLCipher
                 .prepareSQL(mDB: self, sql: sql, values: values)
         } catch UtilsSQLCipherError
-                                .prepareSQL(let message) {
+                    .prepareSQL(let message) {
             do {
                 try UtilsSQLCipher
-                        .rollbackTransaction(mDB: self)
+                    .rollbackTransaction(mDB: self)
             } catch UtilsSQLCipherError
                         .rollbackTransaction(let message) {
                 msg.append(" rollback: \(message)")
             }
             msg.append(" \(message)")
             print("\(msg)")
-            lastId = -1
+            throw DatabaseError.runSQL(message: msg)
         }
 
         if lastId != -1 {
@@ -315,21 +313,21 @@ class Database {
             do {
                 try UtilsSQLCipher.commitTransaction(mDB: self)
                 changes = UtilsSQLCipher.dbChanges(mDB: mDb) -
-                                                   initChanges
+                    initChanges
             } catch UtilsSQLCipherError.commitTransaction(let message) {
                 msg.append(" \(message)")
                 throw DatabaseError.runSQL(message: msg )
-           }
+            }
         }
         let result: [String: Int64] = ["changes": Int64(changes),
-                                     "lastId": lastId]
+                                       "lastId": lastId]
         return result
     }
 
     // MARK: - SelectSQL
 
     func selectSQL(sql: String, values: [String])
-                                            throws -> [[String: Any]] {
+    throws -> [[String: Any]] {
         var result: [[String: Any]] = []
         do {
             result = try UtilsSQLCipher.querySQL(mDB: self, sql: sql,
@@ -345,7 +343,7 @@ class Database {
 
     func deleteDB(databaseName: String) throws -> Bool {
         let isFileExists: Bool = UtilsFile
-                                .isFileExist(fileName: databaseName)
+            .isFileExist(fileName: databaseName)
         if isFileExists && !isOpen {
             // open the database
             do {
@@ -450,9 +448,9 @@ class Database {
                 "dbName": dbName, "encrypted": self.encrypted,
                 "expMode": expMode, "version": dbVersion]
             retObj = try ExportToJson
-                            .createExportObject(mDB: self, data: data)
+                .createExportObject(mDB: self, data: data)
         } catch ExportToJsonError.createExportObject(let message) {
-           throw DatabaseError.exportToJson(message: message)
+            throw DatabaseError.exportToJson(message: message)
         }
         return retObj
     }
@@ -460,19 +458,19 @@ class Database {
     // MARK: - ImportFromJson
 
     func importFromJson(jsonSQLite: JsonSQLite)
-                                            throws -> [String: Int] {
+    throws -> [String: Int] {
         var changes: Int = -1
 
         // Create the Database Schema
         do {
             changes = try ImportFromJson
-                        .createDatabaseSchema(mDB: self,
-                                              jsonSQLite: jsonSQLite)
+                .createDatabaseSchema(mDB: self,
+                                      jsonSQLite: jsonSQLite)
             if changes != -1 {
                 // Create the Database Data
                 changes = try ImportFromJson
-                        .createDatabaseData(mDB: self,
-                                            jsonSQLite: jsonSQLite)
+                    .createDatabaseData(mDB: self,
+                                        jsonSQLite: jsonSQLite)
             }
             return ["changes": changes]
         } catch ImportFromJsonError.createDatabaseSchema(let message) {

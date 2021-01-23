@@ -31,7 +31,7 @@ public class ExportToJson {
         try {
             JSArray resTables = db.selectSQL(stmt, new ArrayList<String>());
             if (resTables.length() == 0) {
-                throw new Exception("Error: createExportObject " + "table's names failed");
+                throw new Exception("CreateExportObject: table's names failed");
             } else {
                 switch (sqlObj.getMode()) {
                     case "partial":
@@ -41,11 +41,11 @@ public class ExportToJson {
                         tables = getTablesFull(db, resTables);
                         break;
                     default:
-                        throw new Exception("Error: createExportObject " + "expMode " + sqlObj.getMode() + " not defined");
+                        throw new Exception("CreateExportObject: expMode " + sqlObj.getMode() + " not defined");
                 }
             }
         } catch (Exception e) {
-            throw new Exception("Error: createExportObject " + e.getMessage());
+            throw new Exception("CreateExportObject: " + e.getMessage());
         } finally {
             if (tables.size() > 0) {
                 retObj.setDatabase(sqlObj.getDatabase());
@@ -76,18 +76,18 @@ public class ExportToJson {
                 if (lTables.get(i).has("name")) {
                     tableName = lTables.get(i).getString("name");
                 } else {
-                    throw new Exception("getTablesFull: no name");
+                    throw new Exception("GetTablesFull: no name");
                 }
                 if (lTables.get(i).has("sql")) {
                     sqlStmt = lTables.get(i).getString("sql");
                 } else {
-                    throw new Exception("getTablesFull: no sql");
+                    throw new Exception("GetTablesFull: no sql");
                 }
                 JsonTable table = new JsonTable();
                 // create Table's Schema
                 ArrayList<JsonColumn> schema = getSchema(sqlStmt);
                 if (schema.size() == 0) {
-                    throw new Exception("Error: getTablesFull no Schema returned");
+                    throw new Exception("GetTablesFull: no Schema returned");
                 }
                 // check schema validity
                 uJson.checkSchemaValidity(schema);
@@ -106,7 +106,7 @@ public class ExportToJson {
                 if (schema.size() != 0) {
                     table.setSchema(schema);
                 } else {
-                    throw new Exception("Error: getTablesFull must contain schema");
+                    throw new Exception("GetTablesFull: must contain schema");
                 }
                 if (indexes.size() != 0) {
                     table.setIndexes(indexes);
@@ -115,12 +115,12 @@ public class ExportToJson {
                     table.setValues(values);
                 }
                 if (table.getKeys().size() <= 1) {
-                    throw new Exception("Error: getTablesFull " + "table " + tableName + " is not a jsonTable");
+                    throw new Exception("GetTablesFull: table " + tableName + " is not a jsonTable");
                 }
                 tables.add(table);
             }
         } catch (Exception e) {
-            throw new Exception("Error: getTablesFull " + e.getMessage());
+            throw new Exception("GetTablesFull: " + e.getMessage());
         } finally {
             return tables;
         }
@@ -179,7 +179,7 @@ public class ExportToJson {
      * @throws Exception
      */
     private ArrayList<JsonIndex> getIndexes(Database mDb, String tableName) throws Exception {
-        String msg = "Error: getIndexes ";
+        String msg = "GetIndexes: ";
         ArrayList<JsonIndex> indexes = new ArrayList<>();
         String stmt = "SELECT name,tbl_name,sql FROM ";
         stmt += "sqlite_master WHERE ";
@@ -230,12 +230,12 @@ public class ExportToJson {
             if (tableNamesTypes.has("names")) {
                 rowNames = (ArrayList<String>) tableNamesTypes.get("names");
             } else {
-                throw new Exception("Error: getValues Table " + tableName + " no names");
+                throw new Exception("GetValues: Table " + tableName + " no names");
             }
             if (tableNamesTypes.has("types")) {
                 rowTypes = (ArrayList<String>) tableNamesTypes.get("types");
             } else {
-                throw new Exception("Error: getValues Table " + tableName + " no types");
+                throw new Exception("GetValues: Table " + tableName + " no types");
             }
             JSArray retValues = mDb.selectSQL(query, new ArrayList<String>());
             List<JSObject> lValues = retValues.toList();
@@ -281,7 +281,7 @@ public class ExportToJson {
                 }
             }
         } catch (Exception e) {
-            throw new Exception("Error: getValues " + e.getMessage());
+            throw new Exception("GetValues: " + e.getMessage());
         } finally {
             return values;
         }
@@ -306,12 +306,12 @@ public class ExportToJson {
             if (partialModeData.has("syncDate")) {
                 syncDate = partialModeData.getLong("syncDate");
             } else {
-                throw new Exception("getTablesPartial: no syncDate");
+                throw new Exception("GetTablesPartial: no syncDate");
             }
             if (partialModeData.has("modTables")) {
                 modTables = partialModeData.getJSObject("modTables");
             } else {
-                throw new Exception("getTablesPartial: no modTables");
+                throw new Exception("GetTablesPartial: no modTables");
             }
             modTablesKeys = uJson.getJSObjectKeys(modTables);
 
@@ -323,12 +323,12 @@ public class ExportToJson {
                 if (lTables.get(i).has("name")) {
                     tableName = lTables.get(i).getString("name");
                 } else {
-                    throw new Exception("getTablesPartial: no name");
+                    throw new Exception("GetTablesPartial: no name");
                 }
                 if (lTables.get(i).has("sql")) {
                     sqlStmt = lTables.get(i).getString("sql");
                 } else {
-                    throw new Exception("getTablesPartial: no sql");
+                    throw new Exception("GetTablesPartial: no sql");
                 }
                 if (modTablesKeys.size() == 0 || modTablesKeys.indexOf(tableName) == -1 || modTables.getString(tableName).equals("No")) {
                     continue;
@@ -374,12 +374,12 @@ public class ExportToJson {
                     table.setValues(values);
                 }
                 if (table.getKeys().size() <= 1) {
-                    throw new Exception("Error: getTablesPartial " + "table " + tableName + " is not a jsonTable");
+                    throw new Exception("GetTablesPartial: table " + tableName + " is not a jsonTable");
                 }
                 tables.add(table);
             }
         } catch (Exception e) {
-            throw new Exception("Error: getTablesPartial " + e.getMessage());
+            throw new Exception("GetTablesPartial: " + e.getMessage());
         } finally {
             return tables;
         }
@@ -401,7 +401,7 @@ public class ExportToJson {
             // get the sync date if expMode = "partial"
             syncDate = getSyncDate(mDb);
             if (syncDate == -1) {
-                throw new Exception("Error: getPartialModeData " + "did not find a sync_date");
+                throw new Exception("GetPartialModeData: did not find a sync_date");
             }
             // get the tables which have been updated
             // since last synchronization
@@ -409,7 +409,7 @@ public class ExportToJson {
             retData.put("syncDate", syncDate);
             retData.put("modTables", modTables);
         } catch (Exception e) {
-            throw new Exception("Error: getPartialModeData " + e.getMessage());
+            throw new Exception("GetPartialModeData: " + e.getMessage());
         } finally {
             return retData;
         }
@@ -433,7 +433,7 @@ public class ExportToJson {
                 if (syncDate > 0) ret = syncDate;
             }
         } catch (Exception e) {
-            throw new Exception("Error: getSyncDate " + e.getMessage());
+            throw new Exception("GetSyncDate: " + e.getMessage());
         } finally {
             return ret;
         }
@@ -457,7 +457,7 @@ public class ExportToJson {
                 if (lTables.get(i).has("name")) {
                     tableName = lTables.get(i).getString("name");
                 } else {
-                    throw new Exception("getTablesModified: no name");
+                    throw new Exception("GetTablesModified: no name");
                 }
                 String stmt = "SELECT count(*) AS count FROM " + tableName + ";";
                 JSArray retQuery = mDb.selectSQL(stmt, new ArrayList<String>());
@@ -480,7 +480,7 @@ public class ExportToJson {
                 retObj.put(tableName, mode);
             }
         } catch (Exception e) {
-            throw new Exception("Error: getTablesModified " + e.getMessage());
+            throw new Exception("GetTablesModified: " + e.getMessage());
         } finally {
             return retObj;
         }

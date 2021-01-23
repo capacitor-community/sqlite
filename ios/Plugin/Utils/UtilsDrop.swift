@@ -1,8 +1,9 @@
 //
 //  UtilsDrop.swift
-//  CapacitorCommunitySqlite
+//  Plugin
 //
-//  Created by  Quéau Jean Pierre on 12/10/2020.
+//  Created by  Quéau Jean Pierre on 18/01/2021.
+//  Copyright © 2021 Max Lynch. All rights reserved.
 //
 
 import Foundation
@@ -46,7 +47,7 @@ class UtilsDrop {
     // MARK: - dropTables
 
     class func dropTables(mDB: Database)
-                    throws -> Int {
+    throws -> Int {
         var changes: Int = 0
         do {
             let tables: [String] = try getTablesNames(mDB: mDB)
@@ -87,7 +88,7 @@ class UtilsDrop {
             return indexes
         } catch DatabaseError.selectSQL(let message) {
             throw UtilsDropError
-                            .getIndexesNamesFailed(message: message)
+            .getIndexesNamesFailed(message: message)
         }
     }
 
@@ -133,10 +134,10 @@ class UtilsDrop {
             return triggers
         } catch DatabaseError.selectSQL(let message) {
             throw UtilsDropError
-                            .getTriggersNamesFailed(message: message)
+            .getTriggersNamesFailed(message: message)
         }
     }
-//1234567890123456789012345678901234567890123456789012345678901234567890
+    //1234567890123456789012345678901234567890123456789012345678901234567890
     // MARK: - dropTriggers
 
     class func dropTriggers(mDB: Database) throws -> Int {
@@ -181,7 +182,7 @@ class UtilsDrop {
                 _ = try UtilsSQLCipher.prepareSQL(mDB: mDB,
                                                   sql: "VACUUM;", values: [])
                 changes = UtilsSQLCipher.dbChanges(mDB: mDB.mDb) -
-                                                            initChanges
+                    initChanges
             }
 
         } catch UtilsDropError.dropTablesFailed(let message) {
@@ -200,7 +201,7 @@ class UtilsDrop {
 
     class func dropTempTables(mDB: Database,
                               alterTables: [String: [String]])
-                                                                throws {
+    throws {
         var changes: Int = -1
         var joined: String = ""
         do {
@@ -211,7 +212,7 @@ class UtilsDrop {
                 statements.append(stmt)
             }
             if statements.count > 0 {
-                    joined = statements.joined(separator: "\n")
+                joined = statements.joined(separator: "\n")
                 changes = try mDB.executeSQL(sql: joined)
             }
             if changes < 0 {

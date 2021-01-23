@@ -2,8 +2,8 @@
 //  ImportFromJson.swift
 //  Plugin
 //
-//  Created by  Quéau Jean Pierre on 18/12/2020.
-//  Copyright © 2020 Max Lynch. All rights reserved.
+//  Created by  Quéau Jean Pierre on 18/01/2021.
+//  Copyright © 2021 Max Lynch. All rights reserved.
 //
 
 import Foundation
@@ -25,7 +25,7 @@ class ImportFromJson {
 
     class func createDatabaseSchema(mDB: Database,
                                     jsonSQLite: JsonSQLite)
-                                                    throws -> Int {
+    throws -> Int {
         let msg = "importFromJson: "
         var changes: Int = -1
         let version: Int = jsonSQLite.version
@@ -33,30 +33,30 @@ class ImportFromJson {
         do {
             // Set PRAGMAS
             try UtilsSQLCipher.setVersion(mDB: mDB,
-                                              version: version)
+                                          version: version)
             try UtilsSQLCipher
-                    .setForeignKeyConstraintsEnabled(mDB: mDB,
-                                                     toggle: true)
+                .setForeignKeyConstraintsEnabled(mDB: mDB,
+                                                 toggle: true)
             if jsonSQLite.mode == "full" {
-               // Drop All Tables, Indexes and Triggers
+                // Drop All Tables, Indexes and Triggers
                 try _ = UtilsDrop.dropAll(mDB: mDB)
             }
             // create database schema
             changes = try ImportFromJson
-                        .createSchema(mDB: mDB,
-                                      jsonSQLite: jsonSQLite)
+                .createSchema(mDB: mDB,
+                              jsonSQLite: jsonSQLite)
             return changes
 
         } catch UtilsSQLCipherError.setVersion(let message) {
             throw ImportFromJsonError.createDatabaseSchema(
-                                message: "\(msg) \(message)")
+                message: "\(msg) \(message)")
         } catch UtilsSQLCipherError
                     .setForeignKeyConstraintsEnabled(let message) {
             throw ImportFromJsonError.createDatabaseSchema(
-                                message: "\(msg) \(message)")
+                message: "\(msg) \(message)")
         } catch UtilsDropError.dropAllFailed(let message) {
             throw ImportFromJsonError.createDatabaseSchema(
-                                message: "\(msg) \(message)")
+                message: "\(msg) \(message)")
         }
     }
 
@@ -74,7 +74,7 @@ class ImportFromJson {
         }
         // Create a Schema Statements
         let statements = ImportFromJson
-                        .createSchemaStatement(jsonSQLite: jsonSQLite )
+            .createSchemaStatement(jsonSQLite: jsonSQLite )
         if statements.count > 0 {
             let joined = statements.joined(separator: "\n")
             do {
@@ -82,17 +82,17 @@ class ImportFromJson {
                 // Execute Schema Statements
                 try UtilsSQLCipher.execute(mDB: mDB, sql: joined)
                 changes = UtilsSQLCipher.dbChanges(mDB: mDB.mDb) -
-                                                        initChanges
+                    initChanges
                 if changes < 0 {
                     do {
                         // Rollback the transaction
                         try UtilsSQLCipher
-                                    .rollbackTransaction(mDB: mDB)
+                            .rollbackTransaction(mDB: mDB)
                     } catch UtilsSQLCipherError
                                 .rollbackTransaction(let message) {
                         throw ImportFromJsonError
-                                        .createSchema(message: message)
-                   }
+                        .createSchema(message: message)
+                    }
                 }
                 // Commit the transaction
                 try UtilsSQLCipher.commitTransaction(mDB: mDB)
@@ -102,18 +102,18 @@ class ImportFromJson {
                 do {
                     // Rollback the transaction
                     try UtilsSQLCipher
-                                .rollbackTransaction(mDB: mDB)
+                        .rollbackTransaction(mDB: mDB)
                     throw ImportFromJsonError
-                                    .createSchema(message: message)
+                    .createSchema(message: message)
                 } catch UtilsSQLCipherError
                             .rollbackTransaction(let message) {
                     msg.append(" rollback: \(message)")
                     throw ImportFromJsonError
-                                    .createSchema(message: msg)
+                    .createSchema(message: msg)
                 }
             } catch UtilsSQLCipherError.commitTransaction(let message) {
                 throw ImportFromJsonError
-                                .createSchema(message: message)
+                .createSchema(message: message)
             }
         }
         return changes
@@ -122,7 +122,7 @@ class ImportFromJson {
     // MARK: - ImportFromJson - createSchemaStatement
 
     class func createSchemaStatement(jsonSQLite: JsonSQLite)
-                                                    -> [String] {
+    -> [String] {
         // Create the Database Schema
         var statements: [String] = []
         // Loop through Tables
@@ -130,7 +130,7 @@ class ImportFromJson {
             let mode: String = jsonSQLite.mode
             let tableName: String = jsonSQLite.tables[ipos].name
             if let mSchema: [JsonColumn] =
-                                jsonSQLite.tables[ipos].schema {
+                jsonSQLite.tables[ipos].schema {
                 if mSchema.count > 0 {
                     let stmt: [String] =
                         ImportFromJson.createTableSchema(
@@ -140,7 +140,7 @@ class ImportFromJson {
                 }
             }
             if let mIndexes: [JsonIndex] =
-                                    jsonSQLite.tables[ipos].indexes {
+                jsonSQLite.tables[ipos].indexes {
                 if mIndexes.count > 0 {
                     let stmt: [String] =
                         ImportFromJson.createTableIndexes(
@@ -156,7 +156,7 @@ class ImportFromJson {
 
     class func createTableSchema(mSchema: [JsonColumn],
                                  tableName: String, mode: String)
-                                                        -> [String] {
+    -> [String] {
         var statements: [String] = []
         var stmt: String
         stmt = "CREATE TABLE IF NOT EXISTS "
@@ -230,7 +230,7 @@ class ImportFromJson {
     // swiftlint:disable function_body_length
     class func createDatabaseData(mDB: Database,
                                   jsonSQLite: JsonSQLite)
-                                                    throws -> Int {
+    throws -> Int {
         var changes: Int = -1
         var initChanges: Int = -1
         var isValue: Bool = false
@@ -249,10 +249,10 @@ class ImportFromJson {
                     isValue = true
                     do {
                         try ImportFromJson.createTableData(
-                                mDB: mDB,
-                                mode: jsonSQLite.mode,
-                                mValues: mValues,
-                                tableName: jsonSQLite.tables[ipos].name)
+                            mDB: mDB,
+                            mode: jsonSQLite.mode,
+                            mValues: mValues,
+                            tableName: jsonSQLite.tables[ipos].name)
                     } catch ImportFromJsonError
                                 .createTableData(let message) {
                         // Rollback Transaction
@@ -260,14 +260,14 @@ class ImportFromJson {
                         do {
                             // Rollback the transaction
                             try UtilsSQLCipher
-                                        .rollbackTransaction(mDB: mDB)
+                                .rollbackTransaction(mDB: mDB)
                             throw ImportFromJsonError
-                                .createDatabaseData(message: message)
+                            .createDatabaseData(message: message)
                         } catch UtilsSQLCipherError
                                     .rollbackTransaction(let message) {
                             msg.append(" rollback: \(message)")
                             throw ImportFromJsonError
-                                    .createDatabaseData(message: msg)
+                            .createDatabaseData(message: msg)
                         }
                     }
                 }
@@ -280,11 +280,11 @@ class ImportFromJson {
                 // Commit the transaction
                 try UtilsSQLCipher.commitTransaction(mDB: mDB)
                 changes = UtilsSQLCipher.dbChanges(mDB: mDB.mDb) -
-                                                    initChanges
+                    initChanges
             } catch UtilsSQLCipherError.commitTransaction(
-                                                        let message) {
+                        let message) {
                 throw ImportFromJsonError.createDatabaseData(
-                                                    message: message)
+                    message: message)
             }
         }
         return changes
@@ -295,16 +295,16 @@ class ImportFromJson {
 
     // swiftlint:disable function_body_length
     class func createTableData(
-                        mDB: Database, mode: String,
-                        mValues: [[UncertainValue<String, Int, Float>]],
-                        tableName: String) throws {
+        mDB: Database, mode: String,
+        mValues: [[UncertainValue<String, Int, Double>]],
+        tableName: String) throws {
         // Check if table exists
         do {
             let isTab: Bool = try UtilsJson
-                        .isTableExists(mDB: mDB, tableName: tableName)
+                .isTableExists(mDB: mDB, tableName: tableName)
             if !isTab {
                 let message: String = "createTableData: Table " +
-                tableName + " does not exist"
+                    tableName + " does not exist"
                 throw ImportFromJsonError.createTableData(
                     message: message)
             }
@@ -313,25 +313,25 @@ class ImportFromJson {
         }
         // Get the Column's Name and Type
         var jsonNamesTypes: JsonNamesTypes =
-                            JsonNamesTypes(names: [], types: [])
+            JsonNamesTypes(names: [], types: [])
         do {
             jsonNamesTypes = try UtilsJson
                 .getTableColumnNamesTypes(mDB: mDB,
                                           tableName: tableName)
         } catch UtilsJsonError.getTableColumnNamesTypes(let message) {
-           throw ImportFromJsonError.createTableData(message: message)
+            throw ImportFromJsonError.createTableData(message: message)
         }
         for jpos in 0..<mValues.count {
             // Check row validity
-            let row: [UncertainValue<String, Int, Float>] =
-                                                        mValues[jpos]
+            let row: [UncertainValue<String, Int, Double>] =
+                mValues[jpos]
             do {
                 try UtilsJson.checkRowValidity(
                     mDB: mDB, jsonNamesTypes: jsonNamesTypes,
                     row: row, pos: jpos, tableName: tableName)
             } catch UtilsJsonError.checkRowValidity(let message) {
                 throw ImportFromJsonError.createTableData(
-                                                message: message)
+                    message: message)
             }
             // Create INSERT or UPDATE Statements
             do {
@@ -342,21 +342,21 @@ class ImportFromJson {
                                         row: row,
                                         jsonNamesTypes: jsonNamesTypes)
                 let rowValues = UtilsJson.getValuesFromRow(
-                                                    rowValues: row)
+                    rowValues: row)
                 let lastId: Int64 = try UtilsSQLCipher.prepareSQL(
                     mDB: mDB, sql: stmt, values: rowValues)
                 if lastId < 0 {
                     throw ImportFromJsonError.createTableData(
-                    message: "lastId < 0")
+                        message: "lastId < 0")
                 }
             } catch ImportFromJsonError.createRowStatement(
                         let message) {
                 throw ImportFromJsonError.createTableData(
                     message: message)
-                } catch UtilsSQLCipherError.prepareSQL(let message) {
-                    throw ImportFromJsonError.createTableData(
-                        message: message)
-                }
+            } catch UtilsSQLCipherError.prepareSQL(let message) {
+                throw ImportFromJsonError.createTableData(
+                    message: message)
+            }
         }
         return
     }
@@ -366,10 +366,10 @@ class ImportFromJson {
 
     // swiftlint:disable function_body_length
     class func createRowStatement(
-                    mDB: Database,
-                    data: [String: Any],
-                    row: [UncertainValue<String, Int, Float>],
-                    jsonNamesTypes: JsonNamesTypes) throws -> String {
+        mDB: Database,
+        data: [String: Any],
+        row: [UncertainValue<String, Int, Double>],
+        jsonNamesTypes: JsonNamesTypes) throws -> String {
         var stmt: String = ""
         var retisIdExists: Bool = false
         let message = "createRowStatement: data is missing"
@@ -396,32 +396,32 @@ class ImportFromJson {
                 message.append("\(tableName) values row[0] does not ")
                 message.append("exist")
                 throw ImportFromJsonError.createRowStatement(
-                                            message: message)
+                    message: message)
             }
 
         } catch UtilsJsonError.isIdExists(let message) {
-           throw ImportFromJsonError.createRowStatement(
-                                            message: message)
+            throw ImportFromJsonError.createRowStatement(
+                message: message)
         }
         if mode == "full" || (mode == "partial" && !retisIdExists) {
             // Insert
             let nameString: String = jsonNamesTypes
-                                        .names.joined(separator: ",")
+                .names.joined(separator: ",")
             let questionMarkString: String =
                 UtilsJson.createQuestionMarkString(
-                                    length: jsonNamesTypes.names.count)
+                    length: jsonNamesTypes.names.count)
             stmt = "INSERT INTO \(tableName) (\(nameString)) VALUES "
             stmt.append("(\(questionMarkString));")
         } else {
             // Update
             let setString: String = UtilsJson.setNameForUpdate(
-                                        names: jsonNamesTypes.names)
+                names: jsonNamesTypes.names)
             if setString.count == 0 {
                 var message: String = "importFromJson: Table "
                 message.append("\(tableName) values row ")
                 message.append("\(pos) not set to String")
                 throw ImportFromJsonError.createRowStatement(
-                                                    message: message)
+                    message: message)
             }
             if let rwValue: Any = row[0].value {
                 stmt = "UPDATE \(tableName)  SET \(setString) WHERE " +
@@ -430,7 +430,7 @@ class ImportFromJson {
                 var msg: String = "importFromJson: Table "
                 msg.append("\(tableName) values row[0]does not exist")
                 throw ImportFromJsonError.createRowStatement(
-                                                message: message)
+                    message: message)
             }
         }
         return stmt

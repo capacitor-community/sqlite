@@ -2,8 +2,8 @@
 //  GlobalSQLite.swift
 //  Plugin
 //
-//  Created by  Quéau Jean Pierre on 24/01/2020.
-//  Copyright © 2020 Max Lynch. All rights reserved.
+//  Created by  Quéau Jean Pierre on 18/01/2021.
+//  Copyright © 2021 Max Lynch. All rights reserved.
 //
 
 import Foundation

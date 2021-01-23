@@ -21,15 +21,19 @@ public class UtilsJson {
      * @param tableName
      * @return
      */
-    public boolean isTableExists(Database db, String tableName) {
+    public boolean isTableExists(Database db, String tableName) throws Exception {
         boolean ret = false;
         String query = new StringBuilder("SELECT name FROM " + "sqlite_master WHERE type='table' AND name='")
             .append(tableName)
             .append("';")
             .toString();
-        JSArray resQuery = db.selectSQL(query, new ArrayList<String>());
-        if (resQuery.length() > 0) ret = true;
-        return ret;
+        try {
+            JSArray resQuery = db.selectSQL(query, new ArrayList<String>());
+            if (resQuery.length() > 0) ret = true;
+            return ret;
+        } catch (Exception e) {
+            throw new Exception("isTableExists: " + e.getMessage());
+        }
     }
 
     /**
@@ -40,7 +44,7 @@ public class UtilsJson {
      * @param key
      * @return
      */
-    public boolean isIdExists(Database mDb, String tableName, String firstColumnName, Object key) {
+    public boolean isIdExists(Database mDb, String tableName, String firstColumnName, Object key) throws Exception {
         boolean ret = false;
         String query = new StringBuilder("SELECT ")
             .append(firstColumnName)
@@ -52,9 +56,13 @@ public class UtilsJson {
             .append(key)
             .append(";")
             .toString();
-        JSArray resQuery = mDb.selectSQL(query, new ArrayList<String>());
-        if (resQuery.length() == 1) ret = true;
-        return ret;
+        try {
+            JSArray resQuery = mDb.selectSQL(query, new ArrayList<String>());
+            if (resQuery.length() == 1) ret = true;
+            return ret;
+        } catch (Exception e) {
+            throw new Exception("isIdExists: " + e.getMessage());
+        }
     }
 
     /**
@@ -155,7 +163,7 @@ public class UtilsJson {
             if (type.equals("TEXT") && value instanceof String) ret = true;
             if (type.equals("INTEGER") && value instanceof Integer) ret = true;
             if (type.equals("INTEGER") && value instanceof Long) ret = true;
-            if (type.equals("REAL") && value instanceof Float) ret = true;
+            if (type.equals("REAL") && (value instanceof Double || value instanceof Integer)) ret = true;
             if (type.equals("BLOB") && value instanceof Blob) ret = true;
         }
         return ret;
@@ -168,22 +176,28 @@ public class UtilsJson {
      * @return
      * @throws JSONException
      */
-    public JSObject getTableColumnNamesTypes(Database mDb, String tableName) throws JSONException {
+    public JSObject getTableColumnNamesTypes(Database mDb, String tableName) throws Exception {
         JSObject ret = new JSObject();
         ArrayList<String> names = new ArrayList<String>();
         ArrayList<String> types = new ArrayList<String>();
         String query = new StringBuilder("PRAGMA table_info(").append(tableName).append(");").toString();
-        JSArray resQuery = mDb.selectSQL(query, new ArrayList<String>());
-        List<JSObject> lQuery = resQuery.toList();
-        if (lQuery.size() > 0) {
-            for (JSObject obj : lQuery) {
-                names.add(obj.getString("name"));
-                types.add(obj.getString("type"));
+        try {
+            JSArray resQuery = mDb.selectSQL(query, new ArrayList<String>());
+            List<JSObject> lQuery = resQuery.toList();
+            if (lQuery.size() > 0) {
+                for (JSObject obj : lQuery) {
+                    names.add(obj.getString("name"));
+                    types.add(obj.getString("type"));
+                }
+                ret.put("names", names);
+                ret.put("types", types);
             }
-            ret.put("names", names);
-            ret.put("types", types);
+            return ret;
+        } catch (JSONException e) {
+            throw new Exception("GetTableColumnNamesTypes: " + e.getMessage());
+        } catch (Exception e) {
+            throw new Exception("GetTableColumnNamesTypes: " + e.getMessage());
         }
-        return ret;
     }
 
     /**

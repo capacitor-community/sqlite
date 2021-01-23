@@ -10,17 +10,17 @@ export interface CapacitorSQLitePlugin {
   /**
    * create a database connection
    * @param options capConnectionOptions
-   * @return Promise<capSQLiteResult>
+   * @return Promise<void>
    * @since 2.9.0 refactor
    */
-  createConnection(options: capConnectionOptions): Promise<capSQLiteResult>;
+  createConnection(options: capConnectionOptions): Promise<void>;
   /**
    * close a database connection
    * @param options capSQLiteOptions
-   * @return Promise<capSQLiteResult>
+   * @return Promise<void>
    * @since 2.9.0 refactor
    */
-  closeConnection(options: capSQLiteOptions): Promise<capSQLiteResult>;
+  closeConnection(options: capSQLiteOptions): Promise<void>;
   /**
    * Echo a given string
    *
@@ -32,17 +32,17 @@ export interface CapacitorSQLitePlugin {
   /**
    * Open a SQLite database
    * @param options: capSQLiteOptions
-   * @returns Promise<capSQLiteResult>
+   * @returns Promise<void>
    * @since 0.0.1
    */
-  open(options: capSQLiteOptions): Promise<capSQLiteResult>;
+  open(options: capSQLiteOptions): Promise<void>;
   /**
    * Close a SQLite database
    * @param options: capSQLiteOptions
-   * @returns Promise<capSQLiteResult>
+   * @returns Promise<void>
    * @since 0.0.1
    */
-  close(options: capSQLiteOptions): Promise<capSQLiteResult>;
+  close(options: capSQLiteOptions): Promise<void>;
   /**
    * Execute a Batch of Raw Statements as String
    * @param options: capSQLiteExecuteOptions
@@ -81,10 +81,10 @@ export interface CapacitorSQLitePlugin {
   /**
    * Delete a SQLite database
    * @param options: capSQLiteOptions
-   * @returns Promise<capSQLiteResult>
+   * @returns Promise<void>
    * @since 0.0.1
    */
-  deleteDatabase(options: capSQLiteOptions): Promise<capSQLiteResult>;
+  deleteDatabase(options: capSQLiteOptions): Promise<void>;
   /**
    * Is Json Object Valid
    * @param options: capSQLiteImportOptions
@@ -116,10 +116,10 @@ export interface CapacitorSQLitePlugin {
   /**
    * Set the synchronization date
    * @param options: capSQLiteSyncDateOptions
-   * @returns Promise<capSQLiteResult>
+   * @returns Promise<void>
    * @since 2.0.1-1
    */
-  setSyncDate(options: capSQLiteSyncDateOptions): Promise<capSQLiteResult>;
+  setSyncDate(options: capSQLiteSyncDateOptions): Promise<void>;
   /**
    * Get the synchronization date
    * @param options: capSQLiteOptions
@@ -130,19 +130,17 @@ export interface CapacitorSQLitePlugin {
   /**
    * Add the upgrade Statement for database version upgrading
    * @param options: capSQLiteUpgradeOptions
-   * @returns Promise<capSQLiteResult>
+   * @returns Promise<void>
    * @since 2.4.2-6 iOS & Electron 2.4.2-7 Android
    */
-  addUpgradeStatement(
-    options: capSQLiteUpgradeOptions,
-  ): Promise<capSQLiteResult>;
+  addUpgradeStatement(options: capSQLiteUpgradeOptions): Promise<void>;
   /**
    * Copy databases from public/assets/databases folder to application databases folder
    *
-   * @returns Promise<capSQLiteResult>
+   * @returns Promise<void>
    * @since 2.9.0 refactor
    */
-  copyFromAssets(): Promise<capSQLiteResult>;
+  copyFromAssets(): Promise<void>;
 }
 
 export interface capEchoOptions {
@@ -287,20 +285,12 @@ export interface capSQLiteResult {
    * result set to true when successful else false
    */
   result?: boolean;
-  /**
-   * a returned message
-   */
-  message?: string;
 }
 export interface capSQLiteChanges {
   /**
    * a returned Changes
    */
   changes?: Changes;
-  /**
-   * a returned message
-   */
-  message?: string;
 }
 export interface Changes {
   /**
@@ -317,30 +307,18 @@ export interface capSQLiteValues {
    * the data values list as an Array
    */
   values?: any[];
-  /**
-   * a returned message
-   */
-  message?: string;
 }
 export interface capSQLiteJson {
   /**
    * an export JSON object
    */
   export?: JsonSQLite;
-  /**
-   * a returned message
-   */
-  message?: string;
 }
 export interface capSQLiteSyncDate {
   /**
    * the synchronization date
    */
   syncDate?: number;
-  /**
-   * a returned message
-   */
-  message?: string;
 }
 
 /* JSON Types */
@@ -443,7 +421,7 @@ export interface ISQLiteConnection {
    * @param toVersion
    * @param statement
    * @param set
-   * @returns Promise<capSQLiteResult>
+   * @returns Promise<void>
    * @since 2.9.0 refactor
    */
   addUpgradeStatement(
@@ -452,14 +430,14 @@ export interface ISQLiteConnection {
     toVersion: number,
     statement: string,
     set?: capSQLiteSet[],
-  ): Promise<capSQLiteResult>;
+  ): Promise<void>;
   /**
    * Create a connection to a database
    * @param database
    * @param encrypted
    * @param mode
    * @param version
-   * @returns Promise<SQLiteDBConnection | null>
+   * @returns Promise<SQLiteDBConnection>
    * @since 2.9.0 refactor
    */
   createConnection(
@@ -467,35 +445,33 @@ export interface ISQLiteConnection {
     encrypted: boolean,
     mode: string,
     version: number,
-  ): Promise<SQLiteDBConnection | null>;
+  ): Promise<SQLiteDBConnection>;
   /**
    * Retrieve an existing database connection
    * @param database
-   * @returns Promise<capSQLiteResult>
+   * @returns Promise<SQLiteDBConnection>
    * @since 2.9.0 refactor
    */
-  retrieveConnection(
-    database: string,
-  ): Promise<SQLiteDBConnection | null | undefined>;
+  retrieveConnection(database: string): Promise<SQLiteDBConnection>;
   /**
    * Retrieve all database connections
-   * @returns Promise<capSQLiteResult>
+   * @returns Promise<Map<string, SQLiteDBConnection>>
    * @since 2.9.0 refactor
    */
   retrieveAllConnections(): Promise<Map<string, SQLiteDBConnection>>;
   /**
    * Close a database connection
    * @param database
-   * @returns Promise<capSQLiteResult>
+   * @returns Promise<void>
    * @since 2.9.0 refactor
    */
-  closeConnection(database: string): Promise<capSQLiteResult>;
+  closeConnection(database: string): Promise<void>;
   /**
    * Close all database connections
-   * @returns Promise<capSQLiteResult>
+   * @returns Promise<void>
    * @since 2.9.0 refactor
    */
-  closeAllConnections(): Promise<capSQLiteResult>;
+  closeAllConnections(): Promise<void>;
   /**
    * Import a database From a JSON
    * @param jsonstring string
@@ -512,10 +488,10 @@ export interface ISQLiteConnection {
   isJsonValid(jsonstring: string): Promise<capSQLiteResult>;
   /**
    * Copy databases from public/assets/databases folder to application databases folder
-   * @returns Promise<capSQLiteResult>
+   * @returns Promise<void>
    * @since 2.9.0 refactor
    */
-  copyFromAssets(): Promise<capSQLiteResult>;
+  copyFromAssets(): Promise<void>;
 }
 /**
  * SQLiteConnection Class
@@ -532,78 +508,104 @@ export class SQLiteConnection implements ISQLiteConnection {
     toVersion: number,
     statement: string,
     set?: capSQLiteSet[],
-  ): Promise<capSQLiteResult> {
-    let upgrade: capSQLiteVersionUpgrade = {
+  ): Promise<void> {
+    const upgrade: capSQLiteVersionUpgrade = {
       fromVersion,
       toVersion,
       statement,
       set: set ? set : [],
     };
-    const res: any = await this.sqlite.addUpgradeStatement({
-      database,
-      upgrade: [upgrade],
-    });
-    return res;
+    try {
+      await this.sqlite.addUpgradeStatement({
+        database,
+        upgrade: [upgrade],
+      });
+      return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
+    }
   }
   async createConnection(
     database: string,
     encrypted: boolean,
     mode: string,
     version: number,
-  ): Promise<SQLiteDBConnection | null> {
-    const res: any = await this.sqlite.createConnection({
-      database,
-      encrypted,
-      mode,
-      version,
-    });
-    if (res.result) {
+  ): Promise<SQLiteDBConnection> {
+    try {
+      await this.sqlite.createConnection({
+        database,
+        encrypted,
+        mode,
+        version,
+      });
       const conn = new SQLiteDBConnection(database, this.sqlite);
       this._connectionDict.set(database, conn);
-      return conn;
-    } else {
-      return null;
+      return Promise.resolve(conn);
+    } catch (err) {
+      return Promise.reject(err);
     }
   }
-  async closeConnection(database: string): Promise<capSQLiteResult> {
-    const res: any = await this.sqlite.closeConnection({ database });
-    if (res.result) {
+  async closeConnection(database: string): Promise<void> {
+    try {
+      await this.sqlite.closeConnection({ database });
       this._connectionDict.delete(database);
+      return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
     }
-    return res;
   }
-  async retrieveConnection(
-    database: string,
-  ): Promise<SQLiteDBConnection | null | undefined> {
-    const conn = this._connectionDict.has(database)
-      ? this._connectionDict.get(database)
-      : null;
-    return conn;
+  async retrieveConnection(database: string): Promise<SQLiteDBConnection> {
+    if (this._connectionDict.has(database)) {
+      const conn = this._connectionDict.get(database);
+      if (typeof conn != 'undefined') return Promise.resolve(conn);
+      else {
+        return Promise.reject(`Connection ${database} is undefined`);
+      }
+    } else {
+      return Promise.reject(`Connection ${database} does not exist`);
+    }
   }
   async retrieveAllConnections(): Promise<Map<string, SQLiteDBConnection>> {
     return this._connectionDict;
   }
-  async closeAllConnections(): Promise<capSQLiteResult> {
+  async closeAllConnections(): Promise<void> {
     const delDict: Map<string, SQLiteDBConnection | null> = new Map();
-    let res: any;
-    for (let database of this._connectionDict.keys()) {
-      res = await this.sqlite.closeConnection({ database });
-      if (!res.result) break;
-      delDict.set(database, null);
+    try {
+      for (const database of this._connectionDict.keys()) {
+        await this.sqlite.closeConnection({ database });
+        delDict.set(database, null);
+      }
+      for (const database of delDict.keys()) {
+        this._connectionDict.delete(database);
+      }
+      return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
     }
-    for (let database of delDict.keys()) {
-      this._connectionDict.delete(database);
-    }
-    return res;
   }
   async importFromJson(jsonstring: string): Promise<capSQLiteChanges> {
-    return await this.sqlite.importFromJson({ jsonstring: jsonstring });
+    try {
+      const ret = await this.sqlite.importFromJson({ jsonstring: jsonstring });
+      return Promise.resolve(ret);
+    } catch (err) {
+      return Promise.reject(err);
+    }
   }
   async isJsonValid(jsonstring: string): Promise<capSQLiteResult> {
-    return await this.sqlite.isJsonValid({ jsonstring: jsonstring });
+    try {
+      const ret = await this.sqlite.isJsonValid({ jsonstring: jsonstring });
+      return Promise.resolve(ret);
+    } catch (err) {
+      return Promise.reject(err);
+    }
   }
-  async copyFromAssets(): Promise<capSQLiteResult> {
-    return await this.sqlite.copyFromAssets();
+  async copyFromAssets(): Promise<void> {
+    try {
+      await this.sqlite.copyFromAssets();
+      return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
+    }
   }
 }
 
@@ -613,22 +615,22 @@ export class SQLiteConnection implements ISQLiteConnection {
 export interface ISQLiteDBConnection {
   /**
    * Get SQLite DB Connection DB name
-   * @returns Promise<string>
+   * @returns string
    * @since 2.9.0 refactor
    */
   getConnectionDBName(): string;
   /**
    * Open a SQLite DB Connection
-   * @returns Promise<capSQLiteResult>
+   * @returns Promise<void>
    * @since 2.9.0 refactor
    */
-  open(): Promise<capSQLiteResult>;
+  open(): Promise<void>;
   /**
    * Close a SQLite DB Connection
-   * @returns Promise<capSQLiteResult>
+   * @returns Promise<void>
    * @since 2.9.0 refactor
    */
-  close(): Promise<capSQLiteResult>;
+  close(): Promise<void>;
   /**
    * Execute SQLite DB Connection Statements
    * @param statements
@@ -643,7 +645,7 @@ export interface ISQLiteDBConnection {
    * @returns Promise<Promise<capSQLiteValues>
    * @since 2.9.0 refactor
    */
-  query(statement: string, values?: Array<string>): Promise<capSQLiteValues>;
+  query(statement: string, values?: string[]): Promise<capSQLiteValues>;
   /**
    * Execute SQLite DB Connection Raw Statement
    * @param statement
@@ -651,14 +653,14 @@ export interface ISQLiteDBConnection {
    * @returns Promise<capSQLiteChanges>
    * @since 2.9.0 refactor
    */
-  run(statement: string, values?: Array<any>): Promise<capSQLiteChanges>;
+  run(statement: string, values?: any[]): Promise<capSQLiteChanges>;
   /**
    * Execute SQLite DB Connection Set
    * @param set
    * @returns Promise<capSQLiteChanges>
    * @since 2.9.0 refactor
    */
-  executeSet(set: Array<capSQLiteSet>): Promise<capSQLiteChanges>;
+  executeSet(set: capSQLiteSet[]): Promise<capSQLiteChanges>;
   /**
    * Check if a SQLite DB Connection exists
    * @returns Promise<capSQLiteResult>
@@ -667,23 +669,23 @@ export interface ISQLiteDBConnection {
   isExists(): Promise<capSQLiteResult>;
   /**
    * Delete a SQLite DB Connection
-   * @returns Promise<capSQLiteResult>
+   * @returns Promise<void>
    * @since 2.9.0 refactor
    */
-  delete(): Promise<capSQLiteResult>;
+  delete(): Promise<void>;
   /**
    * Create a synchronization table
-   * @returns Promise<capSQLiteResult>
+   * @returns Promise<capSQLiteChanges>
    * @since 2.9.0 refactor
    */
   createSyncTable(): Promise<capSQLiteChanges>;
   /**
    * Set the synchronization date
    * @param syncdate
-   * @returns Promise<capSQLiteResult>
+   * @returns Promise<void>
    * @since 2.9.0 refactor
    */
-  setSyncDate(syncdate: string): Promise<capSQLiteResult>;
+  setSyncDate(syncdate: string): Promise<void>;
   /**
    * Get the synchronization date
    * @returns Promise<capSQLiteSyncDate>
@@ -708,102 +710,145 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
   getConnectionDBName(): string {
     return this.dbName;
   }
-  async open(): Promise<capSQLiteResult> {
+  async open(): Promise<void> {
     console.log('>>> in SQLiteDBConnection open dbName ' + this.dbName);
-    const res: any = await this.sqlite.open({ database: this.dbName });
-    return res;
+    try {
+      await this.sqlite.open({ database: this.dbName });
+      return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
+    }
   }
-  async close(): Promise<capSQLiteResult> {
-    const res: any = await this.sqlite.close({ database: this.dbName });
-    return res;
+  async close(): Promise<void> {
+    try {
+      await this.sqlite.close({ database: this.dbName });
+      return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
+    }
   }
   async execute(statements: string): Promise<capSQLiteChanges> {
-    const res: any = await this.sqlite.execute({
-      database: this.dbName,
-      statements: statements,
-    });
-    return res;
-  }
-  async query(
-    statement: string,
-    values?: Array<string>,
-  ): Promise<capSQLiteValues> {
-    let res: any;
-    if (values && values.length > 0) {
-      res = await this.sqlite.query({
+    try {
+      const res: any = await this.sqlite.execute({
         database: this.dbName,
-        statement: statement,
-        values: values,
+        statements: statements,
       });
-    } else {
-      res = await this.sqlite.query({
-        database: this.dbName,
-        statement: statement,
-        values: [],
-      });
+      return Promise.resolve(res);
+    } catch (err) {
+      return Promise.reject(err);
     }
-    return res;
   }
-  async run(statement: string, values?: Array<any>): Promise<capSQLiteChanges> {
+  async query(statement: string, values?: string[]): Promise<capSQLiteValues> {
     let res: any;
-    if (values && values.length > 0) {
-      res = await this.sqlite.run({
-        database: this.dbName,
-        statement: statement,
-        values: values,
-      });
-    } else {
-      res = await this.sqlite.run({
-        database: this.dbName,
-        statement: statement,
-        values: [],
-      });
+    try {
+      if (values && values.length > 0) {
+        res = await this.sqlite.query({
+          database: this.dbName,
+          statement: statement,
+          values: values,
+        });
+      } else {
+        res = await this.sqlite.query({
+          database: this.dbName,
+          statement: statement,
+          values: [],
+        });
+      }
+      return Promise.resolve(res);
+    } catch (err) {
+      return Promise.reject(err);
     }
-    return res;
   }
-  async executeSet(set: Array<capSQLiteSet>): Promise<capSQLiteChanges> {
-    const res: any = await this.sqlite.executeSet({
-      database: this.dbName,
-      set: set,
-    });
-    return res;
+  async run(statement: string, values?: any[]): Promise<capSQLiteChanges> {
+    let res: any;
+    try {
+      if (values && values.length > 0) {
+        res = await this.sqlite.run({
+          database: this.dbName,
+          statement: statement,
+          values: values,
+        });
+      } else {
+        res = await this.sqlite.run({
+          database: this.dbName,
+          statement: statement,
+          values: [],
+        });
+      }
+      return Promise.resolve(res);
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async executeSet(set: capSQLiteSet[]): Promise<capSQLiteChanges> {
+    try {
+      const res: any = await this.sqlite.executeSet({
+        database: this.dbName,
+        set: set,
+      });
+      return Promise.resolve(res);
+    } catch (err) {
+      return Promise.reject(err);
+    }
   }
   async isExists(): Promise<capSQLiteResult> {
-    const res: any = await this.sqlite.isDBExists({
-      database: this.dbName,
-    });
-    return res;
+    try {
+      const res: any = await this.sqlite.isDBExists({
+        database: this.dbName,
+      });
+      return Promise.resolve(res);
+    } catch (err) {
+      return Promise.reject(err);
+    }
   }
-  async delete(): Promise<capSQLiteResult> {
-    const res: any = await this.sqlite.deleteDatabase({
-      database: this.dbName,
-    });
-    return res;
+  async delete(): Promise<void> {
+    try {
+      await this.sqlite.deleteDatabase({ database: this.dbName });
+      return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
+    }
   }
   async createSyncTable(): Promise<capSQLiteChanges> {
-    const res: any = await this.sqlite.createSyncTable({
-      database: this.dbName,
-    });
-    return res;
+    try {
+      const res: any = await this.sqlite.createSyncTable({
+        database: this.dbName,
+      });
+      return Promise.resolve(res);
+    } catch (err) {
+      return Promise.reject(err);
+    }
   }
-  async setSyncDate(syncdate: string): Promise<capSQLiteResult> {
-    const res: any = await this.sqlite.setSyncDate({
-      database: this.dbName,
-      syncdate: syncdate,
-    });
-    return res;
+  async setSyncDate(syncdate: string): Promise<void> {
+    try {
+      await this.sqlite.setSyncDate({
+        database: this.dbName,
+        syncdate: syncdate,
+      });
+      return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
+    }
   }
   async getSyncDate(): Promise<capSQLiteSyncDate> {
-    const res: any = await this.sqlite.getSyncDate({
-      database: this.dbName,
-    });
-    return res;
+    try {
+      const res: any = await this.sqlite.getSyncDate({
+        database: this.dbName,
+      });
+      return Promise.resolve(res);
+    } catch (err) {
+      return Promise.reject(err);
+    }
   }
   async exportToJson(mode: string): Promise<capSQLiteJson> {
-    const res: any = await this.sqlite.exportToJson({
-      database: this.dbName,
-      jsonexportmode: mode,
-    });
-    return res;
+    try {
+      const res: any = await this.sqlite.exportToJson({
+        database: this.dbName,
+        jsonexportmode: mode,
+      });
+      return Promise.resolve(res);
+    } catch (err) {
+      return Promise.reject(err);
+    }
   }
 }

@@ -26,7 +26,17 @@
 | ----------------- | ----------------------------------------- | ------ |
 | Quéau Jean Pierre | [jepiqueau](https://github.com/jepiqueau) |        |
 
-## REFACTOR 🚀 (Move to Master)
+## NEXT FOR CAPACITOR 3 🚧 (Master)
+
+The refactor release has been upgraded to `@capacitor/core@3.0.0-beta.1`.
+!!! ONLY iOS and Android plugins have been upgraded !!!
+
+The test has been achieved on:
+
+- a [Ionic/Angular app](https://github.com/jepiqueau/angular-sqlite-app-refactor)
+
+
+## REFACTOR 🚀 (Move to branch 2.9.x)
 
 The refactor offers now (since `2.9.0-beta.1`) all the features that the previous was offering. It has been a quite heavy process, hoping that the developpers will take benefit from it.
 
@@ -46,7 +56,7 @@ Refactor available for `Android`, `iOS` and `Electron` platforms.
 
 The test has been achieved on:
 
-- a [Ionic/Angular app](https://github.com/jepiqueau/angular-sqlite-app-refactor)
+- a [Ionic/Angular app](https://github.com/jepiqueau/angular-sqlite-app-refactor/tree/refactor)
 
 - a [Ionic/React app](https://github.com/jepiqueau/react-sqlite-app-starter/tree/refactor)
 
@@ -67,12 +77,12 @@ meaning that it will not work in IE11 without additional JavaScript transformati
 ## Installation
 
 ```bash
-npm install @capacitor-community/sqlite@refactor
+npm install @capacitor-community/sqlite@next
 npm run build
 npx cap sync
 npx cap add android
 npx cap add ios
-npx cap add @capacitor-community/electron
+// npx cap add @capacitor-community/electron not working
 ```
 
 ### IOS
@@ -84,31 +94,20 @@ npx cap add @capacitor-community/electron
 - On Android, register the plugin in your main activity:
 
 ```java
-import com.getcapacitor.community.database.sqlite.CapacitorSQLite;
+import com.getcapacitor.community.database.sqlite.CapacitorSQLitePlugin;
 
 public class MainActivity extends BridgeActivity {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-  @Override
-  public void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
+        registerPlugin(CapacitorSQLitePlugin.class);
 
-    // Initializes the Bridge
-    this.init(
-        savedInstanceState,
-        new ArrayList<Class<? extends Plugin>>() {
-          {
-            // Additional plugins you've installed go here
-            // Ex: add(TotallyAwesomePlugin.class);
-            add(CapacitorSQLite.class);
-          }
-        }
-      );
-  }
-}
+    }
 
 ```
 
-### Electron
+### Electron (NOT WORKING YET)
 
 - On Electron, go to the Electron folder of YOUR_APPLICATION
 
@@ -136,14 +135,14 @@ npx cap open ios
 npx cap open android
 ```
 
-### Electron
+### Electron (NOT WORKING YET)
 
 ```
 npx cap open @capacitor-community/electron
 ```
 ## Issues
 
-When you will find issues, please report them with the `REFACTOR` word at the start of the issue title.
+When you will find issues, please report them with the `NEXT` word at the start of the issue title.
 
 [issues](https://github.com/capacitor-community/sqlite/issues)
 
@@ -178,6 +177,7 @@ No configuration required for this plugin
 
 ## Documentation
 
+### API
 [API_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/API.md)
 
 [API_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/APIConnection.md)
@@ -188,11 +188,9 @@ No configuration required for this plugin
 
 [UpgradeDatabaseVersion_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/UpgradeDatabaseVersion.md)
 
+### Framework's Usage 
 [Ionic/Angular_Usage_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-Angular-Usage.md)
 
-[Ionic/React_Usage_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-React-Usage.md)
-
-[Ionic/Vue_Usage_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-Vue-Usage.md)
 
 ## Applications demonstrating the use of the plugin
 
@@ -200,13 +198,9 @@ No configuration required for this plugin
 
 - [angular-sqlite-app-refactor](https://github.com/jepiqueau/angular-sqlite-app-refactor)
 
-### Ionic/React
+### Ionic/React (to come later)
 
-- [react-sqlite-app-refactor](https://github.com/jepiqueau/react-sqlite-app-starter/tree/refactor)
-
-### Ionic/Vue
-
-- [vue-sqlite-app-refactor](https://github.com/jepiqueau/vue-sqlite-app-starter/tree/refactor)
+### Ionic/Vue (to come later)
 
 ### Vue (to come later)
 
@@ -216,9 +210,6 @@ No configuration required for this plugin
 
 - [In your Ionic/Angular App](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-Angular-Usage.md)
 
-- [In your Ionic/React App](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-React-Usage.md)
-
-- [In your Ionic/Vue App](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-Vue-Usage.md)
 
 ## Dependencies
 

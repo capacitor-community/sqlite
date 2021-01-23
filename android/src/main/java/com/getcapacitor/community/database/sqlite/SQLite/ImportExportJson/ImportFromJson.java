@@ -34,7 +34,7 @@ public class ImportFromJson {
         try {
             db.getDb().setForeignKeyConstraintsEnabled(true);
         } catch (IllegalStateException e) {
-            String msg = "Error: createDatabaseSchema ";
+            String msg = "CreateDatabaseSchema: ";
             msg += "setForeignKeyConstraintsEnabled failed ";
             msg += e.getMessage();
             throw new Exception(msg);
@@ -43,22 +43,17 @@ public class ImportFromJson {
             try {
                 _uDrop.dropAll(db);
             } catch (Exception e) {
-                String msg = "Error: createDatabaseSchema ";
-                msg += "dropAll failed ";
-                msg += e.getMessage();
+                String msg = "CreateDatabaseSchema: " + e.getMessage();
                 throw new Exception(msg);
             }
         }
         try {
             changes = createSchema(db, jsonSQL);
-        } catch (Exception e) {
-            String msg = "Error: createDatabaseSchema ";
-            msg += "createSchema failed ";
-            msg += e.getMessage();
-            throw new Exception(msg);
-        } finally {
             return changes;
-        }
+        } catch (Exception e) {
+            String msg = "CreateDatabaseSchema: " + e.getMessage();
+            throw new Exception(msg);
+        } finally {}
     }
 
     /**
@@ -82,13 +77,12 @@ public class ImportFromJson {
                         db.execSQL(cmd);
                     }
                     changes = _uSqlite.dbChanges(db) - initChanges;
-                    Log.v(TAG, "createSchema Changes " + changes);
                     if (changes >= 0) {
                         db.setTransactionSuccessful();
                     }
                 }
             } else {
-                throw new Exception("Database not opened");
+                throw new Exception("CreateSchema: Database not opened");
             }
         } catch (IllegalStateException e) {
             throw e;
@@ -244,25 +238,28 @@ public class ImportFromJson {
                 for (int i = 0; i < jsonSQL.getTables().size(); i++) {
                     if (jsonSQL.getTables().get(i).getValues().size() > 0) {
                         isValues = true;
-                        createTableData(
-                            mDb,
-                            jsonSQL.getMode(),
-                            jsonSQL.getTables().get(i).getValues(),
-                            jsonSQL.getTables().get(i).getName()
-                        );
+                        try {
+                            createTableData(
+                                mDb,
+                                jsonSQL.getMode(),
+                                jsonSQL.getTables().get(i).getValues(),
+                                jsonSQL.getTables().get(i).getName()
+                            );
+                        } catch (Exception e) {
+                            throw new Exception("CreateDatabaseData: " + e.getMessage());
+                        }
                     }
                 }
                 if (!isValues) {
                     changes = 0;
                 } else {
                     changes = _uSqlite.dbChanges(db) - initChanges;
-                    Log.v(TAG, "createDatabaseData Changes " + changes);
                     if (changes >= 0) {
                         db.setTransactionSuccessful();
                     }
                 }
             } else {
-                throw new Exception("Database not opened");
+                throw new Exception("CreateDatabaseData: Database not opened");
             }
         } catch (IllegalStateException e) {
             throw e;
@@ -272,8 +269,8 @@ public class ImportFromJson {
             throw e;
         } finally {
             if (db != null && db.inTransaction()) db.endTransaction();
-            return changes;
         }
+        return changes;
     }
 
     /**
@@ -294,7 +291,7 @@ public class ImportFromJson {
         try {
             JSObject tableNamesTypes = _uJson.getTableColumnNamesTypes(mDb, tableName);
             if (tableNamesTypes.length() == 0) {
-                throw new Exception("createTableData: " + "no column names & types returned");
+                throw new Exception("CreateTableData: no column names & types returned");
             }
             ArrayList<String> tColNames = (ArrayList<String>) tableNamesTypes.get("names");
             ArrayList<String> tColTypes = (ArrayList<String>) tableNamesTypes.get("types");
@@ -310,15 +307,14 @@ public class ImportFromJson {
                 // load the values
                 long lastId = mDb.prepareSQL(stmt, row);
                 if (lastId < 0) {
-                    throw new Exception("createTableData: lastId < 0");
+                    throw new Exception("CreateTableData: lastId < 0");
                 }
             }
-        } catch (JSONException e) {
-            throw new Exception("createTableData: " + e.getMessage());
-        } catch (Exception e) {
-            throw new Exception("createTableData: " + e.getMessage());
-        } finally {
             return;
+        } catch (JSONException e) {
+            throw new Exception("CreateTableData: " + e.getMessage());
+        } catch (Exception e) {
+            throw new Exception("CreateTableData: " + e.getMessage());
         }
     }
 
@@ -342,7 +338,7 @@ public class ImportFromJson {
         String tableName,
         String mode
     ) throws Exception {
-        String msg = "createRowStatement: ";
+        String msg = "CreateRowStatement: ";
         msg += "Table" + tableName + " values row";
         if (tColNames.size() != row.size() || row.size() == 0 || tColNames.size() == 0) {
             throw new Exception(msg + j + " not correct length");
@@ -356,7 +352,7 @@ public class ImportFromJson {
             String namesString = _uJson.convertToString(tColNames, ',');
             String questionMarkString = _uJson.createQuestionMarkString(tColNames.size());
             if (questionMarkString.length() == 0) {
-                throw new Exception(msg + j + "questionMarkString " + "is empty");
+                throw new Exception(msg + j + "questionMarkString is empty");
             }
             stmt =
                 new StringBuilder("INSERT INTO ")
@@ -372,7 +368,7 @@ public class ImportFromJson {
             // Update
             String setString = _uJson.setNameForUpdate(tColNames);
             if (setString.length() == 0) {
-                throw new Exception(msg + j + "setString " + "is empty");
+                throw new Exception(msg + j + "setString is empty");
             }
             stmt =
                 new StringBuilder("UPDATE ")

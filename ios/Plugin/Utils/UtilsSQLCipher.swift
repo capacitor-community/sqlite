@@ -2,14 +2,13 @@
 //  UtilsSQLCipher.swift
 //  Plugin
 //
-//  Created by  Quéau Jean Pierre on 26/11/2020.
-//  Copyright © 2020 Max Lynch. All rights reserved.
+//  Created by  Quéau Jean Pierre on 18/01/2021.
+//  Copyright © 2021 Max Lynch. All rights reserved.
 //
 
 import Foundation
 import SQLCipher
 
-//1234567890123456789012345678901234567890123456789012345678901234567890
 enum UtilsSQLCipherError: Error {
     case openOrCreateDatabase(message: String)
     case bindFailed
@@ -36,12 +35,12 @@ enum UtilsSQLCipherError: Error {
 // swiftlint:disable type_body_length
 class UtilsSQLCipher {
 
-// MARK: - OpenOrCreateDatabase
+    // MARK: - OpenOrCreateDatabase
 
     class func openOrCreateDatabase(filename: String,
                                     password: String = "",
                                     readonly: Bool = false
-                          ) throws -> OpaquePointer? {
+    ) throws -> OpaquePointer? {
 
         let flags = readonly ? SQLITE_OPEN_READONLY :
             SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE
@@ -49,51 +48,51 @@ class UtilsSQLCipher {
         if sqlite3_open_v2(filename, &mDB, flags |
                             SQLITE_OPEN_FULLMUTEX, nil) == SQLITE_OK {
 
-           if password.count > 0 {
+            if password.count > 0 {
                 let keyStatementString = """
                 PRAGMA key = '\(password)';
                 """
-            let msg: String = "Wrong Secret"
+                let msg: String = "Wrong Secret"
                 if sqlite3_exec(mDB, keyStatementString, nil, nil, nil)
-                                == SQLITE_OK {
+                    == SQLITE_OK {
                     var stmt: String = "SELECT count(*) FROM "
                     stmt.append("sqlite_master;")
                     if sqlite3_exec(mDB, stmt, nil, nil, nil) !=
-                            SQLITE_OK {
+                        SQLITE_OK {
                         throw UtilsSQLCipherError
-                                .openOrCreateDatabase(message: msg)
+                        .openOrCreateDatabase(message: msg)
                     }
                 } else {
                     throw UtilsSQLCipherError
-                            .openOrCreateDatabase(message: msg)
+                    .openOrCreateDatabase(message: msg)
                 }
             }
 
             /* this should work but doe not sqlite3_key_v2 is not known
-            if password.count > 0 {
-                let nKey:Int32 = Int32(password.count)
-                if sqlite3_key_v2(mDB!, filename, password, nKey) == SQLITE_OK {
-                    var stmt: String = "SELECT count(*) FROM "
-                    stmt.append("sqlite_master;")
-                    if sqlite3_exec(mDB, stmt, nil, nil, nil) !=
-                            SQLITE_OK {
-                        print("Unable to open a database \(filename)")
-                        throw UtilsSQLCipherError
-                                .openOrCreateDatabase(message: msg)
-                    }
-                } else  {
-                    print("Unable to open a database \(filename)")
-                    throw UtilsSQLCipherError
-                                .openOrCreateDatabase(message: msg)
-                }
-            }
-            print("Successfully opened database \(filename)")
-*/
+             if password.count > 0 {
+             let nKey:Int32 = Int32(password.count)
+             if sqlite3_key_v2(mDB!, filename, password, nKey) == SQLITE_OK {
+             var stmt: String = "SELECT count(*) FROM "
+             stmt.append("sqlite_master;")
+             if sqlite3_exec(mDB, stmt, nil, nil, nil) !=
+             SQLITE_OK {
+             print("Unable to open a database \(filename)")
+             throw UtilsSQLCipherError
+             .openOrCreateDatabase(message: msg)
+             }
+             } else  {
+             print("Unable to open a database \(filename)")
+             throw UtilsSQLCipherError
+             .openOrCreateDatabase(message: msg)
+             }
+             }
+             print("Successfully opened database \(filename)")
+             */
             return mDB
         } else {
             let message: String = "open_v2 failed"
             throw UtilsSQLCipherError
-                            .openOrCreateDatabase(message: message)
+            .openOrCreateDatabase(message: message)
         }
     }
 
@@ -112,20 +111,20 @@ class UtilsSQLCipher {
             PRAGMA rekey = '\(newpassword)';
             """
             let returnCode: Int32 = sqlite3_exec(
-                        oDB, keyStatementString, nil, nil, nil)
+                oDB, keyStatementString, nil, nil, nil)
             if returnCode != SQLITE_OK {
                 throw UtilsSQLCipherError
-                        .changePassword(message: "change password")
+                .changePassword(message: "change password")
             }
             // close the db
             try UtilsSQLCipher.close(oDB: oDB)
 
         } catch UtilsSQLCipherError.openOrCreateDatabase(let message) {
             throw UtilsSQLCipherError
-                    .changePassword(message: message)
+            .changePassword(message: message)
         } catch UtilsSQLCipherError.close(_) {
             throw UtilsSQLCipherError
-                        .changePassword(message: "close failed")
+            .changePassword(message: "close failed")
         }
     }
 
@@ -137,7 +136,7 @@ class UtilsSQLCipher {
         if !mDB.isDBOpen() {
             msg.append("Database not opened")
             throw UtilsSQLCipherError
-                        .setForeignKeyConstraintsEnabled(message: msg)
+            .setForeignKeyConstraintsEnabled(message: msg)
         }
         var key: String = "OFF"
         if toggle {
@@ -147,7 +146,7 @@ class UtilsSQLCipher {
         if sqlite3_exec(mDB.mDb, sqltr, nil, nil, nil) != SQLITE_OK {
             msg.append("not successful")
             throw UtilsSQLCipherError
-                        .setForeignKeyConstraintsEnabled(message: msg)
+            .setForeignKeyConstraintsEnabled(message: msg)
         }
 
     }
@@ -165,8 +164,8 @@ class UtilsSQLCipher {
         let sqltr: String = "PRAGMA user_version;"
         do {
             let resVersion =  try UtilsSQLCipher.querySQL(mDB: mDB,
-                                                    sql: sqltr,
-                                                    values: [])
+                                                          sql: sqltr,
+                                                          values: [])
             if resVersion.count > 0 {
                 guard let res: Int64 = resVersion[0]["user_version"]
                         as? Int64 else {
@@ -221,9 +220,9 @@ class UtilsSQLCipher {
         let returnCode: Int32 = sqlite3_close_v2(oDB)
         if returnCode != SQLITE_OK {
             let errmsg: String = String(
-                                    cString: sqlite3_errmsg(oDB))
+                cString: sqlite3_errmsg(oDB))
             message = "Error: closing the database rc: " +
-                      "\(returnCode) message: \(errmsg)"
+                "\(returnCode) message: \(errmsg)"
             throw UtilsSQLCipherError.close(message: message)
         }
     }
@@ -240,7 +239,7 @@ class UtilsSQLCipher {
         let returnCode = sqlite3_exec(mDB.mDb, sql, nil, nil, nil)
         if returnCode != SQLITE_OK {
             let errmsg: String = String(
-                                    cString: sqlite3_errmsg(mDB.mDb))
+                cString: sqlite3_errmsg(mDB.mDb))
             msg.append("failed rc: ")
             msg.append("\(returnCode) message: \(errmsg)")
             throw UtilsSQLCipherError.beginTransaction(
@@ -260,7 +259,7 @@ class UtilsSQLCipher {
         let returnCode = sqlite3_exec(mDB.mDb, sql, nil, nil, nil)
         if returnCode != SQLITE_OK {
             let errmsg: String = String(
-                                    cString: sqlite3_errmsg(mDB.mDb))
+                cString: sqlite3_errmsg(mDB.mDb))
             msg.append("failed rc: ")
             msg.append("\(returnCode) message: \(errmsg)")
             throw UtilsSQLCipherError.rollbackTransaction(
@@ -280,7 +279,7 @@ class UtilsSQLCipher {
         let returnCode = sqlite3_exec(mDB.mDb, sql, nil, nil, nil)
         if returnCode != SQLITE_OK {
             let errmsg: String = String(
-                                    cString: sqlite3_errmsg(mDB.mDb))
+                cString: sqlite3_errmsg(mDB.mDb))
             msg.append("failed rc: ")
             msg.append("\(returnCode) message: \(errmsg)")
             throw UtilsSQLCipherError.commitTransaction(
@@ -303,10 +302,10 @@ class UtilsSQLCipher {
         var lastId: Int64 = -1
 
         var returnCode: Int32 = sqlite3_prepare_v2(
-                            mDB.mDb, sql, -1, &runSQLStatement, nil)
+            mDB.mDb, sql, -1, &runSQLStatement, nil)
         if returnCode == SQLITE_OK {
             if !values.isEmpty {
-            // do the binding of values
+                // do the binding of values
                 var idx: Int = 1
                 for value in values {
                     do {
@@ -323,20 +322,20 @@ class UtilsSQLCipher {
             returnCode = sqlite3_step(runSQLStatement)
             if returnCode != SQLITE_DONE {
                 let errmsg: String = String(
-                                    cString: sqlite3_errmsg(mDB.mDb))
+                    cString: sqlite3_errmsg(mDB.mDb))
                 message = "Error: prepareSQL step failed rc: "
                 message.append("\(returnCode) message: \(errmsg)")
             }
         } else {
             let errmsg: String = String(
-                                    cString: sqlite3_errmsg(mDB.mDb))
+                cString: sqlite3_errmsg(mDB.mDb))
             message = "Error: prepareSQL prepare failed rc: "
             message.append("\(returnCode) message: \(errmsg)")
         }
         returnCode = sqlite3_finalize(runSQLStatement)
         if returnCode != SQLITE_OK {
             let errmsg: String = String(
-                                    cString: sqlite3_errmsg(mDB.mDb))
+                cString: sqlite3_errmsg(mDB.mDb))
             message = "Error: prepareSQL finalize failed rc: "
             message.append("\(returnCode) message: \(errmsg)")
         }
@@ -366,29 +365,29 @@ class UtilsSQLCipher {
                                nil)
         if returnCode == SQLITE_OK {
             if !values.isEmpty {
-            // do the binding of values
+                // do the binding of values
                 message = UtilsBinding.bindValues(
-                        handle: selectSQLStatement, values: values)
+                    handle: selectSQLStatement, values: values)
             }
             if message.count == 0 {
                 do {
                     result = try UtilsSQLCipher.fetchColumnInfo(
-                                        handle: selectSQLStatement)
+                        handle: selectSQLStatement)
                 } catch UtilsSQLCipherError
-                                .fetchColumnInfo(let message) {
+                            .fetchColumnInfo(let message) {
                     throw UtilsSQLCipherError.querySQL(message: message)
                 }
             }
         } else {
             let errmsg: String = String(
-                                    cString: sqlite3_errmsg(mDB.mDb))
+                cString: sqlite3_errmsg(mDB.mDb))
             message = "Error: querySQL prepare failed rc: "
             message.append("\(returnCode) message: \(errmsg)")
         }
         returnCode = sqlite3_finalize(selectSQLStatement)
         if returnCode != SQLITE_OK {
             let errmsg: String = String(
-                                    cString: sqlite3_errmsg(mDB.mDb))
+                cString: sqlite3_errmsg(mDB.mDb))
             message = "Error: querySQL finalize failed rc: "
             message.append("\(returnCode) message: \(errmsg)")
         }
@@ -402,7 +401,7 @@ class UtilsSQLCipher {
     // MARK: - FetchColumnInfo
 
     class func fetchColumnInfo(handle: OpaquePointer?)
-                                throws -> [[String: Any]] {
+    throws -> [[String: Any]] {
         var result: [[String: Any]] = []
         var fetchColumnInfo = true
         var columnCount: Int32 = 0
@@ -445,7 +444,7 @@ class UtilsSQLCipher {
     // MARK: - GetColumnType
 
     class func getColumnType(index: Int32, stmt: OpaquePointer?)
-                                -> Int32 {
+    -> Int32 {
         var type: Int32 = 0
         // Column types - http://www.sqlite.org/datatype3.html (section 2.2 table column 1)
         let blobTypes = ["BINARY", "BLOB", "VARBINARY"]
@@ -555,21 +554,21 @@ class UtilsSQLCipher {
                                              nil, nil)
         if returnCode != SQLITE_OK {
             let errmsg: String = String(
-                                    cString: sqlite3_errmsg(mDB.mDb))
+                cString: sqlite3_errmsg(mDB.mDb))
             var msg: String = "Error: execute failed rc: \(returnCode)"
             msg.append(" message: \(errmsg)")
             throw UtilsSQLCipherError.execute(
                 message: msg)
         }
-         return
+        return
     }
 
     // MARK: - DeleteDB
 
     class func deleteDB(databaseName: String) throws {
         if let dir = FileManager.default.urls(
-                    for: .documentDirectory,
-                    in: .userDomainMask).first {
+            for: .documentDirectory,
+            in: .userDomainMask).first {
             let fileURL = dir.appendingPathComponent(databaseName)
             let isFileExists = FileManager.default.fileExists(
                 atPath: fileURL.path)
@@ -590,13 +589,13 @@ class UtilsSQLCipher {
     // MARK: - ExecuteSet
 
     class func executeSet(mDB: Database, set: [[String: Any]])
-                                        throws -> Int64 {
+    throws -> Int64 {
         var msg: String = "Error executeSet: "
         if !mDB.isDBOpen() {
             msg.append("Database not opened")
             throw UtilsSQLCipherError.executeSet(message: msg)
         }
-       var lastId: Int64 = -1
+        var lastId: Int64 = -1
         do {
             for dict  in set {
                 guard let sql: String = dict["statement"] as? String
@@ -614,14 +613,14 @@ class UtilsSQLCipher {
                     if let arrValues = values as? [[Any]] {
                         for vals in arrValues {
                             lastId = try UtilsSQLCipher
-                                        .prepareSQL(mDB: mDB, sql: sql,
-                                                    values: vals)
+                                .prepareSQL(mDB: mDB, sql: sql,
+                                            values: vals)
                             if  lastId == -1 {
                                 let message: String = "lastId < 0"
                                 throw UtilsSQLCipherError
-                                        .executeSet(message: message)
+                                .executeSet(message: message)
                             }
-                       }
+                        }
                     }
                 } else {
                     lastId = try UtilsSQLCipher
@@ -629,7 +628,7 @@ class UtilsSQLCipher {
                     if  lastId == -1 {
                         let message: String = "lastId < 0"
                         throw UtilsSQLCipherError.executeSet(
-                                                message: message)
+                            message: message)
                     }
                 }
             }
@@ -637,7 +636,7 @@ class UtilsSQLCipher {
             return lastId
         } catch UtilsSQLCipherError.prepareSQL(let message) {
             throw UtilsSQLCipherError.executeSet(
-                                    message: message)
+                message: message)
         }
     }
 
@@ -645,8 +644,8 @@ class UtilsSQLCipher {
 
     class func restoreDB(databaseName: String) throws {
         if let dir = FileManager.default.urls(
-                    for: .documentDirectory,
-                    in: .userDomainMask).first {
+            for: .documentDirectory,
+            in: .userDomainMask).first {
             let fileURL = dir.appendingPathComponent(databaseName)
             let backupURL = dir
                 .appendingPathComponent("backup-\(databaseName)")
@@ -663,7 +662,7 @@ class UtilsSQLCipher {
                             .default.copyItem(atPath: backupURL.path,
                                               toPath: fileURL.path)
                         try FileManager.default
-                                            .removeItem(at: backupURL)
+                            .removeItem(at: backupURL)
                         print("Database backup-\(databaseName) deleted")
                     } catch {
                         var msg = "Error: restoreDB : \(databaseName)"
@@ -695,8 +694,8 @@ class UtilsSQLCipher {
 
     class func deleteBackupDB(databaseName: String) throws {
         if let dir = FileManager.default.urls(
-                    for: .documentDirectory,
-                    in: .userDomainMask).first {
+            for: .documentDirectory,
+            in: .userDomainMask).first {
             let backupURL = dir
                 .appendingPathComponent("backup-\(databaseName)")
             let isBackupExists = FileManager.default.fileExists(
@@ -704,7 +703,7 @@ class UtilsSQLCipher {
             if isBackupExists {
                 do {
                     try FileManager.default
-                                        .removeItem(at: backupURL)
+                        .removeItem(at: backupURL)
                     print("Database backup-\(databaseName) deleted")
                 } catch {
                     var msg = "Error: deleteBackupDB : \(databaseName)"

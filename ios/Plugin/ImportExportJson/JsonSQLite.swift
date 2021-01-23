@@ -1,12 +1,12 @@
 //
 //  JsonSQLite.swift
-//  CapacitorSqlite
+//  Plugin
 //
-//  Created by  Quéau Jean Pierre on 14/04/2020.
+//  Created by  Quéau Jean Pierre on 18/01/2021.
+//  Copyright © 2021 Max Lynch. All rights reserved.
 //
 
 import Foundation
-
 public struct JsonSQLite: Codable {
     let database: String
     let version: Int
@@ -30,7 +30,7 @@ public struct JsonTable: Codable {
     let name: String
     var schema: [JsonColumn]?
     var indexes: [JsonIndex]?
-    var values: [[UncertainValue<String, Int, Float>]]?
+    var values: [[UncertainValue<String, Int, Double>]]?
 
     public func show() {
         print("name: \(name) ")
@@ -100,11 +100,9 @@ public struct UncertainValue<T: Codable, U: Codable, V: Codable>: Codable {
     public var tValue: T?
     public var uValue: U?
     public var vValue: V?
-
     public var value: Any? {
         return tValue ?? uValue ?? vValue
     }
-
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         tValue = try? container.decode(T.self)
@@ -112,10 +110,12 @@ public struct UncertainValue<T: Codable, U: Codable, V: Codable>: Codable {
         if uValue == nil {
             vValue = try? container.decode(V.self)
         }
+
         if tValue == nil && uValue == nil && vValue == nil {
             //Type mismatch
+            let msg: String = "The value is not of type \(T.self) not of type \(U.self) not even \(V.self)"
             throw DecodingError.typeMismatch(type(of: self), DecodingError.Context(codingPath: [],
-                debugDescription: "The value is not of type \(T.self) not of type \(U.self) not even \(V.self)"))
+                                                                                   debugDescription: msg))
         }
     }
 }

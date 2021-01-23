@@ -1,9 +1,7 @@
 import XCTest
-import Capacitor
 @testable import Plugin
 
-class PluginTests: XCTestCase {
-
+class CapacitorSQLiteTests: XCTestCase {
     override func setUp() {
         super.setUp()
         // Put setup code here. This method is called before the invocation of each test method in the class.
@@ -18,19 +16,10 @@ class PluginTests: XCTestCase {
         // This is an example of a functional test case for a plugin.
         // Use XCTAssert and related functions to verify your tests produce the correct results.
 
+        let implementation = CapacitorSQLite()
         let value = "Hello, World!"
-        let plugin = CapacitorSQLite()
+        let result = implementation.echo(value)
 
-        if let call = CAPPluginCall(callbackId: "test", options: [
-            "value": value
-        ], success: { (result, _) in
-            if let resultValue = result.data["value"] as? String {
-                XCTAssertEqual(value, resultValue)
-            }
-        }, error: { (_) in
-            XCTFail("Error shouldn't have been called")
-        }) {
-            plugin.echo(call)
-        }
+        XCTAssertEqual(value, result)
     }
 }

@@ -8,20 +8,20 @@
 
 <docgen-index>
 
-- [`getConnectionDBName()`](#getconnectiondbname)
-- [`open()`](#open)
-- [`close()`](#close)
-- [`execute(...)`](#execute)
-- [`query(...)`](#query)
-- [`run(...)`](#run)
-- [`executeSet(...)`](#executeset)
-- [`isExists()`](#isexists)
-- [`delete()`](#delete)
-- [`createSyncTable()`](#createsynctable)
-- [`setSyncDate(...)`](#setsyncdate)
-- [`getSyncDate()`](#getsyncdate)
-- [`exportToJson(...)`](#exporttojson)
-- [Interfaces](#interfaces)
+* [`getConnectionDBName()`](#getconnectiondbname)
+* [`open()`](#open)
+* [`close()`](#close)
+* [`execute(...)`](#execute)
+* [`query(...)`](#query)
+* [`run(...)`](#run)
+* [`executeSet(...)`](#executeset)
+* [`isExists()`](#isexists)
+* [`delete()`](#delete)
+* [`createSyncTable()`](#createsynctable)
+* [`setSyncDate(...)`](#setsyncdate)
+* [`getSyncDate()`](#getsyncdate)
+* [`exportToJson(...)`](#exporttojson)
+* [Interfaces](#interfaces)
 
 </docgen-index>
 
@@ -44,35 +44,34 @@ Get SQLite DB Connection DB name
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### open()
 
 ```typescript
-open() => Promise<capSQLiteResult>
+open() => Promise<void>
 ```
 
 Open a SQLite DB Connection
 
-**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
-
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### close()
 
 ```typescript
-close() => Promise<capSQLiteResult>
+close() => Promise<void>
 ```
 
 Close a SQLite DB Connection
 
-**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
-
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### execute(...)
 
@@ -90,7 +89,8 @@ Execute SQLite DB Connection Statements
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### query(...)
 
@@ -109,7 +109,8 @@ Execute SQLite DB Connection Query
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### run(...)
 
@@ -128,12 +129,13 @@ Execute SQLite DB Connection Raw Statement
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### executeSet(...)
 
 ```typescript
-executeSet(set: Array<capSQLiteSet>) => Promise<capSQLiteChanges>
+executeSet(set: capSQLiteSet[]) => Promise<capSQLiteChanges>
 ```
 
 Execute SQLite DB Connection Set
@@ -146,7 +148,8 @@ Execute SQLite DB Connection Set
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### isExists()
 
@@ -160,21 +163,21 @@ Check if a SQLite DB Connection exists
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### delete()
 
 ```typescript
-delete() => Promise<capSQLiteResult>
+delete() => Promise<void>
 ```
 
 Delete a SQLite DB Connection
 
-**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
-
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### createSyncTable()
 
@@ -188,12 +191,13 @@ Create a synchronization table
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### setSyncDate(...)
 
 ```typescript
-setSyncDate(syncdate: string) => Promise<capSQLiteResult>
+setSyncDate(syncdate: string) => Promise<void>
 ```
 
 Set the synchronization date
@@ -202,11 +206,10 @@ Set the synchronization date
 | -------------- | ------------------- |
 | **`syncdate`** | <code>string</code> |
 
-**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
-
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### getSyncDate()
 
@@ -220,7 +223,8 @@ Get the synchronization date
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### exportToJson(...)
 
@@ -238,23 +242,18 @@ Export the given database to a JSON Object
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### Interfaces
 
-#### capSQLiteResult
-
-| Prop          | Type                 | Description                                   |
-| ------------- | -------------------- | --------------------------------------------- |
-| **`result`**  | <code>boolean</code> | result set to true when successful else false |
-| **`message`** | <code>string</code>  | a returned message                            |
 
 #### capSQLiteChanges
 
 | Prop          | Type                                        | Description                               |
 | ------------- | ------------------------------------------- | ----------------------------------------- |
 | **`changes`** | <code><a href="#changes">Changes</a></code> | a returned <a href="#changes">Changes</a> |
-| **`message`** | <code>string</code>                         | a returned message                        |
+
 
 #### Changes
 
@@ -263,101 +262,63 @@ Export the given database to a JSON Object
 | **`changes`** | <code>number</code> | the number of changes from an execute or run command |
 | **`lastId`**  | <code>number</code> | the lastId created from a run command                |
 
+
 #### capSQLiteValues
 
-| Prop          | Type                | Description                                           |
-| ------------- | ------------------- | ----------------------------------------------------- |
-| **`values`**  | <code>any[]</code>  | the data values list as an <a href="#array">Array</a> |
-| **`message`** | <code>string</code> | a returned message                                    |
+| Prop         | Type               | Description                      |
+| ------------ | ------------------ | -------------------------------- |
+| **`values`** | <code>any[]</code> | the data values list as an Array |
 
-#### Array
-
-| Prop         | Type                | Description                                                                                                     |
-| ------------ | ------------------- | --------------------------------------------------------------------------------------------------------------- |
-| **`length`** | <code>number</code> | Gets or sets the length of the array. This is a number one higher than the highest element defined in an array. |
-
-| Method             | Signature                                                                                                                     | Description                                                                                                                                                                                                                                 |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **toString**       | () =&gt; string                                                                                                               | Returns a string representation of an array.                                                                                                                                                                                                |
-| **toLocaleString** | () =&gt; string                                                                                                               | Returns a string representation of an array. The elements are converted to string using their toLocalString methods.                                                                                                                        |
-| **pop**            | () =&gt; T \| undefined                                                                                                       | Removes the last element from an array and returns it.                                                                                                                                                                                      |
-| **push**           | (...items: T[]) =&gt; number                                                                                                  | Appends new elements to an array, and returns the new length of the array.                                                                                                                                                                  |
-| **concat**         | (...items: <a href="#concatarray">ConcatArray</a>&lt;T&gt;[]) =&gt; T[]                                                       | Combines two or more arrays.                                                                                                                                                                                                                |
-| **concat**         | (...items: (T \| <a href="#concatarray">ConcatArray</a>&lt;T&gt;)[]) =&gt; T[]                                                | Combines two or more arrays.                                                                                                                                                                                                                |
-| **join**           | (separator?: string \| undefined) =&gt; string                                                                                | Adds all the elements of an array separated by the specified separator string.                                                                                                                                                              |
-| **reverse**        | () =&gt; T[]                                                                                                                  | Reverses the elements in an <a href="#array">Array</a>.                                                                                                                                                                                     |
-| **shift**          | () =&gt; T \| undefined                                                                                                       | Removes the first element from an array and returns it.                                                                                                                                                                                     |
-| **slice**          | (start?: number \| undefined, end?: number \| undefined) =&gt; T[]                                                            | Returns a section of an array.                                                                                                                                                                                                              |
-| **sort**           | (compareFn?: ((a: T, b: T) =&gt; number) \| undefined) =&gt; this                                                             | Sorts an array.                                                                                                                                                                                                                             |
-| **splice**         | (start: number, deleteCount?: number \| undefined) =&gt; T[]                                                                  | Removes elements from an array and, if necessary, inserts new elements in their place, returning the deleted elements.                                                                                                                      |
-| **splice**         | (start: number, deleteCount: number, ...items: T[]) =&gt; T[]                                                                 | Removes elements from an array and, if necessary, inserts new elements in their place, returning the deleted elements.                                                                                                                      |
-| **unshift**        | (...items: T[]) =&gt; number                                                                                                  | Inserts new elements at the start of an array.                                                                                                                                                                                              |
-| **indexOf**        | (searchElement: T, fromIndex?: number \| undefined) =&gt; number                                                              | Returns the index of the first occurrence of a value in an array.                                                                                                                                                                           |
-| **lastIndexOf**    | (searchElement: T, fromIndex?: number \| undefined) =&gt; number                                                              | Returns the index of the last occurrence of a specified value in an array.                                                                                                                                                                  |
-| **every**          | &lt;S extends T&gt;(predicate: (value: T, index: number, array: T[]) =&gt; value is S, thisArg?: any) =&gt; this is S[]       | Determines whether all the members of an array satisfy the specified test.                                                                                                                                                                  |
-| **every**          | (predicate: (value: T, index: number, array: T[]) =&gt; unknown, thisArg?: any) =&gt; boolean                                 | Determines whether all the members of an array satisfy the specified test.                                                                                                                                                                  |
-| **some**           | (predicate: (value: T, index: number, array: T[]) =&gt; unknown, thisArg?: any) =&gt; boolean                                 | Determines whether the specified callback function returns true for any element of an array.                                                                                                                                                |
-| **forEach**        | (callbackfn: (value: T, index: number, array: T[]) =&gt; void, thisArg?: any) =&gt; void                                      | Performs the specified action for each element in an array.                                                                                                                                                                                 |
-| **map**            | &lt;U&gt;(callbackfn: (value: T, index: number, array: T[]) =&gt; U, thisArg?: any) =&gt; U[]                                 | Calls a defined callback function on each element of an array, and returns an array that contains the results.                                                                                                                              |
-| **filter**         | &lt;S extends T&gt;(predicate: (value: T, index: number, array: T[]) =&gt; value is S, thisArg?: any) =&gt; S[]               | Returns the elements of an array that meet the condition specified in a callback function.                                                                                                                                                  |
-| **filter**         | (predicate: (value: T, index: number, array: T[]) =&gt; unknown, thisArg?: any) =&gt; T[]                                     | Returns the elements of an array that meet the condition specified in a callback function.                                                                                                                                                  |
-| **reduce**         | (callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) =&gt; T) =&gt; T                           | Calls the specified callback function for all the elements in an array. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.                      |
-| **reduce**         | (callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) =&gt; T, initialValue: T) =&gt; T          |                                                                                                                                                                                                                                             |
-| **reduce**         | &lt;U&gt;(callbackfn: (previousValue: U, currentValue: T, currentIndex: number, array: T[]) =&gt; U, initialValue: U) =&gt; U | Calls the specified callback function for all the elements in an array. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.                      |
-| **reduceRight**    | (callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) =&gt; T) =&gt; T                           | Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function. |
-| **reduceRight**    | (callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) =&gt; T, initialValue: T) =&gt; T          |                                                                                                                                                                                                                                             |
-| **reduceRight**    | &lt;U&gt;(callbackfn: (previousValue: U, currentValue: T, currentIndex: number, array: T[]) =&gt; U, initialValue: U) =&gt; U | Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function. |
-
-#### ConcatArray
-
-| Prop         | Type                |
-| ------------ | ------------------- |
-| **`length`** | <code>number</code> |
-
-| Method    | Signature                                                          |
-| --------- | ------------------------------------------------------------------ |
-| **join**  | (separator?: string \| undefined) =&gt; string                     |
-| **slice** | (start?: number \| undefined, end?: number \| undefined) =&gt; T[] |
 
 #### capSQLiteSet
 
-| Prop            | Type                | Description                                           |
-| --------------- | ------------------- | ----------------------------------------------------- |
-| **`statement`** | <code>string</code> | A statement                                           |
-| **`values`**    | <code>any[]</code>  | the data values list as an <a href="#array">Array</a> |
+| Prop            | Type                | Description                      |
+| --------------- | ------------------- | -------------------------------- |
+| **`statement`** | <code>string</code> | A statement                      |
+| **`values`**    | <code>any[]</code>  | the data values list as an Array |
+
+
+#### capSQLiteResult
+
+| Prop         | Type                 | Description                                   |
+| ------------ | -------------------- | --------------------------------------------- |
+| **`result`** | <code>boolean</code> | result set to true when successful else false |
+
 
 #### capSQLiteSyncDate
 
 | Prop           | Type                | Description              |
 | -------------- | ------------------- | ------------------------ |
 | **`syncDate`** | <code>number</code> | the synchronization date |
-| **`message`**  | <code>string</code> | a returned message       |
+
 
 #### capSQLiteJson
 
-| Prop          | Type                                              | Description           |
-| ------------- | ------------------------------------------------- | --------------------- |
-| **`export`**  | <code><a href="#jsonsqlite">JsonSQLite</a></code> | an export JSON object |
-| **`message`** | <code>string</code>                               | a returned message    |
+| Prop         | Type                                              | Description           |
+| ------------ | ------------------------------------------------- | --------------------- |
+| **`export`** | <code><a href="#jsonsqlite">JsonSQLite</a></code> | an export JSON object |
+
 
 #### JsonSQLite
 
-| Prop            | Type                     | Description                                            |
-| --------------- | ------------------------ | ------------------------------------------------------ |
-| **`database`**  | <code>string</code>      | The database name                                      |
-| **`version`**   | <code>number</code>      | The database version                                   |
-| **`encrypted`** | <code>boolean</code>     | Set to true (database encryption) / false              |
-| **`mode`**      | <code>string</code>      | \* Set the mode ["full", "partial"]                    |
-| **`tables`**    | <code>JsonTable[]</code> | \* Array of Table (<a href="#jsontable">JsonTable</a>) |
+| Prop            | Type                     | Description                                           |
+| --------------- | ------------------------ | ----------------------------------------------------- |
+| **`database`**  | <code>string</code>      | The database name                                     |
+| **`version`**   | <code>number</code>      | The database version                                  |
+| **`encrypted`** | <code>boolean</code>     | Set to true (database encryption) / false             |
+| **`mode`**      | <code>string</code>      | * Set the mode ["full", "partial"]                    |
+| **`tables`**    | <code>JsonTable[]</code> | * Array of Table (<a href="#jsontable">JsonTable</a>) |
+
 
 #### JsonTable
 
-| Prop          | Type                      | Description                                               |
-| ------------- | ------------------------- | --------------------------------------------------------- |
-| **`name`**    | <code>string</code>       | The database name                                         |
-| **`schema`**  | <code>JsonColumn[]</code> | \* Array of Schema (<a href="#jsoncolumn">JsonColumn</a>) |
-| **`indexes`** | <code>JsonIndex[]</code>  | \* Array of Index (<a href="#jsonindex">JsonIndex</a>)    |
-| **`values`**  | <code>any[][]</code>      | \* Array of Table data                                    |
+| Prop          | Type                      | Description                                              |
+| ------------- | ------------------------- | -------------------------------------------------------- |
+| **`name`**    | <code>string</code>       | The database name                                        |
+| **`schema`**  | <code>JsonColumn[]</code> | * Array of Schema (<a href="#jsoncolumn">JsonColumn</a>) |
+| **`indexes`** | <code>JsonIndex[]</code>  | * Array of Index (<a href="#jsonindex">JsonIndex</a>)    |
+| **`values`**  | <code>any[][]</code>      | * Array of Table data                                    |
+
 
 #### JsonColumn
 
@@ -366,6 +327,7 @@ Export the given database to a JSON Object
 | **`column`**     | <code>string</code> | The column name                     |
 | **`value`**      | <code>string</code> | The column data (type, unique, ...) |
 | **`foreignkey`** | <code>string</code> | The column foreign key constraints  |
+
 
 #### JsonIndex
 

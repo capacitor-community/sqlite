@@ -1,5 +1,6 @@
 import { WebPlugin } from '@capacitor/core';
-import {
+
+import type {
   CapacitorSQLitePlugin,
   capEchoOptions,
   capSQLiteOptions,
@@ -18,7 +19,7 @@ import {
   capSQLiteUpgradeOptions,
   capSQLiteSyncDate,
 } from './definitions';
-//1234567890123456789012345678901234567890123456789012345678901234567890
+
 export class CapacitorSQLiteWeb
   extends WebPlugin
   implements CapacitorSQLitePlugin {
@@ -33,142 +34,79 @@ export class CapacitorSQLiteWeb
     console.log('ECHO in Web plugin', options);
     return options;
   }
-  async createConnection(options: capSQLiteOptions): Promise<capSQLiteResult> {
+  async createConnection(options: capSQLiteOptions): Promise<void> {
     console.log('createConnection', options);
-    return Promise.resolve({
-      result: false,
-      message: `Not implemented on Web Platform`,
-    });
+    throw this.unimplemented('Not implemented on web.');
   }
-  async open(options: capSQLiteOptions): Promise<capSQLiteResult> {
+  async open(options: capSQLiteOptions): Promise<void> {
     console.log('open', options);
-    return Promise.resolve({
-      result: false,
-      message: `Not implemented on Web Platform`,
-    });
+    throw this.unimplemented('Not implemented on web.');
   }
-  async closeConnection(options: capSQLiteOptions): Promise<capSQLiteResult> {
+  async closeConnection(options: capSQLiteOptions): Promise<void> {
     console.log('closeConnection', options);
-    return Promise.resolve({
-      result: false,
-      message: `Not implemented on Web Platform`,
-    });
+    throw this.unimplemented('Not implemented on web.');
   }
-  async close(options: capSQLiteOptions): Promise<capSQLiteResult> {
+  async close(options: capSQLiteOptions): Promise<void> {
     console.log('close', options);
-    return Promise.resolve({
-      result: false,
-      message: `Not implemented on Web Platform`,
-    });
+    throw this.unimplemented('Not implemented on web.');
   }
   async execute(options: capSQLiteExecuteOptions): Promise<capSQLiteChanges> {
     console.log('execute', options);
-    return Promise.resolve({
-      changes: { changes: -1 },
-      message: `Not implemented on Web Platform`,
-    });
+    throw this.unimplemented('Not implemented on web.');
   }
   async executeSet(options: capSQLiteSetOptions): Promise<capSQLiteChanges> {
     console.log('execute', options);
-    return Promise.resolve({
-      changes: { changes: -1 },
-      message: `Not implemented on Web Platform`,
-    });
+    throw this.unimplemented('Not implemented on web.');
   }
   async run(options: capSQLiteRunOptions): Promise<capSQLiteChanges> {
     console.log('run', options);
-    return Promise.resolve({
-      changes: { changes: -1 },
-      message: `Not implemented on Web Platform`,
-    });
+    throw this.unimplemented('Not implemented on web.');
   }
   async query(options: capSQLiteQueryOptions): Promise<capSQLiteValues> {
     console.log('query', options);
-    return Promise.resolve({
-      values: [],
-      message: `Not implemented on Web Platform`,
-    });
+    throw this.unimplemented('Not implemented on web.');
   }
   async isDBExists(options: capSQLiteOptions): Promise<capSQLiteResult> {
     console.log('in Web isDBExists', options);
-    return Promise.resolve({
-      result: false,
-      message: `Not implemented on Web Platform`,
-    });
+    throw this.unimplemented('Not implemented on web.');
   }
-  async deleteDatabase(options: capSQLiteOptions): Promise<capSQLiteResult> {
+  async deleteDatabase(options: capSQLiteOptions): Promise<void> {
     console.log('deleteDatabase', options);
-    return Promise.resolve({
-      result: false,
-      message: `Not implemented on Web Platform`,
-    });
+    throw this.unimplemented('Not implemented on web.');
   }
   async isJsonValid(options: capSQLiteImportOptions): Promise<capSQLiteResult> {
     console.log('isJsonValid', options);
-    return Promise.resolve({
-      result: false,
-      message: `Not implemented on Web Platform`,
-    });
+    throw this.unimplemented('Not implemented on web.');
   }
 
   async importFromJson(
     options: capSQLiteImportOptions,
   ): Promise<capSQLiteChanges> {
     console.log('importFromJson', options);
-    return Promise.resolve({
-      result: false,
-      message: `Not implemented on Web Platform`,
-    });
+    throw this.unimplemented('Not implemented on web.');
   }
   async exportToJson(options: capSQLiteExportOptions): Promise<capSQLiteJson> {
     console.log('exportToJson', options);
-    return Promise.resolve({
-      message: `Not implemented on Web Platform`,
-    });
+    throw this.unimplemented('Not implemented on web.');
   }
   async createSyncTable(options: capSQLiteOptions): Promise<capSQLiteChanges> {
     console.log('createSyncTable', options);
-    return Promise.resolve({
-      changes: { changes: -1 },
-      message: `Not implemented on Web Platform`,
-    });
+    throw this.unimplemented('Not implemented on web.');
   }
-  async setSyncDate(
-    options: capSQLiteSyncDateOptions,
-  ): Promise<capSQLiteResult> {
+  async setSyncDate(options: capSQLiteSyncDateOptions): Promise<void> {
     console.log('setSyncDate', options);
-    return Promise.resolve({
-      result: false,
-      message: `Not implemented on Web Platform`,
-    });
+    throw this.unimplemented('Not implemented on web.');
   }
   async getSyncDate(options: capSQLiteOptions): Promise<capSQLiteSyncDate> {
     console.log('getSyncDate', options);
-    return Promise.resolve({
-      syncDate: 0,
-      message: `Not implemented on Web Platform`,
-    });
+    throw this.unimplemented('Not implemented on web.');
   }
-  async addUpgradeStatement(
-    options: capSQLiteUpgradeOptions,
-  ): Promise<capSQLiteResult> {
+  async addUpgradeStatement(options: capSQLiteUpgradeOptions): Promise<void> {
     console.log('addUpgradeStatement', options);
-    return Promise.resolve({
-      result: false,
-      message: `Not implemented on Web Platform`,
-    });
+    throw this.unimplemented('Not implemented on web.');
   }
-  async copyFromAssets(): Promise<capSQLiteResult> {
-    return Promise.resolve({
-      result: false,
-      message: `Not implemented on Web Platform`,
-    });
+  async copyFromAssets(): Promise<void> {
+    console.log('copyFromAssets');
+    throw this.unimplemented('Not implemented on web.');
   }
 }
-
-const CapacitorSQLite = new CapacitorSQLiteWeb();
-
-export { CapacitorSQLite };
-
-import { registerWebPlugin } from '@capacitor/core';
-registerWebPlugin(CapacitorSQLite);
