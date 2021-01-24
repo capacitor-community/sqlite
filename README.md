@@ -4,21 +4,44 @@
 <p align="center">
   Capacitor community plugin for Native and Electron SQLite Databases. In Native databases could be encrypted with SQLCipher
 </p>
-
+<br>
 <p align="center">
-  <img src="https://img.shields.io/maintenance/yes/2021?style=flat-square" />
-  <a href="https://github.com/capacitor-community/sqlite/actions?query=workflow%3A%22CI%22"><img src="https://img.shields.io/github/workflow/status/capacitor-community/sqlite/CI?style=flat-square" /></a>
+  The <strong><code>2.4.x</code></strong> is now accessible using the tag <strong>@initial</strong>
+</p>
+<p align="center">
+  The <strong><code>2.4.x</code></strong> is NOT ANYMORE MAINTAINED
+</p>
+<br>
+<p align="center">
+  <img src="https://img.shields.io/maintenance/no/2021?style=flat-square" />
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/l/@capacitor-community/sqlite?style=flat-square" /></a>
 <br>
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/dw/@capacitor-community/sqlite?style=flat-square" /></a>
-  <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/v/@capacitor-community/sqlite/latest?style=flat-square" /></a>
+  <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/v/@capacitor-community/sqlite/initial?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 <a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-3-orange?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 </p>
 <br>
 
-## REFACTOR 🚀 (Move to Master)
+## @NEXT FOR CAPACITOR 3 🚧 (Master)
+
+The refactor release has been upgraded to `@capacitor/core@3.0.0-beta.1`.
+!!! ONLY iOS and Android plugins have been upgraded !!!
+
+To install it
+
+```bash
+npm i --save @capacitor-community/sqlite@next
+```
+
+This release provide a better Error handling through try...catch.
+
+The test has been achieved on:
+
+- a [Ionic/Angular app](https://github.com/jepiqueau/angular-sqlite-app-refactor)
+
+## @LATEST REFACTOR 🚀 (Move to branch 2.9.x)
 
 A refactoring has been started more than a month ago to reach the following objectives:
 
@@ -32,19 +55,21 @@ A refactoring has been started more than a month ago to reach the following obje
 
 This was discussed lengthly in issue#1 and issue#52
 
-It is now available in a beta release `2.9.0-beta.1` for all platforms (Android, iOS & Electron).
+It is now available in a stable release `2.9.x` for all platforms (Android, iOS & Electron).
 
-Developers are encouraged to start looking at it and using it as this will have some impacts on yours developments. The interface to the plugin is now achieved through the use of connection wrappers
+Developers are encouraged to start converting their applications. The interface to the plugin is now achieved through the use of connection wrappers
 
-- [API_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/APIConnection.md)
+- [API_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/2.9.x/docs/APIConnection.md)
 
-- [API_DB_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/APIDBConnection.md)
+- [API_DB_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/2.9.x/docs/APIDBConnection.md)
 
-As you will see it is a `Major`change and the release will become a `3.0.0` as soon as `capacitor@3.0.0` will be released. So both interfaces to the plugin will be kept and maintained to that stage, after this, the `refactor interface` will be released as the master and maintained.
+As you will see it is a `Major`change and the release is now the basis of `3.0.0-beta` based on `capacitor@3.0.0`.
+
+So the `2.4.x`is now not anymore maintened.
 
 The test has been achieved on:
 
-- a [Ionic/Angular app](https://github.com/jepiqueau/angular-sqlite-app-refactor)
+- a [Ionic/Angular app](https://github.com/jepiqueau/angular-sqlite-app-refactor/tree/refactor)
 
 - a [Ionic/React app](https://github.com/jepiqueau/react-sqlite-app-starter/tree/refactor)
 
@@ -59,7 +84,7 @@ When you will find issues, please report them with the `REFACTOR` word at the st
 To install it
 
 ```bash
-npm i --save @capacitor-community/sqlite@refactor
+npm i --save @capacitor-community/sqlite@latest
 ```
 
 Hope you will enjoy it.
@@ -80,8 +105,10 @@ meaning that it will not work in IE11 without additional JavaScript transformati
 
 ## Installation
 
+The `2.4.x` stable release is accessible through the tag `initial`
+
 ```bash
-npm install @capacitor-community/sqlite@latest
+npm install @capacitor-community/sqlite@initial
 npx cap sync
 npx cap add ios
 npx cap add android
@@ -164,10 +191,7 @@ npx cap open @capacitor-community/electron
 
 ## Issues
 
-When you will find issues, please report them with the `2.4.x` word at the start of the issue title.
-
-[issues](https://github.com/capacitor-community/sqlite/issues)
-
+Do not report anymore issues for `2.4.x` as this release is not anymore maintained.
 
 ## Configuration
 
@@ -205,20 +229,19 @@ No configuration required for this plugin
 
 ### Ionic/Angular
 
-- [angular-sqlite-app-starter](https://github.com/jepiqueau/angular-sqlite-app-starter)
-
+- [angular-sqlite-app-starter](https://github.com/jepiqueau/angular-sqlite-app-starter/tree/2.4.x)
 
 ### Ionic/React
 
-- [react-sqlite-app-starter](https://github.com/jepiqueau/react-sqlite-app-starter)
+- [react-sqlite-app-starter](https://github.com/jepiqueau/react-sqlite-app-starter/tree/2.4.x)
 
 ### Ionic/Vue
 
-- [vue-sqlite-app-starter](https://github.com/jepiqueau/vue-sqlite-app-starter)
+- [vue-sqlite-app-starter](https://github.com/jepiqueau/vue-sqlite-app-starter/tree/2.4.x)
 
 ### Vue
 
-- [vue-sqlite-app](https://github.com/jepiqueau/vue-sqlite-app)
+- [vue-sqlite-app](https://github.com/jepiqueau/vue-sqlite-app/tree/2.4.x)
 
 ## Usage
 

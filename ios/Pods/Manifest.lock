@@ -1,7 +1,7 @@
 PODS:
-  - Capacitor (2.4.5):
+  - Capacitor (2.4.6):
     - CapacitorCordova
-  - CapacitorCordova (2.4.5)
+  - CapacitorCordova (2.4.6)
   - SQLCipher (4.4.0):
     - SQLCipher/standard (= 4.4.0)
   - SQLCipher/common (4.4.0)
@@ -24,10 +24,10 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@capacitor/ios"
 
 SPEC CHECKSUMS:
-  Capacitor: 16fff19464a7d37e2f996e0994749b04111ed3f0
-  CapacitorCordova: 4f552a757626d236959fd79e970b6b6a26efb859
+  Capacitor: 0f131577d41c082931f00cc080e2289d503465c8
+  CapacitorCordova: 3375b39b5ebca770ac7869f85e4dea32a642c9e0
   SQLCipher: e434ed542b24f38ea7b36468a13f9765e1b5c072
 
 PODFILE CHECKSUM: d023b7cc7a531b09112d6dfc4e911d6e9143023b
 
-COCOAPODS: 1.9.1
+COCOAPODS: 1.10.0
