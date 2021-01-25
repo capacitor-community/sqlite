@@ -22,6 +22,7 @@
 		2C3AF32625B594C400C5EF2F /* ExportToJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C3AF32525B594C400C5EF2F /* ExportToJson.swift */; };
 		2C3AF32C25B594F000C5EF2F /* ImportFromJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C3AF32B25B594F000C5EF2F /* ImportFromJson.swift */; };
 		2C3AF33025B5952700C5EF2F /* JsonSQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C3AF32F25B5952700C5EF2F /* JsonSQLite.swift */; };
+		2C479B9225BD874C009B1A49 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C479B9125BD874C009B1A49 /* Security.framework */; };
 		2F98D68224C9AAE500613A4C /* CapacitorSQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F98D68124C9AAE400613A4C /* CapacitorSQLite.swift */; };
 		50ADFF92201F53D600D50D53 /* Plugin.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50ADFF88201F53D600D50D53 /* Plugin.framework */; };
 		50ADFF97201F53D600D50D53 /* CapacitorSQLitePluginTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50ADFF96201F53D600D50D53 /* CapacitorSQLitePluginTests.swift */; };
@@ -55,6 +56,7 @@
 		2C3AF32525B594C400C5EF2F /* ExportToJson.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportToJson.swift; sourceTree = "<group>"; };
 		2C3AF32B25B594F000C5EF2F /* ImportFromJson.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportFromJson.swift; sourceTree = "<group>"; };
 		2C3AF32F25B5952700C5EF2F /* JsonSQLite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JsonSQLite.swift; sourceTree = "<group>"; };
+		2C479B9125BD874C009B1A49 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk/System/Library/Frameworks/Security.framework; sourceTree = DEVELOPER_DIR; };
 		2F98D68124C9AAE400613A4C /* CapacitorSQLite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CapacitorSQLite.swift; sourceTree = "<group>"; };
 		3B2A61DA5A1F2DD4F959604D /* Pods_Plugin.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Plugin.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		50ADFF88201F53D600D50D53 /* Plugin.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Plugin.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -78,6 +80,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2C479B9225BD874C009B1A49 /* Security.framework in Frameworks */,
 				50ADFFA42020D75100D50D53 /* Capacitor.framework in Frameworks */,
 				03FC29A292ACC40490383A1F /* Pods_Plugin.framework in Frameworks */,
 			);
@@ -179,6 +182,7 @@
 		A797B9EFA3DCEFEA1FBB66A9 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				2C479B9125BD874C009B1A49 /* Security.framework */,
 				50ADFFA52020D75100D50D53 /* Capacitor.framework */,
 				3B2A61DA5A1F2DD4F959604D /* Pods_Plugin.framework */,
 				F6753A823D3815DB436415E3 /* Pods_PluginTests.framework */,
