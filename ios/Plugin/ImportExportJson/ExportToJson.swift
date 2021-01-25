@@ -599,6 +599,7 @@ class ExportToJson {
     // MARK: - ExportToJson - CreateIndexes
 
     // swiftlint:disable function_body_length
+    // swiftlint:disable cyclomatic_complexity
     class func createIndexes(mDB: Database, tableName: String)
                                     throws -> [[String: String]] {
         var retIndexes: [[String: String]] = []
@@ -677,6 +678,7 @@ class ExportToJson {
 
         return retIndexes
     }
+    // swiftlint:enable cyclomatic_complexity
     // swiftlint:enable function_body_length
 
     // MARK: - ExportToJson - CreateValues

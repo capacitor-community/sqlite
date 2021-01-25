@@ -8,20 +8,20 @@
 
 <docgen-index>
 
-- [`getConnectionDBName()`](#getconnectiondbname)
-- [`open()`](#open)
-- [`close()`](#close)
-- [`execute(...)`](#execute)
-- [`query(...)`](#query)
-- [`run(...)`](#run)
-- [`executeSet(...)`](#executeset)
-- [`isExists()`](#isexists)
-- [`delete()`](#delete)
-- [`createSyncTable()`](#createsynctable)
-- [`setSyncDate(...)`](#setsyncdate)
-- [`getSyncDate()`](#getsyncdate)
-- [`exportToJson(...)`](#exporttojson)
-- [Interfaces](#interfaces)
+* [`getConnectionDBName()`](#getconnectiondbname)
+* [`open()`](#open)
+* [`close()`](#close)
+* [`execute(...)`](#execute)
+* [`query(...)`](#query)
+* [`run(...)`](#run)
+* [`executeSet(...)`](#executeset)
+* [`isExists()`](#isexists)
+* [`delete()`](#delete)
+* [`createSyncTable()`](#createsynctable)
+* [`setSyncDate(...)`](#setsyncdate)
+* [`getSyncDate()`](#getsyncdate)
+* [`exportToJson(...)`](#exporttojson)
+* [Interfaces](#interfaces)
 
 </docgen-index>
 
@@ -44,7 +44,8 @@ Get SQLite DB Connection DB name
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### open()
 
@@ -58,7 +59,8 @@ Open a SQLite DB Connection
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### close()
 
@@ -72,7 +74,8 @@ Close a SQLite DB Connection
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### execute(...)
 
@@ -90,7 +93,8 @@ Execute SQLite DB Connection Statements
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### query(...)
 
@@ -109,7 +113,8 @@ Execute SQLite DB Connection Query
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### run(...)
 
@@ -128,7 +133,8 @@ Execute SQLite DB Connection Raw Statement
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### executeSet(...)
 
@@ -146,7 +152,8 @@ Execute SQLite DB Connection Set
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### isExists()
 
@@ -160,7 +167,8 @@ Check if a SQLite DB Connection exists
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### delete()
 
@@ -174,7 +182,8 @@ Delete a SQLite DB Connection
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### createSyncTable()
 
@@ -188,7 +197,8 @@ Create a synchronization table
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### setSyncDate(...)
 
@@ -206,7 +216,8 @@ Set the synchronization date
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### getSyncDate()
 
@@ -220,7 +231,8 @@ Get the synchronization date
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### exportToJson(...)
 
@@ -238,9 +250,11 @@ Export the given database to a JSON Object
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### Interfaces
+
 
 #### capSQLiteResult
 
@@ -249,12 +263,14 @@ Export the given database to a JSON Object
 | **`result`**  | <code>boolean</code> | result set to true when successful else false |
 | **`message`** | <code>string</code>  | a returned message                            |
 
+
 #### capSQLiteChanges
 
 | Prop          | Type                                        | Description                               |
 | ------------- | ------------------------------------------- | ----------------------------------------- |
 | **`changes`** | <code><a href="#changes">Changes</a></code> | a returned <a href="#changes">Changes</a> |
 | **`message`** | <code>string</code>                         | a returned message                        |
+
 
 #### Changes
 
@@ -263,12 +279,14 @@ Export the given database to a JSON Object
 | **`changes`** | <code>number</code> | the number of changes from an execute or run command |
 | **`lastId`**  | <code>number</code> | the lastId created from a run command                |
 
+
 #### capSQLiteValues
 
 | Prop          | Type                | Description                                           |
 | ------------- | ------------------- | ----------------------------------------------------- |
 | **`values`**  | <code>any[]</code>  | the data values list as an <a href="#array">Array</a> |
 | **`message`** | <code>string</code> | a returned message                                    |
+
 
 #### Array
 
@@ -308,6 +326,7 @@ Export the given database to a JSON Object
 | **reduceRight**    | (callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) =&gt; T, initialValue: T) =&gt; T          |                                                                                                                                                                                                                                             |
 | **reduceRight**    | &lt;U&gt;(callbackfn: (previousValue: U, currentValue: T, currentIndex: number, array: T[]) =&gt; U, initialValue: U) =&gt; U | Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function. |
 
+
 #### ConcatArray
 
 | Prop         | Type                |
@@ -319,12 +338,14 @@ Export the given database to a JSON Object
 | **join**  | (separator?: string \| undefined) =&gt; string                     |
 | **slice** | (start?: number \| undefined, end?: number \| undefined) =&gt; T[] |
 
+
 #### capSQLiteSet
 
 | Prop            | Type                | Description                                           |
 | --------------- | ------------------- | ----------------------------------------------------- |
 | **`statement`** | <code>string</code> | A statement                                           |
 | **`values`**    | <code>any[]</code>  | the data values list as an <a href="#array">Array</a> |
+
 
 #### capSQLiteSyncDate
 
@@ -333,6 +354,7 @@ Export the given database to a JSON Object
 | **`syncDate`** | <code>number</code> | the synchronization date |
 | **`message`**  | <code>string</code> | a returned message       |
 
+
 #### capSQLiteJson
 
 | Prop          | Type                                              | Description           |
@@ -340,24 +362,27 @@ Export the given database to a JSON Object
 | **`export`**  | <code><a href="#jsonsqlite">JsonSQLite</a></code> | an export JSON object |
 | **`message`** | <code>string</code>                               | a returned message    |
 
+
 #### JsonSQLite
 
-| Prop            | Type                     | Description                                            |
-| --------------- | ------------------------ | ------------------------------------------------------ |
-| **`database`**  | <code>string</code>      | The database name                                      |
-| **`version`**   | <code>number</code>      | The database version                                   |
-| **`encrypted`** | <code>boolean</code>     | Set to true (database encryption) / false              |
-| **`mode`**      | <code>string</code>      | \* Set the mode ["full", "partial"]                    |
-| **`tables`**    | <code>JsonTable[]</code> | \* Array of Table (<a href="#jsontable">JsonTable</a>) |
+| Prop            | Type                     | Description                                           |
+| --------------- | ------------------------ | ----------------------------------------------------- |
+| **`database`**  | <code>string</code>      | The database name                                     |
+| **`version`**   | <code>number</code>      | The database version                                  |
+| **`encrypted`** | <code>boolean</code>     | Set to true (database encryption) / false             |
+| **`mode`**      | <code>string</code>      | * Set the mode ["full", "partial"]                    |
+| **`tables`**    | <code>JsonTable[]</code> | * Array of Table (<a href="#jsontable">JsonTable</a>) |
+
 
 #### JsonTable
 
-| Prop          | Type                      | Description                                               |
-| ------------- | ------------------------- | --------------------------------------------------------- |
-| **`name`**    | <code>string</code>       | The database name                                         |
-| **`schema`**  | <code>JsonColumn[]</code> | \* Array of Schema (<a href="#jsoncolumn">JsonColumn</a>) |
-| **`indexes`** | <code>JsonIndex[]</code>  | \* Array of Index (<a href="#jsonindex">JsonIndex</a>)    |
-| **`values`**  | <code>any[][]</code>      | \* Array of Table data                                    |
+| Prop          | Type                      | Description                                              |
+| ------------- | ------------------------- | -------------------------------------------------------- |
+| **`name`**    | <code>string</code>       | The database name                                        |
+| **`schema`**  | <code>JsonColumn[]</code> | * Array of Schema (<a href="#jsoncolumn">JsonColumn</a>) |
+| **`indexes`** | <code>JsonIndex[]</code>  | * Array of Index (<a href="#jsonindex">JsonIndex</a>)    |
+| **`values`**  | <code>any[][]</code>      | * Array of Table data                                    |
+
 
 #### JsonColumn
 
@@ -366,6 +391,7 @@ Export the given database to a JSON Object
 | **`column`**     | <code>string</code> | The column name                     |
 | **`value`**      | <code>string</code> | The column data (type, unique, ...) |
 | **`foreignkey`** | <code>string</code> | The column foreign key constraints  |
+
 
 #### JsonIndex
 

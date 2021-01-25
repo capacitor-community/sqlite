@@ -8,17 +8,17 @@
 
 <docgen-index>
 
-- [`echo(...)`](#echo)
-- [`addUpgradeStatement(...)`](#addupgradestatement)
-- [`createConnection(...)`](#createconnection)
-- [`retrieveConnection(...)`](#retrieveconnection)
-- [`retrieveAllConnections()`](#retrieveallconnections)
-- [`closeConnection(...)`](#closeconnection)
-- [`closeAllConnections()`](#closeallconnections)
-- [`importFromJson(...)`](#importfromjson)
-- [`isJsonValid(...)`](#isjsonvalid)
-- [`copyFromAssets()`](#copyfromassets)
-- [Interfaces](#interfaces)
+* [`echo(...)`](#echo)
+* [`addUpgradeStatement(...)`](#addupgradestatement)
+* [`createConnection(...)`](#createconnection)
+* [`retrieveConnection(...)`](#retrieveconnection)
+* [`retrieveAllConnections()`](#retrieveallconnections)
+* [`closeConnection(...)`](#closeconnection)
+* [`closeAllConnections()`](#closeallconnections)
+* [`importFromJson(...)`](#importfromjson)
+* [`isJsonValid(...)`](#isjsonvalid)
+* [`copyFromAssets()`](#copyfromassets)
+* [Interfaces](#interfaces)
 
 </docgen-index>
 
@@ -45,7 +45,8 @@ Echo a value
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### addUpgradeStatement(...)
 
@@ -67,7 +68,8 @@ Add the upgrade Statement for database version upgrading
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### createConnection(...)
 
@@ -88,7 +90,8 @@ Create a connection to a database
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### retrieveConnection(...)
 
@@ -106,7 +109,8 @@ Retrieve an existing database connection
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### retrieveAllConnections()
 
@@ -120,7 +124,8 @@ Retrieve all database connections
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### closeConnection(...)
 
@@ -138,7 +143,8 @@ Close a database connection
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### closeAllConnections()
 
@@ -152,7 +158,8 @@ Close all database connections
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### importFromJson(...)
 
@@ -170,7 +177,8 @@ Import a database From a JSON
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### isJsonValid(...)
 
@@ -188,7 +196,8 @@ Check the validity of a JSON Object
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### copyFromAssets()
 
@@ -202,15 +211,18 @@ Copy databases from public/assets/databases folder to application databases fold
 
 **Since:** 2.9.0 refactor
 
----
+--------------------
+
 
 ### Interfaces
+
 
 #### capEchoResult
 
 | Prop        | Type                | Description     |
 | ----------- | ------------------- | --------------- |
 | **`value`** | <code>string</code> | String returned |
+
 
 #### capSQLiteResult
 
@@ -219,12 +231,14 @@ Copy databases from public/assets/databases folder to application databases fold
 | **`result`**  | <code>boolean</code> | result set to true when successful else false |
 | **`message`** | <code>string</code>  | a returned message                            |
 
+
 #### capSQLiteSet
 
 | Prop            | Type                | Description                      |
 | --------------- | ------------------- | -------------------------------- |
 | **`statement`** | <code>string</code> | A statement                      |
 | **`values`**    | <code>any[]</code>  | the data values list as an Array |
+
 
 #### Map
 
@@ -241,12 +255,14 @@ Copy databases from public/assets/databases folder to application databases fold
 | **has**     | (key: K) =&gt; boolean                                                                                         |
 | **set**     | (key: K, value: V) =&gt; this                                                                                  |
 
+
 #### capSQLiteChanges
 
 | Prop          | Type                                        | Description                               |
 | ------------- | ------------------------------------------- | ----------------------------------------- |
 | **`changes`** | <code><a href="#changes">Changes</a></code> | a returned <a href="#changes">Changes</a> |
 | **`message`** | <code>string</code>                         | a returned message                        |
+
 
 #### Changes
 

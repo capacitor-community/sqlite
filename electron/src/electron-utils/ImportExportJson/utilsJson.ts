@@ -363,12 +363,16 @@ export class UtilsJson {
         `SELECT ${firstColumnName} FROM ` +
         `${dbName} WHERE ${firstColumnName} = ${key};`;
       try {
+        const resQuery: Array<any> = await this._uSQLite.queryAll(
+          db,
+          query,
+          [],
+        );
+        if (resQuery.length === 1) ret = true;
+        resolve(ret);
       } catch (err) {
         reject(new Error(`IsIdExists: ${err.message}`));
       }
-      const resQuery: Array<any> = await this._uSQLite.queryAll(db, query, []);
-      if (resQuery.length === 1) ret = true;
-      resolve(ret);
     });
   }
 

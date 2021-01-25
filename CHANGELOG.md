@@ -1,3 +1,14 @@
+## 2.9.6 (2021-01-24) REFACTOR
+
+### Chore
+
+- Move to latest tag
+
+### Bug Fixes
+
+- Fix isIdExists on Electron
+- Readme all links to apps and docs
+
 ## 2.9.5 (2021-01-20) REFACTOR
 
 ### Bug Fixes
