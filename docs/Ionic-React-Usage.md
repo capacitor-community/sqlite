@@ -1,8 +1,8 @@
 <p align="center"><br><img src="https://user-images.githubusercontent.com/236501/85893648-1c92e880-b7a8-11ea-926d-95355b8175c7.png" width="128" height="128" /></p>
 <h2 align="center">IONIC/REACT USAGE DOCUMENTATION</h2>
-<p align="center"><strong><code>@capacitor-community/sqlite</code></strong></p>
+<p align="center"><strong><code>@capacitor-community/sqlite@latest</code></strong></p>
 <p align="center">
-  In Ionic/React Applications, the <code>@capacitor-community/sqlite</code> can be accessed through a Singleton React Hook initialized in the <code>App.tsx</code> component</p>
+  In Ionic/React Applications, the <code>@capacitor-community/sqlite@latest</code> can be accessed through a Singleton React Hook initialized in the <code>App.tsx</code> component</p>
 <br>
 
 ## React SQLite Hook
@@ -15,13 +15,13 @@
 
 A react hook specific to `@capacitor-community/sqlite` plugin has been developed to access the plugin API
 
-- [react-sqlite-hook](https://github.com/jepiqueau/react-sqlite-hook/blob/refactor/README.md)
+- [react-sqlite-hook](https://github.com/jepiqueau/react-sqlite-hook/blob/2.9.x/README.md)
 
 To install it in your Ionic/React App
 
 ```bash
-    npm i --save-dev @capacitor-community/sqlite@refactor
-    npm i --save-dev react-sqlite-hook/refactor
+    npm i --save-dev @capacitor-community/sqlite@latest
+    npm i --save-dev react-sqlite-hook@latest
 ```
 
 ### React SQLite Hook Declaration
