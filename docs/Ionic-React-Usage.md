@@ -1,8 +1,8 @@
 <p align="center"><br><img src="https://user-images.githubusercontent.com/236501/85893648-1c92e880-b7a8-11ea-926d-95355b8175c7.png" width="128" height="128" /></p>
 <h2 align="center">IONIC/REACT USAGE DOCUMENTATION</h2>
-<p align="center"><strong><code>@capacitor-community/sqlite</code></strong></p>
+<p align="center"><strong><code>@capacitor-community/sqlite@next</code></strong></p>
 <p align="center">
-  In Ionic/React Applications, the <code>@capacitor-community/sqlite</code> can be accessed through a Singleton React Hook initialized in the <code>App.tsx</code> component</p>
+  In Ionic/React Applications, the <code>@capacitor-community/sqlite@next</code> can be accessed through a Singleton React Hook initialized in the <code>App.tsx</code> component</p>
 <br>
 
 ## React SQLite Hook
@@ -15,13 +15,13 @@
 
 A react hook specific to `@capacitor-community/sqlite` plugin has been developed to access the plugin API
 
-- [react-sqlite-hook](https://github.com/jepiqueau/react-sqlite-hook/blob/refactor/README.md)
+- [react-sqlite-hook](https://github.com/jepiqueau/react-sqlite-hook/blob/master/README.md)
 
 To install it in your Ionic/React App
 
 ```bash
-    npm i --save-dev @capacitor-community/sqlite@refactor
-    npm i --save-dev react-sqlite-hook/refactor
+    npm i --save-dev @capacitor-community/sqlite@next
+    npm i --save-dev react-sqlite-hook@next
 ```
 
 ### React SQLite Hook Declaration
@@ -73,147 +73,153 @@ Now the Singleton SQLite Hook `sqlite`and Existing Connections Store `existingCo
 - in a `component` file
 
 ```ts
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './Test2dbs.css';
-import { IonCard, IonCardContent } from '@ionic/react';
+import { IonCard,IonCardContent } from '@ionic/react';
 
-import {
-  createTablesNoEncryption,
-  importTwoUsers,
-} from '../Utils/noEncryptionUtils';
+import { createTablesNoEncryption, importTwoUsers } from '../Utils/noEncryptionUtils';
 import { createSchemaContacts, setContacts } from '../Utils/encryptedSetUtils';
-import { deleteDatabase } from '../Utils/deleteDBUtil';
-
+import { deleteDatabase } from '../Utils/deleteDBUtil';     
+      
 import { sqlite, existingConn } from '../App';
+import { Dialog } from '@capacitor/dialog';
 
 const Test2dbs: React.FC = () => {
   const [log, setLog] = useState<string[]>([]);
+  const errMess = useRef("");
+  const showAlert = async (message: string) => {
+      await Dialog.alert({
+        title: 'Error Dialog',
+        message: message,
+      });
+  };
 
-  useEffect(() => {
-    const testtwodbs = async (): Promise<Boolean> => {
-      setLog(log => log.concat('* Starting testTwoDBS *\n'));
+  useEffect( () => {
+    const testtwodbs = async (): Promise<Boolean>  => {
+      setLog((log) => log.concat("* Starting testTwoDBS *\n"));
+      try {
 
-      // initialize the connection
-      const db = await sqlite.createConnection(
-        'testNew',
-        false,
-        'no-encryption',
-        1,
-      );
-      const db1 = await sqlite.createConnection('testSet', true, 'secret', 1);
+        // initialize the connection
+        const db = await sqlite
+            .createConnection("testNew", false, "no-encryption", 1);
+        const db1 = await sqlite
+            .createConnection("testSet", true, "secret", 1);
 
-      // check if the databases exist
-      // and delete it for multiple successive tests
-      let ret: any = await deleteDatabase(db);
-      ret = await deleteDatabase(db1);
+        // check if the databases exist 
+        // and delete it for multiple successive tests
+        await deleteDatabase(db);
+        await deleteDatabase(db1);
 
-      // open db testNew
-      ret = await db.open();
-      if (!ret.result) {
-        return false;
-      }
+        // open db testNew
+        await db.open();
 
-      // create tables in db
-      ret = await db.execute(createTablesNoEncryption);
-      if (ret.changes.changes < 0) {
-        return false;
-      }
+        // create tables in db
+        let ret: any = await db.execute(createTablesNoEncryption);
+        if (ret.changes.changes < 0) {
+            errMess.current = `Execute changes < 0`;
+            return false;
+        }
 
-      // create synchronization table
-      ret = await db.createSyncTable();
-      if (ret.changes.changes < 0) {
-        return false;
-      }
+        // create synchronization table 
+        ret = await db.createSyncTable();
+        if (ret.changes.changes < 0) {
+            errMess.current = `CreateSyncTable changes < 0`;
+            return false;
+        }
 
-      // set the synchronization date
-      const syncDate: string = '2020-11-25T08:30:25.000Z';
-      ret = await db.setSyncDate(syncDate);
-      if (!ret.result) return false;
+        // set the synchronization date
+        const syncDate: string = "2020-11-25T08:30:25.000Z";
+        await db.setSyncDate(syncDate);
 
-      // add two users in db
-      ret = await db.execute(importTwoUsers);
-      if (ret.changes.changes !== 2) {
-        return false;
-      }
-      // select all users in db
-      ret = await db.query('SELECT * FROM users;');
-      if (
-        ret.values.length !== 2 ||
-        ret.values[0].name !== 'Whiteley' ||
-        ret.values[1].name !== 'Jones'
-      ) {
-        return false;
-      }
+        // add two users in db
+        ret = await db.execute(importTwoUsers);
+        if (ret.changes.changes !== 2) {
+            errMess.current = `Execute importTwoUsers changes != 2`;
+            return false;
+        }
+        // select all users in db
+        ret = await db.query("SELECT * FROM users;");
+        if(ret.values.length !== 2 || ret.values[0].name !== "Whiteley" ||
+                            ret.values[1].name !== "Jones") {
+            errMess.current = `Query not returning 2 values`;
+            return false;
+        }
 
-      // open db testSet
-      ret = await db1.open();
-      if (!ret.result) {
-        return false;
-      }
-      // create tables in db1
-      ret = await db1.execute(createSchemaContacts);
-      if (ret.changes.changes < 0) {
-        return false;
-      }
-      // load setContacts in db1
-      ret = await db1.executeSet(setContacts);
-      if (ret.changes.changes !== 5) {
-        return false;
-      }
+        // open db testSet
+        await db1.open();
+        // create tables in db1
+        ret = await db1.execute(createSchemaContacts);
+        if (ret.changes.changes < 0) {
+            errMess.current = `Execute createSchemaContacts changes < 0`;
+            return false;
+        }
+        // load setContacts in db1
+        ret = await db1.executeSet(setContacts);
+        if (ret.changes.changes !== 5) {
+            errMess.current = `ExecuteSet setContacts changes != 5`;
+            return false;
+        }
 
-      // select users where company is NULL in db
-      ret = await db.query('SELECT * FROM users WHERE company IS NULL;');
-      if (
-        ret.values.length !== 2 ||
-        ret.values[0].name !== 'Whiteley' ||
-        ret.values[1].name !== 'Jones'
-      ) {
+        // select users where company is NULL in db
+        ret = await db.query("SELECT * FROM users WHERE company IS NULL;");
+        if(ret.values.length !== 2 || ret.values[0].name !== "Whiteley" ||
+                            ret.values[1].name !== "Jones") {
+            errMess.current = `Query Company is NULL not returning 2 values`;
+            return false;
+        }
+        // add one user with statement and values              
+        let sqlcmd: string = 
+            "INSERT INTO users (name,email,age) VALUES (?,?,?)";
+        let values: Array<any>  = ["Simpson","Simpson@example.com",69];
+        ret = await db.run(sqlcmd,values);
+        if(ret.changes.lastId !== 3) {
+            errMess.current = `Run lastId != 3`;
+            return false;
+        }
+        // add one user with statement              
+        sqlcmd = `INSERT INTO users (name,email,age) VALUES ` + 
+                        `("Brown","Brown@example.com",15)`;
+        ret = await db.run(sqlcmd);
+        if(ret.changes.lastId !== 4) {
+            errMess.current = `Run lastId != 4`;
+            return false;
+        }
+        setLog((log) => log.concat("* Ending testTwoDBS *\n"));
+        existingConn.setExistConn(true);
+        return true;
+      } catch (err) {
+        errMess.current = `${err.message}`;
         return false;
       }
-      // add one user with statement and values
-      let sqlcmd: string = 'INSERT INTO users (name,email,age) VALUES (?,?,?)';
-      let values: Array<any> = ['Simpson', 'Simpson@example.com', 69];
-      ret = await db.run(sqlcmd, values);
-      if (ret.changes.lastId !== 3) {
-        return false;
-      }
-      // add one user with statement
-      sqlcmd =
-        `INSERT INTO users (name,email,age) VALUES ` +
-        `("Brown","Brown@example.com",15)`;
-      ret = await db.run(sqlcmd);
-      if (ret.changes.lastId !== 4) {
-        return false;
-      }
-      setLog(log => log.concat('* Ending testTwoDBS *\n'));
-      existingConn.setExistConn(true);
-      return true;
-    };
-    if (sqlite.isAvailable) {
-      testtwodbs().then(res => {
-        if (res) {
-          setLog(log => log.concat('\n* The set of tests was successful *\n'));
+    }
+    if(sqlite.isAvailable) {
+      testtwodbs().then(async res => {
+        if(res) {    
+          setLog((log) => log
+              .concat("\n* The set of tests was successful *\n"));
         } else {
-          setLog(log => log.concat('\n* The set of tests failed *\n'));
+          setLog((log) => log
+              .concat("\n* The set of tests failed *\n"));
+          await showAlert(errMess.current);
         }
       });
     } else {
-      sqlite.getPlatform().then((ret: { platform: string }) => {
-        setLog(log =>
-          log.concat('\n* Not available for ' + ret.platform + ' platform *\n'),
-        );
-      });
+      sqlite.getPlatform().then((ret: { platform: string; })  =>  {
+          setLog((log) => log.concat("\n* Not available for " + 
+                              ret.platform + " platform *\n"));
+      });         
     }
-  }, []);
+  }, [errMess]);   
 
   return (
-    <IonCard className="container-test2dbs">
-      <IonCardContent>
-        <pre>
-          <p>{log}</p>
-        </pre>
-      </IonCardContent>
-    </IonCard>
+      <IonCard className="container-test2dbs">
+          <IonCardContent>
+              <pre>
+                  <p>{log}</p>
+              </pre>
+              {errMess.current.length > 0 && <p>{errMess.current}</p>}
+          </IonCardContent>
+      </IonCard>
   );
 };
 
@@ -319,14 +325,20 @@ export const setContacts: Array<capSQLiteSet> = [
 ```ts
 import { SQLiteDBConnection } from '@capacitor-community/sqlite';
 
-export async function deleteDatabase(db: SQLiteDBConnection): Promise<boolean> {
-  let ret: any = await db.isExists();
-  const dbName = db.getConnectionDBName();
-  if (ret) {
-    console.log('$$$ database ' + dbName + ' before delete');
-    ret = await db.delete();
-    console.log('$$$ database ' + dbName + ' after delete ' + ret.result);
-  }
-  return ret;
+export async function deleteDatabase(db: SQLiteDBConnection): Promise<void> {
+    try {
+      let ret: any = await db.isExists();
+      if(ret.result) {
+        const dbName = db.getConnectionDBName();
+        console.log("$$$ database " + dbName + " before delete");
+        await db.delete();
+        console.log("$$$ database " + dbName + " after delete " + ret.result);
+        return Promise.resolve();
+      } else {
+        return Promise.resolve();
+      }
+    } catch (err) {
+      return Promise.reject(err);
+    }
 }
 ```
