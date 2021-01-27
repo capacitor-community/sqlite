@@ -1,8 +1,9 @@
 <p align="center"><br><img src="https://user-images.githubusercontent.com/236501/85893648-1c92e880-b7a8-11ea-926d-95355b8175c7.png" width="128" height="128" /></p>
 <h2 align="center">IONIC/Vue USAGE DOCUMENTATION</h2>
-<p align="center"><strong><code>@capacitor-community/sqlite</code></strong></p>
+<p align="center"><strong><code>@capacitor-community/sqlite@next</code></strong></p>
+<p align="center" style="font-size:50px;color:red"><strong>CAPACITOR 3 🚧</strong></p><br>
 <p align="center">
-  In Ionic/Vue Applications, the <code>@capacitor-community/sqlite</code> can be accessed through a Singleton Vue Hook initialized in the <code>main.ts</code> file</p>
+  In Ionic/Vue Applications, the <code>@capacitor-community/sqlite@next</code> can be accessed through a Singleton Vue Hook initialized in the <code>main.ts</code> file</p>
 <br>
 
 ## Vue SQLite Hook
@@ -15,13 +16,13 @@
 
 A Vue hook specific to `@capacitor-community/sqlite` plugin has been developed to access the plugin API
 
-- [vue-sqlite-hook](https://github.com/jepiqueau/vue-sqlite-hook/blob/refactor/README.md)
+- [vue-sqlite-hook](https://github.com/jepiqueau/vue-sqlite-hook/blob/main/README.md)
 
 To install it in your Ionic/Vue App
 
 ```bash
-    npm i --save-dev @capacitor-community/sqlite@refactor
-    npm i --save-dev vue-sqlite-hook/refactor
+    npm i --save-dev @capacitor-community/sqlite@next
+    npm i --save-dev vue-sqlite-hook@next
 ```
 
 ### Vue SQLite Hook Declaration
@@ -75,7 +76,7 @@ Now the Singleton SQLite Hook `$sqlite`and Existing Connections Store `$existing
 
 ```ts
 <template>
-    <div id="two-dbs-container">
+    <div id="no-encryption-container">
         <div v-if="showSpinner">
             <br>
             <LoadingSpinner />
@@ -87,20 +88,25 @@ Now the Singleton SQLite Hook `$sqlite`and Existing Connections Store `$existing
             <pre>
             <p>{{log}}</p>
             </pre>
+            <div v-if="errMess.length > 0">
+                <p>{{errMess}}</p>}
+            </div>
         </div>
     </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, onMounted, getCurrentInstance } from 'vue';
-import { createTablesNoEncryption, importTwoUsers } from '@/utils/utils-db-no-encryption';
+import { createTablesNoEncryption, importTwoUsers,
+  dropTablesTablesNoEncryption } from '@/utils/utils-db-no-encryption';
 import { useState } from '@/composables/state';
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
+import { SQLiteDBConnection } from 'vue-sqlite-hook/dist';
 import { deleteDatabase } from '@/utils/utils-delete-db';
-import { createSchemaContacts, setContacts } from '@/utils/utils-db-encrypted-set';
+import { Dialog } from '@capacitor/dialog';
 
 export default defineComponent({
-    name: 'TwoDbsTest',
+    name: 'NoEncryptionTest',
     components: {
         LoadingSpinner
     },
@@ -109,120 +115,134 @@ export default defineComponent({
         const [log, setLog] = useState("");
         const app = getCurrentInstance()
         const sqlite = app?.appContext.config.globalProperties.$sqlite;
-        const twoDbsTest = async (): Promise<boolean>  => {
-
-            setLog(log.value
-                .concat("* Starting testDatabaseTwoDbs *\n"));
-
-            // initialize the connection
-            const db = await sqlite
-                .createConnection("testNew", false, "no-encryption", 1);
-            const db1 = await sqlite
-                .createConnection("testSet", true, "secret", 1);
-
-            // check if the databases exist
-            // and delete it for multiple successive tests
-            let ret: any = await deleteDatabase(db);
-            ret = await deleteDatabase(db1);
-
-            // open db testNew
-            ret = await db.open();
-            if (!ret.result) {
+        let errMess = "";
+        const showAlert = async (message: string) => {
+            await Dialog.alert({
+            title: 'Error Dialog',
+            message: message,
+            });
+        };
+        const noEncryptionTest = async (): Promise<boolean>  => {
+            try {
+                setLog(log.value
+                    .concat("* Starting testDatabaseNoEncryption *\n"));
+                // test the plugin with echo
+                let res: any = await sqlite.echo("Hello from echo");
+                if(res.value !== "Hello from echo"){
+                    errMess = `Echo not returning "Hello from echo"`;
+                    return false;
+                }
+                setLog(log.value.concat("> Echo successful\n"));
+                // create a connection for NoEncryption
+                let db: SQLiteDBConnection = await sqlite.createConnection("NoEncryption");
+                setLog(log.value.concat("> createConnection " +
+                                            " 'NoEncryption' successful\n"));
+                // check if the databases exist 
+                // and delete it for multiple successive tests
+                await deleteDatabase(db);         
+                // open NoEncryption database
+                await db.open();
+                setLog(log.value.concat("> open 'NoEncryption' successful\n"));
+                // Drop tables if exists
+                res = await db.execute(dropTablesTablesNoEncryption);
+                if(res.changes.changes !== 0 &&
+                            res.changes.changes !== 1){
+                    errMess = `Execute dropTablesTablesNoEncryption changes < 0`;
+                    return false;
+                } 
+                setLog(log.value.concat(" Execute1 successful\n"));
+                
+                // Create tables
+                res = await db.execute(createTablesNoEncryption);
+                if (res.changes.changes < 0) {
+                    errMess = `Execute createTablesNoEncryption changes < 0`;
+                    return false;
+                }
+                setLog(log.value.concat(" Execute2 successful\n"));
+                // Insert two users with execute method
+                res = await db.execute(importTwoUsers);
+                if (res.changes.changes !== 2) {
+                    errMess = `Execute importTwoUsers changes != 2`;
+                    return false;
+                }
+                setLog(log.value.concat(" Execute3 successful\n"));
+                // Select all Users
+                res = await db.query("SELECT * FROM users");
+                if(res.values.length !== 2 ||
+                res.values[0].name !== "Whiteley" ||
+                            res.values[1].name !== "Jones") {
+                    errMess = `Query not returning 2 values`;
+                    return false;
+                }
+                setLog(log.value.concat(" Select1 successful\n"));
+                // add one user with statement and values              
+                let sqlcmd = "INSERT INTO users (name,email,age) VALUES (?,?,?)";
+                let values: Array<any>  = ["Simpson","Simpson@example.com",69];
+                res = await db.run(sqlcmd,values);
+                if(res.changes.changes !== 1 ||
+                                res.changes.lastId !== 3) {
+                    errMess = `Run lastId != 3`;
+                    return false;
+                }
+                setLog(log.value.concat(" Run1 successful\n"));
+                // add one user with statement              
+                sqlcmd = `INSERT INTO users (name,email,age) VALUES `+
+                                `("Brown","Brown@example.com",15)`;
+                res = await db.run(sqlcmd);
+                if(res.changes.changes !== 1 ||
+                            res.changes.lastId !== 4) {
+                    errMess = `Run lastId != 4`;
+                    return false;
+                }
+                setLog(log.value.concat(" Run2 successful\n"));
+                // Select all Users
+                res = await db.query("SELECT * FROM users");
+                if(res.values.length !== 4) {
+                    errMess = `Query not returning 4 values`;
+                    return false;
+                }
+                setLog(log.value.concat(" Select2 successful\n"));
+                // Select Users with age > 35
+                sqlcmd = "SELECT name,email,age FROM users WHERE age > ?";
+                values = ["35"];
+                res = await db.query(sqlcmd,values);
+                if(res.values.length !== 2) {
+                    errMess = `Query > 35 not returning 2 values`;
+                    return false;
+                }
+                setLog(log.value
+                        .concat(" Select with filter on age successful\n"));
+                // Close Connection NoEncryption        
+                await sqlite.closeConnection("NoEncryption"); 
+                        
+                setLog(log.value
+                    .concat("* Ending testDatabaseNoEncryption *\n"));
+                return true;
+            } catch (err) {
+                errMess = `${err.message}`;
                 return false;
             }
-
-            // create tables in db
-            ret = await db.execute(createTablesNoEncryption);
-            if (ret.changes.changes < 0) {
-                return false;
-            }
-
-            // create synchronization table
-            ret = await db.createSyncTable();
-                if (ret.changes.changes < 0) {
-            return false;
-            }
-
-            // set the synchronization date
-            const syncDate = "2020-11-25T08:30:25.000Z";
-                ret = await db.setSyncDate(syncDate);
-            if(!ret.result) return false;
-
-            // add two users in db
-            ret = await db.execute(importTwoUsers);
-            if (ret.changes.changes !== 2) {
-                return false;
-            }
-            // select all users in db
-            ret = await db.query("SELECT * FROM users;");
-            if(ret.values.length !== 2 || ret.values[0].name !== "Whiteley" ||
-                                ret.values[1].name !== "Jones") {
-            return false;
-            }
-
-            // open db testSet
-            ret = await db1.open();
-            if (!ret.result) {
-                return false;
-            }
-            // create tables in db1
-            ret = await db1.execute(createSchemaContacts);
-            if (ret.changes.changes < 0) {
-                return false;
-            }
-            // load setContacts in db1
-            ret = await db1.executeSet(setContacts);
-            if (ret.changes.changes !== 5) {
-                return false;
-            }
-
-            // select users where company is NULL in db
-            ret = await db.query("SELECT * FROM users WHERE company IS NULL;");
-            if(ret.values.length !== 2 || ret.values[0].name !== "Whiteley" ||
-                                ret.values[1].name !== "Jones") {
-                return false;
-            }
-            // add one user with statement and values
-            let sqlcmd =
-                "INSERT INTO users (name,email,age) VALUES (?,?,?)";
-            let values: Array<any>  = ["Simpson","Simpson@example.com",69];
-            ret = await db.run(sqlcmd,values);
-            if(ret.changes.lastId !== 3) {
-                return false;
-            }
-            // add one user with statement
-            sqlcmd = `INSERT INTO users (name,email,age) VALUES ` +
-                            `("Brown","Brown@example.com",15)`;
-            ret = await db.run(sqlcmd);
-            if(ret.changes.lastId !== 4) {
-                return false;
-            }
-
-            app?.appContext.config.globalProperties.$existingConn.setExistConn(true);
-            setLog(log.value
-                .concat("* Ending testDatabaseTwoDbs *\n"));
-            return true;
         }
         onMounted(async () => {
             // Running the test
-            const retTwoDbs: boolean = await twoDbsTest();
-            if(!retTwoDbs) {
+            const retNoEncryption: boolean = await noEncryptionTest();
+            setShowSpinner(false);
+            if(!retNoEncryption) {
                 setLog(log.value
-                    .concat("* testDatabaseTwoDbsfailed *\n"));
+                    .concat("* testDatabaseNoEncryption failed *\n"));
                 setLog(log.value
                         .concat("\n* The set of tests failed *\n"));
+                await showAlert(errMess);
             } else {
                 setLog(log.value
                     .concat("\n* The set of tests was successful *\n"));
             }
-            setShowSpinner(false);
         });
-        return { log, showSpinner };
+        return { log, showSpinner, errMess };
     },
 });
 </script>
 ```
-
 Where
 
 - `@/utils/utils-db-no-encryption`
@@ -374,14 +394,20 @@ export const setMessages: Array<capSQLiteSet> = [
 ```ts
 import { SQLiteDBConnection } from '@capacitor-community/sqlite';
 
-export async function deleteDatabase(db: SQLiteDBConnection): Promise<boolean> {
-  let ret: any = await db.isExists();
-  const dbName = db.getConnectionDBName();
-  if (ret) {
-    console.log('$$$ database ' + dbName + ' before delete');
-    ret = await db.delete();
-    console.log('$$$ database ' + dbName + ' after delete ' + ret.result);
+export async function deleteDatabase(db: SQLiteDBConnection): Promise<void> {
+  try {
+    const ret: any = await db.isExists();
+    if(ret.result) {
+      const dbName = db.getConnectionDBName();
+      console.log("$$$ database " + dbName + " before delete");
+      await db.delete();
+      console.log("$$$ database " + dbName + " after delete " + ret.result);
+      return Promise.resolve();
+    } else {
+      return Promise.resolve();
+    }
+  } catch (err) {
+    return Promise.reject(err);
   }
-  return ret;
 }
 ```
