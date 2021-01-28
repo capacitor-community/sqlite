@@ -187,18 +187,24 @@ No configuration required for this plugin
 ## Documentation
 
 ### API
-[API_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/API.md)
 
-[API_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/APIConnection.md)
+- [API_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/API.md)
 
-[API_DB_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/APIDBConnection.md)
+- [API_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/APIConnection.md)
 
-[ImportExportJson_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/ImportExportJson.md)
+- [API_DB_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/APIDBConnection.md)
 
-[UpgradeDatabaseVersion_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/UpgradeDatabaseVersion.md)
+- [ImportExportJson_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/ImportExportJson.md)
+
+- [UpgradeDatabaseVersion_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/UpgradeDatabaseVersion.md)
 
 ### Framework's Usage 
-[Ionic/Angular_Usage_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-Angular-Usage.md)
+
+- [Ionic/Angular_Usage_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-Angular-Usage.md)
+
+- [Ionic/React_Usage_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-React-Usage.md)
+
+- [Ionic/Vue_Usage_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-Vue-Usage.md)
 
 
 ## Applications demonstrating the use of the plugin
@@ -221,11 +227,6 @@ No configuration required for this plugin
 
 - [see capacitor documentation](https://capacitor.ionicframework.com/docs/getting-started/with-ionic)
 
-- [In your Ionic/Angular App](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-Angular-Usage.md)
-
-- [In your Ionic/React App](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-React-Usage.md)
-
-- [In your Ionic/Vue App](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-Vue-Usage.md)
 
 ## Dependencies
 
