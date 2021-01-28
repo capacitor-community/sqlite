@@ -2,7 +2,7 @@
 <h3 align="center">SQLITE DATABASE</h3>
 <p align="center"><strong><code>@capacitor-community/sqlite</code></strong></p>
 <br>
-<p align="center" style="font-size:50px;color:red"><strong>REFACTOR 🚀</strong></p><br>
+<p align="center" style="font-size:50px;color:red"><strong>CAPACITOR 3 🚧</strong></p><br>
 
 <p align="center">
   Capacitor community plugin for Native and Electron SQLite Databases. In Native databases could be encrypted with SQLCipher
@@ -14,7 +14,7 @@
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/l/@capacitor-community/sqlite?style=flat-square" /></a>
 <br>
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/dw/@capacitor-community/sqlite?style=flat-square" /></a>
-  <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/v/@capacitor-community/sqlite/refactor?style=flat-square" /></a>
+  <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/v/@capacitor-community/sqlite/master?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 <a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-4-orange?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
@@ -29,12 +29,16 @@
 ## NEXT FOR CAPACITOR 3 🚧 (Master)
 
 The refactor release has been upgraded to `@capacitor/core@3.0.0-beta.1`.
-!!! ONLY iOS and Android plugins have been upgraded !!!
+
+🚨 !!! ONLY iOS and Android plugins have been upgraded !!! 🚨
 
 The test has been achieved on:
 
-- a [Ionic/Angular app](https://github.com/jepiqueau/angular-sqlite-app-refactor)
+- a [Ionic/Angular app](https://github.com/jepiqueau/angular-sqlite-app-starter)
 
+- a [Ionic/React app](https://github.com/jepiqueau/react-sqlite-app-starter)
+
+- a [Ionic/Vue app](https://github.com/jepiqueau/vue-sqlite-app-starter)
 
 ## REFACTOR 🚀 (Move to branch 2.9.x)
 
@@ -56,7 +60,7 @@ Refactor available for `Android`, `iOS` and `Electron` platforms.
 
 The test has been achieved on:
 
-- a [Ionic/Angular app](https://github.com/jepiqueau/angular-sqlite-app-refactor/tree/refactor)
+- a [Ionic/Angular app](https://github.com/jepiqueau/angular-sqlite-app-starter/tree/refactor)
 
 - a [Ionic/React app](https://github.com/jepiqueau/react-sqlite-app-starter/tree/refactor)
 
@@ -65,6 +69,24 @@ The test has been achieved on:
 Other frameworks will be tested later
 
 - Stencil
+
+## @INITIAL 🛑 (Move to branch 2.4.x)
+
+The `2.4.x` is now 🛑 NOT MAINTAINED ANYMORE 🛑.
+
+To install it
+
+```bash
+npm i --save @capacitor-community/sqlite@initial
+```
+The test has been achieved on:
+
+- a [Ionic/Angular app](https://github.com/jepiqueau/angular-sqlite-app-starter/tree/2.4.x)
+
+- a [Ionic/React app](https://github.com/jepiqueau/react-sqlite-app-starter/tree/2.4.x)
+
+- a [Ionic/Vue app](https://github.com/jepiqueau/vue-sqlite-app-starter/tree/2.4.x)
+
 
 ## Browser Support
 
@@ -87,27 +109,14 @@ npx cap add ios
 
 ### IOS
 
-- on iOS no further steps needed.
+- on iOS, no further steps needed.
 
 ### Android
 
-- On Android, register the plugin in your main activity:
+- On Android, no further steps needed.
 
-```java
-import com.getcapacitor.community.database.sqlite.CapacitorSQLitePlugin;
 
-public class MainActivity extends BridgeActivity {
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        registerPlugin(CapacitorSQLitePlugin.class);
-
-    }
-
-```
-
-### Electron (NOT WORKING YET)
+### Electron 🚧 (NOT WORKING YET)
 
 - On Electron, go to the Electron folder of YOUR_APPLICATION
 
@@ -135,7 +144,7 @@ npx cap open ios
 npx cap open android
 ```
 
-### Electron (NOT WORKING YET)
+### Electron 🚧 (NOT WORKING YET)
 
 ```
 npx cap open @capacitor-community/electron
@@ -154,26 +163,26 @@ No configuration required for this plugin
 ## Supported methods
 
 | Name                    | Android | iOS | Electron Mac | Electron Windows | Web |
-| :---------------------- | :------ | :-- | :----------- | :--------------- | :-- |
-| createConnection        | ✅      | ✅  | ✅           | ✅               | ❌  |
-| closeConnection         | ✅      | ✅  | ✅           | ✅               | ❌  |
-| open (non-encrypted DB) | ✅      | ✅  | ✅           | ✅               | ❌  |
-| open (encrypted DB)     | ✅      | ✅  | ✅           | ❌               | ❌  |
-| close                   | ✅      | ✅  | ✅           | ✅               | ❌  |
-| execute                 | ✅      | ✅  | ✅           | ✅               | ❌  |
-| executeSet              | ✅      | ✅  | ✅           | ✅               | ❌  |
-| run                     | ✅      | ✅  | ✅           | ✅               | ❌  |
-| query                   | ✅      | ✅  | ✅           | ✅               | ❌  |
-| deleteDatabase          | ✅      | ✅  | ✅           | ✅               | ❌  |
-| importFromJson          | ✅      | ✅  | ✅           | ✅               | ❌  |
-| exportToJson            | ✅      | ✅  | ✅           | ✅               | ❌  |
-| createSyncTable         | ✅      | ✅  | ✅           | ✅               | ❌  |
-| setSyncDate             | ✅      | ✅  | ✅           | ✅               | ❌  |
-| getSyncDate             | ✅      | ✅  | ✅           | ✅               | ❌  |
-| isJsonValid             | ✅      | ✅  | ✅           | ✅               | ❌  |
-| isDBExists              | ✅      | ✅  | ✅           | ✅               | ❌  |
-| addUpgradeStatement     | ✅      | ✅  | ✅           | ✅               | ❌  |
-| copyFromAssets          | ✅      | ✅  | ✅           | ✅               | ❌  |
+| :---------------------- | :------ | :-- | :----- ----- | :--------------- | :-- |
+| createConnection        | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| closeConnection         | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| open (non-encrypted DB) | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| open (encrypted DB)     | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| close                   | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| execute                 | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| executeSet              | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| run                     | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| query                   | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| deleteDatabase          | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| importFromJson          | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| exportToJson            | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| createSyncTable         | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| setSyncDate             | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| getSyncDate             | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| isJsonValid             | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| isDBExists              | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| addUpgradeStatement     | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| copyFromAssets          | ✅      | ✅  | 🚧           | 🚧               | ❌  |
 
 ## Documentation
 
@@ -196,11 +205,15 @@ No configuration required for this plugin
 
 ### Ionic/Angular
 
-- [angular-sqlite-app-refactor](https://github.com/jepiqueau/angular-sqlite-app-refactor)
+- [angular-sqlite-app-starter](https://github.com/jepiqueau/angular-sqlite-app-starter)
 
 ### Ionic/React (to come later)
 
+- [react-sqlite-app-starter](https://github.com/jepiqueau/react-sqlite-app-starter)
+
 ### Ionic/Vue (to come later)
+
+- [vue-sqlite-app-starter](https://github.com/jepiqueau/vue-sqlite-app-starter)
 
 ### Vue (to come later)
 
@@ -210,11 +223,14 @@ No configuration required for this plugin
 
 - [In your Ionic/Angular App](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-Angular-Usage.md)
 
+- [In your Ionic/React App](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-React-Usage.md)
+
+- [In your Ionic/Vue App](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-Vue-Usage.md)
 
 ## Dependencies
 
 The IOS and Android codes are using `SQLCipher` allowing for database encryption
-The Electron code use `@journeyapps/sqlcipher` allowing for database encryption for MacOS !!! NOT for Windows !!!  
+The Electron code use `@journeyapps/sqlcipher` allowing for database encryption for MacOS 🚨 !!! NOT for Windows !!! 🚨 
 
 ## Contributors ✨
 
