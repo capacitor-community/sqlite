@@ -180,7 +180,21 @@ export class ExportToJson {
       }
     });
   }
-
+  /**
+   * ModEmbeddedParentheses
+   * @param sqlStmt
+   */
+  private modEmbeddedParentheses(sqlStmt: string): string {
+    let stmt: string = sqlStmt;
+    let openPar: number = sqlStmt.indexOf('(');
+    if (openPar != -1) {
+      let closePar: number = sqlStmt.lastIndexOf(')');
+      let tStmt: string = sqlStmt.substring(openPar + 1, closePar);
+      let mStmt: string = tStmt.replace(/,/g, '§');
+      stmt = sqlStmt.replace(tStmt, mStmt);
+    }
+    return stmt;
+  }
   /**
    * GetSchema
    * @param mDb
@@ -197,21 +211,9 @@ export class ExportToJson {
       let openPar: number = sqlStmt.indexOf('(');
       let closePar: number = sqlStmt.lastIndexOf(')');
       let sstr: string = sqlStmt.substring(openPar + 1, closePar);
-      let isStrfTime: boolean = false;
-      if (sstr.includes('strftime')) isStrfTime = true;
+      // check if there is other parenthesis and replace the ',' by '§'
+      sstr = this.modEmbeddedParentheses(sstr);
       let sch: Array<string> = sstr.replace(/\n/g, '').split(',');
-      if (isStrfTime) {
-        let nSch: string[] = [];
-        for (let j: number = 0; j < sch.length; j++) {
-          if (sch[j].includes('strftime')) {
-            nSch.push(sch[j] + ',' + sch[j + 1]);
-            j++;
-          } else {
-            nSch.push(sch[j]);
-          }
-        }
-        sch = [...nSch];
-      }
       for (let j: number = 0; j < sch.length; j++) {
         const rstr = sch[j].trim();
         let idx = rstr.indexOf(' ');
@@ -221,9 +223,14 @@ export class ExportToJson {
           reject(new Error(`GetSchema: table ${tableName} row length != 2`));
           break;
         }
-        if (row[0].toUpperCase() != 'FOREIGN') {
-          schema.push({ column: row[0], value: row[1] });
-        } else {
+        if (row[0].toUpperCase() == 'CONSTRAINT') {
+          let k: number = row[1].indexOf(' ');
+          let tRow: string[] = [row[1].slice(0, k), row[1].slice(k + 1)];
+          schema.push({
+            constraint: tRow[0],
+            value: tRow[1].replace(/§/g, ','),
+          });
+        } else if (row[0].toUpperCase() == 'FOREIGN') {
           const oPar: number = rstr.indexOf('(');
           const cPar: number = rstr.indexOf(')');
           row = [rstr.slice(oPar + 1, cPar), rstr.slice(cPar + 2)];
@@ -231,7 +238,9 @@ export class ExportToJson {
             reject(new Error(`GetSchema: table ${tableName} row length != 2`));
             break;
           }
-          schema.push({ foreignkey: row[0], value: row[1] });
+          schema.push({ foreignkey: row[0], value: row[1].replace(/§/g, ',') });
+        } else {
+          schema.push({ column: row[0], value: row[1].replace(/§/g, ',') });
         }
       }
       resolve(schema);

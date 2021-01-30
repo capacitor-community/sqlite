@@ -127,6 +127,23 @@ public class ExportToJson {
     }
 
     /**
+     * Modify ',' by '§' for Embedded Parentheses
+     * @param sqlStmt
+     * @return
+     */
+    private String modEmbeddedParentheses(String sqlStmt) {
+        String stmt = sqlStmt;
+        int openPar = sqlStmt.indexOf("(");
+        if (openPar != -1) {
+            int closePar = sqlStmt.lastIndexOf(")");
+            String tStmt = sqlStmt.substring(openPar + 1, closePar);
+            String mStmt = tStmt.replaceAll(",", "§");
+            stmt = sqlStmt.replace(tStmt, mStmt);
+        }
+        return stmt;
+    }
+
+    /**
      * Get Schema
      * @param sqlStmt
      * @return
@@ -135,22 +152,9 @@ public class ExportToJson {
         ArrayList<JsonColumn> schema = new ArrayList<>();
         // get the sqlStmt between the parenthesis sqlStmt
         sqlStmt = sqlStmt.substring(sqlStmt.indexOf("(") + 1, sqlStmt.lastIndexOf(")"));
-        boolean isStrfTime = false;
-        if (sqlStmt.contains("strftime")) isStrfTime = true;
+        // check if there is other parenthesis and replace the ',' by '§'
+        sqlStmt = modEmbeddedParentheses(sqlStmt);
         String[] sch = sqlStmt.split(",");
-        if (isStrfTime) {
-            // look for strftime
-            List<String> nSch = new ArrayList<>();
-            for (int j = 0; j < sch.length; j++) {
-                if (sch[j].contains("strftime")) {
-                    nSch.add(sch[j] + "," + sch[j + 1]);
-                    j++;
-                } else {
-                    nSch.add(sch[j]);
-                }
-            }
-            sch = nSch.toArray(new String[0]);
-        }
         // for each element of the array split the
         // first word as key
         for (int j = 0; j < sch.length; j++) {
@@ -162,10 +166,15 @@ public class ExportToJson {
                 row[0] = sch[j].substring(oPar + 1, cPar);
                 row[1] = sch[j].substring(cPar + 2);
                 jsonRow.setForeignkey(row[0]);
+            } else if (row[0].toUpperCase().equals("CONSTRAINT")) {
+                String[] tRow = row[1].trim().split(" ", 2);
+                row[0] = tRow[0];
+                jsonRow.setConstraint(row[0]);
+                row[1] = tRow[1];
             } else {
                 jsonRow.setColumn(row[0]);
             }
-            jsonRow.setValue(row[1]);
+            jsonRow.setValue(row[1].replaceAll("§", ","));
             schema.add(jsonRow);
         }
         return schema;

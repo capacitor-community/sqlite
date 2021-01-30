@@ -157,6 +157,14 @@ public class ImportFromJson {
                             .append(") ")
                             .append(mSchema.get(j).getValue())
                             .toString();
+                } else if (mSchema.get(j).getConstraint() != null) {
+                    stmt =
+                        new StringBuilder(stmt)
+                            .append("CONSTRAINT ")
+                            .append(mSchema.get(j).getConstraint())
+                            .append(" ")
+                            .append(mSchema.get(j).getValue())
+                            .toString();
                 }
             } else {
                 if (mSchema.get(j).getColumn() != null) {
@@ -173,6 +181,15 @@ public class ImportFromJson {
                             .append("FOREIGN KEY (")
                             .append(mSchema.get(j).getForeignkey())
                             .append(") ")
+                            .append(mSchema.get(j).getValue())
+                            .append(",")
+                            .toString();
+                } else if (mSchema.get(j).getConstraint() != null) {
+                    stmt =
+                        new StringBuilder(stmt)
+                            .append("CONSTRAINT ")
+                            .append(mSchema.get(j).getConstraint())
+                            .append(" ")
                             .append(mSchema.get(j).getValue())
                             .append(",")
                             .toString();

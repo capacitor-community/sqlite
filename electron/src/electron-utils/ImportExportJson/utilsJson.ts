@@ -118,6 +118,12 @@ export class UtilsJson {
                     jsonData.tables[i].schema![j].value
                   }`,
                 );
+              } else if (jsonData.tables[i].schema![j].constraint) {
+                statements.push(
+                  `CONSTRAINT ${jsonData.tables[i].schema![j].constraint} ${
+                    jsonData.tables[i].schema![j].value
+                  }`,
+                );
               }
             } else {
               if (jsonData.tables[i].schema![j].column) {
@@ -129,6 +135,12 @@ export class UtilsJson {
               } else if (jsonData.tables[i].schema![j].foreignkey) {
                 statements.push(
                   `FOREIGN KEY (${jsonData.tables[i].schema![j].foreignkey}) ${
+                    jsonData.tables[i].schema![j].value
+                  },`,
+                );
+              } else if (jsonData.tables[i].schema![j].constraint) {
+                statements.push(
+                  `CONSTRAINT ${jsonData.tables[i].schema![j].constraint} ${
                     jsonData.tables[i].schema![j].value
                   },`,
                 );
@@ -514,7 +526,12 @@ export class UtilsJson {
    * @param obj
    */
   private isSchema(obj: any): boolean {
-    const keySchemaLevel: Array<string> = ['column', 'value', 'foreignkey'];
+    const keySchemaLevel: Array<string> = [
+      'column',
+      'value',
+      'foreignkey',
+      'constraint',
+    ];
     if (
       obj == null ||
       (Object.keys(obj).length === 0 && obj.constructor === Object)
@@ -525,6 +542,7 @@ export class UtilsJson {
       if (key === 'column' && typeof obj[key] != 'string') return false;
       if (key === 'value' && typeof obj[key] != 'string') return false;
       if (key === 'foreignkey' && typeof obj[key] != 'string') return false;
+      if (key === 'constraint' && typeof obj[key] != 'string') return false;
     }
     return true;
   }
@@ -569,6 +587,9 @@ export class UtilsJson {
         }
         if (keys.includes('foreignkey')) {
           sch.foreignkey = schema[i].foreignkey;
+        }
+        if (keys.includes('constraint')) {
+          sch.constraint = schema[i].constraint;
         }
         let isValid: boolean = this.isSchema(sch);
         if (!isValid) {

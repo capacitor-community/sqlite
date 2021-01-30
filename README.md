@@ -87,7 +87,7 @@ Hope you will enjoy it.
 
 <br>
 
-## @INITIAL (Move to branch 2.4.x)
+## @INITIAL 🛑 (Move to branch 2.4.x)
 
 The `2.4.x` is now NOT MAINTAINED ANYMORE.
 
@@ -118,7 +118,6 @@ meaning that it will not work in IE11 without additional JavaScript transformati
 ```bash
 npm install @capacitor-community/sqlite@latest
 npm run build
-npx cap sync
 npx cap add android
 npx cap add ios
 npx cap add @capacitor-community/electron

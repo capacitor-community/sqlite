@@ -398,6 +398,10 @@ export interface JsonColumn {
    * The column foreign key constraints
    */
   foreignkey?: string;
+  /**
+   * the column constraint
+   */
+  constraint?: string;
 }
 export interface JsonIndex {
   /**

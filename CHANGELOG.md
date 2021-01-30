@@ -1,3 +1,10 @@
+## 2.9.7 (2021-01-30) REFACTOR
+
+### Bug Fixes
+
+- Fix Compound primary Key when ImportFromJSON issue#71
+- Update ImportExportJson
+
 ## 2.9.6 (2021-01-24) REFACTOR
 
 ### Chore
@@ -202,6 +209,14 @@
 - closeConnection method
 - SQLiteConnection Interface & Class
 - SQLiteDBConnection Interface & Class
+
+## 2.4.6 (2021-01-24)
+
+### Chore
+
+- update to @capacitor/core@2.4.6
+
+- move it from tag latest to tag initial
 
 ## 2.4.5 (2021-01-13)
 

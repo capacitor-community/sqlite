@@ -84,9 +84,13 @@ export type jsonTable = {
   indexes?: Array<jsonIndex>,
   values?: Array<Array<any>>,
 };
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Modified in 2.9.7 to allow for CONSTRAINT PRIMARY KEY with combined columns
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 export type jsonColumn = {
   column?: string,
   foreignkey?: string,
+  constraint?: string,
   value: string,
 };
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -319,6 +323,18 @@ const partialImport1: any = {
             [1, 'orange', 200.3,1601995573],
             [2, 'apple', 450.0,1601995573],
             [2, 'banana', 120.5,1601995573],
+          ],
+        },
+        {
+          name: 'company',
+          schema: [
+            { column: 'id', value: 'INTEGER NOT NULL' },
+            { column: 'name', value: 'TEXT NOT NULL' },
+            { column: 'age', value: 'INTEGER NOT NULL' },
+            { column: 'address', value: 'TEXT' },
+            { column: 'salary', value: 'REAL'},
+            { column: "last_modified", value: "INTEGER"},
+            { constraint: 'PK_id_name', value: 'PRIMARY KEY (id,name)'},
           ],
         },
     ],
