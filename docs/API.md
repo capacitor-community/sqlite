@@ -54,26 +54,26 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 
 <docgen-index>
 
-* [`createConnection(...)`](#createconnection)
-* [`closeConnection(...)`](#closeconnection)
-* [`echo(...)`](#echo)
-* [`open(...)`](#open)
-* [`close(...)`](#close)
-* [`execute(...)`](#execute)
-* [`executeSet(...)`](#executeset)
-* [`run(...)`](#run)
-* [`query(...)`](#query)
-* [`isDBExists(...)`](#isdbexists)
-* [`deleteDatabase(...)`](#deletedatabase)
-* [`isJsonValid(...)`](#isjsonvalid)
-* [`importFromJson(...)`](#importfromjson)
-* [`exportToJson(...)`](#exporttojson)
-* [`createSyncTable(...)`](#createsynctable)
-* [`setSyncDate(...)`](#setsyncdate)
-* [`getSyncDate(...)`](#getsyncdate)
-* [`addUpgradeStatement(...)`](#addupgradestatement)
-* [`copyFromAssets()`](#copyfromassets)
-* [Interfaces](#interfaces)
+- [`createConnection(...)`](#createconnection)
+- [`closeConnection(...)`](#closeconnection)
+- [`echo(...)`](#echo)
+- [`open(...)`](#open)
+- [`close(...)`](#close)
+- [`execute(...)`](#execute)
+- [`executeSet(...)`](#executeset)
+- [`run(...)`](#run)
+- [`query(...)`](#query)
+- [`isDBExists(...)`](#isdbexists)
+- [`deleteDatabase(...)`](#deletedatabase)
+- [`isJsonValid(...)`](#isjsonvalid)
+- [`importFromJson(...)`](#importfromjson)
+- [`exportToJson(...)`](#exporttojson)
+- [`createSyncTable(...)`](#createsynctable)
+- [`setSyncDate(...)`](#setsyncdate)
+- [`getSyncDate(...)`](#getsyncdate)
+- [`addUpgradeStatement(...)`](#addupgradestatement)
+- [`copyFromAssets()`](#copyfromassets)
+- [Interfaces](#interfaces)
 
 </docgen-index>
 
@@ -100,8 +100,7 @@ create a database connection
 
 **Since:** 2.9.0 refactor
 
---------------------
-
+---
 
 ### closeConnection(...)
 
@@ -119,8 +118,7 @@ close a database connection
 
 **Since:** 2.9.0 refactor
 
---------------------
-
+---
 
 ### echo(...)
 
@@ -138,8 +136,7 @@ Echo a given string
 
 **Since:** 0.0.1
 
---------------------
-
+---
 
 ### open(...)
 
@@ -157,8 +154,7 @@ Open a SQLite database
 
 **Since:** 0.0.1
 
---------------------
-
+---
 
 ### close(...)
 
@@ -176,8 +172,7 @@ Close a SQLite database
 
 **Since:** 0.0.1
 
---------------------
-
+---
 
 ### execute(...)
 
@@ -195,8 +190,7 @@ Execute a Batch of Raw Statements as String
 
 **Since:** 0.0.1
 
---------------------
-
+---
 
 ### executeSet(...)
 
@@ -214,8 +208,7 @@ Execute a Set of Raw Statements as Array of CapSQLiteSet
 
 **Since:** 2.2.0-2
 
---------------------
-
+---
 
 ### run(...)
 
@@ -233,8 +226,7 @@ Execute a Single Statement
 
 **Since:** 0.0.1
 
---------------------
-
+---
 
 ### query(...)
 
@@ -252,8 +244,7 @@ Query a Single Statement
 
 **Since:** 0.0.1
 
---------------------
-
+---
 
 ### isDBExists(...)
 
@@ -271,8 +262,7 @@ Check is a SQLite database exists
 
 **Since:** 2.0.1-1
 
---------------------
-
+---
 
 ### deleteDatabase(...)
 
@@ -290,8 +280,7 @@ Delete a SQLite database
 
 **Since:** 0.0.1
 
---------------------
-
+---
 
 ### isJsonValid(...)
 
@@ -309,8 +298,7 @@ Is Json Object Valid
 
 **Since:** 2.0.1-1
 
---------------------
-
+---
 
 ### importFromJson(...)
 
@@ -328,8 +316,7 @@ Import from Json Object
 
 **Since:** 2.0.0-3
 
---------------------
-
+---
 
 ### exportToJson(...)
 
@@ -347,8 +334,7 @@ Export to Json Object
 
 **Since:** 2.0.1-1
 
---------------------
-
+---
 
 ### createSyncTable(...)
 
@@ -366,8 +352,7 @@ Create a synchronization table
 
 **Since:** 2.0.1-1
 
---------------------
-
+---
 
 ### setSyncDate(...)
 
@@ -385,8 +370,7 @@ Set the synchronization date
 
 **Since:** 2.0.1-1
 
---------------------
-
+---
 
 ### getSyncDate(...)
 
@@ -404,8 +388,7 @@ Get the synchronization date
 
 **Since:** 2.9.0
 
---------------------
-
+---
 
 ### addUpgradeStatement(...)
 
@@ -423,8 +406,7 @@ Add the upgrade Statement for database version upgrading
 
 **Since:** 2.4.2-6 iOS & Electron 2.4.2-7 Android
 
---------------------
-
+---
 
 ### copyFromAssets()
 
@@ -438,11 +420,9 @@ Copy databases from public/assets/databases folder to application databases fold
 
 **Since:** 2.9.0 refactor
 
---------------------
-
+---
 
 ### Interfaces
-
 
 #### capSQLiteResult
 
@@ -450,7 +430,6 @@ Copy databases from public/assets/databases folder to application databases fold
 | ------------- | -------------------- | --------------------------------------------- |
 | **`result`**  | <code>boolean</code> | result set to true when successful else false |
 | **`message`** | <code>string</code>  | a returned message                            |
-
 
 #### capConnectionOptions
 
@@ -461,13 +440,11 @@ Copy databases from public/assets/databases folder to application databases fold
 | **`encrypted`** | <code>boolean</code> | Set to true (database encryption) / false                                  |
 | **`mode`**      | <code>string</code>  | Set the mode for database encryption ["encryption", "secret", "newsecret"] |
 
-
 #### capSQLiteOptions
 
 | Prop           | Type                | Description       |
 | -------------- | ------------------- | ----------------- |
 | **`database`** | <code>string</code> | The database name |
-
 
 #### capEchoResult
 
@@ -475,13 +452,11 @@ Copy databases from public/assets/databases folder to application databases fold
 | ----------- | ------------------- | --------------- |
 | **`value`** | <code>string</code> | String returned |
 
-
 #### capEchoOptions
 
 | Prop        | Type                | Description         |
 | ----------- | ------------------- | ------------------- |
 | **`value`** | <code>string</code> | String to be echoed |
-
 
 #### capSQLiteChanges
 
@@ -490,14 +465,12 @@ Copy databases from public/assets/databases folder to application databases fold
 | **`changes`** | <code><a href="#changes">Changes</a></code> | a returned <a href="#changes">Changes</a> |
 | **`message`** | <code>string</code>                         | a returned message                        |
 
-
 #### Changes
 
 | Prop          | Type                | Description                                          |
 | ------------- | ------------------- | ---------------------------------------------------- |
 | **`changes`** | <code>number</code> | the number of changes from an execute or run command |
 | **`lastId`**  | <code>number</code> | the lastId created from a run command                |
-
 
 #### capSQLiteExecuteOptions
 
@@ -506,7 +479,6 @@ Copy databases from public/assets/databases folder to application databases fold
 | **`database`**   | <code>string</code> | The database name                         |
 | **`statements`** | <code>string</code> | The batch of raw SQL statements as string |
 
-
 #### capSQLiteSetOptions
 
 | Prop           | Type                        | Description                                               |
@@ -514,14 +486,12 @@ Copy databases from public/assets/databases folder to application databases fold
 | **`database`** | <code>string</code>         | The database name                                         |
 | **`set`**      | <code>capSQLiteSet[]</code> | The batch of raw SQL statements as Array of capSQLLiteSet |
 
-
 #### capSQLiteSet
 
 | Prop            | Type                | Description                      |
 | --------------- | ------------------- | -------------------------------- |
 | **`statement`** | <code>string</code> | A statement                      |
 | **`values`**    | <code>any[]</code>  | the data values list as an Array |
-
 
 #### capSQLiteRunOptions
 
@@ -531,14 +501,12 @@ Copy databases from public/assets/databases folder to application databases fold
 | **`statement`** | <code>string</code> | A statement                     |
 | **`values`**    | <code>any[]</code>  | A set of values for a statement |
 
-
 #### capSQLiteValues
 
 | Prop          | Type                | Description                      |
 | ------------- | ------------------- | -------------------------------- |
 | **`values`**  | <code>any[]</code>  | the data values list as an Array |
 | **`message`** | <code>string</code> | a returned message               |
-
 
 #### capSQLiteQueryOptions
 
@@ -548,13 +516,11 @@ Copy databases from public/assets/databases folder to application databases fold
 | **`statement`** | <code>string</code>   | A statement                     |
 | **`values`**    | <code>string[]</code> | A set of values for a statement |
 
-
 #### capSQLiteImportOptions
 
 | Prop             | Type                | Description                   |
 | ---------------- | ------------------- | ----------------------------- |
 | **`jsonstring`** | <code>string</code> | Set the JSON object to import |
-
 
 #### capSQLiteJson
 
@@ -563,27 +529,24 @@ Copy databases from public/assets/databases folder to application databases fold
 | **`export`**  | <code><a href="#jsonsqlite">JsonSQLite</a></code> | an export JSON object |
 | **`message`** | <code>string</code>                               | a returned message    |
 
-
 #### JsonSQLite
 
-| Prop            | Type                     | Description                                           |
-| --------------- | ------------------------ | ----------------------------------------------------- |
-| **`database`**  | <code>string</code>      | The database name                                     |
-| **`version`**   | <code>number</code>      | The database version                                  |
-| **`encrypted`** | <code>boolean</code>     | Set to true (database encryption) / false             |
-| **`mode`**      | <code>string</code>      | * Set the mode ["full", "partial"]                    |
-| **`tables`**    | <code>JsonTable[]</code> | * Array of Table (<a href="#jsontable">JsonTable</a>) |
-
+| Prop            | Type                     | Description                                            |
+| --------------- | ------------------------ | ------------------------------------------------------ |
+| **`database`**  | <code>string</code>      | The database name                                      |
+| **`version`**   | <code>number</code>      | The database version                                   |
+| **`encrypted`** | <code>boolean</code>     | Set to true (database encryption) / false              |
+| **`mode`**      | <code>string</code>      | \* Set the mode ["full", "partial"]                    |
+| **`tables`**    | <code>JsonTable[]</code> | \* Array of Table (<a href="#jsontable">JsonTable</a>) |
 
 #### JsonTable
 
-| Prop          | Type                      | Description                                              |
-| ------------- | ------------------------- | -------------------------------------------------------- |
-| **`name`**    | <code>string</code>       | The database name                                        |
-| **`schema`**  | <code>JsonColumn[]</code> | * Array of Schema (<a href="#jsoncolumn">JsonColumn</a>) |
-| **`indexes`** | <code>JsonIndex[]</code>  | * Array of Index (<a href="#jsonindex">JsonIndex</a>)    |
-| **`values`**  | <code>any[][]</code>      | * Array of Table data                                    |
-
+| Prop          | Type                      | Description                                               |
+| ------------- | ------------------------- | --------------------------------------------------------- |
+| **`name`**    | <code>string</code>       | The database name                                         |
+| **`schema`**  | <code>JsonColumn[]</code> | \* Array of Schema (<a href="#jsoncolumn">JsonColumn</a>) |
+| **`indexes`** | <code>JsonIndex[]</code>  | \* Array of Index (<a href="#jsonindex">JsonIndex</a>)    |
+| **`values`**  | <code>any[][]</code>      | \* Array of Table data                                    |
 
 #### JsonColumn
 
@@ -592,7 +555,7 @@ Copy databases from public/assets/databases folder to application databases fold
 | **`column`**     | <code>string</code> | The column name                     |
 | **`value`**      | <code>string</code> | The column data (type, unique, ...) |
 | **`foreignkey`** | <code>string</code> | The column foreign key constraints  |
-
+| **`constraint`** | <code>string</code> | the column constraint               |
 
 #### JsonIndex
 
@@ -602,14 +565,12 @@ Copy databases from public/assets/databases folder to application databases fold
 | **`value`** | <code>string</code> | The value of the index can have the following formats: email email ASC email, MobileNumber email ASC, MobileNumber DESC |
 | **`mode`**  | <code>string</code> | the mode (Optional) UNIQUE                                                                                              |
 
-
 #### capSQLiteExportOptions
 
 | Prop                 | Type                | Description                                             |
 | -------------------- | ------------------- | ------------------------------------------------------- |
 | **`database`**       | <code>string</code> | The database name                                       |
 | **`jsonexportmode`** | <code>string</code> | Set the mode to export JSON Object: "full" or "partial" |
-
 
 #### capSQLiteSyncDateOptions
 
@@ -618,7 +579,6 @@ Copy databases from public/assets/databases folder to application databases fold
 | **`database`** | <code>string</code> | The database name                                              |
 | **`syncdate`** | <code>string</code> | Set the synchronization date Format yyyy-MM-dd'T'HH:mm:ss.SSSZ |
 
-
 #### capSQLiteSyncDate
 
 | Prop           | Type                | Description              |
@@ -626,14 +586,12 @@ Copy databases from public/assets/databases folder to application databases fold
 | **`syncDate`** | <code>number</code> | the synchronization date |
 | **`message`**  | <code>string</code> | a returned message       |
 
-
 #### capSQLiteUpgradeOptions
 
 | Prop           | Type                                   | Description                                                                         |
 | -------------- | -------------------------------------- | ----------------------------------------------------------------------------------- |
 | **`database`** | <code>string</code>                    | The database name                                                                   |
 | **`upgrade`**  | <code>capSQLiteVersionUpgrade[]</code> | The upgrade options for version upgrade Array of length 1 to easiest the iOS plugin |
-
 
 #### capSQLiteVersionUpgrade
 
