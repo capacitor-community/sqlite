@@ -511,49 +511,50 @@ class ExportToJson {
         }
         return retObj
     }
+
+    // MARK: - ExportToJson - ModEmbeddedParentheses
+
+    class func modEmbeddedParentheses(sqlStmt: String) -> String {
+        var stmt: String = sqlStmt
+        if let openPar = sqlStmt.firstIndex(of: "(") {
+            if let closePar = sqlStmt.lastIndex(of: ")") {
+                let tStmt: String = String(
+                    sqlStmt[sqlStmt.index(after: openPar)..<closePar])
+                let mStmt: String = tStmt.replacingOccurrences(of: ",", with: "§")
+                stmt = sqlStmt.replacingOccurrences(of: tStmt, with: mStmt)
+            }
+        }
+        return stmt
+    }
+
     // swiftlint:enable function_body_length
 
     // MARK: - ExportToJson - CreateSchema
 
     // swiftlint:disable function_body_length
-    // swiftlint:disable cyclomatic_complexity
     class func createSchema(stmt: String) throws -> [[String: String]] {
         var retSchema: [[String: String]] = []
         // get the sqlStmt between the parenthesis sqlStmt
         if let openPar = stmt.firstIndex(of: "(") {
             if let closePar = stmt.lastIndex(of: ")") {
-                let sqlStmt: String = String(
+                var sqlStmt: String = String(
                     stmt[stmt.index(after: openPar)..<closePar])
-                var isStrfTime: Bool = false
-                if sqlStmt.contains("strftime") {
-                    isStrfTime = true
-                }
-                var sch: [String] = sqlStmt.components(separatedBy: ",")
-                if isStrfTime {
-                    var nSch: [String] = []
-                    var irem: Int = -1
-                    for ipos in 0..<sch.count {
-                        if sch[ipos].contains("strftime") {
-                            let merge: String = sch[ipos + 1]
-                            nSch.append("\(sch[ipos]),\(merge)")
-                            irem = ipos + 1
-                        } else {
-                            nSch.append(sch[ipos])
-                        }
-                    }
-                    if irem != -1 {
-                        nSch.remove(at: irem)
-                    }
-                    sch = nSch
-                }
+                // check if there is other parenthesis and replace the ',' by '§'
+                sqlStmt = modEmbeddedParentheses(sqlStmt: sqlStmt)
+                let sch: [String] = sqlStmt.components(separatedBy: ",")
                 for ipos in 0..<sch.count {
                     let rstr: String = sch[ipos]
                         .trimmingCharacters(in: .whitespacesAndNewlines)
                     var row = rstr.split(separator: " ", maxSplits: 1)
                     if  row.count == 2 {
                         var columns: [String: String] = [:]
-                        if String(row[0]).uppercased() != "FOREIGN" {
+                        if String(row[0]).uppercased() != "FOREIGN" && String(row[0]).uppercased() != "CONSTRAINT" {
                             columns["column"] =  String(row[0])
+                        } else if String(row[0]).uppercased() == "CONSTRAINT" {
+                            let tRow = row[1].split(separator: " ", maxSplits: 1)
+                            row[0] = tRow[0]
+                            columns["constraint"] = String(row[0])
+                            row[1] = tRow[1]
                         } else {
                             guard let oPar = rstr.firstIndex(of: "(")
                             else {
@@ -576,7 +577,7 @@ class ExportToJson {
                             print("row[0] \(row[0]) row[1] \(row[1]) ")
                             columns["foreignkey"] = String(row[0])
                         }
-                        columns["value"] = String(row[1])
+                        columns["value"] = String(row[1]).replacingOccurrences(of: "§", with: ",")
                         retSchema.append(columns)
                     } else {
                         throw ExportToJsonError.createSchema(
@@ -593,7 +594,6 @@ class ExportToJson {
         }
         return retSchema
     }
-    // swiftlint:enable cyclomatic_complexity
     // swiftlint:enable function_body_length
 
     // MARK: - ExportToJson - CreateIndexes

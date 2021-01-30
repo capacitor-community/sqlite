@@ -1,3 +1,11 @@
+## 3.0.0-beta.3 (2021-01-30)
+
+### Bug Fixes
+
+- fix issue#71 Compound primary Key when ImportFromJSON
+- getSyncDate returns a toISOString() data and not an Unix Epoch
+- update documentation
+
 ## 3.0.0-beta.2 (2021-01-23)
 
 ### Bug Fixes
@@ -18,6 +26,25 @@
 ### Added Features
 
 - better Error handling throught try...catch
+
+## 2.9.7 (2021-01-30) REFACTOR
+
+### Bug Fixes
+
+- Fix Compound primary Key when ImportFromJSON issue#71
+- Update ImportExportJson
+
+## 2.9.6 (2021-01-24) REFACTOR
+
+### Chore
+
+- Move to latest tag
+
+### Bug Fixes
+
+- Fix isIdExists on Electron
+- Readme all links to apps and docs
+
 
 ## 2.9.5 (2021-01-20) REFACTOR
 
@@ -212,6 +239,14 @@
 - closeConnection method
 - SQLiteConnection Interface & Class
 - SQLiteDBConnection Interface & Class
+
+## 2.4.6 (2021-01-24)
+
+### Chore
+
+- update to @capacitor/core@2.4.6
+
+- move it from tag latest to tag initial
 
 ## 2.4.5 (2021-01-13)
 

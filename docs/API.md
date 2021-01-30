@@ -572,6 +572,7 @@ Copy databases from public/assets/databases folder to application databases fold
 | **`column`**     | <code>string</code> | The column name                     |
 | **`value`**      | <code>string</code> | The column data (type, unique, ...) |
 | **`foreignkey`** | <code>string</code> | The column foreign key constraints  |
+| **`constraint`** | <code>string</code> | the column constraint               |
 
 
 #### JsonIndex

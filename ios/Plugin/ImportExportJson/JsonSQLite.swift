@@ -68,6 +68,7 @@ public struct JsonColumn: Codable {
     var column: String?
     let value: String
     var foreignkey: String?
+    var constraint: String?
 
     public func show() {
         if let mColumn = column {
@@ -75,6 +76,9 @@ public struct JsonColumn: Codable {
         }
         if let mForeignkey = foreignkey {
             print("foreignkey: \(mForeignkey) ")
+        }
+        if let mConstraint = constraint {
+            print("constraint: \(mConstraint) ")
         }
         print("value: \(value) ")
     }

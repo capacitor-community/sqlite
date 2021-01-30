@@ -173,6 +173,11 @@ class ImportFromJson {
                     stmt.append("FOREIGN KEY (\( jSchForeignkey))")
                 }
             }
+            if let jSchConstraint = mSchema[jpos].constraint {
+                if jSchConstraint.count > 0 {
+                    stmt.append("CONSTRAINT \( jSchConstraint)")
+                }
+            }
             stmt.append(" ")
             stmt.append(mSchema[jpos].value)
             if jpos != mSchema.count - 1 {

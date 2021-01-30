@@ -214,12 +214,12 @@ Set the synchronization date
 ### getSyncDate()
 
 ```typescript
-getSyncDate() => Promise<capSQLiteSyncDate>
+getSyncDate() => Promise<string>
 ```
 
 Get the synchronization date
 
-**Returns:** <code>Promise&lt;<a href="#capsqlitesyncdate">capSQLiteSyncDate</a>&gt;</code>
+**Returns:** <code>Promise&lt;string&gt;</code>
 
 **Since:** 2.9.0 refactor
 
@@ -285,13 +285,6 @@ Export the given database to a JSON Object
 | **`result`** | <code>boolean</code> | result set to true when successful else false |
 
 
-#### capSQLiteSyncDate
-
-| Prop           | Type                | Description              |
-| -------------- | ------------------- | ------------------------ |
-| **`syncDate`** | <code>number</code> | the synchronization date |
-
-
 #### capSQLiteJson
 
 | Prop         | Type                                              | Description           |
@@ -327,6 +320,7 @@ Export the given database to a JSON Object
 | **`column`**     | <code>string</code> | The column name                     |
 | **`value`**      | <code>string</code> | The column data (type, unique, ...) |
 | **`foreignkey`** | <code>string</code> | The column foreign key constraints  |
+| **`constraint`** | <code>string</code> | the column constraint               |
 
 
 #### JsonIndex

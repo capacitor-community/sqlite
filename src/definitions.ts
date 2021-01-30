@@ -376,6 +376,10 @@ export interface JsonColumn {
    * The column foreign key constraints
    */
   foreignkey?: string;
+  /**
+   * the column constraint
+   */
+  constraint?: string;
 }
 export interface JsonIndex {
   /**
@@ -691,7 +695,7 @@ export interface ISQLiteDBConnection {
    * @returns Promise<capSQLiteSyncDate>
    * @since 2.9.0 refactor
    */
-  getSyncDate(): Promise<capSQLiteSyncDate>;
+  getSyncDate(): Promise<string>;
   /**
    * Export the given database to a JSON Object
    * @param mode
@@ -830,12 +834,16 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
       return Promise.reject(err);
     }
   }
-  async getSyncDate(): Promise<capSQLiteSyncDate> {
+  async getSyncDate(): Promise<string> {
     try {
       const res: any = await this.sqlite.getSyncDate({
         database: this.dbName,
       });
-      return Promise.resolve(res);
+      console.log(`in DBConnection syncDate ${res.syncDate}`)
+      let retDate = "";
+      if(res.syncDate > 0) retDate = (new Date(res.syncDate * 1000)).toISOString();
+      console.log(`in DBConnection retDate ${retDate}`)
+      return Promise.resolve(retDate);
     } catch (err) {
       return Promise.reject(err);
     }

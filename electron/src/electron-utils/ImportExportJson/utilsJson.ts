@@ -107,6 +107,10 @@ export class UtilsJson {
                 statements.push(
                   `FOREIGN KEY (${jTable.schema[j].foreignkey}) ${jTable.schema[j].value}`,
                 );
+              } else if (jTable.schema[j].constraint) {
+                statements.push(
+                  `CONSTRAINT ${jTable.schema[j].constraint} ${jTable.schema[j].value}`,
+                );
               }
             } else {
               if (jTable.schema[j].column) {
@@ -116,6 +120,10 @@ export class UtilsJson {
               } else if (jTable.schema[j].foreignkey) {
                 statements.push(
                   `FOREIGN KEY (${jTable.schema[j].foreignkey}) ${jTable.schema[j].value},`,
+                );
+              } else if (jTable.schema[j].constraint) {
+                statements.push(
+                  `CONSTRAINT ${jTable.schema[j].constraint} ${jTable.schema[j].value},`,
                 );
               }
             }
@@ -476,7 +484,12 @@ export class UtilsJson {
    * @param obj
    */
   private isSchema(obj: any): boolean {
-    const keySchemaLevel: string[] = ['column', 'value', 'foreignkey'];
+    const keySchemaLevel: string[] = [
+      'column',
+      'value',
+      'foreignkey',
+      'constraint',
+    ];
     if (
       obj == null ||
       (Object.keys(obj).length === 0 && obj.constructor === Object)
@@ -487,6 +500,7 @@ export class UtilsJson {
       if (key === 'column' && typeof obj[key] != 'string') return false;
       if (key === 'value' && typeof obj[key] != 'string') return false;
       if (key === 'foreignkey' && typeof obj[key] != 'string') return false;
+      if (key === 'constraint' && typeof obj[key] != 'string') return false;
     }
     return true;
   }
@@ -530,6 +544,9 @@ export class UtilsJson {
       }
       if (keys.includes('foreignkey')) {
         sch.foreignkey = schema[i].foreignkey;
+      }
+      if (keys.includes('constraint')) {
+        sch.constraint = schema[i].constraint;
       }
       const isValid: boolean = this.isSchema(sch);
       if (!isValid) {

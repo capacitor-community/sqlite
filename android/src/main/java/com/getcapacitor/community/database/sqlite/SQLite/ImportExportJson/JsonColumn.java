@@ -12,10 +12,11 @@ import org.json.JSONObject;
 public class JsonColumn {
 
     private static final String TAG = "JsonColumn";
-    private static final List<String> keySchemaLevel = new ArrayList<String>(Arrays.asList("column", "value", "foreignkey"));
+    private static final List<String> keySchemaLevel = new ArrayList<String>(Arrays.asList("column", "value", "foreignkey", "constraint"));
     private String column = null;
     private String value = null;
     private String foreignkey = null;
+    private String constraint = null;
 
     // Getter
     public String getColumn() {
@@ -28,6 +29,10 @@ public class JsonColumn {
 
     public String getForeignkey() {
         return foreignkey;
+    }
+
+    public String getConstraint() {
+        return constraint;
     }
 
     // Setter
@@ -43,11 +48,16 @@ public class JsonColumn {
         this.foreignkey = newForeignkey;
     }
 
+    public void setConstraint(String newConstraint) {
+        this.constraint = newConstraint;
+    }
+
     public ArrayList<String> getKeys() {
         ArrayList<String> retArray = new ArrayList<String>();
         if (getColumn() != null && getColumn().length() > 0) retArray.add("column");
         if (getValue() != null && getValue().length() > 0) retArray.add("value");
         if (getForeignkey() != null && getForeignkey().length() > 0) retArray.add("foreignkey");
+        if (getConstraint() != null && getConstraint().length() > 0) retArray.add("constraint");
         return retArray;
     }
 
@@ -81,6 +91,13 @@ public class JsonColumn {
                         foreignkey = (String) val;
                     }
                 }
+                if (key.equals("constraint")) {
+                    if (!(val instanceof String)) {
+                        return false;
+                    } else {
+                        constraint = (String) val;
+                    }
+                }
             } catch (JSONException e) {
                 e.printStackTrace();
                 return false;
@@ -93,6 +110,7 @@ public class JsonColumn {
         String row = "";
         if (this.getColumn() != null) row = "column: " + this.getColumn();
         if (this.getForeignkey() != null) row = "foreignkey: " + this.getForeignkey();
+        if (this.getConstraint() != null) row = "constraint: " + this.getConstraint();
         Log.d(TAG, row + " value: " + this.getValue());
     }
 
@@ -101,6 +119,7 @@ public class JsonColumn {
         if (this.column != null) retObj.put("column", this.column);
         retObj.put("value", this.value);
         if (this.foreignkey != null) retObj.put("foreignkey", this.foreignkey);
+        if (this.constraint != null) retObj.put("constraint", this.constraint);
         return retObj;
     }
 }

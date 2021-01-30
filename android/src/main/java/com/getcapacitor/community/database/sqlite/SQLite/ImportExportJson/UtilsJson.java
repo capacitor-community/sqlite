@@ -263,6 +263,9 @@ public class UtilsJson {
             if (keys.contains("foreignkey")) {
                 jsSch.put("foreignkey", schema.get(i).getForeignkey());
             }
+            if (keys.contains("constraint")) {
+                jsSch.put("constraint", schema.get(i).getConstraint());
+            }
             boolean isValid = uJCol.isSchema(jsSch);
             if (!isValid) {
                 throw new Exception("checkSchemaValidity: schema[" + i + "] not valid");

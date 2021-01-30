@@ -543,7 +543,6 @@ public class CapacitorSQLitePlugin: CAPPlugin {
     // MARK: - GetSyncDate
 
     @objc func getSyncDate(_ call: CAPPluginCall) {
-        var msg: String = "setSyncDate command failed: "
         guard let dbName = call.options["database"]
                 as? String else {
             let msg = "getSyncDate: Must provide a database name"
