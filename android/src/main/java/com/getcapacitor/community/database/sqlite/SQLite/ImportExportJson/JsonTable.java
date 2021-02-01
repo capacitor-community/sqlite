@@ -13,11 +13,14 @@ import org.json.JSONObject;
 public class JsonTable {
 
     private static final String TAG = "JsonTable";
-    private static final List<String> keyTableLevel = new ArrayList<String>(Arrays.asList("name", "schema", "indexes", "values"));
+    private static final List<String> keyTableLevel = new ArrayList<String>(
+        Arrays.asList("name", "schema", "indexes", "triggers", "values")
+    );
 
     private String name = "";
     private ArrayList<JsonColumn> schema = new ArrayList<JsonColumn>();
     private ArrayList<JsonIndex> indexes = new ArrayList<JsonIndex>();
+    private ArrayList<JsonTrigger> triggers = new ArrayList<>();
     private ArrayList<ArrayList<Object>> values = new ArrayList<ArrayList<Object>>();
 
     // Getter
@@ -31,6 +34,10 @@ public class JsonTable {
 
     public ArrayList<JsonIndex> getIndexes() {
         return indexes;
+    }
+
+    public ArrayList<JsonTrigger> getTriggers() {
+        return triggers;
     }
 
     public ArrayList<ArrayList<Object>> getValues() {
@@ -50,6 +57,10 @@ public class JsonTable {
         this.indexes = newIndexes;
     }
 
+    public void setTriggers(ArrayList<JsonTrigger> newTriggers) {
+        this.triggers = newTriggers;
+    }
+
     public void setValues(ArrayList<ArrayList<Object>> newValues) {
         this.values = newValues;
     }
@@ -59,6 +70,7 @@ public class JsonTable {
         if (getName().length() > 0) retArray.add("names");
         if (getSchema().size() > 0) retArray.add("schema");
         if (getIndexes().size() > 0) retArray.add("indexes");
+        if (getTriggers().size() > 0) retArray.add("triggers");
         if (getValues().size() > 0) retArray.add("values");
         return retArray;
     }
@@ -109,6 +121,20 @@ public class JsonTable {
                         }
                     }
                 }
+                if (key.equals("triggers")) {
+                    if (!(value instanceof JSONArray) && !(value instanceof ArrayList)) {
+                        return false;
+                    } else {
+                        triggers = new ArrayList<JsonTrigger>();
+                        JSONArray arr = jsObj.getJSONArray(key);
+                        for (int i = 0; i < arr.length(); i++) {
+                            JsonTrigger trg = new JsonTrigger();
+                            boolean retTrigger = trg.isTrigger(arr.getJSONObject(i));
+                            if (!retTrigger) return false;
+                            triggers.add(trg);
+                        }
+                    }
+                }
                 if (key.equals("values")) {
                     if (!(value instanceof JSONArray) && !(value instanceof ArrayList)) {
                         return false;
@@ -144,6 +170,10 @@ public class JsonTable {
         for (JsonIndex idx : this.getIndexes()) {
             idx.print();
         }
+        Log.d(TAG, "number of Triggers: " + this.getTriggers().size());
+        for (JsonTrigger trg : this.getTriggers()) {
+            trg.print();
+        }
         Log.d(TAG, "number of Values: " + this.getValues().size());
         for (ArrayList<Object> row : this.getValues()) {
             Log.d(TAG, "row: " + row);
@@ -166,6 +196,13 @@ public class JsonTable {
                 JSIndexes.put(idx.getIndexAsJSObject());
             }
             retObj.put("indexes", JSIndexes);
+        }
+        JSONArray JSTriggers = new JSONArray();
+        if (this.triggers.size() > 0) {
+            for (JsonTrigger trg : this.triggers) {
+                JSTriggers.put(trg.getTriggerAsJSObject());
+            }
+            retObj.put("triggers", JSTriggers);
         }
         JSONArray JSValues = new JSONArray();
         if (this.values.size() > 0) {

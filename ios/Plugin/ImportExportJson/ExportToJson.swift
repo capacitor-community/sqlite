@@ -18,6 +18,7 @@ enum ExportToJsonError: Error {
     case getSchemaIndexes(message: String)
     case getValues(message: String)
     case createIndexes(message: String)
+    case createTriggers(message: String)
     case createSchema(message: String)
     case createValues(message: String)
     case getPartialModeData(message: String)
@@ -103,12 +104,15 @@ class ExportToJson {
 
     // MARK: - ExportToJson - GetSchemaIndexes
 
+    // swiftlint:disable function_body_length
+    // swiftlint:disable cyclomatic_complexity
     class func getSchemaIndexes(mDB: Database,
                                 stmt: String, table: [String: Any] )
     throws -> [String: Any] {
         var retTable: [String: Any] = table
         var isSchema: Bool  = false
         var isIndexes: Bool = false
+        var isTriggers: Bool = false
         do {
             // create schema
             let schema: [[String: String]] = try
@@ -133,8 +137,18 @@ class ExportToJson {
                     indexes: indexes)
                 if isIndexes {retTable["indexes"] = indexes}
             }
+            // create triggers
+            let triggers: [[String: String]] = try
+                ExportToJson.createTriggers(mDB: mDB,
+                                            tableName: tableName)
+            if triggers.count > 0 {
+                isTriggers = try UtilsJson.validateTriggers(
+                    triggers: triggers)
+                if isTriggers {retTable["triggers"] = triggers}
+            }
             let retObj: [String: Any] = ["isSchema": isSchema,
                                          "isIndexes": isIndexes,
+                                         "isTriggers": isTriggers,
                                          "table": retTable]
             return retObj
         } catch ExportToJsonError.createSchema(let message) {
@@ -145,8 +159,14 @@ class ExportToJson {
             throw ExportToJsonError.getSchemaIndexes(message: message)
         } catch UtilsJsonError.validateIndexes(let message) {
             throw ExportToJsonError.getSchemaIndexes(message: message)
+        } catch ExportToJsonError.createTriggers(let message) {
+            throw ExportToJsonError.getSchemaIndexes(message: message)
+        } catch UtilsJsonError.validateTriggers(let message) {
+            throw ExportToJsonError.getSchemaIndexes(message: message)
         }
     }
+    // swiftlint:enable cyclomatic_complexity
+    // swiftlint:enable function_body_length
 
     // MARK: - ExportToJson - GetValues
 
@@ -677,6 +697,121 @@ class ExportToJson {
         }
 
         return retIndexes
+    }
+    // swiftlint:enable cyclomatic_complexity
+    // swiftlint:enable function_body_length
+
+    // MARK: - ExportToJson - CreateTriggers
+
+    // swiftlint:disable function_body_length
+    // swiftlint:disable cyclomatic_complexity
+
+    class func createTriggers(mDB: Database, tableName: String)
+    throws -> [[String: String]] {
+        var retTriggers: [[String: String]] = []
+        var query = "SELECT name,tbl_name,sql FROM sqlite_master WHERE "
+        query.append("type = 'trigger' AND tbl_name = '\(tableName)' ")
+        query.append("AND sql NOTNULL;")
+        do {
+            let resTriggers =  try UtilsSQLCipher.querySQL(
+                mDB: mDB, sql: query, values: [])
+            if resTriggers.count > 0 {
+                for ipos in 0..<resTriggers.count {
+                    var row: [String: String] = [:]
+                    let keys: [String] = Array(resTriggers[ipos].keys)
+                    if keys.count == 3 {
+                        guard let tblName =
+                                resTriggers[ipos]["tbl_name"] as? String
+                        else {
+                            var msg: String = "Error triggers tbl_name "
+                            msg.append("not found")
+                            throw ExportToJsonError
+                            .createTriggers(message: msg)
+                        }
+                        if tblName == tableName {
+                            guard let sql: String =
+                                    resTriggers[ipos]["sql"] as? String
+                            else {
+                                var msg: String = "Error triggers sql "
+                                msg.append("not found")
+                                throw ExportToJsonError
+                                .createTriggers(message: msg)
+                            }
+                            guard let name = resTriggers[ipos]["name"]
+                                    as? String else {
+                                var msg: String = "Error triggers name "
+                                msg.append("not found")
+                                throw ExportToJsonError
+                                .createTriggers(message: msg)
+                            }
+                            var sqlArr: [String] = sql.components(separatedBy: name)
+                            if sqlArr.count != 2 {
+                                var msg = "Error sql split name does not "
+                                msg.append("return 2 values")
+                                throw ExportToJsonError
+                                .createTriggers(message: msg)
+                            }
+                            if !sqlArr[1].contains(tableName) {
+                                var msg = "sql split does not contains "
+                                msg.append("\(tableName)")
+                                throw ExportToJsonError
+                                .createTriggers(message: msg)
+                            }
+                            let timeevent: String = sqlArr[1]
+                                .components(separatedBy: tableName)[0]
+                                .trimmingCharacters(in:
+                                                        .whitespacesAndNewlines)
+                            var sep: String = "\(timeevent) \(tableName)"
+                            sqlArr = sqlArr[1].components(separatedBy: sep)
+                            if sqlArr.count != 2 {
+                                var msg = "Error sql split tableName does not "
+                                msg.append("return 2 values")
+                                throw ExportToJsonError
+                                .createTriggers(message: msg)
+                            }
+                            var condition: String = ""
+                            var logic: String = ""
+                            sep = sqlArr[1]
+                                .trimmingCharacters(in: .whitespacesAndNewlines)
+                            if !sep.uppercased().hasPrefix("BEGIN") {
+                                sqlArr = sep.components(separatedBy: "BEGIN")
+                                if sqlArr.count != 2 {
+                                    var msg = "Error sql split BEGIN does not "
+                                    msg.append("return 2 values")
+                                    throw ExportToJsonError
+                                    .createTriggers(message: msg)
+                                }
+                                condition = sqlArr[0]
+                                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                                logic = "BEGIN\(sqlArr[1])"
+                            } else {
+                                logic = sep
+                            }
+                            row["timeevent"] = timeevent
+                            row["name"] = name
+                            if condition.count > 0 {
+                                row["condition"] = condition
+                            }
+                            row["logic"] = logic
+                            retTriggers.append(row)
+                        } else {
+                            var msg: String = "Error triggers table name"
+                            msg.append(" doesn't match")
+                            throw ExportToJsonError
+                            .createTriggers(message: msg)
+                        }
+                    } else {
+                        throw ExportToJsonError.createTriggers(
+                            message: "Error No triggers key found ")
+                    }
+                }
+            }
+        } catch UtilsSQLCipherError.querySQL(let message) {
+            throw ExportToJsonError.createTriggers(
+                message: "Error query triggers failed : \(message)")
+        }
+
+        return retTriggers
     }
     // swiftlint:enable cyclomatic_complexity
     // swiftlint:enable function_body_length

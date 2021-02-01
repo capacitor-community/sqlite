@@ -3,6 +3,7 @@ import type {
   JsonTable,
   JsonColumn,
   JsonIndex,
+  JsonTrigger,
 } from '../../definitions';
 import { UtilsSQLite } from '../utilsSQLite';
 
@@ -150,6 +151,12 @@ export class ExportToJson {
           // check indexes validity
           await this._uJson.checkIndexesValidity(indexes);
         }
+        // create Table's triggers if any
+        const triggers: JsonTrigger[] = await this.getTriggers(mDb, tableName);
+        if (triggers.length > 0) {
+          // check triggers validity
+          await this._uJson.checkTriggersValidity(triggers);
+        }
         // create Table's Data
         const query = `SELECT * FROM ${tableName};`;
         const values: any[] = await this.getValues(mDb, query, tableName);
@@ -162,6 +169,9 @@ export class ExportToJson {
         }
         if (indexes.length > 0) {
           table.indexes = indexes;
+        }
+        if (triggers.length > 0) {
+          table.triggers = triggers;
         }
         if (values.length > 0) {
           table.values = values;
@@ -288,6 +298,94 @@ export class ExportToJson {
     }
   }
   /**
+   * GetTriggers
+   * @param mDb
+   * @param sqlStmt
+   * @param tableName
+   */
+  private async getTriggers(
+    mDb: any,
+    tableName: string,
+  ): Promise<JsonTrigger[]> {
+    const triggers: JsonTrigger[] = [];
+    try {
+      let stmt = 'SELECT name,tbl_name,sql FROM sqlite_master WHERE ';
+      stmt += `type = 'trigger' AND tbl_name = '${tableName}' `;
+      stmt += `AND sql NOT NULL;`;
+      const retTriggers = await this._uSQLite.queryAll(mDb, stmt, []);
+      if (retTriggers.length > 0) {
+        for (const rTrg of retTriggers) {
+          const keys: string[] = Object.keys(rTrg);
+          if (keys.length === 3) {
+            if (rTrg['tbl_name'] === tableName) {
+              const sql: string = rTrg['sql'];
+
+              const name: string = rTrg['name'];
+              let sqlArr: string[] = sql.split(name);
+              if (sqlArr.length != 2) {
+                return Promise.reject(
+                  new Error(
+                    `GetTriggers: sql split name does not return 2 values`,
+                  ),
+                );
+              }
+              if (!sqlArr[1].includes(tableName)) {
+                return Promise.reject(
+                  new Error(
+                    `GetTriggers: sql split does not contains ${tableName}`,
+                  ),
+                );
+              }
+              const timeEvent = sqlArr[1].split(tableName, 1)[0].trim();
+              sqlArr = sqlArr[1].split(timeEvent + ' ' + tableName);
+              if (sqlArr.length != 2) {
+                return Promise.reject(
+                  new Error(
+                    `GetTriggers: sql split tableName does not return 2 values`,
+                  ),
+                );
+              }
+              let condition = '';
+              let logic = '';
+              if (sqlArr[1].trim().substring(0, 5).toUpperCase() !== 'BEGIN') {
+                sqlArr = sqlArr[1].trim().split('BEGIN');
+                if (sqlArr.length != 2) {
+                  return Promise.reject(
+                    new Error(
+                      `GetTriggers: sql split BEGIN does not return 2 values`,
+                    ),
+                  );
+                }
+                condition = sqlArr[0].trim();
+                logic = 'BEGIN' + sqlArr[1];
+              } else {
+                logic = sqlArr[1].trim();
+              }
+
+              const trigger: JsonTrigger = {} as JsonTrigger;
+              trigger.name = name;
+              trigger.logic = logic;
+              if (condition.length > 0) trigger.condition = condition;
+              trigger.timeevent = timeEvent;
+              triggers.push(trigger);
+            } else {
+              return Promise.reject(
+                new Error(`GetTriggers: Table ${tableName} doesn't match`),
+              );
+            }
+          } else {
+            return Promise.reject(
+              new Error(`GetTriggers: Table ${tableName} creating indexes`),
+            );
+          }
+        }
+      }
+      return Promise.resolve(triggers);
+    } catch (err) {
+      return Promise.reject(new Error(`GetTriggers: ${err.message}`));
+    }
+  }
+  /**
    * GetValues
    * @param mDb
    * @param query
@@ -384,6 +482,7 @@ export class ExportToJson {
         const table: JsonTable = {} as JsonTable;
         let schema: JsonColumn[] = [];
         let indexes: JsonIndex[] = [];
+        let triggers: JsonTrigger[] = [];
         table.name = rTable;
         if (modTables[table.name] === 'Create') {
           // create Table's Schema
@@ -397,6 +496,12 @@ export class ExportToJson {
           if (indexes.length > 0) {
             // check indexes validity
             await this._uJson.checkIndexesValidity(indexes);
+          }
+          // create Table's triggers if any
+          triggers = await this.getTriggers(mDb, tableName);
+          if (triggers.length > 0) {
+            // check triggers validity
+            await this._uJson.checkTriggersValidity(triggers);
           }
         }
         // create Table's Data
@@ -417,6 +522,9 @@ export class ExportToJson {
         }
         if (indexes.length > 0) {
           table.indexes = indexes;
+        }
+        if (triggers.length > 0) {
+          table.triggers = triggers;
         }
         if (values.length > 0) {
           table.values = values;

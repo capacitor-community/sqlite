@@ -359,6 +359,10 @@ export interface JsonTable {
    */
   indexes?: JsonIndex[];
   /***
+   * Array of Trigger (JsonTrigger)
+   */
+  triggers?: JsonTrigger[];
+  /***
    * Array of Table data
    */
   values?: any[][];
@@ -380,6 +384,26 @@ export interface JsonColumn {
    * the column constraint
    */
   constraint?: string;
+}
+export interface JsonTrigger {
+  /**
+   * The trigger name
+   */
+  name: string;
+  /**
+   * The trigger time event fired
+   */
+  timeevent: string;
+
+  /**
+   * The trigger condition
+   */
+  condition?: string;
+
+  /**
+   * The logic of the trigger
+   */
+  logic: string;
 }
 export interface JsonIndex {
   /**
@@ -839,10 +863,11 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
       const res: any = await this.sqlite.getSyncDate({
         database: this.dbName,
       });
-      console.log(`in DBConnection syncDate ${res.syncDate}`)
-      let retDate = "";
-      if(res.syncDate > 0) retDate = (new Date(res.syncDate * 1000)).toISOString();
-      console.log(`in DBConnection retDate ${retDate}`)
+      console.log(`in DBConnection syncDate ${res.syncDate}`);
+      let retDate = '';
+      if (res.syncDate > 0)
+        retDate = new Date(res.syncDate * 1000).toISOString();
+      console.log(`in DBConnection retDate ${retDate}`);
       return Promise.resolve(retDate);
     } catch (err) {
       return Promise.reject(err);

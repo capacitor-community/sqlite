@@ -148,6 +148,15 @@ class ImportFromJson {
                     statements.append(contentsOf: stmt)
                 }
             }
+            if let mTriggers: [JsonTrigger] =
+                jsonSQLite.tables[ipos].triggers {
+                if mTriggers.count > 0 {
+                    let stmt: [String] =
+                        ImportFromJson.createTableTriggers(
+                            mTriggers: mTriggers, tableName: tableName)
+                    statements.append(contentsOf: stmt)
+                }
+            }
         }
         return statements
     }
@@ -225,6 +234,28 @@ class ImportFromJson {
             stmt.append(" (")
             stmt.append(mIndexes[jpos].value)
             stmt.append(");")
+            statements.append(stmt)
+        }
+        return statements
+    }
+
+    // MARK: - ImportFromJson - CreateTableTriggers
+
+    class func createTableTriggers(mTriggers: [JsonTrigger],
+                                   tableName: String) -> [String] {
+        var statements: [String] = []
+        for jpos in 0..<mTriggers.count {
+            var stmt: String
+            stmt = "CREATE TRIGGER IF NOT EXISTS "
+            stmt.append(mTriggers[jpos].name)
+            stmt.append(" ")
+            stmt.append(mTriggers[jpos].timeevent)
+            stmt.append(" ON ")
+            stmt.append("\(tableName) ")
+            if let condition = mTriggers[jpos].condition {
+                stmt.append("\(condition) ")
+            }
+            stmt.append("\(mTriggers[jpos].logic);")
             statements.append(stmt)
         }
         return statements

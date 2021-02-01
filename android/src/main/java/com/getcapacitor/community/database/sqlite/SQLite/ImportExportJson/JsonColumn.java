@@ -109,8 +109,8 @@ public class JsonColumn {
     public void print() {
         String row = "";
         if (this.getColumn() != null) row = "column: " + this.getColumn();
-        if (this.getForeignkey() != null) row = "foreignkey: " + this.getForeignkey();
-        if (this.getConstraint() != null) row = "constraint: " + this.getConstraint();
+        if (this.getForeignkey() != null) row += " foreignkey: " + this.getForeignkey();
+        if (this.getConstraint() != null) row += " constraint: " + this.getConstraint();
         Log.d(TAG, row + " value: " + this.getValue());
     }
 

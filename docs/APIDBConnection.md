@@ -305,12 +305,13 @@ Export the given database to a JSON Object
 
 #### JsonTable
 
-| Prop          | Type                      | Description                                              |
-| ------------- | ------------------------- | -------------------------------------------------------- |
-| **`name`**    | <code>string</code>       | The database name                                        |
-| **`schema`**  | <code>JsonColumn[]</code> | * Array of Schema (<a href="#jsoncolumn">JsonColumn</a>) |
-| **`indexes`** | <code>JsonIndex[]</code>  | * Array of Index (<a href="#jsonindex">JsonIndex</a>)    |
-| **`values`**  | <code>any[][]</code>      | * Array of Table data                                    |
+| Prop           | Type                       | Description                                                 |
+| -------------- | -------------------------- | ----------------------------------------------------------- |
+| **`name`**     | <code>string</code>        | The database name                                           |
+| **`schema`**   | <code>JsonColumn[]</code>  | * Array of Schema (<a href="#jsoncolumn">JsonColumn</a>)    |
+| **`indexes`**  | <code>JsonIndex[]</code>   | * Array of Index (<a href="#jsonindex">JsonIndex</a>)       |
+| **`triggers`** | <code>JsonTrigger[]</code> | * Array of Trigger (<a href="#jsontrigger">JsonTrigger</a>) |
+| **`values`**   | <code>any[][]</code>       | * Array of Table data                                       |
 
 
 #### JsonColumn
@@ -330,5 +331,15 @@ Export the given database to a JSON Object
 | **`name`**  | <code>string</code> | The index name                                                                                                          |
 | **`value`** | <code>string</code> | The value of the index can have the following formats: email email ASC email, MobileNumber email ASC, MobileNumber DESC |
 | **`mode`**  | <code>string</code> | the mode (Optional) UNIQUE                                                                                              |
+
+
+#### JsonTrigger
+
+| Prop            | Type                | Description                  |
+| --------------- | ------------------- | ---------------------------- |
+| **`name`**      | <code>string</code> | The trigger name             |
+| **`timeevent`** | <code>string</code> | The trigger time event fired |
+| **`condition`** | <code>string</code> | The trigger condition        |
+| **`logic`**     | <code>string</code> | The logic of the trigger     |
 
 </docgen-api>

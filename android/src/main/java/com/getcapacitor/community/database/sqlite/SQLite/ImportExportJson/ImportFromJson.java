@@ -112,7 +112,7 @@ public class ImportFromJson {
                 ArrayList<JsonColumn> mSchema = jsonSQL.getTables().get(i).getSchema();
                 // create table schema
                 if (mSchema.size() > 0) {
-                    ArrayList<String> stmt = createTableSchema(mSchema, tableName, mode);
+                    ArrayList<String> stmt = createTableSchema(mSchema, tableName);
                     statements.addAll(stmt);
                 }
             }
@@ -120,7 +120,15 @@ public class ImportFromJson {
                 ArrayList<JsonIndex> mIndexes = jsonSQL.getTables().get(i).getIndexes();
                 // create table indexes
                 if (mIndexes.size() > 0) {
-                    ArrayList<String> stmt = createTableIndexes(mIndexes, tableName, mode);
+                    ArrayList<String> stmt = createTableIndexes(mIndexes, tableName);
+                    statements.addAll(stmt);
+                }
+            }
+            if (jsonSQL.getTables().get(i).getTriggers().size() > 0) {
+                ArrayList<JsonTrigger> mTriggers = jsonSQL.getTables().get(i).getTriggers();
+                // create table triggers
+                if (mTriggers.size() > 0) {
+                    ArrayList<String> stmt = createTableTriggers(mTriggers, tableName);
                     statements.addAll(stmt);
                 }
             }
@@ -135,7 +143,7 @@ public class ImportFromJson {
      * @param mode
      * @return
      */
-    private ArrayList<String> createTableSchema(ArrayList<JsonColumn> mSchema, String tableName, String mode) {
+    private ArrayList<String> createTableSchema(ArrayList<JsonColumn> mSchema, String tableName) {
         ArrayList<String> statements = new ArrayList<>();
         String stmt = new StringBuilder("CREATE TABLE IF NOT EXISTS ").append(tableName).append(" (").toString();
         for (int j = 0; j < mSchema.size(); j++) {
@@ -217,7 +225,7 @@ public class ImportFromJson {
      * @param mode
      * @return
      */
-    private ArrayList<String> createTableIndexes(ArrayList<JsonIndex> mIndexes, String tableName, String mode) {
+    private ArrayList<String> createTableIndexes(ArrayList<JsonIndex> mIndexes, String tableName) {
         ArrayList<String> statements = new ArrayList<>();
         for (int j = 0; j < mIndexes.size(); j++) {
             String mMode = mIndexes.get(j).getMode();
@@ -232,6 +240,32 @@ public class ImportFromJson {
                 .append(mIndexes.get(j).getValue())
                 .append(");")
                 .toString();
+            statements.add(stmt);
+        }
+        return statements;
+    }
+
+    /**
+     * Create table triggers from Json object
+     * @param mTriggers
+     * @param tableName
+     * @return
+     */
+    private ArrayList<String> createTableTriggers(ArrayList<JsonTrigger> mTriggers, String tableName) {
+        ArrayList<String> statements = new ArrayList<>();
+        for (int j = 0; j < mTriggers.size(); j++) {
+            StringBuilder sBuilder = new StringBuilder("CREATE TRIGGER IF NOT EXISTS ")
+                .append(mTriggers.get(j).getName())
+                .append(" ")
+                .append(mTriggers.get(j).getTimeevent())
+                .append(" ON ")
+                .append(tableName)
+                .append(" ");
+            if (mTriggers.get(j).getCondition() != null) {
+                sBuilder.append(mTriggers.get(j).getCondition()).append(" ");
+            }
+            sBuilder.append(mTriggers.get(j).getLogic());
+            String stmt = sBuilder.toString();
             statements.add(stmt);
         }
         return statements;

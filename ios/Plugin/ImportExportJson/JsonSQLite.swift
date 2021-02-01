@@ -30,6 +30,7 @@ public struct JsonTable: Codable {
     let name: String
     var schema: [JsonColumn]?
     var indexes: [JsonIndex]?
+    var triggers: [JsonTrigger]?
     var values: [[UncertainValue<String, Int, Double>]]?
 
     public func show() {
@@ -45,6 +46,12 @@ public struct JsonTable: Codable {
             print("Number of indexes: \(mIndexes.count) ")
             for idx in mIndexes {
                 idx.show()
+            }
+        }
+        if let mTriggers = triggers {
+            print("Number of triggers: \(mTriggers.count) ")
+            for trg in mTriggers {
+                trg.show()
             }
         }
         if let mValues = values {
@@ -99,7 +106,21 @@ public struct JsonIndex: Codable {
         }
     }
 }
+public struct JsonTrigger: Codable {
+    var name: String
+    let timeevent: String
+    var condition: String?
+    let logic: String
 
+    public func show() {
+        print("name: \(name) ")
+        print("timeevent: \(timeevent) ")
+        if let mCondition = condition {
+            print("condition: \(mCondition) ")
+        }
+        print("logic: \(logic) ")
+    }
+}
 public struct UncertainValue<T: Codable, U: Codable, V: Codable>: Codable {
     public var tValue: T?
     public var uValue: U?
