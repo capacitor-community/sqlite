@@ -615,7 +615,6 @@ class ExportToJson {
         }
         return retSchema
     }
-    // swiftlint:enable cyclomatic_complexity
     // swiftlint:enable function_body_length
 
     // MARK: - ExportToJson - CreateIndexes

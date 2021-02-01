@@ -461,6 +461,9 @@ public class ExportToJson {
                 if (indexes.size() != 0) {
                     table.setIndexes(indexes);
                 }
+                if (triggers.size() != 0) {
+                    table.setTriggers(triggers);
+                }
                 if (values.size() != 0) {
                     table.setValues(values);
                 }

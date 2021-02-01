@@ -1,3 +1,9 @@
+## 2.9.9 (2021-02-01) REFACTOR
+
+### Bug Fixes
+
+- Fix Android export 'Partial' triggers
+
 ## 2.9.8 (2021-02-01) REFACTOR
 
 ### Bug Fixes
