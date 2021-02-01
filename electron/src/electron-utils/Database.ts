@@ -236,9 +236,7 @@ export class Database {
       const sDate: number = Math.round(new Date(syncDate).getTime() / 1000);
       let stmt: string = `UPDATE sync_table SET sync_date = `;
       stmt += `${sDate} WHERE id = 1;`;
-      console.log(`>>> setSyncDate stmt ${stmt}`);
       const changes: number = await this.executeSQL(stmt);
-      console.log(`>>> setSyncDate changes ${changes}`);
       if (changes < 0) {
         return { result: false, message: 'setSyncDate failed' };
       } else {

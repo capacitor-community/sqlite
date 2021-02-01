@@ -381,6 +381,10 @@ export interface JsonTable {
    */
   indexes?: JsonIndex[];
   /***
+   * Array of Trigger (JsonTrigger)
+   */
+  triggers?: JsonTrigger[];
+  /***
    * Array of Table data
    */
   values?: any[][];
@@ -402,6 +406,26 @@ export interface JsonColumn {
    * the column constraint
    */
   constraint?: string;
+}
+export interface JsonTrigger {
+  /**
+   * The trigger name
+   */
+  name: string;
+  /**
+   * The trigger time event fired
+   */
+  timeevent: string;
+
+  /**
+   * The trigger condition
+   */
+  condition?: string;
+
+  /**
+   * The logic of the trigger
+   */
+  logic: string;
 }
 export interface JsonIndex {
   /**
@@ -713,7 +737,6 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
     return this.dbName;
   }
   async open(): Promise<capSQLiteResult> {
-    console.log('>>> in SQLiteDBConnection open dbName ' + this.dbName);
     const res: any = await this.sqlite.open({ database: this.dbName });
     return res;
   }

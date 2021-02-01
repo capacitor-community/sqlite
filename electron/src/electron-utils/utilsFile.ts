@@ -110,7 +110,6 @@ export class UtilsFile {
     if (idx != -1) sep = '\\';
     const dir: string = __dirname.substring(0, __dirname.lastIndexOf(sep) + 1);
     retPath = this.Path.join(dir, 'app', 'assets', this.pathDB.toLowerCase());
-    console.log(`$$$ AssetsDatabases ${retPath}`);
     return retPath;
   }
   /**

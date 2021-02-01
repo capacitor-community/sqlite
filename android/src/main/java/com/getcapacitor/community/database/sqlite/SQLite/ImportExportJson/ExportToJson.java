@@ -98,6 +98,12 @@ public class ExportToJson {
                     // check indexes validity
                     uJson.checkIndexesValidity(indexes);
                 }
+                // create Table's triggers if any
+                ArrayList<JsonTrigger> triggers = getTriggers(mDb, tableName);
+                if (triggers.size() > 0) {
+                    // check triggers validity
+                    uJson.checkTriggersValidity(triggers);
+                }
                 // create Table's Data
                 String query = "SELECT * FROM " + tableName + ";";
                 ArrayList<ArrayList<Object>> values = getValues(mDb, query, tableName);
@@ -110,6 +116,9 @@ public class ExportToJson {
                 }
                 if (indexes.size() != 0) {
                     table.setIndexes(indexes);
+                }
+                if (triggers.size() != 0) {
+                    table.setTriggers(triggers);
                 }
                 if (values.size() != 0) {
                     table.setValues(values);
@@ -219,6 +228,70 @@ public class ExportToJson {
             throw new Exception(msg + e.getMessage());
         } finally {
             return indexes;
+        }
+    }
+
+    /**
+     * Get Triggers
+     * @param mDb
+     * @param tableName
+     * @return
+     * @throws Exception
+     */
+    private ArrayList<JsonTrigger> getTriggers(Database mDb, String tableName) throws Exception {
+        String msg = "Error: getTriggers ";
+        ArrayList<JsonTrigger> triggers = new ArrayList<>();
+        String stmt = "SELECT name,tbl_name,sql FROM ";
+        stmt += "sqlite_master WHERE ";
+        stmt += "type = 'trigger' AND tbl_name = '" + tableName;
+        stmt += "' AND sql NOTNULL;";
+        try {
+            JSArray retTriggers = mDb.selectSQL(stmt, new ArrayList<String>());
+            List<JSObject> lTriggers = retTriggers.toList();
+            if (lTriggers.size() > 0) {
+                for (int j = 0; j < lTriggers.size(); j++) {
+                    JsonTrigger jsonRow = new JsonTrigger();
+                    if (lTriggers.get(j).getString("tbl_name").equals(tableName)) {
+                        String name = lTriggers.get(j).getString("name");
+                        String sql = lTriggers.get(j).getString("sql");
+                        String[] sqlArr = sql.split(name);
+                        if (sqlArr.length != 2) {
+                            throw new Exception(msg + "sql split name does not return 2 values");
+                        }
+                        if (!sqlArr[1].contains(tableName)) {
+                            throw new Exception(msg + "sql split does not contains " + tableName);
+                        }
+                        String timeEvent = sqlArr[1].split(tableName)[0].trim();
+                        sqlArr = sqlArr[1].split(timeEvent + ' ' + tableName);
+                        if (sqlArr.length != 2) {
+                            throw new Exception(msg + "sql split tableName does not return 2 values");
+                        }
+                        String condition = "";
+                        String logic = "";
+                        if (!sqlArr[1].trim().substring(0, 5).toUpperCase().equals("BEGIN")) {
+                            sqlArr = sqlArr[1].trim().split("BEGIN");
+                            if (sqlArr.length != 2) {
+                                throw new Exception(msg + "sql split BEGIN does not return 2 values");
+                            }
+                            condition = sqlArr[0].trim();
+                            logic = "BEGIN" + sqlArr[1];
+                        } else {
+                            logic = sqlArr[1].trim();
+                        }
+                        jsonRow.setName(name);
+                        jsonRow.setTimeevent(timeEvent);
+                        jsonRow.setLogic(logic);
+                        if (condition.length() > 0) jsonRow.setCondition(condition);
+                        triggers.add(jsonRow);
+                    } else {
+                        throw new Exception(msg + "table name doesn't match");
+                    }
+                }
+            }
+        } catch (JSONException e) {
+            throw new Exception(msg + e.getMessage());
+        } finally {
+            return triggers;
         }
     }
 
@@ -346,6 +419,8 @@ public class ExportToJson {
                 table.setName(tableName);
                 ArrayList<JsonColumn> schema = new ArrayList<>();
                 ArrayList<JsonIndex> indexes = new ArrayList<>();
+                ArrayList<JsonTrigger> triggers = new ArrayList<>();
+
                 if (modTables.getString(tableName).equals("Create")) {
                     // create Table's Schema
                     schema = getSchema(sqlStmt);
@@ -360,6 +435,13 @@ public class ExportToJson {
                     if (indexes.size() > 0) {
                         // check indexes validity
                         uJson.checkIndexesValidity(indexes);
+                    }
+                    // create Table's triggers if any
+                    triggers = getTriggers(mDb, tableName);
+
+                    if (triggers.size() > 0) {
+                        // check triggers validity
+                        uJson.checkTriggersValidity(triggers);
                     }
                 }
                 // create Table's Data

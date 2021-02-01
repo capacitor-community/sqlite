@@ -14,6 +14,7 @@ enum UtilsJsonError: Error {
     case checkRowValidity(message: String)
     case validateSchema(message: String)
     case validateIndexes(message: String)
+    case validateTriggers(message: String)
 }
 
 class UtilsJson {
@@ -259,6 +260,31 @@ class UtilsJson {
                 message: "Error in encoding indexes")
         }
         return isIndexes
+    }
+
+    // MARK: - ExportToJson - validateTriggers
+
+    class func validateTriggers(triggers: [[String: String]])
+                                throws -> Bool {
+
+        var isTriggers = false
+        do {
+            let eTriggers = try JSONEncoder().encode(triggers)
+            guard let eTriggersString: String =
+                    String(data: eTriggers, encoding: .utf8) else {
+                var message: String = "Error in converting "
+                message.append("eTriggers to String")
+                throw UtilsJsonError.validateTriggers(
+                    message: message)
+            }
+            if eTriggersString.count > 0 {
+                isTriggers = true
+            }
+        } catch {
+            throw UtilsJsonError.validateTriggers(
+                message: "Error in encoding triggers")
+        }
+        return isTriggers
     }
 
 }

@@ -14,6 +14,7 @@ public class UtilsJson {
 
     private JsonColumn uJCol = new JsonColumn();
     private JsonIndex uJIdx = new JsonIndex();
+    private JsonTrigger uJTrg = new JsonTrigger();
 
     /**
      * Check if a table exists
@@ -42,16 +43,15 @@ public class UtilsJson {
      */
     public boolean isIdExists(Database mDb, String tableName, String firstColumnName, Object key) {
         boolean ret = false;
-        String query = new StringBuilder("SELECT ")
+        StringBuilder sbQuery = new StringBuilder("SELECT ")
             .append(firstColumnName)
             .append(" FROM ")
             .append(tableName)
             .append(" WHERE ")
-            .append(firstColumnName)
-            .append(" = ")
-            .append(key)
-            .append(";")
-            .toString();
+            .append(firstColumnName);
+        if (key instanceof Integer) sbQuery.append(" = ").append(key).append(";");
+        if (key instanceof String) sbQuery.append(" = '").append(key).append("';");
+        String query = sbQuery.toString();
         JSArray resQuery = mDb.selectSQL(query, new ArrayList<String>());
         if (resQuery.length() == 1) ret = true;
         return ret;
@@ -249,6 +249,9 @@ public class UtilsJson {
             if (keys.contains("foreignkey")) {
                 jsSch.put("foreignkey", schema.get(i).getForeignkey());
             }
+            if (keys.contains("constraint")) {
+                jsSch.put("constraint", schema.get(i).getConstraint());
+            }
             boolean isValid = uJCol.isSchema(jsSch);
             if (!isValid) {
                 throw new Exception("checkSchemaValidity: schema[" + i + "] not valid");
@@ -275,12 +278,41 @@ public class UtilsJson {
             if (keys.contains("mode")) {
                 String mode = indexes.get(i).getMode();
                 if (mode.length() > 0 && mode.equals("UNIQUE")) {
-                    jsIdx.put("name", mode);
+                    jsIdx.put("mode", mode);
                 }
             }
             boolean isValid = uJIdx.isIndexes(jsIdx);
             if (!isValid) {
                 throw new Exception("checkIndexesValidity: indexes[" + i + "] not valid");
+            }
+        }
+        return;
+    }
+
+    /**
+     * Check Triggers Validity
+     * @param triggers
+     * @throws Exception
+     */
+    public void checkTriggersValidity(ArrayList<JsonTrigger> triggers) throws Exception {
+        for (int i = 0; i < triggers.size(); i++) {
+            JSONObject jsTrg = new JSONObject();
+            ArrayList<String> keys = triggers.get(i).getKeys();
+            if (keys.contains("name")) {
+                jsTrg.put("name", triggers.get(i).getName());
+            }
+            if (keys.contains("timeevent")) {
+                jsTrg.put("timeevent", triggers.get(i).getTimeevent());
+            }
+            if (keys.contains("condition")) {
+                jsTrg.put("condition", triggers.get(i).getCondition());
+            }
+            if (keys.contains("logic")) {
+                jsTrg.put("logic", triggers.get(i).getLogic());
+            }
+            boolean isValid = uJTrg.isTrigger(jsTrg);
+            if (!isValid) {
+                throw new Exception("checkTriggersValidity: triggers[" + i + "] not valid");
             }
         }
         return;

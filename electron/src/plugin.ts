@@ -577,7 +577,6 @@ export class CapacitorSQLiteElectronWeb
 
     const mDB = this._dbDict[dbName];
     const ret: any = await mDB.setSyncDate(syncDate);
-    console.log(`$$$ setSyncDate ${JSON.stringify(ret)}`);
     return Promise.resolve(ret);
   }
   async getSyncDate(
@@ -653,7 +652,6 @@ export class CapacitorSQLiteElectronWeb
       // loop through the database files
       const toDbList: string[] = [];
       dbList.forEach(async (db: string) => {
-        console.log(`>>> ${db}`);
         // for each check if the suffix SQLite.db is there or add it
         let toDb: string = this._uFile.setPathSuffix(db);
         toDbList.push(toDb);

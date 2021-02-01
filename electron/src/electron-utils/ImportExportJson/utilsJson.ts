@@ -1,5 +1,5 @@
 import { UtilsSQLite } from '../utilsSQLite';
-import { JsonColumn, JsonIndex } from '../../definitions';
+import { JsonColumn, JsonIndex, JsonTrigger } from '../../definitions';
 
 export class UtilsJson {
   private _uSQLite: UtilsSQLite = new UtilsSQLite();
@@ -148,6 +148,7 @@ export class UtilsJson {
             }
           }
           statements.push(');');
+
           // create trigger last_modified associated with the table
           let trig: string = 'CREATE TRIGGER IF NOT EXISTS ';
           trig += `${jsonData.tables[i].name}`;
@@ -169,8 +170,27 @@ export class UtilsJson {
             const tableName = jsonData.tables[i].name;
             let stmt: string = `CREATE ${
               Object.keys(index).includes('mode') ? index.mode + ' ' : ''
-            }INDEX `;
+            }INDEX IF NOT EXISTS `;
             stmt += `${index.name} ON ${tableName} (${index.value});`;
+            statements.push(stmt);
+          }
+        }
+        if (
+          jsonData.tables[i].triggers != null &&
+          jsonData.tables[i].triggers!.length >= 1
+        ) {
+          for (
+            let j: number = 0;
+            j < jsonData.tables[i].triggers!.length;
+            j++
+          ) {
+            const trigger = jsonData.tables[i].triggers![j];
+            const tableName = jsonData.tables[i].name;
+
+            let stmt: string = `CREATE TRIGGER IF NOT EXISTS `;
+            stmt += `${trigger.name} ${trigger.timeevent} ON ${tableName} `;
+            if (trigger.condition) stmt += `${trigger.condition} `;
+            stmt += `${trigger.logic};`;
             statements.push(stmt);
           }
         }
@@ -371,9 +391,11 @@ export class UtilsJson {
   ): Promise<boolean> {
     return new Promise(async (resolve, reject) => {
       let ret: boolean = false;
-      const query: string =
+      let query: string =
         `SELECT ${firstColumnName} FROM ` +
-        `${dbName} WHERE ${firstColumnName} = ${key};`;
+        `${dbName} WHERE ${firstColumnName} = `;
+      if (typeof key === 'number') query += `${key};`;
+      if (typeof key === 'string') query += `'${key}';`;
       try {
         const resQuery: Array<any> = await this._uSQLite.queryAll(
           db,
@@ -469,6 +491,7 @@ export class UtilsJson {
       'name',
       'schema',
       'indexes',
+      'triggers',
       'values',
     ];
     let nbColumn: number = 0;
@@ -482,6 +505,7 @@ export class UtilsJson {
       if (key === 'name' && typeof obj[key] != 'string') return false;
       if (key === 'schema' && typeof obj[key] != 'object') return false;
       if (key === 'indexes' && typeof obj[key] != 'object') return false;
+      if (key === 'triggers' && typeof obj[key] != 'object') return false;
       if (key === 'values' && typeof obj[key] != 'object') return false;
       if (key === 'schema') {
         obj['schema'].forEach(
@@ -489,6 +513,7 @@ export class UtilsJson {
             column?: string;
             value: string;
             foreignkey?: string;
+            constraint?: string;
           }) => {
             if (element.column) {
               nbColumn++;
@@ -504,6 +529,12 @@ export class UtilsJson {
         for (let i: number = 0; i < obj[key].length; i++) {
           const retIndexes: boolean = this.isIndexes(obj[key][i]);
           if (!retIndexes) return false;
+        }
+      }
+      if (key === 'triggers') {
+        for (let i: number = 0; i < obj[key].length; i++) {
+          const retTriggers: boolean = this.isTriggers(obj[key][i]);
+          if (!retTriggers) return false;
         }
       }
       if (key === 'values') {
@@ -569,6 +600,31 @@ export class UtilsJson {
     }
     return true;
   }
+  /**
+   * isTriggers
+   * @param obj
+   */
+  private isTriggers(obj: any): boolean {
+    const keyTriggersLevel: Array<string> = [
+      'name',
+      'timeevent',
+      'condition',
+      'logic',
+    ];
+    if (
+      obj == null ||
+      (Object.keys(obj).length === 0 && obj.constructor === Object)
+    )
+      return false;
+    for (var key of Object.keys(obj)) {
+      if (keyTriggersLevel.indexOf(key) === -1) return false;
+      if (key === 'name' && typeof obj[key] != 'string') return false;
+      if (key === 'timeevent' && typeof obj[key] != 'string') return false;
+      if (key === 'condition' && typeof obj[key] != 'string') return false;
+      if (key === 'logic' && typeof obj[key] != 'string') return false;
+    }
+    return true;
+  }
 
   /**
    * checkSchemaValidity
@@ -621,6 +677,36 @@ export class UtilsJson {
         let isValid: boolean = this.isIndexes(index);
         if (!isValid) {
           reject(new Error(`CheckIndexesValidity: indexes[${i}] not valid`));
+        }
+      }
+      resolve();
+    });
+  }
+  /**
+   * checkTriggersValidity
+   * @param triggers
+   */
+  public async checkTriggersValidity(triggers: JsonTrigger[]): Promise<void> {
+    return new Promise(async (resolve, reject) => {
+      for (let i: number = 0; i < triggers.length; i++) {
+        let trigger: JsonTrigger = {} as JsonTrigger;
+        let keys: string[] = Object.keys(triggers[i]);
+        if (keys.includes('logic')) {
+          trigger.logic = triggers[i].logic;
+        }
+        if (keys.includes('name')) {
+          trigger.name = triggers[i].name;
+        }
+        if (keys.includes('timeevent')) {
+          trigger.timeevent = triggers[i].timeevent;
+        }
+        if (keys.includes('condition')) {
+          trigger.condition = triggers[i].condition;
+        }
+
+        let isValid: boolean = this.isTriggers(trigger);
+        if (!isValid) {
+          reject(new Error(`CheckTriggersValidity: triggers[${i}] not valid`));
         }
       }
       resolve();

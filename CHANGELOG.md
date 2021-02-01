@@ -1,3 +1,10 @@
+## 2.9.8 (2021-02-01) REFACTOR
+
+### Bug Fixes
+
+- Fix Data import where the ID is a UUID issue#75
+- Fix Can't create my own DB Trigger issue#76
+
 ## 2.9.7 (2021-01-30) REFACTOR
 
 ### Bug Fixes

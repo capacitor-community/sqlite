@@ -37,6 +37,10 @@ The test has been achieved on:
 
 - a [Ionic/Angular app](https://github.com/jepiqueau/angular-sqlite-app-starter)
 
+- a [Ionic/React app](https://github.com/jepiqueau/react-sqlite-app-starter)
+
+- a [Ionic/Vue app](https://github.com/jepiqueau/vue-sqlite-app-starter)
+
 <br>
 
 ## @LATEST REFACTOR 🚀 (Move to branch 2.9.x)

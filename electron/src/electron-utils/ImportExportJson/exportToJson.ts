@@ -3,6 +3,7 @@ import {
   JsonTable,
   JsonColumn,
   JsonIndex,
+  JsonTrigger,
 } from '../../definitions';
 import { UtilsSQLite } from '../utilsSQLite';
 import { UtilsJson } from './utilsJson';
@@ -149,6 +150,15 @@ export class ExportToJson {
             // check indexes validity
             await this._uJson.checkIndexesValidity(indexes);
           }
+          // create Table's triggers if any
+          const triggers: JsonTrigger[] = await this.getTriggers(
+            mDb,
+            tableName,
+          );
+          if (triggers.length > 0) {
+            // check triggers validity
+            await this._uJson.checkTriggersValidity(triggers);
+          }
           // create Table's Data
           const query: string = `SELECT * FROM ${tableName};`;
           const values: any[] = await this.getValues(mDb, query, tableName);
@@ -161,6 +171,9 @@ export class ExportToJson {
           }
           if (indexes.length > 0) {
             table.indexes = indexes;
+          }
+          if (triggers.length > 0) {
+            table.triggers = triggers;
           }
           if (values.length > 0) {
             table.values = values;
@@ -259,7 +272,7 @@ export class ExportToJson {
       try {
         let stmt: string = 'SELECT name,tbl_name,sql FROM sqlite_master WHERE ';
         stmt += `type = 'index' AND tbl_name = '${tableName}' `;
-        stmt += `AND sql NOTNULL;`;
+        stmt += `AND sql NOT NULL;`;
         const retIndexes = await this._uSQLite.queryAll(mDb, stmt, []);
         if (retIndexes.length > 0) {
           for (let j: number = 0; j < retIndexes.length; j++) {
@@ -293,6 +306,105 @@ export class ExportToJson {
         reject(new Error(`GetIndexes: ${err.message}`));
       } finally {
         resolve(indexes);
+      }
+    });
+  }
+  /**
+   * GetTriggers
+   * @param mDb
+   * @param sqlStmt
+   * @param tableName
+   */
+  private async getTriggers(
+    mDb: any,
+    tableName: string,
+  ): Promise<JsonTrigger[]> {
+    return new Promise(async (resolve, reject) => {
+      let triggers: JsonTrigger[] = [];
+      try {
+        let stmt: string = 'SELECT name,tbl_name,sql FROM sqlite_master WHERE ';
+        stmt += `type = 'trigger' AND tbl_name = '${tableName}' `;
+        stmt += `AND sql NOT NULL;`;
+        const retTriggers = await this._uSQLite.queryAll(mDb, stmt, []);
+        if (retTriggers.length > 0) {
+          for (let j: number = 0; j < retTriggers.length; j++) {
+            const keys: Array<string> = Object.keys(retTriggers[j]);
+            if (keys.length === 3) {
+              if (retTriggers[j]['tbl_name'] === tableName) {
+                const sql: string = retTriggers[j]['sql'];
+
+                const name: string = retTriggers[j]['name'];
+                let sqlArr: string[] = sql.split(name);
+                if (sqlArr.length != 2) {
+                  reject(
+                    new Error(
+                      `GetTriggers: sql split name does not return 2 values`,
+                    ),
+                  );
+                  break;
+                }
+                if (!sqlArr[1].includes(tableName)) {
+                  reject(
+                    new Error(
+                      `GetTriggers: sql split does not contains ${tableName}`,
+                    ),
+                  );
+                  break;
+                }
+                const timeEvent = sqlArr[1].split(tableName, 1)[0].trim();
+                sqlArr = sqlArr[1].split(timeEvent + ' ' + tableName);
+                if (sqlArr.length != 2) {
+                  reject(
+                    new Error(
+                      `GetTriggers: sql split tableName does not return 2 values`,
+                    ),
+                  );
+                  break;
+                }
+                let condition: string = '';
+                let logic: string = '';
+                if (
+                  sqlArr[1].trim().substring(0, 5).toUpperCase() !== 'BEGIN'
+                ) {
+                  sqlArr = sqlArr[1].trim().split('BEGIN');
+                  if (sqlArr.length != 2) {
+                    reject(
+                      new Error(
+                        `GetTriggers: sql split BEGIN does not return 2 values`,
+                      ),
+                    );
+                    break;
+                  }
+                  condition = sqlArr[0].trim();
+                  logic = 'BEGIN' + sqlArr[1];
+                } else {
+                  logic = sqlArr[1].trim();
+                }
+
+                let trigger: JsonTrigger = {} as JsonTrigger;
+                trigger.name = name;
+                trigger.logic = logic;
+                if (condition.length > 0) trigger.condition = condition;
+                trigger.timeevent = timeEvent;
+                triggers.push(trigger);
+              } else {
+                reject(
+                  new Error(`GetTriggers: Table ${tableName} doesn't match`),
+                );
+                break;
+              }
+            } else {
+              reject(
+                new Error(`GetTriggers: Table ${tableName} creating indexes`),
+              );
+              break;
+            }
+          }
+        }
+      } catch (err) {
+        reject(new Error(`GetTriggers: ${err.message}`));
+      } finally {
+        resolve(triggers);
       }
     });
   }
@@ -395,6 +507,7 @@ export class ExportToJson {
           let table: JsonTable = {} as JsonTable;
           let schema: JsonColumn[] = [];
           let indexes: JsonIndex[] = [];
+          let triggers: JsonTrigger[] = [];
           table.name = resTables[i];
           if (modTables[table.name] === 'Create') {
             // create Table's Schema
@@ -408,6 +521,12 @@ export class ExportToJson {
             if (indexes.length > 0) {
               // check indexes validity
               await this._uJson.checkIndexesValidity(indexes);
+            }
+            // create Table's triggers if any
+            triggers = await this.getTriggers(mDb, tableName);
+            if (triggers.length > 0) {
+              // check triggers validity
+              await this._uJson.checkTriggersValidity(triggers);
             }
           }
           // create Table's Data
@@ -428,6 +547,9 @@ export class ExportToJson {
           }
           if (indexes.length > 0) {
             table.indexes = indexes;
+          }
+          if (triggers.length > 0) {
+            table.triggers = triggers;
           }
           if (values.length > 0) {
             table.values = values;
