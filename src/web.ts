@@ -10,15 +10,17 @@ import {
   capSQLiteImportOptions,
   capSQLiteExportOptions,
   capSQLiteSyncDateOptions,
+  capSQLiteUpgradeOptions,
+  capSQLiteTableOptions,
+  capSQLitePathOptions,
   capEchoResult,
   capSQLiteResult,
   capSQLiteChanges,
   capSQLiteValues,
   capSQLiteJson,
-  capSQLiteUpgradeOptions,
   capSQLiteSyncDate,
 } from './definitions';
-//1234567890123456789012345678901234567890123456789012345678901234567890
+
 export class CapacitorSQLiteWeb
   extends WebPlugin
   implements CapacitorSQLitePlugin {
@@ -96,6 +98,23 @@ export class CapacitorSQLiteWeb
       message: `Not implemented on Web Platform`,
     });
   }
+  async isDatabase(options: capSQLiteOptions): Promise<capSQLiteResult> {
+    console.log('in Web isDatabase', options);
+    return Promise.resolve({
+      result: false,
+      message: `Not implemented on Web Platform`,
+    });
+  }
+
+  async isTableExists(
+    options: capSQLiteTableOptions,
+  ): Promise<capSQLiteResult> {
+    console.log('in Web isTableExists', options);
+    return Promise.resolve({
+      result: false,
+      message: `Not implemented on Web Platform`,
+    });
+  }
   async deleteDatabase(options: capSQLiteOptions): Promise<capSQLiteResult> {
     console.log('deleteDatabase', options);
     return Promise.resolve({
@@ -159,6 +178,30 @@ export class CapacitorSQLiteWeb
     });
   }
   async copyFromAssets(): Promise<capSQLiteResult> {
+    return Promise.resolve({
+      result: false,
+      message: `Not implemented on Web Platform`,
+    });
+  }
+  async getDatabaseList(): Promise<capSQLiteValues> {
+    return Promise.resolve({
+      values: [],
+      message: `Not implemented on Web Platform`,
+    });
+  }
+  async addSQLiteSuffix(
+    options: capSQLitePathOptions,
+  ): Promise<capSQLiteResult> {
+    console.log('addSQLiteSuffix', options);
+    return Promise.resolve({
+      result: false,
+      message: `Not implemented on Web Platform`,
+    });
+  }
+  async deleteOldDatabases(
+    options: capSQLitePathOptions,
+  ): Promise<capSQLiteResult> {
+    console.log('deleteOldDatabases', options);
     return Promise.resolve({
       result: false,
       message: `Not implemented on Web Platform`,

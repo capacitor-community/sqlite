@@ -19,13 +19,14 @@ import {
   capSQLiteValues,
   capSQLiteVersionUpgrade,
   capSQLiteSyncDate,
+  capSQLiteTableOptions,
+  capSQLitePathOptions,
   JsonSQLite,
 } from './definitions';
 import { Database } from './electron-utils/Database';
 import { UtilsFile } from './electron-utils/utilsFile';
 import { UtilsJson } from './electron-utils/ImportExportJson/utilsJson';
-
-//1234567890123456789012345678901234567890123456789012345678901234567890
+import { UtilsMigrate } from './electron-utils/utilsMigrate';
 
 const { remote } = require('electron');
 export class CapacitorSQLiteElectronWeb
@@ -35,6 +36,7 @@ export class CapacitorSQLiteElectronWeb
   private _dbDict: any = {};
   private _uFile: UtilsFile = new UtilsFile();
   private _uJson: UtilsJson = new UtilsJson();
+  private _uMigrate: UtilsMigrate = new UtilsMigrate();
   private _osType: string;
   private _versionUpgrades: Record<
     string,
@@ -389,6 +391,107 @@ export class CapacitorSQLiteElectronWeb
     return Promise.resolve({
       result: isExists,
     });
+  }
+  async isDatabase(options: capSQLiteOptions): Promise<capSQLiteResult> {
+    let keys = Object.keys(options);
+    if (!keys.includes('database')) {
+      return Promise.resolve({
+        result: false,
+        message: 'Must provide a database name',
+      });
+    }
+    const dbName: string = options.database!;
+    const isExists: boolean = this._uFile.isFileExists(dbName + 'SQLite.db');
+    return Promise.resolve({
+      result: isExists,
+    });
+  }
+
+  async isTableExists(
+    options: capSQLiteTableOptions,
+  ): Promise<capSQLiteResult> {
+    let keys = Object.keys(options);
+    if (!keys.includes('database')) {
+      return Promise.resolve({
+        result: false,
+        message: 'Must provide a database name',
+      });
+    }
+    const dbName: string = options.database!;
+    if (!keys.includes('table')) {
+      return Promise.resolve({
+        result: false,
+        message: 'Must provide a table name',
+      });
+    }
+    const tableName: string = options.table!;
+    keys = Object.keys(this._dbDict);
+    if (!keys.includes(dbName)) {
+      return Promise.resolve({
+        result: false,
+        message:
+          'IsDBExists command failed: No available ' +
+          'connection for ' +
+          dbName,
+      });
+    }
+    const mDB = this._dbDict[dbName];
+    try {
+      const res: any = await mDB.isTableExists(tableName);
+      return Promise.resolve({ result: res.result });
+    } catch (err) {
+      return Promise.resolve({
+        result: false,
+        message: `isTableExists: ${err.message}`,
+      });
+    }
+  }
+  async getDatabaseList(): Promise<capSQLiteValues> {
+    // get the database folder
+    const pathDatabase = this._uFile.getDatabasesPath();
+    // get the list of databases
+    const files: string[] = await this._uFile.getFileList(pathDatabase);
+    return Promise.resolve({
+      values: files,
+    });
+  }
+  async addSQLiteSuffix(
+    options: capSQLitePathOptions,
+  ): Promise<capSQLiteResult> {
+    const folderPath: string = options.folderPath
+      ? options.folderPath
+      : 'default';
+
+    try {
+      await this._uMigrate.addSQLiteSuffix(folderPath);
+      return Promise.resolve({
+        result: true,
+      });
+    } catch (err) {
+      return Promise.resolve({
+        result: false,
+        message: `addSQLiteSuffix: ${err.message}`,
+      });
+    }
+  }
+  async deleteOldDatabases(
+    options: capSQLitePathOptions,
+  ): Promise<capSQLiteResult> {
+    const folderPath: string = options.folderPath
+      ? options.folderPath
+      : 'default';
+
+    try {
+      await this._uMigrate.deleteOldDatabases(folderPath);
+      return Promise.resolve({
+        result: true,
+      });
+    } catch (err) {
+      return Promise.resolve({
+        result: false,
+        message: `deleteOldDatabases: ${err.message}`,
+      });
+    }
   }
   async deleteDatabase(options: capSQLiteOptions): Promise<capSQLiteResult> {
     let keys = Object.keys(options);

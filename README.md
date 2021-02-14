@@ -227,6 +227,11 @@ No configuration required for this plugin
 | isDBExists              | ✅      | ✅  | ✅           | ✅               | ❌  |
 | addUpgradeStatement     | ✅      | ✅  | ✅           | ✅               | ❌  |
 | copyFromAssets          | ✅      | ✅  | ✅           | ✅               | ❌  |
+| isDatabase              | ✅      | ✅  | ✅           | ✅               | ❌  |
+| isTableExists           | ✅      | ✅  | ✅           | ✅               | ❌  |
+| getDatabaseList         | ✅      | ✅  | ✅           | ✅               | ❌  |
+| addSQLiteSuffix         | ✅      | ✅  | ✅           | ✅               | ❌  |
+| deleteOldDatabases      | ✅      | ✅  | ✅           | ✅               | ❌  |
 
 ## Documentation
 
@@ -239,6 +244,8 @@ No configuration required for this plugin
 [ImportExportJson_Documentation](https://github.com/capacitor-community/sqlite/blob/2.9.x/docs/ImportExportJson.md)
 
 [UpgradeDatabaseVersion_Documentation](https://github.com/capacitor-community/sqlite/blob/2.9.x/docs/UpgradeDatabaseVersion.md)
+
+[MigratingCordovaDatabases_Documentation](https://github.com/capacitor-community/sqlite/blob/2.9.x/docs/MigratingCordovaDatabases.md)
 
 [Ionic/Angular_Usage_Documentation](https://github.com/capacitor-community/sqlite/blob/2.9.x/docs/Ionic-Angular-Usage.md)
 

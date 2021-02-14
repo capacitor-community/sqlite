@@ -1,3 +1,21 @@
+# 2.9.10 (2021-02-14) REFACTOR
+
+### Added Features
+
+- isConnection method
+- isDatabase method
+- getDatabaseList method
+- isTable method
+- addSQLiteSuffix method
+- deleteOldDatabases method
+- MigratingCordovaDatabases.md
+
+### Bug Fixes
+
+- Fix Copy db from storage issue#77
+- Fix Is there a way to connect to a db file, that not has the prefix SQLite.db issue#79
+- Fix More precise error message on failing statements issue#82
+
 ## 2.9.9 (2021-02-01) REFACTOR
 
 ### Bug Fixes

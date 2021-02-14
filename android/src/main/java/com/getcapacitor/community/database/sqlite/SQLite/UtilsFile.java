@@ -22,6 +22,10 @@ public class UtilsFile {
         return file.exists();
     }
 
+    public String[] getListOfFiles(Context context) {
+        return context.databaseList();
+    }
+
     public Boolean deleteDatabase(Context context, String dbName) {
         context.deleteDatabase(dbName);
         if (isFileExists(context, dbName)) {
@@ -33,6 +37,11 @@ public class UtilsFile {
 
     public Boolean deleteFile(Context context, String dbName) {
         File file = context.getDatabasePath(dbName);
+        return file.delete();
+    }
+
+    public Boolean deleteFile(String filePath, String dbName) {
+        File file = new File(filePath, dbName);
         return file.delete();
     }
 
@@ -118,6 +127,28 @@ public class UtilsFile {
             Log.e(TAG, "Error: in copyFile " + e);
             return false;
         }
+    }
+
+    public Boolean copyFromNames(Context context, String fromPath, String fromName, String toPath, String toName) {
+        File fromFile = new File(fromPath, fromName);
+        fromFile.setReadable(true, false);
+        File toFile = context.getDatabasePath(toName);
+        try {
+            if (!toFile.exists()) {
+                toFile.createNewFile();
+                //                toFile.setReadable(true, false);
+
+            }
+            copyFileFromFile(fromFile, toFile);
+            return true;
+        } catch (Exception e) {
+            Log.e(TAG, "Error: in copyFile " + e);
+            return false;
+        }
+    }
+
+    public String getFileExtension(String name) {
+        if (name.lastIndexOf(".") != -1 && name.lastIndexOf(".") != 0) return name.substring(name.lastIndexOf(".") + 1); else return "";
     }
 
     public Boolean restoreDatabase(Context context, String databaseName) {

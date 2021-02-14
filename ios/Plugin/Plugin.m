@@ -23,5 +23,9 @@ CAP_PLUGIN(CapacitorSQLite, "CapacitorSQLite",
             CAP_PLUGIN_METHOD(getSyncDate, CAPPluginReturnPromise);
             CAP_PLUGIN_METHOD(addUpgradeStatement, CAPPluginReturnPromise);
             CAP_PLUGIN_METHOD(copyFromAssets, CAPPluginReturnPromise);
-
+            CAP_PLUGIN_METHOD(isDatabase, CAPPluginReturnPromise);
+            CAP_PLUGIN_METHOD(isTableExists, CAPPluginReturnPromise);
+            CAP_PLUGIN_METHOD(getDatabaseList, CAPPluginReturnPromise);
+            CAP_PLUGIN_METHOD(addSQLiteSuffix, CAPPluginReturnPromise);
+            CAP_PLUGIN_METHOD(deleteOldDatabases, CAPPluginReturnPromise);
 )

@@ -16,6 +16,7 @@
 - [`run(...)`](#run)
 - [`executeSet(...)`](#executeset)
 - [`isExists()`](#isexists)
+- [`isTable(...)`](#istable)
 - [`delete()`](#delete)
 - [`createSyncTable()`](#createsynctable)
 - [`setSyncDate(...)`](#setsyncdate)
@@ -159,6 +160,24 @@ Check if a SQLite DB Connection exists
 **Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
 
 **Since:** 2.9.0 refactor
+
+---
+
+### isTable(...)
+
+```typescript
+isTable(table: string) => Promise<capSQLiteResult>
+```
+
+Check if a SQLite DB Connection exists
+
+| Param       | Type                |
+| ----------- | ------------------- |
+| **`table`** | <code>string</code> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 2.9.10 refactor
 
 ---
 

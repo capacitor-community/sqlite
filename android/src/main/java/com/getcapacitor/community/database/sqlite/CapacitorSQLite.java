@@ -11,7 +11,9 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.community.database.sqlite.SQLite.Database;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.JsonSQLite;
+import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.UtilsJson;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsFile;
+import com.getcapacitor.community.database.sqlite.SQLite.UtilsMigrate;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLite;
 import java.io.File;
 import java.util.ArrayList;
@@ -28,6 +30,8 @@ public class CapacitorSQLite extends Plugin {
     private Dictionary<String, Database> dbDict = new Hashtable<>();
     private UtilsSQLite uSqlite = new UtilsSQLite();
     private UtilsFile uFile = new UtilsFile();
+    private UtilsJson uJson = new UtilsJson();
+    private UtilsMigrate uMigrate = new UtilsMigrate();
     private Dictionary<String, Dictionary<Integer, JSONObject>> versionUpgrades = new Hashtable<>();
 
     /**
@@ -205,6 +209,117 @@ public class CapacitorSQLite extends Plugin {
         } else {
             retResult(call, false, "No available connection for database " + dbName);
             return;
+        }
+    }
+
+    /**
+     * IsDatabase Method
+     * Check if the database file exists
+     * @param call
+     */
+    @PluginMethod
+    public void isDatabase(PluginCall call) {
+        if (!call.getData().has("database")) {
+            retResult(call, false, "Must provide a database name");
+            return;
+        }
+        String dbName = call.getString("database");
+        boolean res = uFile.isFileExists(context, dbName + "SQLite.db");
+        if (res) {
+            retResult(call, true, null);
+            return;
+        } else {
+            retResult(call, false, "isDatabase:" + dbName + "does not exist");
+            return;
+        }
+    }
+
+    /**
+     * IsTableExists Method
+     * Check if a table exists in a database
+     * @param call
+     */
+    @PluginMethod
+    public void isTableExists(PluginCall call) {
+        if (!call.getData().has("database")) {
+            retResult(call, false, "Must provide a database name");
+            return;
+        }
+        String dbName = call.getString("database");
+        if (!call.getData().has("table")) {
+            retResult(call, false, "Must provide a table name");
+            return;
+        }
+        String tableName = call.getString("table");
+
+        Database db = dbDict.get(dbName);
+        if (db != null) {
+            boolean res = uJson.isTableExists(db, tableName);
+            if (res) {
+                retResult(call, true, null);
+                return;
+            } else {
+                retResult(call, false, "Table " + tableName + "does not exist");
+                return;
+            }
+        } else {
+            retResult(call, false, "No available connection for database " + dbName);
+            return;
+        }
+    }
+
+    /**
+     * GetDatabaseList Method
+     * Return the list of databases
+     */
+    @PluginMethod
+    public void getDatabaseList(PluginCall call) {
+        String[] listFiles = uFile.getListOfFiles(context);
+        JSArray retArray = new JSArray();
+        for (String file : listFiles) {
+            retArray.put(file);
+        }
+        retValues(call, retArray, null);
+        return;
+    }
+
+    /**
+     * AddSQLiteSuffix Method
+     * Add SQLITE suffix to a list of databases
+     */
+    @PluginMethod
+    public void addSQLiteSuffix(PluginCall call) {
+        String folderPath;
+        if (!call.getData().has("folderPath")) {
+            folderPath = "default";
+        } else {
+            folderPath = call.getString("folderPath");
+        }
+        try {
+            uMigrate.addSQLiteSuffix(context, folderPath);
+            retResult(call, true, null);
+        } catch (Exception e) {
+            retResult(call, false, e.getMessage());
+        }
+    }
+
+    /**
+     * DeleteOldDatabases Method
+     * Delete Old Cordova plugin databases
+     */
+    @PluginMethod
+    public void deleteOldDatabases(PluginCall call) {
+        String folderPath;
+        if (!call.getData().has("folderPath")) {
+            folderPath = "default";
+        } else {
+            folderPath = call.getString("folderPath");
+        }
+        try {
+            uMigrate.deleteOldDatabases(context, folderPath);
+            retResult(call, true, null);
+        } catch (Exception e) {
+            retResult(call, false, e.getMessage());
         }
     }
 
@@ -440,13 +555,8 @@ public class CapacitorSQLite extends Plugin {
                 } else {
                     res = db.selectSQL(statement, new ArrayList<String>());
                 }
-                if (res.length() > 0) {
-                    retValues(call, res, null);
-                    return;
-                } else {
-                    retValues(call, res, "Query command failed");
-                    return;
-                }
+                retValues(call, res, null);
+                return;
             } else {
                 String msg = "Query command failed : database ";
                 msg += dbName + " not opened";

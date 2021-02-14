@@ -8,17 +8,22 @@
 
 <docgen-index>
 
-* [`echo(...)`](#echo)
-* [`addUpgradeStatement(...)`](#addupgradestatement)
-* [`createConnection(...)`](#createconnection)
-* [`retrieveConnection(...)`](#retrieveconnection)
-* [`retrieveAllConnections()`](#retrieveallconnections)
-* [`closeConnection(...)`](#closeconnection)
-* [`closeAllConnections()`](#closeallconnections)
-* [`importFromJson(...)`](#importfromjson)
-* [`isJsonValid(...)`](#isjsonvalid)
-* [`copyFromAssets()`](#copyfromassets)
-* [Interfaces](#interfaces)
+- [`echo(...)`](#echo)
+- [`addUpgradeStatement(...)`](#addupgradestatement)
+- [`createConnection(...)`](#createconnection)
+- [`isConnection(...)`](#isconnection)
+- [`retrieveConnection(...)`](#retrieveconnection)
+- [`retrieveAllConnections()`](#retrieveallconnections)
+- [`closeConnection(...)`](#closeconnection)
+- [`closeAllConnections()`](#closeallconnections)
+- [`importFromJson(...)`](#importfromjson)
+- [`isJsonValid(...)`](#isjsonvalid)
+- [`copyFromAssets()`](#copyfromassets)
+- [`isDatabase(...)`](#isdatabase)
+- [`getDatabaseList()`](#getdatabaselist)
+- [`addSQLiteSuffix(...)`](#addsqlitesuffix)
+- [`deleteOldDatabases(...)`](#deleteolddatabases)
+- [Interfaces](#interfaces)
 
 </docgen-index>
 
@@ -45,8 +50,7 @@ Echo a value
 
 **Since:** 2.9.0 refactor
 
---------------------
-
+---
 
 ### addUpgradeStatement(...)
 
@@ -68,8 +72,7 @@ Add the upgrade Statement for database version upgrading
 
 **Since:** 2.9.0 refactor
 
---------------------
-
+---
 
 ### createConnection(...)
 
@@ -90,8 +93,25 @@ Create a connection to a database
 
 **Since:** 2.9.0 refactor
 
---------------------
+---
 
+### isConnection(...)
+
+```typescript
+isConnection(database: string) => Promise<capSQLiteResult>
+```
+
+Check if a connection exists
+
+| Param          | Type                |
+| -------------- | ------------------- |
+| **`database`** | <code>string</code> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 2.9.10 refactor
+
+---
 
 ### retrieveConnection(...)
 
@@ -109,8 +129,7 @@ Retrieve an existing database connection
 
 **Since:** 2.9.0 refactor
 
---------------------
-
+---
 
 ### retrieveAllConnections()
 
@@ -124,8 +143,7 @@ Retrieve all database connections
 
 **Since:** 2.9.0 refactor
 
---------------------
-
+---
 
 ### closeConnection(...)
 
@@ -143,8 +161,7 @@ Close a database connection
 
 **Since:** 2.9.0 refactor
 
---------------------
-
+---
 
 ### closeAllConnections()
 
@@ -158,8 +175,7 @@ Close all database connections
 
 **Since:** 2.9.0 refactor
 
---------------------
-
+---
 
 ### importFromJson(...)
 
@@ -177,8 +193,7 @@ Import a database From a JSON
 
 **Since:** 2.9.0 refactor
 
---------------------
-
+---
 
 ### isJsonValid(...)
 
@@ -196,8 +211,7 @@ Check the validity of a JSON Object
 
 **Since:** 2.9.0 refactor
 
---------------------
-
+---
 
 ### copyFromAssets()
 
@@ -211,18 +225,83 @@ Copy databases from public/assets/databases folder to application databases fold
 
 **Since:** 2.9.0 refactor
 
---------------------
+---
 
+### isDatabase(...)
+
+```typescript
+isDatabase(database: string) => Promise<capSQLiteResult>
+```
+
+Check if a database exists
+
+| Param          | Type                |
+| -------------- | ------------------- |
+| **`database`** | <code>string</code> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 2.9.10 refactor
+
+---
+
+### getDatabaseList()
+
+```typescript
+getDatabaseList() => Promise<capSQLiteValues>
+```
+
+Get the database list
+
+**Returns:** <code>Promise&lt;<a href="#capsqlitevalues">capSQLiteValues</a>&gt;</code>
+
+**Since:** 2.9.10 refactor
+
+---
+
+### addSQLiteSuffix(...)
+
+```typescript
+addSQLiteSuffix(folderPath?: string | undefined) => Promise<capSQLiteResult>
+```
+
+Add SQLIte Suffix to existing databases
+
+| Param            | Type                |
+| ---------------- | ------------------- |
+| **`folderPath`** | <code>string</code> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 2.9.10 refactor
+
+---
+
+### deleteOldDatabases(...)
+
+```typescript
+deleteOldDatabases(folderPath?: string | undefined) => Promise<capSQLiteResult>
+```
+
+Delete Old Cordova databases
+
+| Param            | Type                |
+| ---------------- | ------------------- |
+| **`folderPath`** | <code>string</code> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 2.9.10 refactor
+
+---
 
 ### Interfaces
-
 
 #### capEchoResult
 
 | Prop        | Type                | Description     |
 | ----------- | ------------------- | --------------- |
 | **`value`** | <code>string</code> | String returned |
-
 
 #### capSQLiteResult
 
@@ -231,14 +310,12 @@ Copy databases from public/assets/databases folder to application databases fold
 | **`result`**  | <code>boolean</code> | result set to true when successful else false |
 | **`message`** | <code>string</code>  | a returned message                            |
 
-
 #### capSQLiteSet
 
 | Prop            | Type                | Description                      |
 | --------------- | ------------------- | -------------------------------- |
 | **`statement`** | <code>string</code> | A statement                      |
 | **`values`**    | <code>any[]</code>  | the data values list as an Array |
-
 
 #### Map
 
@@ -255,7 +332,6 @@ Copy databases from public/assets/databases folder to application databases fold
 | **has**     | (key: K) =&gt; boolean                                                                                         |
 | **set**     | (key: K, value: V) =&gt; this                                                                                  |
 
-
 #### capSQLiteChanges
 
 | Prop          | Type                                        | Description                               |
@@ -263,12 +339,18 @@ Copy databases from public/assets/databases folder to application databases fold
 | **`changes`** | <code><a href="#changes">Changes</a></code> | a returned <a href="#changes">Changes</a> |
 | **`message`** | <code>string</code>                         | a returned message                        |
 
-
 #### Changes
 
 | Prop          | Type                | Description                                          |
 | ------------- | ------------------- | ---------------------------------------------------- |
 | **`changes`** | <code>number</code> | the number of changes from an execute or run command |
 | **`lastId`**  | <code>number</code> | the lastId created from a run command                |
+
+#### capSQLiteValues
+
+| Prop          | Type                | Description                      |
+| ------------- | ------------------- | -------------------------------- |
+| **`values`**  | <code>any[]</code>  | the data values list as an Array |
+| **`message`** | <code>string</code> | a returned message               |
 
 </docgen-api>

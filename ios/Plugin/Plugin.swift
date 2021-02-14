@@ -169,6 +169,137 @@ public class CapacitorSQLite: CAPPlugin {
 
     }
 
+    // MARK: - IsDatabase
+
+    @objc func isDatabase(_ call: CAPPluginCall) {
+        guard let dbName = call.options["database"] as? String else {
+            retHandler.rResult(
+                call: call, ret: false,
+                message: "isDatabase command failed: " +
+                    "Must provide a database name")
+          return
+        }
+        let isFileExists: Bool = UtilsFile
+                                .isFileExist(fileName: dbName + "SQLite.db")
+
+        retHandler.rResult(call: call, ret: isFileExists)
+        return
+    }
+
+    // MARK: - IsTableExists
+
+    @objc func isTableExists(_ call: CAPPluginCall) {
+        guard let dbName = call.options["database"] as? String else {
+            retHandler.rResult(
+                call: call, ret: false,
+                message: "IsTableExists command failed: " +
+                    "Must provide a database name")
+          return
+        }
+        guard let tableName = call.options["table"] as? String else {
+            retHandler.rResult(
+                call: call, ret: false,
+                message: "IsTableExists command failed: " +
+                    "Must provide a table name")
+          return
+        }
+        guard let mDb: Database = dbDict[dbName] else {
+            retHandler.rResult(
+                call: call, ret: false,
+                message: "IsTableExists command failed: No available " +
+                    "connection for \(dbName)")
+            return
+        }
+        do {
+            let isExists: Bool = try
+                UtilsJson.isTableExists(mDB: mDb,
+                                        tableName: tableName)
+
+            retHandler.rResult(call: call, ret: isExists)
+            return
+        } catch UtilsJsonError.tableNotExists(let message) {
+            var msg: String = "IsTableExists command failed :"
+            msg.append(" \(message)")
+            retHandler.rResult(call: call, ret: false,
+                                message: msg)
+            return
+        } catch let error {
+            var msg: String = "IsTableExists command failed :"
+            msg.append(" \(error.localizedDescription)")
+            retHandler.rResult(call: call, ret: false,
+                                message: msg)
+            return
+        }
+    }
+
+    // MARK: - getDatabaseList
+
+    @objc func getDatabaseList(_ call: CAPPluginCall) {
+        do {
+            let aPath: String = try UtilsFile.getDatabasesPath()
+            // get the database files
+            let dbList: [String] = try UtilsFile.getFileList(path: aPath)
+            retHandler.rValues(
+                call: call, ret: dbList)
+            return
+
+        } catch let error {
+            var msg: String = "GetDatabaseList command failed :"
+            msg.append(" \(error.localizedDescription)")
+            retHandler.rValues(call: call, ret: [],
+                                message: msg)
+            return
+        }
+    }
+
+    // MARK: - addSQLiteSuffix
+
+    @objc func addSQLiteSuffix(_ call: CAPPluginCall) {
+        let folderPath: String = call.getString("folderPath") ?? "default"
+        do {
+            try UtilsMigrate.addSQLiteSuffix(folderPath: folderPath)
+            retHandler.rResult(call: call, ret: true)
+            return
+        } catch UtilsMigrateError.addSQLiteSuffix(let message) {
+            var msg: String = "addSQLiteSuffix command failed :"
+            msg.append(" \(message)")
+            retHandler.rResult(call: call, ret: false,
+                                message: msg)
+            return
+
+        } catch let error {
+            var msg: String = "addSQLiteSuffix command failed :"
+            msg.append(" \(error.localizedDescription)")
+            retHandler.rResult(call: call, ret: false,
+                                message: msg)
+            return
+        }
+    }
+
+    // MARK: - deleteOldDatabases
+
+    @objc func deleteOldDatabases(_ call: CAPPluginCall) {
+        let folderPath: String = call.getString("folderPath") ?? "default"
+        do {
+            try UtilsMigrate.deleteOldDatabases(folderPath: folderPath)
+            retHandler.rResult(call: call, ret: true)
+            return
+        } catch UtilsMigrateError.deleteOldDatabases(let message) {
+            var msg: String = "deleteOldDatabases command failed :"
+            msg.append(" \(message)")
+            retHandler.rResult(call: call, ret: false,
+                                message: msg)
+            return
+
+        } catch let error {
+            var msg: String = "deleteOldDatabases command failed :"
+            msg.append(" \(error.localizedDescription)")
+            retHandler.rResult(call: call, ret: false,
+                                message: msg)
+            return
+        }
+    }
+
     // MARK: - Execute
 
     @objc func execute(_ call: CAPPluginCall) {
@@ -350,7 +481,7 @@ public class CapacitorSQLite: CAPPlugin {
         } catch DatabaseError.runSQL(let message) {
             var msg: String = "Run command failed :"
             msg.append(" \(message)")
-            retHandler.rResult(call: call, ret: false,
+            retHandler.rChanges(call: call, ret: ["changes": -1],
                                message: msg)
             return
         } catch let error {
@@ -368,8 +499,8 @@ public class CapacitorSQLite: CAPPlugin {
 
     @objc func query(_ call: CAPPluginCall) {
         guard let dbName = call.options["database"] as? String else {
-            retHandler.rChanges(
-                call: call, ret: ["changes": -1],
+            retHandler.rValues(
+                call: call, ret: [],
                 message: "Query command failed: " +
                     "Must provide a database name")
             return
@@ -391,16 +522,17 @@ public class CapacitorSQLite: CAPPlugin {
 
         }
         guard let mDb: Database = dbDict[dbName] else {
-            retHandler.rChanges(
-                call: call, ret: ["changes": -1],
+            retHandler.rValues(
+                call: call, ret: [],
                 message: "Query command failed: No available " +
                     "connection for \(dbName)")
             return
         }
 
         do {
-            let res: [[String: Any]] = try mDb
-                    .selectSQL(sql: statement, values: values)
+//            let res: [[String: Any]] = try mDb
+            let res: [Any] = try mDb
+                .selectSQL(sql: statement, values: values)
             retHandler.rValues(call: call, ret: res)
             return
         } catch DatabaseError.selectSQL(let message) {
@@ -420,15 +552,15 @@ public class CapacitorSQLite: CAPPlugin {
 
     @objc func isDBExists(_ call: CAPPluginCall) {
         guard let dbName = call.options["database"] as? String else {
-            retHandler.rChanges(
-                call: call, ret: ["changes": -1],
+            retHandler.rResult(
+                call: call, ret: false,
                 message: "idDBExists command failed: " +
                     "Must provide a database name")
             return
         }
         guard let _: Database = dbDict[dbName] else {
-            retHandler.rChanges(
-                call: call, ret: ["changes": -1],
+            retHandler.rResult(
+                call: call, ret: false,
                 message: "idDBExists command failed: No available " +
                     "connection for \(dbName)")
             return
@@ -450,15 +582,15 @@ public class CapacitorSQLite: CAPPlugin {
 
     @objc func deleteDatabase(_ call: CAPPluginCall) {
         guard let dbName = call.options["database"] as? String else {
-            retHandler.rChanges(
-                call: call, ret: ["changes": -1],
+            retHandler.rResult(
+                call: call, ret: false,
                 message: "deleteDatabase command failed: " +
                     "Must provide a database name")
             return
         }
         guard let mDb: Database = dbDict[dbName] else {
-            retHandler.rChanges(
-                call: call, ret: ["changes": -1],
+            retHandler.rResult(
+                call: call, ret: false,
                 message: "deleteDatabase command failed: No " +
                     "available connection for \(dbName)")
             return
@@ -625,8 +757,8 @@ public class CapacitorSQLite: CAPPlugin {
     // swiftlint:disable function_body_length
     @objc func exportToJson(_ call: CAPPluginCall) {
         guard let dbName = call.options["database"] as? String else {
-            retHandler.rChanges(
-                call: call, ret: ["changes": -1],
+            retHandler.rJsonSQLite(
+                call: call, ret: [:],
                 message: "exportToJson command failed: " +
                     "Must provide a database name")
             return
@@ -648,8 +780,8 @@ public class CapacitorSQLite: CAPPlugin {
         }
 
         guard let mDb: Database = dbDict[dbName] else {
-            retHandler.rChanges(
-                call: call, ret: ["changes": -1],
+            retHandler.rJsonSQLite(
+                call: call, ret: [:],
                 message: "ExportToJson command failed: No " +
                     "available connection for \(dbName)")
             return
@@ -764,14 +896,14 @@ public class CapacitorSQLite: CAPPlugin {
     @objc func getSyncDate(_ call: CAPPluginCall) {
         var msg: String = "setSyncDate command failed: "
         guard let dbName = call.options["database"] as? String else {
-            retHandler.rResult(
-                call: call, ret: false,
+            retHandler.rSyncDate(
+                call: call, ret: 0,
                 message: msg + "Must provide a database name")
             return
         }
         guard let mDb: Database = dbDict[dbName] else {
-            retHandler.rResult(
-                call: call, ret: false,
+            retHandler.rSyncDate(
+                call: call, ret: 0,
                 message: msg + "available connection for \(dbName)")
             return
         }

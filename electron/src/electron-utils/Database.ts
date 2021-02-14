@@ -144,6 +144,7 @@ export class Database {
       resolve();
     });
   }
+
   /**
    * DeleteDB
    * delete a database
@@ -180,6 +181,26 @@ export class Database {
       }
       resolve();
     });
+  }
+  async isTableExists(tableName: string): Promise<any> {
+    const isOpen: boolean = this._isDBOpen;
+    try {
+      const retB = await this._uJson.isTableExists(
+        this._mDB,
+        isOpen,
+        tableName,
+      );
+      if (retB) {
+        return { result: true };
+      } else {
+        return {
+          result: false,
+          message: `IsTableExists: table ${tableName} does not exist`,
+        };
+      }
+    } catch (err) {
+      return { result: false, message: `IsTableExists: ${err.message}` };
+    }
   }
   /**
    * CreateSyncTable

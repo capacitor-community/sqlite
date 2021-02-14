@@ -63,6 +63,20 @@ export class UtilsFile {
     return this.Path.join(this.getDatabasesPath(), fileName);
   }
   /**
+   * GetCustomerPath
+   * get the customer path
+   */
+  public getCustomerPath(custPath: string): string {
+    return this.Path.join(this.HomeDir, custPath);
+  }
+  /**
+   * GetCustomerFilePath
+   * get the customer file path
+   */
+  public getCustomerFilePath(custPath: string, file: string): string {
+    return this.Path.join(custPath, file);
+  }
+  /**
    * GetDatabasesPath
    * get the database folder path
    */
@@ -203,6 +217,23 @@ export class UtilsFile {
         }
       } else {
         reject(new Error('CopyFilePath: cannot get the ' + 'filePath'));
+      }
+    });
+  }
+  public copyFile(
+    fromPath: string,
+    fromFile: string,
+    toPath: string,
+    toFile: string,
+  ): Promise<void> {
+    return new Promise(async (resolve, reject) => {
+      const fPath: string = this.Path.join(fromPath, fromFile);
+      const tPath: string = this.Path.join(toPath, toFile);
+      try {
+        this.NodeFs.copyFileSync(fPath, tPath);
+        resolve();
+      } catch (err) {
+        reject(new Error(`CopyFile: ${err.message}`));
       }
     });
   }

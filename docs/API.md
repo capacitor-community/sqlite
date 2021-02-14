@@ -64,6 +64,8 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 - [`run(...)`](#run)
 - [`query(...)`](#query)
 - [`isDBExists(...)`](#isdbexists)
+- [`isDatabase(...)`](#isdatabase)
+- [`isTableExists(...)`](#istableexists)
 - [`deleteDatabase(...)`](#deletedatabase)
 - [`isJsonValid(...)`](#isjsonvalid)
 - [`importFromJson(...)`](#importfromjson)
@@ -73,6 +75,9 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 - [`getSyncDate(...)`](#getsyncdate)
 - [`addUpgradeStatement(...)`](#addupgradestatement)
 - [`copyFromAssets()`](#copyfromassets)
+- [`getDatabaseList()`](#getdatabaselist)
+- [`addSQLiteSuffix(...)`](#addsqlitesuffix)
+- [`deleteOldDatabases(...)`](#deleteolddatabases)
 - [Interfaces](#interfaces)
 
 </docgen-index>
@@ -252,7 +257,7 @@ Query a Single Statement
 isDBExists(options: capSQLiteOptions) => Promise<capSQLiteResult>
 ```
 
-Check is a SQLite database exists
+Check if a SQLite database exists with opened connection
 
 | Param         | Type                                                          | Description                                        |
 | ------------- | ------------------------------------------------------------- | -------------------------------------------------- |
@@ -261,6 +266,42 @@ Check is a SQLite database exists
 **Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
 
 **Since:** 2.0.1-1
+
+---
+
+### isDatabase(...)
+
+```typescript
+isDatabase(options: capSQLiteOptions) => Promise<capSQLiteResult>
+```
+
+Check if a SQLite database exists without connection
+
+| Param         | Type                                                          | Description                                        |
+| ------------- | ------------------------------------------------------------- | -------------------------------------------------- |
+| **`options`** | <code><a href="#capsqliteoptions">capSQLiteOptions</a></code> | : <a href="#capsqliteoptions">capSQLiteOptions</a> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 2.9.10
+
+---
+
+### isTableExists(...)
+
+```typescript
+isTableExists(options: capSQLiteTableOptions) => Promise<capSQLiteResult>
+```
+
+Check if a table exists in a SQLite database
+
+| Param         | Type                                                                    | Description                                                  |
+| ------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------ |
+| **`options`** | <code><a href="#capsqlitetableoptions">capSQLiteTableOptions</a></code> | : <a href="#capsqlitetableoptions">capSQLiteTableOptions</a> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 2.9.10
 
 ---
 
@@ -422,6 +463,56 @@ Copy databases from public/assets/databases folder to application databases fold
 
 ---
 
+### getDatabaseList()
+
+```typescript
+getDatabaseList() => Promise<capSQLiteValues>
+```
+
+Get the database list
+
+**Returns:** <code>Promise&lt;<a href="#capsqlitevalues">capSQLiteValues</a>&gt;</code>
+
+**Since:** 2.9.10 refactor
+
+---
+
+### addSQLiteSuffix(...)
+
+```typescript
+addSQLiteSuffix(options: capSQLitePathOptions) => Promise<capSQLiteResult>
+```
+
+Add SQLIte Suffix to existing databases
+
+| Param         | Type                                                                  | Description                                                |
+| ------------- | --------------------------------------------------------------------- | ---------------------------------------------------------- |
+| **`options`** | <code><a href="#capsqlitepathoptions">capSQLitePathOptions</a></code> | : <a href="#capsqlitepathoptions">capSQLitePathOptions</a> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 2.9.10 refactor
+
+---
+
+### deleteOldDatabases(...)
+
+```typescript
+deleteOldDatabases(options: capSQLitePathOptions) => Promise<capSQLiteResult>
+```
+
+Delete Old Cordova databases
+
+| Param         | Type                                                                  | Description                                                |
+| ------------- | --------------------------------------------------------------------- | ---------------------------------------------------------- |
+| **`options`** | <code><a href="#capsqlitepathoptions">capSQLitePathOptions</a></code> | : <a href="#capsqlitepathoptions">capSQLitePathOptions</a> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 2.9.10 refactor
+
+---
+
 ### Interfaces
 
 #### capSQLiteResult
@@ -515,6 +606,13 @@ Copy databases from public/assets/databases folder to application databases fold
 | **`database`**  | <code>string</code>   | The database name               |
 | **`statement`** | <code>string</code>   | A statement                     |
 | **`values`**    | <code>string[]</code> | A set of values for a statement |
+
+#### capSQLiteTableOptions
+
+| Prop           | Type                | Description       |
+| -------------- | ------------------- | ----------------- |
+| **`database`** | <code>string</code> | The database name |
+| **`table`**    | <code>string</code> | The table name    |
 
 #### capSQLiteImportOptions
 
@@ -611,6 +709,12 @@ Copy databases from public/assets/databases folder to application databases fold
 | **`toVersion`**   | <code>number</code>         |
 | **`statement`**   | <code>string</code>         |
 | **`set`**         | <code>capSQLiteSet[]</code> |
+
+#### capSQLitePathOptions
+
+| Prop             | Type                | Description                           |
+| ---------------- | ------------------- | ------------------------------------- |
+| **`folderPath`** | <code>string</code> | The folder path of existing databases |
 
 </docgen-api>
 

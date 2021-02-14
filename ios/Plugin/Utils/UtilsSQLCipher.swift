@@ -9,7 +9,6 @@
 import Foundation
 import SQLCipher
 
-//1234567890123456789012345678901234567890123456789012345678901234567890
 enum UtilsSQLCipherError: Error {
     case openOrCreateDatabase(message: String)
     case bindFailed
@@ -353,6 +352,7 @@ class UtilsSQLCipher {
 
     class func querySQL(mDB: Database, sql: String,
                         values: [String]) throws -> [[String: Any]] {
+//            values: [String]) throws -> [Any] {
         var msg: String = "Error prepareSQL: "
         if !mDB.isDBOpen() {
             msg.append("Database not opened")
@@ -360,6 +360,7 @@ class UtilsSQLCipher {
         }
         var selectSQLStatement: OpaquePointer?
         var result: [[String: Any]] = []
+//        var result: [Any] = []
         var message: String = ""
         var returnCode: Int32 =
             sqlite3_prepare_v2(mDB.mDb, sql, -1, &selectSQLStatement,
