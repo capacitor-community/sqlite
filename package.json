@@ -14,6 +14,7 @@
     "build-electron": "rimraf ./electron/dist && cd ./electron && tsc && rollup --config rollup.config.js",
     "clean": "rimraf ./dist",
     "watch": "tsc --watch",
+    "test": "echo \"No test specified\"",
     "docgen": "npm run docgenPlugin && npm run docgenConnection && npm run docgenDBConnection",
     "docgenPlugin": "docgen --api CapacitorSQLitePlugin --output-readme docs/API.md",
     "docgenConnection": "docgen --api ISQLiteConnection --output-readme docs/APIConnection.md",
