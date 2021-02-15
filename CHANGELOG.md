@@ -1,3 +1,9 @@
+# 2.9.12 (2021-02-15) REFACTOR
+
+### Bug Fixes
+
+- Fix isDBOpen method Android
+
 # 2.9.11 (2021-02-15) REFACTOR
 
 ### Added Features

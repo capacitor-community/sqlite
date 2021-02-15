@@ -619,7 +619,7 @@ public class CapacitorSQLite extends Plugin {
         String dbName = call.getString("database");
         Database db = dbDict.get(dbName);
         if (db != null) {
-            Boolean isOpen = db.isDBOpen();
+            Boolean isOpen = db.isOpen();
             retResult(call, isOpen, null);
             return;
         } else {
