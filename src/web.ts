@@ -98,6 +98,13 @@ export class CapacitorSQLiteWeb
       message: `Not implemented on Web Platform`,
     });
   }
+  async isDBOpen(options: capSQLiteOptions): Promise<capSQLiteResult> {
+    console.log('in Web isDBOpen', options);
+    return Promise.resolve({
+      result: false,
+      message: `Not implemented on Web Platform`,
+    });
+  }
   async isDatabase(options: capSQLiteOptions): Promise<capSQLiteResult> {
     console.log('in Web isDatabase', options);
     return Promise.resolve({

@@ -64,6 +64,7 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 - [`run(...)`](#run)
 - [`query(...)`](#query)
 - [`isDBExists(...)`](#isdbexists)
+- [`isDBOpen(...)`](#isdbopen)
 - [`isDatabase(...)`](#isdatabase)
 - [`isTableExists(...)`](#istableexists)
 - [`deleteDatabase(...)`](#deletedatabase)
@@ -266,6 +267,24 @@ Check if a SQLite database exists with opened connection
 **Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
 
 **Since:** 2.0.1-1
+
+---
+
+### isDBOpen(...)
+
+```typescript
+isDBOpen(options: capSQLiteOptions) => Promise<capSQLiteResult>
+```
+
+Check if a SQLite database is opened
+
+| Param         | Type                                                          | Description                                        |
+| ------------- | ------------------------------------------------------------- | -------------------------------------------------- |
+| **`options`** | <code><a href="#capsqliteoptions">capSQLiteOptions</a></code> | : <a href="#capsqliteoptions">capSQLiteOptions</a> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 2.9.11
 
 ---
 

@@ -227,6 +227,7 @@ No configuration required for this plugin
 | isDBExists              | ✅      | ✅  | ✅           | ✅               | ❌  |
 | addUpgradeStatement     | ✅      | ✅  | ✅           | ✅               | ❌  |
 | copyFromAssets          | ✅      | ✅  | ✅           | ✅               | ❌  |
+| isDBOpen                | ✅      | ✅  | ✅           | ✅               | ❌  |
 | isDatabase              | ✅      | ✅  | ✅           | ✅               | ❌  |
 | isTableExists           | ✅      | ✅  | ✅           | ✅               | ❌  |
 | getDatabaseList         | ✅      | ✅  | ✅           | ✅               | ❌  |

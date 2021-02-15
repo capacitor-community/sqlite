@@ -578,6 +578,29 @@ public class CapacitorSQLite: CAPPlugin {
             return
         }
     }
+
+    // MARK: - IsDBOpen
+
+    @objc func isDBOpen(_ call: CAPPluginCall) {
+        guard let dbName = call.options["database"] as? String else {
+            retHandler.rResult(
+                call: call, ret: false,
+                message: "idDBOpen command failed: " +
+                    "Must provide a database name")
+            return
+        }
+        guard let mDb: Database = dbDict[dbName] else {
+            retHandler.rResult(
+                call: call, ret: false,
+                message: "idDBOpen command failed: No available " +
+                    "connection for \(dbName)")
+            return
+        }
+        let isOpen: Bool = mDb.isDBOpen()
+        retHandler.rResult(call: call, ret: isOpen)
+        return
+    }
+
     // MARK: - DeleteDatabase
 
     @objc func deleteDatabase(_ call: CAPPluginCall) {

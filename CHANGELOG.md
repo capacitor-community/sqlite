@@ -1,3 +1,9 @@
+# 2.9.11 (2021-02-15) REFACTOR
+
+### Added Features
+
+- isDBOpen method
+
 # 2.9.10 (2021-02-14) REFACTOR
 
 ### Added Features

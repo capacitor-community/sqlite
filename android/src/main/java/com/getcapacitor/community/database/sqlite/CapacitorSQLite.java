@@ -604,6 +604,33 @@ public class CapacitorSQLite extends Plugin {
     }
 
     /**
+     * IsDBOpen Method
+     * check if the database is opened
+     * @param call
+     */
+    @PluginMethod
+    public void isDBOpen(PluginCall call) {
+        if (!call.getData().has("database")) {
+            String msg = "isDBOpen command failed : ";
+            msg += "Must provide a database name";
+            retResult(call, false, msg);
+            return;
+        }
+        String dbName = call.getString("database");
+        Database db = dbDict.get(dbName);
+        if (db != null) {
+            Boolean isOpen = db.isDBOpen();
+            retResult(call, isOpen, null);
+            return;
+        } else {
+            String msg = "isDBOpen command failed : No available ";
+            msg += "connection for database " + dbName;
+            retResult(call, false, msg);
+            return;
+        }
+    }
+
+    /**
      * DeleteDatabase Method
      * delete a database from the database folder
      * @param call

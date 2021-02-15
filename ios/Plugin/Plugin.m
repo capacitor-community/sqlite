@@ -14,6 +14,7 @@ CAP_PLUGIN(CapacitorSQLite, "CapacitorSQLite",
             CAP_PLUGIN_METHOD(run, CAPPluginReturnPromise);
             CAP_PLUGIN_METHOD(query, CAPPluginReturnPromise);
             CAP_PLUGIN_METHOD(isDBExists, CAPPluginReturnPromise);
+            CAP_PLUGIN_METHOD(isDBOpen, CAPPluginReturnPromise);
             CAP_PLUGIN_METHOD(deleteDatabase, CAPPluginReturnPromise);
             CAP_PLUGIN_METHOD(importFromJson, CAPPluginReturnPromise);
             CAP_PLUGIN_METHOD(isJsonValid, CAPPluginReturnPromise);

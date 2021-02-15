@@ -392,6 +392,27 @@ export class CapacitorSQLiteElectronWeb
       result: isExists,
     });
   }
+  async isDBOpen(options: capSQLiteOptions): Promise<capSQLiteResult> {
+    let keys = Object.keys(options);
+    if (!keys.includes('database')) {
+      return Promise.resolve({
+        result: false,
+        message: 'Must provide a database name',
+      });
+    }
+    const dbName: string = options.database!;
+    keys = Object.keys(this._dbDict);
+    if (!keys.includes(dbName)) {
+      return Promise.resolve({
+        result: false,
+        message: `isDBOpen: No available connection for ${dbName}`,
+      });
+    }
+    const mDB = this._dbDict[dbName];
+    const isOpen: boolean = await mDB.isDBOpen();
+    return Promise.resolve({ result: isOpen });
+  }
+
   async isDatabase(options: capSQLiteOptions): Promise<capSQLiteResult> {
     let keys = Object.keys(options);
     if (!keys.includes('database')) {

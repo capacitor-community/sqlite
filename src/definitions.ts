@@ -79,6 +79,13 @@ export interface CapacitorSQLitePlugin {
    */
   isDBExists(options: capSQLiteOptions): Promise<capSQLiteResult>;
   /**
+   * Check if a SQLite database is opened
+   * @param options: capSQLiteOptions
+   * @returns Promise<capSQLiteResult>
+   * @since 2.9.11
+   */
+  isDBOpen(options: capSQLiteOptions): Promise<capSQLiteResult>;
+  /**
    * Check if a SQLite database exists without connection
    * @param options: capSQLiteOptions
    * @returns Promise<capSQLiteResult>
@@ -805,6 +812,13 @@ export interface ISQLiteDBConnection {
    */
   isTable(table: string): Promise<capSQLiteResult>;
   /**
+   * Check if a SQLite database is opened
+   * @param options: capSQLiteOptions
+   * @returns Promise<capSQLiteResult>
+   * @since 2.9.11
+   */
+  isDBOpen(options: capSQLiteOptions): Promise<capSQLiteResult>;
+  /**
    * Delete a SQLite DB Connection
    * @returns Promise<capSQLiteResult>
    * @since 2.9.0 refactor
@@ -916,6 +930,12 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
     const res: capSQLiteResult = await this.sqlite.isTableExists({
       database: this.dbName,
       table: table,
+    });
+    return res;
+  }
+  async isDBOpen(): Promise<capSQLiteResult> {
+    const res: capSQLiteResult = await this.sqlite.isDBOpen({
+      database: this.dbName,
     });
     return res;
   }
