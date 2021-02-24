@@ -10,9 +10,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="241f8181-1180-4d41-bd48-9f064589ab4a" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/CapacitorSQLite.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/CapacitorSQLite.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../docs/API.md" beforeDir="false" afterPath="$PROJECT_DIR$/../docs/API.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../docs/APIConnection.md" beforeDir="false" afterPath="$PROJECT_DIR$/../docs/APIConnection.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../docs/APIDBConnection.md" beforeDir="false" afterPath="$PROJECT_DIR$/../docs/APIDBConnection.md" afterDir="false" />

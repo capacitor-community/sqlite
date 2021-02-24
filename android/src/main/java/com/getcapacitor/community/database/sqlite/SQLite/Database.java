@@ -372,7 +372,7 @@ public class Database {
      * @return
      */
     public long prepareSQL(String statement, ArrayList<Object> values) {
-        String stmtType = statement.substring(0, 6).toUpperCase();
+        String stmtType = statement.replaceAll("\n", "").trim().substring(0, 6).toUpperCase();
 
         SupportSQLiteStatement stmt = _db.compileStatement(statement);
         try {
