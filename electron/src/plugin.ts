@@ -20,11 +20,14 @@ import type {
   capSQLiteValues,
   capSQLiteVersionUpgrade,
   capSQLiteSyncDate,
+  capSQLiteTableOptions,
+  capSQLitePathOptions,
   JsonSQLite,
 } from './definitions';
 import { Database } from './electron-utils/Database';
 import { UtilsJson } from './electron-utils/ImportExportJson/utilsJson';
 import { UtilsFile } from './electron-utils/utilsFile';
+import { UtilsMigrate } from './electron-utils/utilsMigrate';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { remote } = require('electron');
@@ -36,6 +39,7 @@ export class CapacitorSQLiteElectronWeb
   private _dbDict: any = {};
   private _uFile: UtilsFile = new UtilsFile();
   private _uJson: UtilsJson = new UtilsJson();
+  private _uMigrate: UtilsMigrate = new UtilsMigrate();
   private _osType: string;
   private _versionUpgrades: Record<
     string,
@@ -290,6 +294,98 @@ export class CapacitorSQLiteElectronWeb
     return Promise.resolve({
       result: isExists,
     });
+  }
+  async isDBOpen(options: capSQLiteOptions): Promise<capSQLiteResult> {
+    let keys = Object.keys(options);
+    if (!keys.includes('database')) {
+      return Promise.reject('Must provide a database name');
+    }
+    const dbName: string = options.database;
+    keys = Object.keys(this._dbDict);
+    if (!keys.includes(dbName)) {
+      return Promise.reject(
+        'isDBOpen command failed: No available ' + 'connection for ' + dbName,
+      );
+    }
+    const mDB = this._dbDict[dbName];
+    const isOpen: boolean = await mDB.isDBOpen();
+    return Promise.resolve({ result: isOpen });
+  }
+  async isDatabase(options: capSQLiteOptions): Promise<capSQLiteResult> {
+    const keys = Object.keys(options);
+    if (!keys.includes('database')) {
+      return Promise.reject('Must provide a database name');
+    }
+    const dbName: string = options.database;
+    const isExists: boolean = this._uFile.isFileExists(dbName + 'SQLite.db');
+    return Promise.resolve({
+      result: isExists,
+    });
+  }
+
+  async isTableExists(
+    options: capSQLiteTableOptions,
+  ): Promise<capSQLiteResult> {
+    let keys = Object.keys(options);
+    if (!keys.includes('database')) {
+      return Promise.reject('Must provide a database name');
+    }
+
+    const dbName: string = options.database;
+    if (!keys.includes('table')) {
+      return Promise.reject('Must provide a table name');
+    }
+    const tableName: string = options.table;
+    keys = Object.keys(this._dbDict);
+    if (!keys.includes(dbName)) {
+      return Promise.reject(
+        'isTableExists command failed: No available ' +
+          'connection for ' +
+          dbName,
+      );
+    }
+    const mDB = this._dbDict[dbName];
+    try {
+      const res: any = await mDB.isTableExists(tableName);
+      return Promise.resolve({ result: res.result });
+    } catch (err) {
+      return Promise.reject(`isTableExists: ${err.message}`);
+    }
+  }
+  async getDatabaseList(): Promise<capSQLiteValues> {
+    // get the database folder
+    const pathDatabase = this._uFile.getDatabasesPath();
+    // get the list of databases
+    const files: string[] = await this._uFile.getFileList(pathDatabase);
+    if (files.length > 0) {
+      return Promise.resolve({ values: files });
+    } else {
+      return Promise.reject(`isTableExists: No databases found`);
+    }
+  }
+  async addSQLiteSuffix(options: capSQLitePathOptions): Promise<void> {
+    const folderPath: string = options.folderPath
+      ? options.folderPath
+      : 'default';
+
+    try {
+      await this._uMigrate.addSQLiteSuffix(folderPath);
+      return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(`addSQLiteSuffix: ${err.message}`);
+    }
+  }
+  async deleteOldDatabases(options: capSQLitePathOptions): Promise<void> {
+    const folderPath: string = options.folderPath
+      ? options.folderPath
+      : 'default';
+
+    try {
+      await this._uMigrate.deleteOldDatabases(folderPath);
+      return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(`deleteOldDatabases: ${err.message}`);
+    }
   }
   async deleteDatabase(options: capSQLiteOptions): Promise<void> {
     let keys = Object.keys(options);

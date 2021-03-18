@@ -72,12 +72,33 @@ export interface CapacitorSQLitePlugin {
    */
   query(options: capSQLiteQueryOptions): Promise<capSQLiteValues>;
   /**
-   * Check is a SQLite database exists
+   * Check if a SQLite database exists with opened connection
    * @param options: capSQLiteOptions
    * @returns Promise<capSQLiteResult>
    * @since 2.0.1-1
    */
   isDBExists(options: capSQLiteOptions): Promise<capSQLiteResult>;
+  /**
+   * Check if a SQLite database is opened
+   * @param options: capSQLiteOptions
+   * @returns Promise<capSQLiteResult>
+   * @since 3.0.0-beta.5
+   */
+  isDBOpen(options: capSQLiteOptions): Promise<capSQLiteResult>;
+  /**
+   * Check if a SQLite database exists without connection
+   * @param options: capSQLiteOptions
+   * @returns Promise<capSQLiteResult>
+   * @since 3.0.0-beta.5
+   */
+  isDatabase(options: capSQLiteOptions): Promise<capSQLiteResult>;
+  /**
+   * Check if a table exists in a SQLite database
+   * @param options: capSQLiteTableOptions
+   * @returns Promise<capSQLiteResult>
+   * @since 3.0.0-beta.5
+   */
+  isTableExists(options: capSQLiteTableOptions): Promise<capSQLiteResult>;
   /**
    * Delete a SQLite database
    * @param options: capSQLiteOptions
@@ -141,6 +162,26 @@ export interface CapacitorSQLitePlugin {
    * @since 2.9.0 refactor
    */
   copyFromAssets(): Promise<void>;
+  /**
+   * Get the database list
+   * @returns Promise<capSQLiteValues>
+   * @since 3.0.0-beta.5
+   */
+  getDatabaseList(): Promise<capSQLiteValues>;
+  /**
+   * Add SQLIte Suffix to existing databases
+   * @param options: capSQLitePathOptions
+   * @returns Promise<capSQLiteResult>
+   * @since 3.0.0-beta.5
+   */
+  addSQLiteSuffix(options: capSQLitePathOptions): Promise<void>;
+  /**
+   * Delete Old Cordova databases
+   * @param options: capSQLitePathOptions
+   * @returns Promise<capSQLiteResult>
+   * @since 3.0.0-beta.5
+   */
+  deleteOldDatabases(options: capSQLitePathOptions): Promise<void>;
 }
 
 export interface capEchoOptions {
@@ -273,6 +314,22 @@ export interface capSQLiteUpgradeOptions {
    * Array of length 1 to easiest the iOS plugin
    */
   upgrade?: capSQLiteVersionUpgrade[];
+}
+export interface capSQLitePathOptions {
+  /**
+   * The folder path of existing databases
+   */
+  folderPath?: string;
+}
+export interface capSQLiteTableOptions {
+  /**
+   * The database name
+   */
+  database?: string;
+  /**
+   * The table name
+   */
+  table?: string;
 }
 export interface capEchoResult {
   /**
@@ -475,6 +532,13 @@ export interface ISQLiteConnection {
     version: number,
   ): Promise<SQLiteDBConnection>;
   /**
+   * Check if a connection exists
+   * @param database
+   * @returns Promise<capSQLiteResult>
+   * @since 3.0.0-beta.5
+   */
+  isConnection(database: string): Promise<capSQLiteResult>;
+  /**
    * Retrieve an existing database connection
    * @param database
    * @returns Promise<SQLiteDBConnection>
@@ -520,6 +584,34 @@ export interface ISQLiteConnection {
    * @since 2.9.0 refactor
    */
   copyFromAssets(): Promise<void>;
+  /**
+   * Check if a database exists
+   * @param database
+   * @returns Promise<capSQLiteResult>
+   * @since 3.0.0-beta.5
+   */
+  isDatabase(database: string): Promise<capSQLiteResult>;
+  /**
+   * Get the database list
+   * @returns Promise<capSQLiteValues>
+   * @since 3.0.0-beta.5
+   */
+  getDatabaseList(): Promise<capSQLiteValues>;
+
+  /**
+   * Add SQLIte Suffix to existing databases
+   * @param folderPath
+   * @returns Promise<void>
+   * @since 3.0.0-beta.5
+   */
+  addSQLiteSuffix(folderPath?: string): Promise<void>;
+  /**
+   * Delete Old Cordova databases
+   * @param folderPath
+   * @returns Promise<void>
+   * @since 3.0.0-beta.5
+   */
+  deleteOldDatabases(folderPath?: string): Promise<void>;
 }
 /**
  * SQLiteConnection Class
@@ -582,6 +674,11 @@ export class SQLiteConnection implements ISQLiteConnection {
       return Promise.reject(err);
     }
   }
+  async isConnection(database: string): Promise<capSQLiteResult> {
+    const res: capSQLiteResult = {} as capSQLiteResult;
+    res.result = this._connectionDict.has(database);
+    return res;
+  }
   async retrieveConnection(database: string): Promise<SQLiteDBConnection> {
     if (this._connectionDict.has(database)) {
       const conn = this._connectionDict.get(database);
@@ -631,6 +728,40 @@ export class SQLiteConnection implements ISQLiteConnection {
     try {
       await this.sqlite.copyFromAssets();
       return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async isDatabase(database: string): Promise<capSQLiteResult> {
+    try {
+      const res = await this.sqlite.isDatabase({ database: database });
+      return Promise.resolve(res);
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async getDatabaseList(): Promise<capSQLiteValues> {
+    try {
+      const res = await this.sqlite.getDatabaseList();
+      return Promise.resolve(res);
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async addSQLiteSuffix(folderPath?: string): Promise<void> {
+    const path: string = folderPath ? folderPath : 'default';
+    try {
+      const res = await this.sqlite.addSQLiteSuffix({ folderPath: path });
+      return Promise.resolve(res);
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async deleteOldDatabases(folderPath?: string): Promise<void> {
+    const path: string = folderPath ? folderPath : 'default';
+    try {
+      const res = await this.sqlite.deleteOldDatabases({ folderPath: path });
+      return Promise.resolve(res);
     } catch (err) {
       return Promise.reject(err);
     }
@@ -695,6 +826,19 @@ export interface ISQLiteDBConnection {
    * @since 2.9.0 refactor
    */
   isExists(): Promise<capSQLiteResult>;
+  /**
+   * Check if a SQLite database is opened
+   * @param options: capSQLiteOptions
+   * @returns Promise<capSQLiteResult>
+   * @since 3.0.0-beta.5
+   */
+  isDBOpen(options: capSQLiteOptions): Promise<capSQLiteResult>;
+  /**
+   * Check if a table exists
+   * @returns Promise<capSQLiteResult>
+   * @since 3.0.0-beta.5
+   */
+  isTable(table: string): Promise<capSQLiteResult>;
   /**
    * Delete a SQLite DB Connection
    * @returns Promise<void>
@@ -822,6 +966,27 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
   async isExists(): Promise<capSQLiteResult> {
     try {
       const res: any = await this.sqlite.isDBExists({
+        database: this.dbName,
+      });
+      return Promise.resolve(res);
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async isTable(table: string): Promise<capSQLiteResult> {
+    try {
+      const res: capSQLiteResult = await this.sqlite.isTableExists({
+        database: this.dbName,
+        table: table,
+      });
+      return Promise.resolve(res);
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async isDBOpen(): Promise<capSQLiteResult> {
+    try {
+      const res: capSQLiteResult = await this.sqlite.isDBOpen({
         database: this.dbName,
       });
       return Promise.resolve(res);

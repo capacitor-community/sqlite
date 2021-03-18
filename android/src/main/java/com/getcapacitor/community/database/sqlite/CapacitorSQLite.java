@@ -5,7 +5,9 @@ import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.community.database.sqlite.SQLite.Database;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.JsonSQLite;
+import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.UtilsJson;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsFile;
+import com.getcapacitor.community.database.sqlite.SQLite.UtilsMigrate;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLite;
 import java.io.File;
 import java.util.ArrayList;
@@ -20,6 +22,8 @@ public class CapacitorSQLite {
     private Dictionary<String, Database> dbDict = new Hashtable<>();
     private UtilsSQLite uSqlite = new UtilsSQLite();
     private UtilsFile uFile = new UtilsFile();
+    private UtilsJson uJson = new UtilsJson();
+    private UtilsMigrate uMigrate = new UtilsMigrate();
 
     public CapacitorSQLite(Context context) {
         this.context = context;
@@ -135,6 +139,80 @@ public class CapacitorSQLite {
         } else {
             String msg = "No available connection for database " + dbName;
             throw new Exception(msg);
+        }
+    }
+
+    /**
+     * IsDatabase
+     * @param dbName
+     * @return Boolean
+     * @throws Exception
+     */
+    public Boolean isDatabase(String dbName) {
+        return uFile.isFileExists(context, dbName + "SQLite.db");
+    }
+
+    /**
+     * IsTableExists
+     * @param dbName
+     * @param tableName
+     * @throws Exception
+     */
+    public Boolean isTableExists(String dbName, String tableName) throws Exception {
+        Database db = dbDict.get(dbName);
+        if (db != null) {
+            boolean res = uJson.isTableExists(db, tableName);
+            return res;
+        } else {
+            String msg = "No available connection for database " + dbName;
+            throw new Exception(msg);
+        }
+    }
+
+    /**
+     *
+     * @return JSArray
+     * @throws Exception
+     */
+    public JSArray getDatabaseList() throws Exception {
+        String[] listFiles = uFile.getListOfFiles(context);
+        JSArray retArray = new JSArray();
+        for (String file : listFiles) {
+            retArray.put(file);
+        }
+        if (retArray.length() > 0) {
+            return retArray;
+        } else {
+            String msg = "No databases available ";
+            throw new Exception(msg);
+        }
+    }
+
+    /**
+     * AddSQLiteSuffix
+     * @param folderPath
+     * @throws Exception
+     */
+    public void addSQLiteSuffix(String folderPath) throws Exception {
+        try {
+            uMigrate.addSQLiteSuffix(context, folderPath);
+            return;
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
+        }
+    }
+
+    /**
+     *
+     * @param folderPath
+     * @throws Exception
+     */
+    public void deleteOldDatabases(String folderPath) throws Exception {
+        try {
+            uMigrate.deleteOldDatabases(context, folderPath);
+            return;
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
         }
     }
 
@@ -281,6 +359,21 @@ public class CapacitorSQLite {
         if (db != null) {
             File databaseFile = context.getDatabasePath(dbName + "SQLite.db");
             if (databaseFile.exists()) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            String msg = "No available connection for database " + dbName;
+            throw new Exception(msg);
+        }
+    }
+
+    public Boolean isDBOpen(String dbName) throws Exception {
+        Database db = dbDict.get(dbName);
+        if (db != null) {
+            Boolean isOpen = db.isOpen();
+            if (isOpen) {
                 return true;
             } else {
                 return false;

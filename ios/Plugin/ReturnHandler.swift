@@ -44,7 +44,7 @@ class ReturnHandler {
 
     // MARK: - rValues
 
-    func rValues(call: CAPPluginCall, ret: [[String: Any]],
+    func rValues(call: CAPPluginCall, ret: [Any],
                  message: String? = nil) {
         if let intMessage = message {
             call.reject(intMessage)

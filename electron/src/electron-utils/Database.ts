@@ -172,6 +172,30 @@ export class Database {
     return Promise.resolve();
   }
   /**
+   * IsTableExists
+   * @param tableName
+   * @returns
+   */
+  async isTableExists(tableName: string): Promise<boolean> {
+    if (!this._isDBOpen) {
+      let msg = `isTableExists: Database ${this._dbName} `;
+      msg += `not opened`;
+      return Promise.reject(new Error(msg));
+    }
+    const isOpen: boolean = this._isDBOpen;
+    try {
+      const retB = await this._uJson.isTableExists(
+        this._mDB,
+        isOpen,
+        tableName,
+      );
+      return Promise.resolve(retB);
+    } catch (err) {
+      const msg = `IsTableExists: ${err.message}`;
+      return Promise.reject(new Error(msg));
+    }
+  }
+  /**
    * CreateSyncTable
    * create the synchronization table
    * @returns Promise<number>

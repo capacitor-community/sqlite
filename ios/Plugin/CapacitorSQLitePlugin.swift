@@ -140,6 +140,131 @@ public class CapacitorSQLitePlugin: CAPPlugin {
 
     }
 
+    // MARK: - IsDatabase
+
+    @objc func isDatabase(_ call: CAPPluginCall) {
+        guard let dbName = call.options["database"] as? String else {
+            retHandler.rResult(
+                call: call, ret: false,
+                message: "isDatabase: Must provide a database name")
+            return
+        }
+        do {
+            let res = try implementation.isDatabase(dbName)
+            var bRes: Bool = false
+            if res == 1 {
+                bRes = true
+            }
+            retHandler.rResult(call: call, ret: bRes)
+        } catch CapacitorSQLiteError.failed(let message) {
+            let msg = "isDatabase: \(message)"
+            retHandler.rResult(call: call, message: msg)
+            return
+        } catch let error {
+            retHandler.rResult(
+                call: call,
+                message: "isDatabase: \(error.localizedDescription)")
+            return
+        }
+
+    }
+
+    // MARK: - IsTableExists
+
+    @objc func isTableExists(_ call: CAPPluginCall) {
+        guard let dbName = call.options["database"] as? String else {
+            retHandler.rResult(
+                call: call, ret: false,
+                message: "IsTableExists: Must provide a database name")
+            return
+        }
+        guard let tableName = call.options["table"] as? String else {
+            retHandler.rResult(
+                call: call, ret: false,
+                message: "IsTableExists: Must provide a table name")
+            return
+        }
+        do {
+            let res = try implementation.isTableExists(dbName, tableName: tableName)
+            var bRes: Bool = false
+            if res == 1 {
+                bRes = true
+            }
+            retHandler.rResult(call: call, ret: bRes)
+        } catch CapacitorSQLiteError.failed(let message) {
+            let msg = "IsTableExists: \(message)"
+            retHandler.rResult(call: call, message: msg)
+            return
+        } catch let error {
+            retHandler.rResult(
+                call: call,
+                message: "IsTableExists: \(error.localizedDescription)")
+            return
+        }
+    }
+
+    // MARK: - getDatabaseList
+
+    @objc func getDatabaseList(_ call: CAPPluginCall) {
+
+        do {
+            let res = try implementation.getDatabaseList()
+            retHandler.rValues(call: call, ret: res)
+            return
+        } catch CapacitorSQLiteError.failed(let message) {
+            retHandler.rValues(
+                call: call, ret: [],
+                message: "getDatabaseList: \(message)")
+            return
+        } catch let error {
+            retHandler.rValues(
+                call: call, ret: [],
+                message: "getDatabaseList: \(error.localizedDescription)")
+            return
+        }
+    }
+
+    // MARK: - addSQLiteSuffix
+
+    @objc func addSQLiteSuffix(_ call: CAPPluginCall) {
+        let folderPath: String = call.getString("folderPath") ?? "default"
+        do {
+            try implementation.addSQLiteSuffix(folderPath)
+            retHandler.rResult(call: call)
+            return
+        } catch CapacitorSQLiteError.failed(let message) {
+            let msg = "AddSQLiteSuffix: \(message)"
+            retHandler.rResult(call: call, message: msg)
+            return
+        } catch let error {
+            retHandler.rResult(
+                call: call,
+                message: "AddSQLiteSuffix: \(error.localizedDescription)")
+            return
+        }
+    }
+
+    // MARK: - deleteOldDatabases
+
+    @objc func deleteOldDatabases(_ call: CAPPluginCall) {
+        let folderPath: String = call.getString("folderPath") ?? "default"
+
+        do {
+            try implementation.deleteOldDatabases(folderPath)
+            retHandler.rResult(call: call)
+            return
+        } catch CapacitorSQLiteError.failed(let message) {
+            let msg = "DeleteOldDatabases: \(message)"
+            retHandler.rResult(call: call, message: msg)
+            return
+        } catch let error {
+            retHandler.rResult(
+                call: call,
+                message: "DeleteOldDatabases: \(error.localizedDescription)")
+            return
+        }
+    }
+
     // MARK: - Execute
 
     @objc func execute(_ call: CAPPluginCall) {
@@ -356,6 +481,36 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         }
 
     }
+
+    // MARK: - IsDBOpen
+
+    @objc func isDBOpen(_ call: CAPPluginCall) {
+        guard let dbName = call.options["database"] as? String else {
+            retHandler.rResult(
+                call: call, ret: false,
+                message: "idDBOpen: Must provide a database name")
+            return
+        }
+        do {
+            let res = try implementation.isDBOpen(dbName)
+            var bRes: Bool = false
+            if res == 1 {
+                bRes = true
+            }
+            retHandler.rResult(call: call, ret: bRes)
+            return
+        } catch CapacitorSQLiteError.failed(let message) {
+            let msg = "isDBOpen: \(message)"
+            retHandler.rResult(call: call, message: msg)
+            return
+        } catch let error {
+            retHandler.rResult(
+                call: call,
+                message: "isDBOpen: \(error.localizedDescription)")
+            return
+        }
+    }
+
     // MARK: - DeleteDatabase
 
     @objc func deleteDatabase(_ call: CAPPluginCall) {

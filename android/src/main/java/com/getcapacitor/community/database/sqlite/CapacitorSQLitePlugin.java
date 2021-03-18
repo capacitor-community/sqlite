@@ -168,6 +168,120 @@ public class CapacitorSQLitePlugin extends Plugin {
     }
 
     /**
+     * IsDatabase Method
+     * Check if the database file exists
+     * @param call
+     */
+    @PluginMethod
+    public void isDatabase(PluginCall call) {
+        if (!call.getData().has("database")) {
+            rHandler.retResult(call, null, "Must provide a database name");
+            return;
+        }
+        String dbName = call.getString("database");
+        try {
+            Boolean res = implementation.isDatabase(dbName);
+            rHandler.retResult(call, res, null);
+            return;
+        } catch (Exception e) {
+            String msg = "isDatabase: " + e.getMessage();
+            rHandler.retResult(call, null, msg);
+            return;
+        }
+    }
+
+    /**
+     * IsTableExists Method
+     * Check if a table exists in a database
+     * @param call
+     */
+    @PluginMethod
+    public void isTableExists(PluginCall call) {
+        if (!call.getData().has("database")) {
+            rHandler.retResult(call, null, "Must provide a database name");
+            return;
+        }
+        String dbName = call.getString("database");
+        if (!call.getData().has("table")) {
+            rHandler.retResult(call, null, "Must provide a table name");
+            return;
+        }
+        String tableName = call.getString("table");
+        try {
+            Boolean res = implementation.isTableExists(dbName, tableName);
+            rHandler.retResult(call, res, null);
+            return;
+        } catch (Exception e) {
+            String msg = "isTableExists: " + e.getMessage();
+            rHandler.retResult(call, null, msg);
+            return;
+        }
+    }
+
+    /**
+     * GetDatabaseList Method
+     * Return the list of databases
+     */
+    @PluginMethod
+    public void getDatabaseList(PluginCall call) {
+        try {
+            JSArray res = implementation.getDatabaseList();
+            rHandler.retValues(call, res, null);
+            return;
+        } catch (Exception e) {
+            String msg = "getDatabaseList: " + e.getMessage();
+            rHandler.retValues(call, new JSArray(), msg);
+            return;
+        }
+    }
+
+    /**
+     * AddSQLiteSuffix Method
+     * Add SQLITE suffix to a list of databases
+     */
+    @PluginMethod
+    public void addSQLiteSuffix(PluginCall call) {
+        String folderPath;
+        if (!call.getData().has("folderPath")) {
+            folderPath = "default";
+        } else {
+            folderPath = call.getString("folderPath");
+        }
+        try {
+            implementation.addSQLiteSuffix(folderPath);
+            rHandler.retResult(call, null, null);
+            return;
+        } catch (Exception e) {
+            String msg = "addSQLiteSuffix: " + e.getMessage();
+            rHandler.retResult(call, null, msg);
+            return;
+        }
+    }
+
+    /**
+     * DeleteOldDatabases Method
+     * Delete Old Cordova plugin databases
+     */
+    @PluginMethod
+    public void deleteOldDatabases(PluginCall call) {
+        String folderPath;
+        if (!call.getData().has("folderPath")) {
+            folderPath = "default";
+        } else {
+            folderPath = call.getString("folderPath");
+        }
+        try {
+            implementation.deleteOldDatabases(folderPath);
+            rHandler.retResult(call, null, null);
+            return;
+        } catch (Exception e) {
+            String msg = "deleteOldDatabases: " + e.getMessage();
+            rHandler.retResult(call, null, msg);
+            return;
+        }
+    }
+
+    /**
      * Execute Method
      * Execute SQL statements provided in a String
      * @param call
@@ -345,6 +459,30 @@ public class CapacitorSQLitePlugin extends Plugin {
             return;
         } catch (Exception e) {
             String msg = "isDBExists: " + e.getMessage();
+            rHandler.retResult(call, false, msg);
+            return;
+        }
+    }
+
+    /**
+     * IsDBOpen Method
+     * check if the database is opened
+     * @param call
+     */
+    @PluginMethod
+    public void isDBOpen(PluginCall call) {
+        if (!call.getData().has("database")) {
+            String msg = "isDBOpen: Must provide a database name";
+            rHandler.retResult(call, false, msg);
+            return;
+        }
+        String dbName = call.getString("database");
+        try {
+            Boolean res = implementation.isDBOpen(dbName);
+            rHandler.retResult(call, res, null);
+            return;
+        } catch (Exception e) {
+            String msg = "isDBOpen: " + e.getMessage();
             rHandler.retResult(call, false, msg);
             return;
         }

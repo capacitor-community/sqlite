@@ -11,6 +11,7 @@
 * [`echo(...)`](#echo)
 * [`addUpgradeStatement(...)`](#addupgradestatement)
 * [`createConnection(...)`](#createconnection)
+* [`isConnection(...)`](#isconnection)
 * [`retrieveConnection(...)`](#retrieveconnection)
 * [`retrieveAllConnections()`](#retrieveallconnections)
 * [`closeConnection(...)`](#closeconnection)
@@ -18,6 +19,10 @@
 * [`importFromJson(...)`](#importfromjson)
 * [`isJsonValid(...)`](#isjsonvalid)
 * [`copyFromAssets()`](#copyfromassets)
+* [`isDatabase(...)`](#isdatabase)
+* [`getDatabaseList()`](#getdatabaselist)
+* [`addSQLiteSuffix(...)`](#addsqlitesuffix)
+* [`deleteOldDatabases(...)`](#deleteolddatabases)
 * [Interfaces](#interfaces)
 
 </docgen-index>
@@ -87,6 +92,25 @@ Create a connection to a database
 **Returns:** <code>Promise&lt;SQLiteDBConnection&gt;</code>
 
 **Since:** 2.9.0 refactor
+
+--------------------
+
+
+### isConnection(...)
+
+```typescript
+isConnection(database: string) => Promise<capSQLiteResult>
+```
+
+Check if a connection exists
+
+| Param          | Type                |
+| -------------- | ------------------- |
+| **`database`** | <code>string</code> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 3.0.0-beta.5
 
 --------------------
 
@@ -206,6 +230,74 @@ Copy databases from public/assets/databases folder to application databases fold
 --------------------
 
 
+### isDatabase(...)
+
+```typescript
+isDatabase(database: string) => Promise<capSQLiteResult>
+```
+
+Check if a database exists
+
+| Param          | Type                |
+| -------------- | ------------------- |
+| **`database`** | <code>string</code> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 3.0.0-beta.5
+
+--------------------
+
+
+### getDatabaseList()
+
+```typescript
+getDatabaseList() => Promise<capSQLiteValues>
+```
+
+Get the database list
+
+**Returns:** <code>Promise&lt;<a href="#capsqlitevalues">capSQLiteValues</a>&gt;</code>
+
+**Since:** 3.0.0-beta.5
+
+--------------------
+
+
+### addSQLiteSuffix(...)
+
+```typescript
+addSQLiteSuffix(folderPath?: string | undefined) => Promise<void>
+```
+
+Add SQLIte Suffix to existing databases
+
+| Param            | Type                |
+| ---------------- | ------------------- |
+| **`folderPath`** | <code>string</code> |
+
+**Since:** 3.0.0-beta.5
+
+--------------------
+
+
+### deleteOldDatabases(...)
+
+```typescript
+deleteOldDatabases(folderPath?: string | undefined) => Promise<void>
+```
+
+Delete Old Cordova databases
+
+| Param            | Type                |
+| ---------------- | ------------------- |
+| **`folderPath`** | <code>string</code> |
+
+**Since:** 3.0.0-beta.5
+
+--------------------
+
+
 ### Interfaces
 
 
@@ -222,6 +314,13 @@ Copy databases from public/assets/databases folder to application databases fold
 | --------------- | ------------------- | -------------------------------- |
 | **`statement`** | <code>string</code> | A statement                      |
 | **`values`**    | <code>any[]</code>  | the data values list as an Array |
+
+
+#### capSQLiteResult
+
+| Prop         | Type                 | Description                                   |
+| ------------ | -------------------- | --------------------------------------------- |
+| **`result`** | <code>boolean</code> | result set to true when successful else false |
 
 
 #### Map
@@ -255,10 +354,10 @@ Copy databases from public/assets/databases folder to application databases fold
 | **`lastId`**  | <code>number</code> | the lastId created from a run command                |
 
 
-#### capSQLiteResult
+#### capSQLiteValues
 
-| Prop         | Type                 | Description                                   |
-| ------------ | -------------------- | --------------------------------------------- |
-| **`result`** | <code>boolean</code> | result set to true when successful else false |
+| Prop         | Type               | Description                      |
+| ------------ | ------------------ | -------------------------------- |
+| **`values`** | <code>any[]</code> | the data values list as an Array |
 
 </docgen-api>

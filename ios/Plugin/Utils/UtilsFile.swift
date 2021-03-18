@@ -14,10 +14,14 @@ enum UtilsFileError: Error {
     case deleteFileFailed
     case getAssetsDatabasesPathFailed
     case getDatabasesPathFailed
+    case getDatabasesURLFailed
+    case getApplicationPathFailed
+    case getApplicationURLFailed
     case getFileListFailed
     case copyFromAssetToDatabaseFailed
+    case copyFromNamesFailed
 }
-
+// swiftlint:disable type_body_length
 class UtilsFile {
 
     // MARK: - IsFileExist
@@ -58,24 +62,62 @@ class UtilsFile {
 
     class func getFilePath(fileName: String) throws -> String {
         do {
-            let url = try getDatabasesPath()
+            let url = try getDatabasesUrl()
             return url.appendingPathComponent("\(fileName)").path
-        } catch UtilsFileError.getDatabasesPathFailed {
-            print("Error: getDatabasesPath Failed")
+        } catch UtilsFileError.getDatabasesURLFailed {
+            print("Error: getDatabasesUrl Failed")
             throw UtilsFileError.getFilePathFailed
         }
     }
 
-    // MARK: - getDatabasesPath
+    // MARK: - getDatabasesUrl
 
-    class func getDatabasesPath() throws -> URL {
+    class func getDatabasesUrl() throws -> URL {
         if let path: String = NSSearchPathForDirectoriesInDomains(
             .documentDirectory, .userDomainMask, true
         ).first {
             return NSURL(fileURLWithPath: path) as URL
         } else {
+            print("Error: getDatabasesURL did not find the document folder")
+            throw UtilsFileError.getDatabasesURLFailed
+        }
+    }
+
+    // MARK: - getDatabasesPath
+    class func getDatabasesPath() throws -> String {
+        if let path: String = NSSearchPathForDirectoriesInDomains(
+            .documentDirectory, .userDomainMask, true
+        ).first {
+            return path
+        } else {
             print("Error: getDatabasesPath did not find the document folder")
             throw UtilsFileError.getDatabasesPathFailed
+        }
+    }
+
+    // MARK: - getApplicationURL
+
+    class func getApplicationURL() throws -> URL {
+        if let path: String = NSSearchPathForDirectoriesInDomains(
+            .applicationDirectory, .userDomainMask, true
+        ).first {
+            return NSURL(fileURLWithPath: path) as URL
+        } else {
+            print("Error: getApplicationURL did not find the application folder")
+            throw UtilsFileError.getApplicationURLFailed
+        }
+    }
+
+    // MARK: - getApplicationPath
+
+    class func getApplicationPath() throws -> String {
+        if let path: String = NSSearchPathForDirectoriesInDomains(
+            .applicationDirectory, .userDomainMask, true
+        ).first {
+            return path
+        } else {
+            print("Error: getApplicationPath did not find the application folder")
+            throw UtilsFileError.getApplicationPathFailed
         }
     }
 
@@ -127,6 +169,29 @@ class UtilsFile {
         }
     }
 
+    // MARK: - CopyFromNames
+
+    class func copyFromNames(dbPathURL: URL, fromFile: String, databaseURL: URL,
+                             toFile: String) throws {
+        do {
+            let uFrom: URL = dbPathURL.appendingPathComponent(fromFile)
+            let uTo: URL = databaseURL.appendingPathComponent(toFile)
+            let pFrom: String = uFrom.path
+            let pTo: String = uTo.path
+            let bRet: Bool = try copyFile(pathName: pFrom, toPathName: pTo)
+            if bRet {
+                return
+            } else {
+                print("Error: FromNames return false")
+                throw UtilsFileError.copyFromNamesFailed
+            }
+        } catch UtilsFileError.copyFileFailed {
+            print("Error: copyFile Failed")
+            throw UtilsFileError.copyFromNamesFailed
+        }
+
+    }
+
     // MARK: - CopyFromAssetToDatabase
 
     class func copyFromAssetToDatabase(fromDb: String, toDb: String) throws {
@@ -134,7 +199,7 @@ class UtilsFile {
             let uAsset: URL = try getAssetsDatabasesPath()
                 .appendingPathComponent(fromDb)
             let pAsset: String = uAsset.path
-            let uDb: URL = try getDatabasesPath()
+            let uDb: URL = try getDatabasesUrl()
                 .appendingPathComponent(toDb)
             let pDb: String = uDb.path
             let bRet: Bool = try copyFile(pathName: pAsset, toPathName: pDb)
@@ -147,8 +212,8 @@ class UtilsFile {
         } catch UtilsFileError.getAssetsDatabasesPathFailed {
             print("Error: getAssetsDatabasesPath Failed")
             throw UtilsFileError.copyFromAssetToDatabaseFailed
-        } catch UtilsFileError.getDatabasesPathFailed {
-            print("Error: getDatabasesPath Failed")
+        } catch UtilsFileError.getDatabasesURLFailed {
+            print("Error: getDatabasesUrl Failed")
             throw UtilsFileError.copyFromAssetToDatabaseFailed
         } catch UtilsFileError.copyFileFailed {
             print("Error: copyFile Failed")
@@ -243,6 +308,23 @@ class UtilsFile {
         return ret
     }
 
+    // MARK: - DeleteFile
+
+    class func deleteFile(dbPathURL: URL, fileName: String) throws -> Bool {
+        var ret: Bool = false
+        do {
+            let uURL: URL = dbPathURL.appendingPathComponent(fileName)
+            let filePath: String = uURL.path
+            ret = try deleteFile(filePath: filePath)
+        } catch UtilsFileError.deleteFileFailed {
+            throw UtilsFileError.deleteFileFailed
+        } catch let error {
+            print("Error: \(error)")
+            throw UtilsFileError.deleteFileFailed
+        }
+        return ret
+    }
+
     // MARK: - RenameFile
 
     class func renameFile (filePath: String, toFilePath: String)
@@ -262,3 +344,4 @@ class UtilsFile {
         }
     }
 }
+// swiftlint:enable type_body_length

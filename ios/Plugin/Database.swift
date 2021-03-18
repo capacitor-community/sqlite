@@ -2,11 +2,12 @@
 //  Database.swift
 //  Plugin
 //
-//  Created by  Quéau Jean Pierre on 18/01/2021.
-//  Copyright © 2021 Max Lynch. All rights reserved.
+//  Created by  Quéau Jean Pierre on 26/11/2020.
+//  Copyright © 2020 Max Lynch. All rights reserved.
 //
 
 import Foundation
+
 enum DatabaseError: Error {
     case filePath(message: String)
     case open(message: String)
@@ -305,7 +306,7 @@ class Database {
             }
             msg.append(" \(message)")
             print("\(msg)")
-            throw DatabaseError.runSQL(message: msg)
+            lastId = -1
         }
 
         if lastId != -1 {

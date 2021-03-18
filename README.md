@@ -166,6 +166,7 @@ No configuration required for this plugin
 | :---------------------- | :------ | :-- | :----------- | :--------------- | :-- |
 | createConnection        | ✅      | ✅  | 🚧           | 🚧               | ❌  |
 | closeConnection         | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| isConnection            | ✅      | ✅  | 🚧           | 🚧               | ❌  |
 | open (non-encrypted DB) | ✅      | ✅  | 🚧           | 🚧               | ❌  |
 | open (encrypted DB)     | ✅      | ✅  | 🚧           | 🚧               | ❌  |
 | close                   | ✅      | ✅  | 🚧           | 🚧               | ❌  |
@@ -183,6 +184,12 @@ No configuration required for this plugin
 | isDBExists              | ✅      | ✅  | 🚧           | 🚧               | ❌  |
 | addUpgradeStatement     | ✅      | ✅  | 🚧           | 🚧               | ❌  |
 | copyFromAssets          | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| isDBOpen                | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| isDatabase              | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| isTableExists           | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| getDatabaseList         | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| addSQLiteSuffix         | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| deleteOldDatabases      | ✅      | ✅  | 🚧           | 🚧               | ❌  |
 
 ## Documentation
 
@@ -197,6 +204,8 @@ No configuration required for this plugin
 - [ImportExportJson_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/ImportExportJson.md)
 
 - [UpgradeDatabaseVersion_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/UpgradeDatabaseVersion.md)
+
+- [MigratingCordovaDatabases_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/MigratingCordovaDatabases.md)
 
 ### Framework's Usage 
 

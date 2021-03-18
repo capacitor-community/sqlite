@@ -1,12 +1,12 @@
 //
 //  UtilsJson.swift
-//  Plugin
+//  CapacitorCommunitySqlite
 //
-//  Created by  Quéau Jean Pierre on 18/01/2021.
-//  Copyright © 2021 Max Lynch. All rights reserved.
+//  Created by  Quéau Jean Pierre on 30/07/2020.
 //
 
 import Foundation
+
 enum UtilsJsonError: Error {
     case tableNotExists(message: String)
     case getTableColumnNamesTypes(message: String)
@@ -171,7 +171,8 @@ class UtilsJson {
         var retArray: [Any] = []
         // swiftlint:disable force_unwrapping
         for ipos in 0..<rowValues.count {
-            retArray.append(rowValues[ipos].value!)
+            let value = rowValues[ipos].value!
+            retArray.append(value)
         }
         // swiftlint:enable force_unwrapping
         return retArray

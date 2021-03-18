@@ -16,6 +16,8 @@
 * [`run(...)`](#run)
 * [`executeSet(...)`](#executeset)
 * [`isExists()`](#isexists)
+* [`isDBOpen(...)`](#isdbopen)
+* [`isTable(...)`](#istable)
 * [`delete()`](#delete)
 * [`createSyncTable()`](#createsynctable)
 * [`setSyncDate(...)`](#setsyncdate)
@@ -166,6 +168,44 @@ Check if a SQLite DB Connection exists
 --------------------
 
 
+### isDBOpen(...)
+
+```typescript
+isDBOpen(options: capSQLiteOptions) => Promise<capSQLiteResult>
+```
+
+Check if a SQLite database is opened
+
+| Param         | Type                                                          | Description                                        |
+| ------------- | ------------------------------------------------------------- | -------------------------------------------------- |
+| **`options`** | <code><a href="#capsqliteoptions">capSQLiteOptions</a></code> | : <a href="#capsqliteoptions">capSQLiteOptions</a> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 3.0.0-beta.5
+
+--------------------
+
+
+### isTable(...)
+
+```typescript
+isTable(table: string) => Promise<capSQLiteResult>
+```
+
+Check if a table exists
+
+| Param       | Type                |
+| ----------- | ------------------- |
+| **`table`** | <code>string</code> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 3.0.0-beta.5
+
+--------------------
+
+
 ### delete()
 
 ```typescript
@@ -283,6 +323,13 @@ Export the given database to a JSON Object
 | Prop         | Type                 | Description                                   |
 | ------------ | -------------------- | --------------------------------------------- |
 | **`result`** | <code>boolean</code> | result set to true when successful else false |
+
+
+#### capSQLiteOptions
+
+| Prop           | Type                | Description       |
+| -------------- | ------------------- | ----------------- |
+| **`database`** | <code>string</code> | The database name |
 
 
 #### capSQLiteJson

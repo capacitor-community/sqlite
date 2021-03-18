@@ -11,12 +11,14 @@ import type {
   capSQLiteImportOptions,
   capSQLiteExportOptions,
   capSQLiteSyncDateOptions,
+  capSQLiteUpgradeOptions,
+  capSQLiteTableOptions,
+  capSQLitePathOptions,
   capEchoResult,
   capSQLiteResult,
   capSQLiteChanges,
   capSQLiteValues,
   capSQLiteJson,
-  capSQLiteUpgradeOptions,
   capSQLiteSyncDate,
 } from './definitions';
 
@@ -70,6 +72,21 @@ export class CapacitorSQLiteWeb
     console.log('in Web isDBExists', options);
     throw this.unimplemented('Not implemented on web.');
   }
+  async isDBOpen(options: capSQLiteOptions): Promise<capSQLiteResult> {
+    console.log('in Web isDBOpen', options);
+    throw this.unimplemented('Not implemented on web.');
+  }
+  async isDatabase(options: capSQLiteOptions): Promise<capSQLiteResult> {
+    console.log('in Web isDatabase', options);
+    throw this.unimplemented('Not implemented on web.');
+  }
+
+  async isTableExists(
+    options: capSQLiteTableOptions,
+  ): Promise<capSQLiteResult> {
+    console.log('in Web isTableExists', options);
+    throw this.unimplemented('Not implemented on web.');
+  }
   async deleteDatabase(options: capSQLiteOptions): Promise<void> {
     console.log('deleteDatabase', options);
     throw this.unimplemented('Not implemented on web.');
@@ -78,7 +95,6 @@ export class CapacitorSQLiteWeb
     console.log('isJsonValid', options);
     throw this.unimplemented('Not implemented on web.');
   }
-
   async importFromJson(
     options: capSQLiteImportOptions,
   ): Promise<capSQLiteChanges> {
@@ -107,6 +123,17 @@ export class CapacitorSQLiteWeb
   }
   async copyFromAssets(): Promise<void> {
     console.log('copyFromAssets');
+    throw this.unimplemented('Not implemented on web.');
+  }
+  async getDatabaseList(): Promise<capSQLiteValues> {
+    throw this.unimplemented('Not implemented on web.');
+  }
+  async addSQLiteSuffix(options: capSQLitePathOptions): Promise<void> {
+    console.log('addSQLiteSuffix', options);
+    throw this.unimplemented('Not implemented on web.');
+  }
+  async deleteOldDatabases(options: capSQLitePathOptions): Promise<void> {
+    console.log('deleteOldDatabases', options);
     throw this.unimplemented('Not implemented on web.');
   }
 }

@@ -48,6 +48,7 @@
     "build-electron": "rimraf ./electron/dist && cd ./electron && tsc && rollup --config rollup.config.js",
     "clean": "rimraf ./dist",
     "watch": "tsc --watch",
+    "test": "echo \"No test specified\"",
     "prepublishOnly": "npm run build && npm run build-electron && npm run docgen"
   },
   "devDependencies": {

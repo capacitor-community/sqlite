@@ -88,6 +88,47 @@ enum CapacitorSQLiteError: Error {
         return
     }
 
+    // MARK: - IsDatabase
+
+    @objc public func isDatabase(_ dbName: String) throws -> NSNumber {
+
+        let isFileExists: Bool = UtilsFile
+            .isFileExist(fileName: dbName + "SQLite.db")
+        if isFileExists {
+            return 1
+        } else {
+            return 0
+        }
+    }
+
+    // MARK: - IsTableExists
+
+    @objc public func isTableExists(_ dbName: String, tableName: String) throws -> NSNumber {
+
+        guard let mDb: Database = dbDict[dbName] else {
+            let msg = "Connection to \(dbName) not available"
+            throw CapacitorSQLiteError.failed(message: msg)
+        }
+        do {
+            let isExists: Bool = try
+                UtilsJson.isTableExists(mDB: mDb,
+                                        tableName: tableName)
+            if isExists {
+                return 1
+            } else {
+                return 0
+            }
+        } catch UtilsJsonError.tableNotExists(let message) {
+            var msg: String = "IsTableExists:"
+            msg.append(" \(message)")
+            throw CapacitorSQLiteError.failed(message: msg)
+        } catch let error {
+            var msg: String = "IsTableExists:"
+            msg.append(" \(error.localizedDescription)")
+            throw CapacitorSQLiteError.failed(message: msg)
+        }
+    }
+
     // MARK: - Execute
 
     @objc public func execute(_ dbName: String, statements: String)
@@ -214,6 +255,21 @@ enum CapacitorSQLiteError: Error {
         let res: Bool = UtilsFile
             .isFileExist(fileName: "\(dbName)SQLite.db")
         if res {
+            return 1
+        } else {
+            return 0
+        }
+    }
+
+    // MARK: - isDBOpen
+
+    @objc func isDBOpen(_ dbName: String) throws -> NSNumber {
+        guard let mDb: Database = dbDict[dbName] else {
+            let msg = "Connection to \(dbName) not available"
+            throw CapacitorSQLiteError.failed(message: msg)
+        }
+        let isOpen: Bool = mDb.isDBOpen()
+        if isOpen {
             return 1
         } else {
             return 0
@@ -518,6 +574,59 @@ enum CapacitorSQLiteError: Error {
         }
     }
 
+    // MARK: - getDatabaseList
+
+    @objc func getDatabaseList() throws -> [String] {
+        do {
+            let aPath: String = try UtilsFile.getDatabasesPath()
+            // get the database files
+            let dbList: [String] = try UtilsFile.getFileList(path: aPath)
+            return dbList
+
+        } catch let error {
+            let msg: String = "\(error.localizedDescription)"
+            throw CapacitorSQLiteError.failed(message: msg)
+        }
+
+    }
+
+    // MARK: - addSQLiteSuffix
+
+    @objc func addSQLiteSuffix(_ folderPath: String) throws {
+
+        do {
+            try UtilsMigrate.addSQLiteSuffix(folderPath: folderPath)
+            return
+        } catch UtilsMigrateError.addSQLiteSuffix(let message) {
+            var msg: String = "addSQLiteSuffix:"
+            msg.append(" \(message)")
+            throw CapacitorSQLiteError.failed(message: msg)
+
+        } catch let error {
+            var msg: String = "addSQLiteSuffix:"
+            msg.append(" \(error.localizedDescription)")
+            throw CapacitorSQLiteError.failed(message: msg)
+        }
+    }
+
+    // MARK: - deleteOldDatabases
+
+    @objc func deleteOldDatabases(_ folderPath: String) throws {
+        do {
+            try UtilsMigrate.deleteOldDatabases(folderPath: folderPath)
+            return
+        } catch UtilsMigrateError.deleteOldDatabases(let message) {
+            var msg: String = "deleteOldDatabases:"
+            msg.append(" \(message)")
+            throw CapacitorSQLiteError.failed(message: msg)
+
+        } catch let error {
+            var msg: String = "deleteOldDatabases:"
+            msg.append(" \(error.localizedDescription)")
+            throw CapacitorSQLiteError.failed(message: msg)
+        }
+
+    }
 }
 // swiftlint:enable type_body_length
 // swiftlint:enable file_length

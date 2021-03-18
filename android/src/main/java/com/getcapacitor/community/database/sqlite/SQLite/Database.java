@@ -383,17 +383,20 @@ public class Database {
      * @return
      */
     public long prepareSQL(String statement, ArrayList<Object> values) throws Exception {
-        String stmtType = statement.substring(0, 6).toUpperCase();
-        SupportSQLiteStatement stmt;
-        try {
-            stmt = _db.compileStatement(statement);
-        } catch (IllegalStateException e) {
-            throw new Exception(e.getMessage());
-        }
+        String stmtType = statement.replaceAll("\n", "").trim().substring(0, 6).toUpperCase();
+        SupportSQLiteStatement stmt = null;
         try {
             stmt = _db.compileStatement(statement);
             if (values != null && values.size() > 0) {
-                SimpleSQLiteQuery.bind(stmt, values.toArray(new Object[0]));
+                Object[] valObj = new Object[values.size()];
+                for (int i = 0; i < values.size(); i++) {
+                    if (JSONObject.NULL == values.get(i)) {
+                        valObj[i] = null;
+                    } else {
+                        valObj[i] = values.get(i);
+                    }
+                }
+                SimpleSQLiteQuery.bind(stmt, valObj);
             }
             if (stmtType.equals("INSERT")) {
                 return stmt.executeInsert();
@@ -407,7 +410,9 @@ public class Database {
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         } finally {
-            stmt.close();
+            if (stmt != null) {
+                stmt.close();
+            }
         }
     }
 

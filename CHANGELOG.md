@@ -1,3 +1,29 @@
+## 3.0.0-beta.5 (2021-03-18)
+
+### Chore
+
+ - Update to Capacitor 3.0.0-rc.0
+
+### Added Features
+
+ - isConnection method
+ - isDatabase method
+ - getDatabaseList method
+ - isTable method
+ - addSQLiteSuffix method
+ - deleteOldDatabases method
+ - isDBOpen
+ - MigratingCordovaDatabases.md
+
+### Bug Fixes
+
+ - Fix Copy db from storage issue#77
+ - Fix Is there a way to connect to a db file, that not has the prefix SQLite.db issue#79
+ - Fix More precise error message on failing statements issue#82 
+ - Fix issue#84 Android
+ - Fix executeSet on android not accept null values issue#89
+ - Fix issue#97
+
 ## 3.0.0-beta.4 (2021-02-01)
 
 ### Bug Fixes

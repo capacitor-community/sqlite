@@ -155,7 +155,7 @@ export class UtilsJson {
           for (const jTrg of jTable.triggers) {
             const tableName = jTable.name;
             let stmt = `CREATE TRIGGER IF NOT EXISTS `;
-            stmt += `${jTrg.name} ${jTrg.timeevent} ON ${tableName} `;
+            stmt += `${jTrg.name} ${jTrg.timeevent} ${tableName} `;
             if (jTrg.condition) stmt += `${jTrg.condition} `;
             stmt += `${jTrg.logic};`;
             statements.push(stmt);
