@@ -1,3 +1,9 @@
+## 3.0.0-beta.6 (2021-03-19)
+
+### Bug Fixes
+
+ - Fix executeSet on iOS not accept null values issue#89
+
 ## 3.0.0-beta.5 (2021-03-18)
 
 ### Chore
@@ -59,6 +65,48 @@
 ### Added Features
 
 - better Error handling throught try...catch
+
+## 2.9.13 (2021-02-24) REFACTOR
+
+### Bug Fixes
+
+- Fix issue#84 Android
+
+## 2.9.12 (2021-02-15) REFACTOR
+
+### Bug Fixes
+
+- Fix isDBOpen method Android
+
+## 2.9.11 (2021-02-15) REFACTOR
+
+### Added Features
+
+- isDBOpen method
+
+## 2.9.10 (2021-02-14) REFACTOR
+
+### Added Features
+
+- isConnection method
+- isDatabase method
+- getDatabaseList method
+- isTable method
+- addSQLiteSuffix method
+- deleteOldDatabases method
+- MigratingCordovaDatabases.md
+
+### Bug Fixes
+
+- Fix Copy db from storage issue#77
+- Fix Is there a way to connect to a db file, that not has the prefix SQLite.db issue#79
+- Fix More precise error message on failing statements issue#82
+
+## 2.9.9 (2021-02-01) REFACTOR
+
+### Bug Fixes
+
+- Fix Android export 'Partial' triggers
 
 ## 2.9.8 (2021-02-01) REFACTOR
 
