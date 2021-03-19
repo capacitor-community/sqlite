@@ -6,7 +6,7 @@
 
 ### Bug Fixes
 
-- Fix issue#89 Android
+- Fix issue#89 Android, iOS
 - Fix issue#97
 
 ## 2.9.13 (2021-02-24) REFACTOR
