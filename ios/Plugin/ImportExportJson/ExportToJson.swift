@@ -759,7 +759,7 @@ class ExportToJson {
                                 throw ExportToJsonError
                                         .createTriggers(message: msg)
                             }
-                            let timeevent: String = sqlArr[1]
+                            var timeevent: String = sqlArr[1]
                                 .components(separatedBy: tableName)[0]
                                                 .trimmingCharacters(in:
                                                     .whitespacesAndNewlines)
@@ -788,6 +788,9 @@ class ExportToJson {
                                 logic = "BEGIN\(sqlArr[1])"
                             } else {
                                logic = sep
+                            }
+                            if timeevent.uppercased().hasSuffix(" ON") {
+                                timeevent = String(timeevent.dropLast(3))
                             }
                             row["timeevent"] = timeevent
                             row["name"] = name

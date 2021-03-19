@@ -1,22 +1,33 @@
-# 2.9.13 (2021-02-24) REFACTOR
+## 2.9.14 (2021-03-19) REFACTOR
+
+### Chore
+
+- update to @capacitor/core@2.4.7
+
+### Bug Fixes
+
+- Fix issue#89 Android
+- Fix issue#97
+
+## 2.9.13 (2021-02-24) REFACTOR
 
 ### Bug Fixes
 
 - Fix issue#84 Android
 
-# 2.9.12 (2021-02-15) REFACTOR
+## 2.9.12 (2021-02-15) REFACTOR
 
 ### Bug Fixes
 
 - Fix isDBOpen method Android
 
-# 2.9.11 (2021-02-15) REFACTOR
+## 2.9.11 (2021-02-15) REFACTOR
 
 ### Added Features
 
 - isDBOpen method
 
-# 2.9.10 (2021-02-14) REFACTOR
+## 2.9.10 (2021-02-14) REFACTOR
 
 ### Added Features
 

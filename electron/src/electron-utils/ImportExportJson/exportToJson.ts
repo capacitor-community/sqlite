@@ -351,7 +351,7 @@ export class ExportToJson {
                   );
                   break;
                 }
-                const timeEvent = sqlArr[1].split(tableName, 1)[0].trim();
+                let timeEvent = sqlArr[1].split(tableName, 1)[0].trim();
                 sqlArr = sqlArr[1].split(timeEvent + ' ' + tableName);
                 if (sqlArr.length != 2) {
                   reject(
@@ -382,6 +382,11 @@ export class ExportToJson {
                 }
 
                 let trigger: JsonTrigger = {} as JsonTrigger;
+                if (
+                  timeEvent.toUpperCase().slice(timeEvent.length - 3) === ' ON'
+                ) {
+                  timeEvent = timeEvent.slice(0, -3);
+                }
                 trigger.name = name;
                 trigger.logic = logic;
                 if (condition.length > 0) trigger.condition = condition;

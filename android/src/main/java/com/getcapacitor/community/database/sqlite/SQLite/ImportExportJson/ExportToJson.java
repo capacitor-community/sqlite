@@ -278,6 +278,9 @@ public class ExportToJson {
                         } else {
                             logic = sqlArr[1].trim();
                         }
+                        if (timeEvent.toUpperCase().endsWith(" ON")) {
+                            timeEvent = timeEvent.substring(0, timeEvent.length() - 3);
+                        }
                         jsonRow.setName(name);
                         jsonRow.setTimeevent(timeEvent);
                         jsonRow.setLogic(logic);

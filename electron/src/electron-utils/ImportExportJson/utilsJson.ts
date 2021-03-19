@@ -188,7 +188,12 @@ export class UtilsJson {
             const tableName = jsonData.tables[i].name;
 
             let stmt: string = `CREATE TRIGGER IF NOT EXISTS `;
-            stmt += `${trigger.name} ${trigger.timeevent} ON ${tableName} `;
+            let timeEvent: String = trigger.timeevent;
+            if (timeEvent.toUpperCase().slice(timeEvent.length - 3) === ' ON') {
+              timeEvent = timeEvent.slice(0, -3);
+            }
+
+            stmt += `${trigger.name} ${timeEvent} ON ${tableName} `;
             if (trigger.condition) stmt += `${trigger.condition} `;
             stmt += `${trigger.logic};`;
             statements.push(stmt);

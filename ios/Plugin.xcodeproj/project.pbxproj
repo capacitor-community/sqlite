@@ -21,6 +21,7 @@
 		2C6A501F2539C2CD00A61A82 /* UtilsDrop.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6A501A2539C2CD00A61A82 /* UtilsDrop.swift */; };
 		2C6A50212539C2CD00A61A82 /* UtilsUpgrade.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6A501C2539C2CD00A61A82 /* UtilsUpgrade.swift */; };
 		2C77B2E9242108480059C80C /* GlobalSQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C77B2E7242108480059C80C /* GlobalSQLite.swift */; };
+		2CA54060260489EC00DD63BA /* UtilsMigrate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CA5405F260489EC00DD63BA /* UtilsMigrate.swift */; };
 		2CEDEA33258C912B00CC2D55 /* ExportToJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CEDEA32258C912B00CC2D55 /* ExportToJson.swift */; };
 		50ADFF92201F53D600D50D53 /* Plugin.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50ADFF88201F53D600D50D53 /* Plugin.framework */; };
 		50ADFF97201F53D600D50D53 /* PluginTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50ADFF96201F53D600D50D53 /* PluginTests.swift */; };
@@ -53,6 +54,7 @@
 		2C6A501A2539C2CD00A61A82 /* UtilsDrop.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilsDrop.swift; sourceTree = "<group>"; };
 		2C6A501C2539C2CD00A61A82 /* UtilsUpgrade.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilsUpgrade.swift; sourceTree = "<group>"; };
 		2C77B2E7242108480059C80C /* GlobalSQLite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GlobalSQLite.swift; sourceTree = "<group>"; };
+		2CA5405F260489EC00DD63BA /* UtilsMigrate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = UtilsMigrate.swift; path = Utils/UtilsMigrate.swift; sourceTree = "<group>"; };
 		2CEDEA32258C912B00CC2D55 /* ExportToJson.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportToJson.swift; sourceTree = "<group>"; };
 		3B2A61DA5A1F2DD4F959604D /* Pods_Plugin.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Plugin.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		50ADFF88201F53D600D50D53 /* Plugin.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Plugin.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -140,6 +142,7 @@
 		50ADFF8A201F53D600D50D53 /* Plugin */ = {
 			isa = PBXGroup;
 			children = (
+				2CA5405F260489EC00DD63BA /* UtilsMigrate.swift */,
 				2C6A011924D82B9000A46075 /* ImportExportJson */,
 				2C06A1FF256F8EA600964EC1 /* Database.swift */,
 				2C77B2E7242108480059C80C /* GlobalSQLite.swift */,
@@ -366,6 +369,7 @@
 				50E1A94820377CB70090CE1A /* Plugin.swift in Sources */,
 				2C6A501F2539C2CD00A61A82 /* UtilsDrop.swift in Sources */,
 				2C3CF92424D070DA001E24F2 /* ReturnHandler.swift in Sources */,
+				2CA54060260489EC00DD63BA /* UtilsMigrate.swift in Sources */,
 				2C1F8BE3258CEE2000B7CC5A /* ImportFromJson.swift in Sources */,
 				2C6A50212539C2CD00A61A82 /* UtilsUpgrade.swift in Sources */,
 				2C6A012224D82BCF00A46075 /* UtilsBinding.swift in Sources */,

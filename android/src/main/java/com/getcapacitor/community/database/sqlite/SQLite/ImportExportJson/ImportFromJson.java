@@ -258,10 +258,14 @@ public class ImportFromJson {
     private ArrayList<String> createTableTriggers(ArrayList<JsonTrigger> mTriggers, String tableName) {
         ArrayList<String> statements = new ArrayList<>();
         for (int j = 0; j < mTriggers.size(); j++) {
+            String timeEvent = mTriggers.get(j).getTimeevent();
+            if (timeEvent.toUpperCase().endsWith(" ON")) {
+                timeEvent = timeEvent.substring(0, timeEvent.length() - 3);
+            }
             StringBuilder sBuilder = new StringBuilder("CREATE TRIGGER IF NOT EXISTS ")
                 .append(mTriggers.get(j).getName())
                 .append(" ")
-                .append(mTriggers.get(j).getTimeevent())
+                .append(timeEvent)
                 .append(" ON ")
                 .append(tableName)
                 .append(" ");

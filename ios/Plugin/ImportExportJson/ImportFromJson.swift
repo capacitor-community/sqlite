@@ -245,11 +245,15 @@ class ImportFromJson {
                                    tableName: String) -> [String] {
         var statements: [String] = []
         for jpos in 0..<mTriggers.count {
+            var timeevent: String = mTriggers[jpos].timeevent
+            if timeevent.uppercased().hasSuffix(" ON") {
+                timeevent = String(timeevent.dropLast(3))
+            }
             var stmt: String
             stmt = "CREATE TRIGGER IF NOT EXISTS "
             stmt.append(mTriggers[jpos].name)
             stmt.append(" ")
-            stmt.append(mTriggers[jpos].timeevent)
+            stmt.append(timeevent)
             stmt.append(" ON ")
             stmt.append("\(tableName) ")
             if let condition = mTriggers[jpos].condition {

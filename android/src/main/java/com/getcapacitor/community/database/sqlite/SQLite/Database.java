@@ -377,7 +377,15 @@ public class Database {
         SupportSQLiteStatement stmt = _db.compileStatement(statement);
         try {
             if (values != null && values.size() > 0) {
-                SimpleSQLiteQuery.bind(stmt, values.toArray(new Object[0]));
+                Object[] valObj = new Object[values.size()];
+                for (int i = 0; i < values.size(); i++) {
+                    if (JSONObject.NULL == values.get(i)) {
+                        valObj[i] = null;
+                    } else {
+                        valObj[i] = values.get(i);
+                    }
+                }
+                SimpleSQLiteQuery.bind(stmt, valObj);
             }
             if (stmtType.equals("INSERT")) {
                 return stmt.executeInsert();
