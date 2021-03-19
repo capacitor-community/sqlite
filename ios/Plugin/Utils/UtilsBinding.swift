@@ -38,6 +38,8 @@ class UtilsBinding {
     throws {
         if value == nil {
             sqlite3_bind_null(handle, Int32(idx))
+        } else if (value as? NSNull) != nil {
+            sqlite3_bind_null(handle, Int32(idx))
         } else if let value = value as? Double {
             sqlite3_bind_double(handle, Int32(idx), value)
         } else if let value = value as? Int64 {
