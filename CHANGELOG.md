@@ -1,3 +1,10 @@
+## 3.0.0-beta.7 (2021-03-20)
+
+### Added Features
+
+- add `Library` folder to iOS addSQLiteSuffix method
+- update MigratingCordovaDatabases.md accordingly
+
 ## 3.0.0-beta.6 (2021-03-19)
 
 ### Bug Fixes

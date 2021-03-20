@@ -34,7 +34,7 @@ If you were using a custom location you have to give the location as parameter, 
 
 #### iOS
 
-The accessible locations are under the `Applications` or `Documents` folders. ie
+The accessible locations are under the `Applications`, `Library` or `Documents` folders. ie
 
 - Any folders under `Applications`
 
@@ -43,6 +43,11 @@ result = await this._sqlite.addSQLiteSuffix("Applications/Files/Databases")
 result = await this._sqlite.addSQLiteSuffix("Applications/AppDatabases");
 result = await this._sqlite.addSQLiteSuffix("Applications/.../.../...");
 ...
+```
+- Any folders under `Library`
+
+```ts
+result = await this._sqlite.addSQLiteSuffix("Library/LocalDatabase")
 ```
 
 - Any folders under `Documents`

@@ -17,6 +17,8 @@ enum UtilsFileError: Error {
     case getDatabasesURLFailed
     case getApplicationPathFailed
     case getApplicationURLFailed
+    case getLibraryPathFailed
+    case getLibraryURLFailed
     case getFileListFailed
     case copyFromAssetToDatabaseFailed
     case copyFromNamesFailed
@@ -118,6 +120,32 @@ class UtilsFile {
         } else {
             print("Error: getApplicationPath did not find the application folder")
             throw UtilsFileError.getApplicationPathFailed
+        }
+    }
+
+    // MARK: - getLibraryURL
+
+    class func getLibraryURL() throws -> URL {
+        if let path: String = NSSearchPathForDirectoriesInDomains(
+            .libraryDirectory, .userDomainMask, true
+        ).first {
+            return NSURL(fileURLWithPath: path) as URL
+        } else {
+            print("Error: getApplicationURL did not find the library folder")
+            throw UtilsFileError.getLibraryURLFailed
+        }
+    }
+
+    // MARK: - getLibraryPath
+
+    class func getLibraryPath() throws -> String {
+        if let path: String = NSSearchPathForDirectoriesInDomains(
+            .libraryDirectory, .userDomainMask, true
+        ).first {
+            return path
+        } else {
+            print("Error: getApplicationPath did not find the library folder")
+            throw UtilsFileError.getLibraryPathFailed
         }
     }
 

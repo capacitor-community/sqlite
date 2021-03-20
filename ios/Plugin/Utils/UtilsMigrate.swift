@@ -106,6 +106,8 @@ class UtilsMigrate {
             let first = folderPath.split(separator: "/", maxSplits: 1)
             if first[0] == "Applications" {
                 dbPathURL = try UtilsFile.getApplicationURL().absoluteURL
+            } else if first[0] == "Library" {
+                dbPathURL = try UtilsFile.getLibraryURL().absoluteURL
             } else if first[0] == "Documents" || first[0] == "default" {
                 dbPathURL = databaseURL
             } else {
