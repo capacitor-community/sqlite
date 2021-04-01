@@ -1,3 +1,9 @@
+## 2.9.15 (2021-04-01) REFACTOR
+
+### Bug Fixes
+
+- Fix ImportFromJson db is Locked issue#101
+
 ## 2.9.14 (2021-03-19) REFACTOR
 
 ### Chore

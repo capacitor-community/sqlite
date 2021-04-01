@@ -27,7 +27,8 @@ class UtilsDrop {
         var query: String = "SELECT name FROM sqlite_master WHERE "
         query.append("type='table' AND name NOT LIKE 'sync_table' ")
         query.append("AND name NOT LIKE '_temp_%' ")
-        query.append("AND name NOT LIKE 'sqlite_%';")
+        query.append("AND name NOT LIKE 'sqlite_%' ")
+        query.append("ORDER BY rootpage DESC;")
         do {
             let resQuery = try mDB.selectSQL(sql: query, values: [])
             if resQuery.count > 0 {

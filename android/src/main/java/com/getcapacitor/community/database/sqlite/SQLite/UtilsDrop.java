@@ -25,7 +25,8 @@ public class UtilsDrop {
         query += "type='table' AND name NOT LIKE 'sync_table' ";
         query += "AND name NOT LIKE '_temp_%' ";
         query += "AND name NOT LIKE 'sqlite_%' ";
-        query += "AND name NOT LIKE 'android_%';";
+        query += "AND name NOT LIKE 'android_%' ";
+        query += "ORDER BY rootpage DESC;";
         try {
             cursor = (Cursor) db.getDb().query(query);
             cursor.moveToFirst();

@@ -12,7 +12,8 @@ export class UtilsDrop {
       let sql: string = 'SELECT name FROM sqlite_master WHERE ';
       sql += "type='table' AND name NOT LIKE 'sync_table' ";
       sql += "AND name NOT LIKE '_temp_%' ";
-      sql += "AND name NOT LIKE 'sqlite_%';";
+      sql += "AND name NOT LIKE 'sqlite_%' ";
+      sql += 'ORDER BY rootpage DESC;';
       let retArr: string[] = [];
       try {
         const retQuery: any[] = await this._uSQLite.queryAll(mDb, sql, []);
