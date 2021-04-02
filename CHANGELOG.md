@@ -1,3 +1,9 @@
+## 3.0.0-beta.8 (2021-04-02)
+
+### Bug Fixes
+
+ - Fix ImportFromJson db is Locked issue#101
+
 ## 3.0.0-beta.7 (2021-03-20)
 
 ### Added Features
@@ -72,6 +78,23 @@
 ### Added Features
 
 - better Error handling throught try...catch
+
+## 2.9.15 (2021-04-01) REFACTOR
+
+### Bug Fixes
+
+- Fix ImportFromJson db is Locked issue#101
+
+## 2.9.14 (2021-03-19) REFACTOR
+
+### Chore
+
+- update to @capacitor/core@2.4.7
+
+### Bug Fixes
+
+- Fix issue#89 Android, iOS
+- Fix issue#97
 
 ## 2.9.13 (2021-02-24) REFACTOR
 
