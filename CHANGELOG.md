@@ -1,3 +1,9 @@
+## 3.0.0-beta.9 (2021-04-02)
+
+### Bug Fixes
+
+ - Fix prepareSQL Android for null value
+
 ## 3.0.0-beta.8 (2021-04-02)
 
 ### Bug Fixes

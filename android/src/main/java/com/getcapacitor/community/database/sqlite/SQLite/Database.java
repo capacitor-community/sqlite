@@ -390,7 +390,11 @@ public class Database {
             if (values != null && values.size() > 0) {
                 Object[] valObj = new Object[values.size()];
                 for (int i = 0; i < values.size(); i++) {
-                    if (JSONObject.NULL == values.get(i) || values.get(i).equals("NULL")) {
+                    if(values.get(i) == null) {
+                        valObj[i] = null;
+                    } else if (values.get(i).equals("NULL")) {
+                        valObj[i] = null;
+                    } else if (JSONObject.NULL == values.get(i)) {
                         valObj[i] = null;
                     } else {
                         valObj[i] = values.get(i);
