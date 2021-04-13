@@ -110,7 +110,8 @@ public class Database {
      * @return open status
      */
     public boolean open() {
-        String password = _encrypted && (_mode.equals("secret") || _mode.equals("encryption")) ? _globVar.secret : "";
+        String password = _encrypted && (_mode.equals("secret") || _mode.equals("encryption")
+                        || _mode.equals("newsecret")) ? _globVar.secret : "";
         if (_mode.equals("newsecret")) {
             try {
                 _uCipher.changePassword(_context, _file, _globVar.secret, _globVar.newsecret);
@@ -128,58 +129,65 @@ public class Database {
                 return false;
             }
         }
-
-        _db = SQLiteDatabase.openOrCreateDatabase(_file, password, null);
-        if (_db != null) {
-            if (_db.isOpen()) {
-                // set the Foreign Key Pragma ON
-                try {
-                    _db.setForeignKeyConstraintsEnabled(true);
-                } catch (IllegalStateException e) {
-                    String msg = "Error in open database ";
-                    msg += "setForeignKeyConstraintsEnabled failed " + e;
-                    Log.v(TAG, msg);
-                    close();
-                    _db = null;
-                    return false;
-                }
-                int curVersion = _db.getVersion();
-                if (curVersion == 0) {
-                    _db.setVersion(1);
-                    curVersion = _db.getVersion();
-                }
-                if (_version > curVersion) {
+        try {
+            _db = SQLiteDatabase.openOrCreateDatabase(_file, password, null);
+            if (_db != null) {
+                if (_db.isOpen()) {
+                    // set the Foreign Key Pragma ON
                     try {
-                        _uUpg.onUpgrade(this, _context, _dbName, _vUpgObject, curVersion, _version);
-                        boolean ret = _uFile.deleteBackupDB(_context, _dbName);
-                        if (!ret) {
-                            Log.v(TAG, "Error: deleteBackupDB backup-" + _dbName + " failed ");
-                            close();
-                            _db = null;
-                            return false;
-                        }
-                    } catch (Exception e) {
-                        // restore DB
-                        boolean ret = _uFile.restoreDatabase(_context, _dbName);
-                        String msg = e.getMessage();
-                        if (!ret) msg += " restoreDatabase " + _dbName + " failed ";
+                        _db.setForeignKeyConstraintsEnabled(true);
+                    } catch (IllegalStateException e) {
+                        String msg = "Error in open database ";
+                        msg += "setForeignKeyConstraintsEnabled failed " + e;
                         Log.v(TAG, msg);
                         close();
                         _db = null;
                         return false;
                     }
+                    int curVersion = _db.getVersion();
+                    if (curVersion == 0) {
+                        _db.setVersion(1);
+                        curVersion = _db.getVersion();
+                    }
+                    if (_version > curVersion) {
+                        try {
+                            _uUpg.onUpgrade(this, _context, _dbName, _vUpgObject, curVersion, _version);
+                            boolean ret = _uFile.deleteBackupDB(_context, _dbName);
+                            if (!ret) {
+                                Log.v(TAG, "Error: deleteBackupDB backup-" + _dbName + " failed ");
+                                close();
+                                _db = null;
+                                return false;
+                            }
+                        } catch (Exception e) {
+                            // restore DB
+                            boolean ret = _uFile.restoreDatabase(_context, _dbName);
+                            String msg = e.getMessage();
+                            if (!ret) msg += " restoreDatabase " + _dbName + " failed ";
+                            Log.v(TAG, msg);
+                            close();
+                            _db = null;
+                            return false;
+                        }
+                    }
+                    _isOpen = true;
+                    return true;
+                } else {
+                    _isOpen = false;
+                    _db = null;
+                    return false;
                 }
-                _isOpen = true;
-                return true;
             } else {
                 _isOpen = false;
-                _db = null;
                 return false;
             }
-        } else {
+        } catch (Exception e) {
+            Log.v(TAG, "Error in creating the database" + e.getMessage());
             _isOpen = false;
+            _db = null;
             return false;
         }
+
     }
 
     /**

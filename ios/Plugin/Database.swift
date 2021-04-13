@@ -69,7 +69,7 @@ class Database {
     // swiftlint:disable function_body_length
     func open () throws {
         var password: String = ""
-        if encrypted && (mode == "secret"
+        if encrypted && (mode == "secret" || mode == "newsecret"
                         || mode == "encryption") {
             password = globalData.secret
         }

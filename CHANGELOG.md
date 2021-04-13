@@ -1,3 +1,9 @@
+## 2.9.16 (2021-04-13) REFACTOR
+
+### Bug Fixes
+
+- Fix Android app crashes when creating connection with wrong secret issue#105
+
 ## 2.9.15 (2021-04-01) REFACTOR
 
 ### Bug Fixes
