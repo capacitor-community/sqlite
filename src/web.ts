@@ -49,9 +49,7 @@ export class CapacitorSQLiteWeb
     console.log('closeConnection', options);
     throw this.unimplemented('Not implemented on web.');
   }
-  checkConnectionsConsistency(
-    options: capAllConnectionsOptions,
-  ): Promise<void> {
+  async checkConnectionsConsistency(options: capAllConnectionsOptions): Promise<void> {
     console.log('checkConsistency', options);
     throw this.unimplemented('Not implemented on web.');
   }

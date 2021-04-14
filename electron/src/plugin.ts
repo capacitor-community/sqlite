@@ -23,6 +23,7 @@ import type {
   capSQLiteTableOptions,
   capSQLitePathOptions,
   JsonSQLite,
+  capAllConnectionsOptions,
 } from './definitions';
 import { Database } from './electron-utils/Database';
 import { UtilsJson } from './electron-utils/ImportExportJson/utilsJson';
@@ -163,6 +164,11 @@ export class CapacitorSQLiteElectronWeb
       return Promise.reject(`Close: ${err.message}`);
     }
   }
+  async checkConnectionsConsistency(options: capAllConnectionsOptions): Promise<void> {
+    console.log('checkConsistency', options);
+    throw this.unimplemented('Not implemented on Electron.');
+  }
+
   async execute(options: capSQLiteExecuteOptions): Promise<capSQLiteChanges> {
     let keys = Object.keys(options);
     if (!keys.includes('database')) {
