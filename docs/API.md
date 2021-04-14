@@ -14,7 +14,7 @@ To easy the way to use the `@capacitor-community/sqlite` plugin and its ability 
 
 ## Databases Location
 
-The plugin add a suffix "SQLite" and an extension ".db" to the database name given as options in the `open method` ie (fooDBSQLite.db)
+The plugin add a suffix "SQLite" and an extension ".db" to the database name given as options in the `capConnectionOptions` or `capSQLiteOptions` ie (fooDB -> fooDBSQLite.db). If the name given contains the extension `.db` it will be removed ie (foo.db) will become internally (fooSQLite.db) after adding the suffix. 
 
 ### Android
 
@@ -79,6 +79,7 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 * [`getDatabaseList()`](#getdatabaselist)
 * [`addSQLiteSuffix(...)`](#addsqlitesuffix)
 * [`deleteOldDatabases(...)`](#deleteolddatabases)
+* [`checkConnectionsConsistency(...)`](#checkconnectionsconsistency)
 * [Interfaces](#interfaces)
 
 </docgen-index>
@@ -537,6 +538,24 @@ Delete Old Cordova databases
 --------------------
 
 
+### checkConnectionsConsistency(...)
+
+```typescript
+checkConnectionsConsistency(options: capAllConnectionsOptions) => Promise<void>
+```
+
+Check Connection Consistency JS &lt;=&gt; Native
+if inconsistency all connections are removed
+
+| Param         | Type                                                                          | Description                                                        |
+| ------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| **`options`** | <code><a href="#capallconnectionsoptions">capAllConnectionsOptions</a></code> | : <a href="#capallconnectionsoptions">capAllConnectionsOptions</a> |
+
+**Since:** 3.0.0-beta.10
+
+--------------------
+
+
 ### Interfaces
 
 
@@ -588,18 +607,20 @@ Delete Old Cordova databases
 
 #### capSQLiteExecuteOptions
 
-| Prop             | Type                | Description                               |
-| ---------------- | ------------------- | ----------------------------------------- |
-| **`database`**   | <code>string</code> | The database name                         |
-| **`statements`** | <code>string</code> | The batch of raw SQL statements as string |
+| Prop              | Type                 | Description                                         | Since         |
+| ----------------- | -------------------- | --------------------------------------------------- | ------------- |
+| **`database`**    | <code>string</code>  | The database name                                   |               |
+| **`statements`**  | <code>string</code>  | The batch of raw SQL statements as string           |               |
+| **`transaction`** | <code>boolean</code> | Enable / Disable transactions default Enable (true) | 3.0.0-beta.10 |
 
 
 #### capSQLiteSetOptions
 
-| Prop           | Type                        | Description                                               |
-| -------------- | --------------------------- | --------------------------------------------------------- |
-| **`database`** | <code>string</code>         | The database name                                         |
-| **`set`**      | <code>capSQLiteSet[]</code> | The batch of raw SQL statements as Array of capSQLLiteSet |
+| Prop              | Type                        | Description                                               | Since         |
+| ----------------- | --------------------------- | --------------------------------------------------------- | ------------- |
+| **`database`**    | <code>string</code>         | The database name                                         |               |
+| **`set`**         | <code>capSQLiteSet[]</code> | The batch of raw SQL statements as Array of capSQLLiteSet |               |
+| **`transaction`** | <code>boolean</code>        | Enable / Disable transactions default Enable (true)       | 3.0.0-beta.10 |
 
 
 #### capSQLiteSet
@@ -612,11 +633,12 @@ Delete Old Cordova databases
 
 #### capSQLiteRunOptions
 
-| Prop            | Type                | Description                     |
-| --------------- | ------------------- | ------------------------------- |
-| **`database`**  | <code>string</code> | The database name               |
-| **`statement`** | <code>string</code> | A statement                     |
-| **`values`**    | <code>any[]</code>  | A set of values for a statement |
+| Prop              | Type                 | Description                                         | Since         |
+| ----------------- | -------------------- | --------------------------------------------------- | ------------- |
+| **`database`**    | <code>string</code>  | The database name                                   |               |
+| **`statement`**   | <code>string</code>  | A statement                                         |               |
+| **`values`**      | <code>any[]</code>   | A set of values for a statement                     |               |
+| **`transaction`** | <code>boolean</code> | Enable / Disable transactions default Enable (true) | 3.0.0-beta.10 |
 
 
 #### capSQLiteValues
@@ -761,6 +783,13 @@ Delete Old Cordova databases
 | Prop             | Type                | Description                           |
 | ---------------- | ------------------- | ------------------------------------- |
 | **`folderPath`** | <code>string</code> | The folder path of existing databases |
+
+
+#### capAllConnectionsOptions
+
+| Prop          | Type                  | Description                   | Since         |
+| ------------- | --------------------- | ----------------------------- | ------------- |
+| **`dbNames`** | <code>string[]</code> | the dbName of all connections | 3.0.0-beta.10 |
 
 </docgen-api>
 

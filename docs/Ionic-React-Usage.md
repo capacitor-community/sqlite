@@ -238,7 +238,7 @@ export const createTablesNoEncryption: string = `
     email TEXT UNIQUE NOT NULL,
     name TEXT,
     company TEXT,
-    size FLOAT,
+    size REAL,
     age INTEGER,
     last_modified INTEGER DEFAULT (strftime('%s', 'now'))
     );

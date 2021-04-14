@@ -168,6 +168,31 @@ public class CapacitorSQLitePlugin extends Plugin {
     }
 
     /**
+     * CheckConnectionsConsistency Method
+     * Check the connections consistency JS <=> Native
+     * @param call
+     */
+    @PluginMethod
+    public void checkConnectionsConsistency(PluginCall call) {
+        if (!call.getData().has("dbNames")) {
+            String msg = "CheckConnectionsConsistency: Must provide a " + "connection Array";
+            rHandler.retResult(call, null, msg);
+            return;
+        }
+        JSArray dbNames = call.getArray("dbNames");
+
+        try {
+            implementation.checkConnectionsConsistency(dbNames);
+            rHandler.retResult(call, null, null);
+            return;
+        } catch (Exception e) {
+            String msg = "CheckConnectionsConsistency: " + e.getMessage();
+            rHandler.retResult(call, null, msg);
+            return;
+        }
+    }
+
+    /**
      * IsDatabase Method
      * Check if the database file exists
      * @param call
@@ -302,9 +327,10 @@ public class CapacitorSQLitePlugin extends Plugin {
             return;
         }
         String statements = call.getString("statements");
+        Boolean transaction = call.getBoolean("transaction", true);
 
         try {
-            JSObject res = implementation.execute(dbName, statements);
+            JSObject res = implementation.execute(dbName, statements, transaction);
             rHandler.retChanges(call, res, null);
             return;
         } catch (Exception e) {
@@ -353,8 +379,9 @@ public class CapacitorSQLitePlugin extends Plugin {
                 }
             }
         }
+        Boolean transaction = call.getBoolean("transaction", true);
         try {
-            JSObject res = implementation.executeSet(dbName, set);
+            JSObject res = implementation.executeSet(dbName, set, transaction);
             rHandler.retChanges(call, res, null);
             return;
         } catch (Exception e) {
@@ -391,9 +418,10 @@ public class CapacitorSQLitePlugin extends Plugin {
             return;
         }
         JSArray values = call.getArray("values");
+        Boolean transaction = call.getBoolean("transaction", true);
 
         try {
-            JSObject res = implementation.run(dbName, statement, values);
+            JSObject res = implementation.run(dbName, statement, values, transaction);
             rHandler.retChanges(call, res, null);
             return;
         } catch (Exception e) {

@@ -113,7 +113,9 @@ public class Database {
     public void open() throws Exception {
         int curVersion;
 
-        String password = _encrypted && (_mode.equals("secret") || _mode.equals("encryption")) ? _globVar.secret : "";
+        String password = _encrypted && (_mode.equals("secret") || _mode.equals("encryption") || _mode.equals("newsecret"))
+            ? _globVar.secret
+            : "";
         if (_mode.equals("newsecret")) {
             try {
                 _uCipher.changePassword(_context, _file, _globVar.secret, _globVar.newsecret);
@@ -133,71 +135,78 @@ public class Database {
                 throw new Exception(msg);
             }
         }
-
-        _db = SQLiteDatabase.openOrCreateDatabase(_file, password, null);
-        if (_db != null) {
-            if (_db.isOpen()) {
-                // set the Foreign Key Pragma ON
-                try {
-                    _db.setForeignKeyConstraintsEnabled(true);
-                } catch (IllegalStateException e) {
-                    String msg = "Failed in setForeignKeyConstraintsEnabled " + e.getMessage();
-                    Log.v(TAG, msg);
-                    close();
-                    _db = null;
-                    throw new Exception(msg);
-                }
-                try {
-                    curVersion = _db.getVersion();
-                    if (curVersion == 0) {
-                        _db.setVersion(1);
-                        curVersion = _db.getVersion();
-                    }
-                } catch (IllegalStateException e) {
-                    String msg = "Failed in get/setVersion " + e.getMessage();
-                    Log.v(TAG, msg);
-                    close();
-                    _db = null;
-                    throw new Exception(msg);
-                } catch (SQLiteException e) {
-                    String msg = "Failed in setVersion " + e.getMessage();
-                    Log.v(TAG, msg);
-                    close();
-                    _db = null;
-                    throw new Exception(msg);
-                }
-                if (_version > curVersion) {
+        try {
+            _db = SQLiteDatabase.openOrCreateDatabase(_file, password, null);
+            if (_db != null) {
+                if (_db.isOpen()) {
+                    // set the Foreign Key Pragma ON
                     try {
-                        _uUpg.onUpgrade(this, _context, _dbName, _vUpgObject, curVersion, _version);
-                        boolean ret = _uFile.deleteBackupDB(_context, _dbName);
-                        if (!ret) {
-                            String msg = "Failed in deleteBackupDB backup-\" + _dbName";
-                            Log.v(TAG, msg);
-                            close();
-                            _db = null;
-                            throw new Exception(msg);
-                        }
-                    } catch (Exception e) {
-                        // restore DB
-                        boolean ret = _uFile.restoreDatabase(_context, _dbName);
-                        String msg = e.getMessage();
-                        if (!ret) msg += "Failed in restoreDatabase " + _dbName;
+                        _db.setForeignKeyConstraintsEnabled(true);
+                    } catch (IllegalStateException e) {
+                        String msg = "Failed in setForeignKeyConstraintsEnabled " + e.getMessage();
                         Log.v(TAG, msg);
                         close();
                         _db = null;
                         throw new Exception(msg);
                     }
+                    try {
+                        curVersion = _db.getVersion();
+                        if (curVersion == 0) {
+                            _db.setVersion(1);
+                            curVersion = _db.getVersion();
+                        }
+                    } catch (IllegalStateException e) {
+                        String msg = "Failed in get/setVersion " + e.getMessage();
+                        Log.v(TAG, msg);
+                        close();
+                        _db = null;
+                        throw new Exception(msg);
+                    } catch (SQLiteException e) {
+                        String msg = "Failed in setVersion " + e.getMessage();
+                        Log.v(TAG, msg);
+                        close();
+                        _db = null;
+                        throw new Exception(msg);
+                    }
+                    if (_version > curVersion) {
+                        try {
+                            _uUpg.onUpgrade(this, _context, _dbName, _vUpgObject, curVersion, _version);
+                            boolean ret = _uFile.deleteBackupDB(_context, _dbName);
+                            if (!ret) {
+                                String msg = "Failed in deleteBackupDB backup-\" + _dbName";
+                                Log.v(TAG, msg);
+                                close();
+                                _db = null;
+                                throw new Exception(msg);
+                            }
+                        } catch (Exception e) {
+                            // restore DB
+                            boolean ret = _uFile.restoreDatabase(_context, _dbName);
+                            String msg = e.getMessage();
+                            if (!ret) msg += "Failed in restoreDatabase " + _dbName;
+                            Log.v(TAG, msg);
+                            close();
+                            _db = null;
+                            throw new Exception(msg);
+                        }
+                    }
+                    _isOpen = true;
+                    return;
+                } else {
+                    _isOpen = false;
+                    _db = null;
+                    throw new Exception("Database not opened");
                 }
-                _isOpen = true;
-                return;
             } else {
                 _isOpen = false;
                 _db = null;
-                throw new Exception("Database not opened");
+                throw new Exception("No database returned");
             }
-        } else {
+        } catch (Exception e) {
+            String msg = "Error in creating the database" + e.getMessage();
             _isOpen = false;
-            throw new Exception("No database returned");
+            _db = null;
+            throw new Exception(msg);
         }
     }
 
@@ -248,13 +257,14 @@ public class Database {
      * @param statements Array of Strings
      * @return
      */
-    public JSObject execute(String[] statements) throws Exception {
+    public JSObject execute(String[] statements, Boolean... others) throws Exception {
+        Boolean transaction = others.length == 1 ? others[0] : true;
         JSObject retObj = new JSObject();
         Integer changes = Integer.valueOf(-1);
         try {
             if (_db != null && _db.isOpen()) {
                 Integer initChanges = _uSqlite.dbChanges(_db);
-                _db.beginTransaction();
+                if (transaction) _db.beginTransaction();
                 for (String cmd : statements) {
                     if (!cmd.endsWith(";")) cmd += ";";
                     Log.v(TAG, " cmd " + cmd);
@@ -262,7 +272,7 @@ public class Database {
                 }
                 changes = _uSqlite.dbChanges(_db) - initChanges;
                 if (changes != -1) {
-                    _db.setTransactionSuccessful();
+                    if (transaction) _db.setTransactionSuccessful();
                     retObj.put("changes", changes);
                 }
                 return retObj;
@@ -272,7 +282,7 @@ public class Database {
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         } finally {
-            if (_db != null && _db.inTransaction()) _db.endTransaction();
+            if (_db != null && transaction && _db.inTransaction()) _db.endTransaction();
         }
     }
 
@@ -282,7 +292,8 @@ public class Database {
      * @param set JSArray of statements
      * @return
      */
-    public JSObject executeSet(JSArray set) throws Exception {
+    public JSObject executeSet(JSArray set, Boolean... others) throws Exception {
+        Boolean transaction = others.length == 1 ? others[0] : true;
         JSObject retObj = new JSObject();
         Long lastId = Long.valueOf(-1);
         Integer changes = Integer.valueOf(-1);
@@ -290,7 +301,7 @@ public class Database {
             if (_db != null && _db.isOpen()) {
                 Integer initChanges = _uSqlite.dbChanges(_db);
                 Log.v(TAG, "ExecuteSet InitChanges " + initChanges);
-                _db.beginTransaction();
+                if (transaction) _db.beginTransaction();
                 for (int i = 0; i < set.length(); i++) {
                     JSONObject row = set.getJSONObject(i);
                     String statement = row.getString("statement");
@@ -316,7 +327,7 @@ public class Database {
                     if (lastId == -1) break;
                 }
                 if (lastId != -1) {
-                    _db.setTransactionSuccessful();
+                    if (transaction) _db.setTransactionSuccessful();
                     changes = _uSqlite.dbChanges(_db) - initChanges;
                     Log.v(TAG, "Execute Changes " + changes);
                     retObj.put("changes", changes);
@@ -331,7 +342,7 @@ public class Database {
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         } finally {
-            if (_db != null && _db.inTransaction()) _db.endTransaction();
+            if (_db != null && transaction && _db.inTransaction()) _db.endTransaction();
         }
     }
 
@@ -350,7 +361,8 @@ public class Database {
      * @param values Array of Strings to bind to the statement
      * @return
      */
-    public JSObject runSQL(String statement, ArrayList<Object> values) throws Exception {
+    public JSObject runSQL(String statement, ArrayList<Object> values, Boolean... others) throws Exception {
+        Boolean transaction = others.length == 1 ? others[0] : true;
         JSObject retObj = new JSObject();
         long lastId = Long.valueOf(-1);
         int changes = Integer.valueOf(-1);
@@ -358,9 +370,9 @@ public class Database {
             if (_db != null && _db.isOpen() && statement.length() > 0) {
                 Integer initChanges = _uSqlite.dbChanges(_db);
                 Log.v(TAG, "runSQL InitChanges " + initChanges);
-                _db.beginTransaction();
+                if (transaction) _db.beginTransaction();
                 lastId = prepareSQL(statement, values);
-                if (lastId != -1) _db.setTransactionSuccessful();
+                if (lastId != -1 && transaction) _db.setTransactionSuccessful();
                 changes = _uSqlite.dbChanges(_db) - initChanges;
                 Log.v(TAG, "runSQL Changes " + changes);
                 retObj.put("changes", changes);
@@ -372,7 +384,7 @@ public class Database {
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         } finally {
-            if (_db != null && _db.inTransaction()) _db.endTransaction();
+            if (_db != null && transaction && _db.inTransaction()) _db.endTransaction();
         }
     }
 
@@ -390,7 +402,7 @@ public class Database {
             if (values != null && values.size() > 0) {
                 Object[] valObj = new Object[values.size()];
                 for (int i = 0; i < values.size(); i++) {
-                    if(values.get(i) == null) {
+                    if (values.get(i) == null) {
                         valObj[i] = null;
                     } else if (values.get(i).equals("NULL")) {
                         valObj[i] = null;

@@ -29,10 +29,8 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
         let version: Int = call.getInt("version") ?? 1
-        let encrypted: Bool = call
-            .getBool("encrypted") ?? false
-        let inMode: String = call
-            .getString("mode") ?? "no-encryption"
+        let encrypted: Bool = call.getBool("encrypted") ?? false
+        let inMode: String = call.getString("mode") ?? "no-encryption"
         if encrypted && !modeList.contains(inMode) {
             var msg: String = "CreateConnection: inMode "
             msg.append("must be in['encryption',")
@@ -138,6 +136,33 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
 
+    }
+
+    // MARK: - CheckConsistency
+
+    @objc func checkConnectionsConsistency(_ call: CAPPluginCall) {
+        guard let dbNames = call.options["dbNames"] as? [String] else {
+            retHandler.rResult(
+                call: call,
+                message: "checkConnectionsConsistency: Must provide a " +
+                    "Connection Array")
+            return
+        }
+        do {
+            try implementation.checkConnectionsConsistency(dbNames)
+            retHandler.rResult(call: call)
+            return
+        } catch CapacitorSQLiteError.failed(let message) {
+            let msg = "checkConnectionsConsistency: \(message)"
+            retHandler.rResult(call: call, message: msg)
+            return
+        } catch let error {
+            retHandler.rResult(
+                call: call,
+                message: "checkConnectionsConsistency: " +
+                    "\(error.localizedDescription)")
+            return
+        }
     }
 
     // MARK: - IsDatabase
@@ -276,6 +301,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
         let statements: String = call.getString("statements") ?? ""
+        let transaction: Bool = call.getBool("transaction") ?? true
         if statements.count == 0 {
             let msg: String = "Execute: Must provide raw SQL statements"
             retHandler.rChanges(
@@ -284,7 +310,8 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
         do {
-            let res = try implementation.execute(dbName, statements: statements)
+            let res = try implementation.execute(dbName, statements: statements,
+                                                 transaction: transaction)
             retHandler.rChanges(call: call, ret: res)
             return
         } catch CapacitorSQLiteError.failed(let message) {
@@ -337,8 +364,10 @@ public class CapacitorSQLitePlugin: CAPPlugin {
                 return
             }
         }
+        let transaction: Bool = call.getBool("transaction") ?? true
         do {
-            let res = try implementation.executeSet(dbName, set: set)
+            let res = try implementation.executeSet(dbName, set: set,
+                                                    transaction: transaction)
             retHandler.rChanges(call: call, ret: res)
             return
         } catch CapacitorSQLiteError.failed(let message) {
@@ -381,11 +410,13 @@ public class CapacitorSQLitePlugin: CAPPlugin {
                 message: "Run: Must provide an Array of values")
             return
         }
+        let transaction: Bool = call.getBool("transaction") ?? true
         do {
             let res = try
                 implementation.run(dbName,
                                    statement: statement,
-                                   values: values)
+                                   values: values,
+                                   transaction: transaction)
             retHandler.rChanges(call: call, ret: res)
             return
         } catch CapacitorSQLiteError.failed(let message) {

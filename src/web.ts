@@ -20,6 +20,7 @@ import type {
   capSQLiteValues,
   capSQLiteJson,
   capSQLiteSyncDate,
+  capAllConnectionsOptions,
 } from './definitions';
 
 export class CapacitorSQLiteWeb
@@ -46,6 +47,12 @@ export class CapacitorSQLiteWeb
   }
   async closeConnection(options: capSQLiteOptions): Promise<void> {
     console.log('closeConnection', options);
+    throw this.unimplemented('Not implemented on web.');
+  }
+  checkConnectionsConsistency(
+    options: capAllConnectionsOptions,
+  ): Promise<void> {
+    console.log('checkConsistency', options);
     throw this.unimplemented('Not implemented on web.');
   }
   async close(options: capSQLiteOptions): Promise<void> {

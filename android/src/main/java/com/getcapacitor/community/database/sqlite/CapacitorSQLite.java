@@ -11,8 +11,12 @@ import com.getcapacitor.community.database.sqlite.SQLite.UtilsMigrate;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLite;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Dictionary;
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Set;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -49,6 +53,7 @@ public class CapacitorSQLite {
      */
     public void createConnection(String dbName, boolean encrypted, String mode, int version, Dictionary<Integer, JSONObject> vUpgObject)
         throws Exception {
+        dbName = getDatabaseName(dbName);
         // check if connection already exists
         Database conn = dbDict.get(dbName);
         if (conn != null) {
@@ -75,6 +80,7 @@ public class CapacitorSQLite {
      * @throws Exception
      */
     public void open(String dbName) throws Exception {
+        dbName = getDatabaseName(dbName);
         Database db = dbDict.get(dbName);
         if (db != null) {
             try {
@@ -95,6 +101,7 @@ public class CapacitorSQLite {
      * @throws Exception
      */
     public void close(String dbName) throws Exception {
+        dbName = getDatabaseName(dbName);
         Database db = dbDict.get(dbName);
         if (db != null) {
             if (db.isOpen()) {
@@ -125,6 +132,7 @@ public class CapacitorSQLite {
      * @throws Exception
      */
     public void closeConnection(String dbName) throws Exception {
+        dbName = getDatabaseName(dbName);
         Database db = dbDict.get(dbName);
         if (db != null) {
             if (db.isOpen()) {
@@ -142,6 +150,44 @@ public class CapacitorSQLite {
         }
     }
 
+    public void checkConnectionsConsistency(JSArray dbNames) throws Exception {
+        Set<String> keys = new HashSet<String>(Collections.list(dbDict.keys()));
+        String msg = "All Native Connections released";
+        Set<String> conns = new HashSet<String>(uSqlite.stringJSArrayToArrayList(dbNames));
+        if (conns.size() == 0) {
+            dbDict = new Hashtable<>();
+            throw new Exception(msg);
+        }
+        msg = "Not solvable inconsistency";
+        if (keys.size() < conns.size()) {
+            // not solvable inconsistency
+            dbDict = new Hashtable<>();
+            throw new Exception(msg);
+        }
+        if (keys.size() > conns.size()) {
+            for (String key : keys) {
+                if (!conns.contains(key)) {
+                    dbDict.remove(key);
+                }
+            }
+        }
+        keys = new HashSet<String>(Collections.list(dbDict.keys()));
+        if (keys.size() == conns.size()) {
+            Set<String> symmetricDiff = new HashSet<String>(keys);
+            symmetricDiff.addAll(conns);
+            Set<String> tmp = new HashSet<String>(keys);
+            tmp.retainAll(conns);
+            symmetricDiff.removeAll(tmp);
+            if (symmetricDiff.size() == 0) {
+                return;
+            } else {
+                // not solvable inconsistency
+                dbDict = new Hashtable<>();
+                throw new Exception(msg);
+            }
+        }
+    }
+
     /**
      * IsDatabase
      * @param dbName
@@ -149,6 +195,7 @@ public class CapacitorSQLite {
      * @throws Exception
      */
     public Boolean isDatabase(String dbName) {
+        dbName = getDatabaseName(dbName);
         return uFile.isFileExists(context, dbName + "SQLite.db");
     }
 
@@ -159,6 +206,7 @@ public class CapacitorSQLite {
      * @throws Exception
      */
     public Boolean isTableExists(String dbName, String tableName) throws Exception {
+        dbName = getDatabaseName(dbName);
         Database db = dbDict.get(dbName);
         if (db != null) {
             boolean res = uJson.isTableExists(db, tableName);
@@ -223,14 +271,15 @@ public class CapacitorSQLite {
      * @return
      * @throws Exception
      */
-    public JSObject execute(String dbName, String statements) throws Exception {
+    public JSObject execute(String dbName, String statements, Boolean transaction) throws Exception {
+        dbName = getDatabaseName(dbName);
         Database db = dbDict.get(dbName);
         if (db != null) {
             if (db.isOpen()) {
                 // convert string in string[]
                 String[] sqlCmdArray = uSqlite.getStatementsArray(statements);
                 try {
-                    JSObject res = db.execute(sqlCmdArray);
+                    JSObject res = db.execute(sqlCmdArray, transaction);
                     return res;
                 } catch (Exception e) {
                     throw new Exception(e.getMessage());
@@ -252,12 +301,13 @@ public class CapacitorSQLite {
      * @return
      * @throws Exception
      */
-    public JSObject executeSet(String dbName, JSArray set) throws Exception {
+    public JSObject executeSet(String dbName, JSArray set, Boolean transaction) throws Exception {
+        dbName = getDatabaseName(dbName);
         Database db = dbDict.get(dbName);
         if (db != null) {
             if (db.isOpen()) {
                 try {
-                    JSObject res = db.executeSet(set);
+                    JSObject res = db.executeSet(set, transaction);
                     return res;
                 } catch (Exception e) {
                     throw new Exception(e.getMessage());
@@ -280,15 +330,16 @@ public class CapacitorSQLite {
      * @return
      * @throws Exception
      */
-    public JSObject run(String dbName, String statement, JSArray values) throws Exception {
+    public JSObject run(String dbName, String statement, JSArray values, Boolean transaction) throws Exception {
         JSObject res;
+        dbName = getDatabaseName(dbName);
         Database db = dbDict.get(dbName);
         if (db != null) {
             if (db.isOpen()) {
                 if (values.length() > 0) {
                     try {
                         ArrayList<Object> arrValues = uSqlite.objectJSArrayToArrayList(values);
-                        res = db.runSQL(statement, arrValues);
+                        res = db.runSQL(statement, arrValues, transaction);
                         return res;
                     } catch (JSONException e) {
                         throw new Exception(e.getMessage());
@@ -297,7 +348,7 @@ public class CapacitorSQLite {
                     }
                 } else {
                     try {
-                        res = db.runSQL(statement, null);
+                        res = db.runSQL(statement, null, transaction);
                         return res;
                     } catch (Exception e) {
                         throw new Exception(e.getMessage());
@@ -323,6 +374,7 @@ public class CapacitorSQLite {
      */
     public JSArray query(String dbName, String statement, JSArray values) throws Exception {
         JSArray res;
+        dbName = getDatabaseName(dbName);
         Database db = dbDict.get(dbName);
         if (db != null) {
             if (db.isOpen()) {
@@ -355,6 +407,7 @@ public class CapacitorSQLite {
     }
 
     public Boolean isDBExists(String dbName) throws Exception {
+        dbName = getDatabaseName(dbName);
         Database db = dbDict.get(dbName);
         if (db != null) {
             File databaseFile = context.getDatabasePath(dbName + "SQLite.db");
@@ -370,6 +423,7 @@ public class CapacitorSQLite {
     }
 
     public Boolean isDBOpen(String dbName) throws Exception {
+        dbName = getDatabaseName(dbName);
         Database db = dbDict.get(dbName);
         if (db != null) {
             Boolean isOpen = db.isOpen();
@@ -385,6 +439,7 @@ public class CapacitorSQLite {
     }
 
     public void deleteDatabase(String dbName) throws Exception {
+        dbName = getDatabaseName(dbName);
         Database db = dbDict.get(dbName);
         if (db != null) {
             try {
@@ -400,6 +455,7 @@ public class CapacitorSQLite {
     }
 
     public JSObject createSyncTable(String dbName) throws Exception {
+        dbName = getDatabaseName(dbName);
         Database db = dbDict.get(dbName);
         if (db != null) {
             try {
@@ -415,6 +471,7 @@ public class CapacitorSQLite {
     }
 
     public void setSyncDate(String dbName, String syncDate) throws Exception {
+        dbName = getDatabaseName(dbName);
         Database db = dbDict.get(dbName);
         if (db != null) {
             try {
@@ -430,6 +487,7 @@ public class CapacitorSQLite {
     }
 
     public Long getSyncDate(String dbName) throws Exception {
+        dbName = getDatabaseName(dbName);
         Database db = dbDict.get(dbName);
         if (db != null) {
             try {
@@ -490,7 +548,8 @@ public class CapacitorSQLite {
                 String msg = "Stringify Json Object not Valid";
                 throw new Exception(msg);
             }
-            String dbName = new StringBuilder(jsonSQL.getDatabase()).append("SQLite.db").toString();
+            String dbName = getDatabaseName(jsonSQL.getDatabase());
+            dbName = new StringBuilder(dbName).append("SQLite.db").toString();
             int dbVersion = jsonSQL.getVersion();
             //            jsonSQL.print();
             Boolean encrypted = jsonSQL.getEncrypted();
@@ -520,6 +579,7 @@ public class CapacitorSQLite {
     }
 
     public JSObject exportToJson(String dbName, String expMode) throws Exception {
+        dbName = getDatabaseName(dbName);
         Database db = dbDict.get(dbName);
         if (db != null) {
             try {
@@ -554,5 +614,15 @@ public class CapacitorSQLite {
             msg += e.getMessage();
             throw new Exception(msg);
         }
+    }
+
+    private String getDatabaseName(String dbName) {
+        String retName = dbName;
+
+        if (retName.endsWith(".db")) {
+            retName = retName.substring(0, retName.length() - 3);
+        }
+
+        return retName;
     }
 }

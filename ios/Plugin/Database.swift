@@ -69,7 +69,7 @@ class Database {
     // swiftlint:disable function_body_length
     func open () throws {
         var password: String = ""
-        if encrypted && (mode == "secret"
+        if encrypted && (mode == "secret" || mode == "newsecret"
                             || mode == "encryption") {
             password = globalData.secret
         }
@@ -184,35 +184,38 @@ class Database {
 
     // MARK: - ExecuteSQL
 
-    func executeSQL(sql: String) throws -> Int {
+    func executeSQL(sql: String, transaction: Bool = true) throws -> Int {
         var msg: String = "Failed in executeSQL : "
         var changes: Int = -1
         let initChanges = UtilsSQLCipher.dbChanges(mDB: mDb)
 
         // Start a transaction
-        do {
-            try UtilsSQLCipher.beginTransaction(mDB: self)
-        } catch UtilsSQLCipherError.beginTransaction(let message) {
-            msg.append(" \(message)")
-            throw DatabaseError.executeSQL(message: msg)
+        if transaction {
+            do {
+                try UtilsSQLCipher.beginTransaction(mDB: self)
+            } catch UtilsSQLCipherError.beginTransaction(let message) {
+                msg.append(" \(message)")
+                throw DatabaseError.executeSQL(message: msg)
+            }
         }
         // Execute the query
         do {
             try UtilsSQLCipher.execute(mDB: self, sql: sql)
             changes = UtilsSQLCipher.dbChanges(mDB: mDb) - initChanges
-        } catch UtilsSQLCipherError
-                    .execute(let message) {
-            do {
-                try UtilsSQLCipher
-                    .rollbackTransaction(mDB: self)
-            } catch UtilsSQLCipherError
-                        .rollbackTransaction(let message) {
-                msg.append(" rollback: \(message)")
+        } catch UtilsSQLCipherError.execute(let message) {
+            if transaction {
+                do {
+                    try UtilsSQLCipher
+                        .rollbackTransaction(mDB: self)
+                } catch UtilsSQLCipherError
+                            .rollbackTransaction(let message) {
+                    msg.append(" rollback: \(message)")
+                }
             }
             msg.append(" \(message)")
             throw DatabaseError.executeSQL(message: msg)
         }
-        if changes != -1 {
+        if changes != -1 && transaction {
             // commit the transaction
             do {
                 try UtilsSQLCipher.commitTransaction(mDB: self)
@@ -226,7 +229,7 @@ class Database {
 
     // MARK: - ExecSet
 
-    func execSet(set: [[String: Any]]) throws -> [String: Int64] {
+    func execSet(set: [[String: Any]], transaction: Bool = true) throws -> [String: Int64] {
         var msg: String = "Failed in execSet : "
         let initChanges = UtilsSQLCipher.dbChanges(mDB: mDb)
         var changes: Int = -1
@@ -235,11 +238,13 @@ class Database {
                                             "changes": Int64(changes)]
 
         // Start a transaction
-        do {
-            try UtilsSQLCipher.beginTransaction(mDB: self)
-        } catch UtilsSQLCipherError.beginTransaction(let message) {
-            msg.append(" \(message)")
-            throw DatabaseError.execSet(message: msg)
+        if transaction {
+            do {
+                try UtilsSQLCipher.beginTransaction(mDB: self)
+            } catch UtilsSQLCipherError.beginTransaction(let message) {
+                msg.append(" \(message)")
+                throw DatabaseError.execSet(message: msg)
+            }
         }
         // Execute the query
         do {
@@ -252,18 +257,19 @@ class Database {
 
         } catch UtilsSQLCipherError
                     .executeSet(let message) {
-            do {
-                try UtilsSQLCipher
-                    .rollbackTransaction(mDB: self)
-            } catch UtilsSQLCipherError
-                        .rollbackTransaction(let message) {
-                msg.append(" rollback: \(message)")
+            if transaction {
+                do {
+                    try UtilsSQLCipher
+                        .rollbackTransaction(mDB: self)
+                } catch UtilsSQLCipherError
+                            .rollbackTransaction(let message) {
+                    msg.append(" rollback: \(message)")
+                }
             }
-
             msg.append(" \(message)")
             throw DatabaseError.execSet(message: msg )
         }
-        if changes > 0 {
+        if changes > 0 && transaction {
             // commit the transaction
             do {
                 try UtilsSQLCipher.commitTransaction(mDB: self)
@@ -277,32 +283,35 @@ class Database {
 
     // MARK: - RunSQL
 
-    func runSQL(sql: String, values: [Any]) throws -> [String: Int64] {
+    func runSQL(sql: String, values: [Any], transaction: Bool = true) throws -> [String: Int64] {
         var msg: String = "Failed in runSQL : "
         var changes: Int = -1
         var lastId: Int64 = -1
         let initChanges = UtilsSQLCipher.dbChanges(mDB: mDb)
 
         // Start a transaction
-        do {
-            try UtilsSQLCipher.beginTransaction(mDB: self)
-        } catch UtilsSQLCipherError.beginTransaction(let message) {
+        if transaction {
+            do {
+                try UtilsSQLCipher.beginTransaction(mDB: self)
+            } catch UtilsSQLCipherError.beginTransaction(let message) {
 
-            msg.append(" \(message)")
-            throw DatabaseError.runSQL(message: msg)
+                msg.append(" \(message)")
+                throw DatabaseError.runSQL(message: msg)
+            }
         }
         // Execute the query
         do {
             lastId = try UtilsSQLCipher
                 .prepareSQL(mDB: self, sql: sql, values: values)
-        } catch UtilsSQLCipherError
-                    .prepareSQL(let message) {
-            do {
-                try UtilsSQLCipher
-                    .rollbackTransaction(mDB: self)
-            } catch UtilsSQLCipherError
-                        .rollbackTransaction(let message) {
-                msg.append(" rollback: \(message)")
+        } catch UtilsSQLCipherError.prepareSQL(let message) {
+            if transaction {
+                do {
+                    try UtilsSQLCipher
+                        .rollbackTransaction(mDB: self)
+                } catch UtilsSQLCipherError
+                            .rollbackTransaction(let message) {
+                    msg.append(" rollback: \(message)")
+                }
             }
             msg.append(" \(message)")
             print("\(msg)")
@@ -310,15 +319,16 @@ class Database {
         }
 
         if lastId != -1 {
-            // commit the transaction
-            do {
-                try UtilsSQLCipher.commitTransaction(mDB: self)
-                changes = UtilsSQLCipher.dbChanges(mDB: mDb) -
-                    initChanges
-            } catch UtilsSQLCipherError.commitTransaction(let message) {
-                msg.append(" \(message)")
-                throw DatabaseError.runSQL(message: msg )
+            if transaction {
+                // commit the transaction
+                do {
+                    try UtilsSQLCipher.commitTransaction(mDB: self)
+                } catch UtilsSQLCipherError.commitTransaction(let message) {
+                    msg.append(" \(message)")
+                    throw DatabaseError.runSQL(message: msg )
+                }
             }
+            changes = UtilsSQLCipher.dbChanges(mDB: mDb) - initChanges
         }
         let result: [String: Int64] = ["changes": Int64(changes),
                                        "lastId": lastId]

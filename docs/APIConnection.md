@@ -16,6 +16,7 @@
 * [`retrieveAllConnections()`](#retrieveallconnections)
 * [`closeConnection(...)`](#closeconnection)
 * [`closeAllConnections()`](#closeallconnections)
+* [`checkConnectionsConsistency()`](#checkconnectionsconsistency)
 * [`importFromJson(...)`](#importfromjson)
 * [`isJsonValid(...)`](#isjsonvalid)
 * [`copyFromAssets()`](#copyfromassets)
@@ -175,6 +176,21 @@ closeAllConnections() => Promise<void>
 Close all database connections
 
 **Since:** 2.9.0 refactor
+
+--------------------
+
+
+### checkConnectionsConsistency()
+
+```typescript
+checkConnectionsConsistency() => Promise<void>
+```
+
+Check the consistency between Js Connections
+and Native Connections
+if inconsistency all connections are removed
+
+**Since:** 3.0.0-beta.10
 
 --------------------
 

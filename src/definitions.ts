@@ -171,17 +171,25 @@ export interface CapacitorSQLitePlugin {
   /**
    * Add SQLIte Suffix to existing databases
    * @param options: capSQLitePathOptions
-   * @returns Promise<capSQLiteResult>
+   * @returns Promise<void>
    * @since 3.0.0-beta.5
    */
   addSQLiteSuffix(options: capSQLitePathOptions): Promise<void>;
   /**
    * Delete Old Cordova databases
    * @param options: capSQLitePathOptions
-   * @returns Promise<capSQLiteResult>
+   * @returns Promise<void>
    * @since 3.0.0-beta.5
    */
   deleteOldDatabases(options: capSQLitePathOptions): Promise<void>;
+  /**
+   * Check Connection Consistency JS <=> Native
+   * if inconsistency all connections are removed
+   * @param options: capAllConnectionsOptions
+   * @returns Promise<void>
+   * @since 3.0.0-beta.10
+   */
+  checkConnectionsConsistency(options: capAllConnectionsOptions): Promise<void>;
 }
 
 export interface capEchoOptions {
@@ -209,7 +217,13 @@ export interface capConnectionOptions {
    */
   mode?: string;
 }
-
+export interface capAllConnectionsOptions {
+  /**
+   * the dbName of all connections
+   * @since 3.0.0-beta.10
+   */
+  dbNames?: string[];
+}
 export interface capSQLiteOptions {
   /**
    * The database name
@@ -225,6 +239,12 @@ export interface capSQLiteExecuteOptions {
    * The batch of raw SQL statements as string
    */
   statements?: string;
+  /**
+   * Enable / Disable transactions
+   * default Enable (true)
+   * @since 3.0.0-beta.10
+   */
+  transaction?: boolean;
 }
 export interface capSQLiteSetOptions {
   /**
@@ -235,6 +255,12 @@ export interface capSQLiteSetOptions {
    * The batch of raw SQL statements as Array of capSQLLiteSet
    */
   set?: capSQLiteSet[];
+  /**
+   * Enable / Disable transactions
+   * default Enable (true)
+   * @since 3.0.0-beta.10
+   */
+  transaction?: boolean;
 }
 export interface capSQLiteRunOptions {
   /**
@@ -249,6 +275,12 @@ export interface capSQLiteRunOptions {
    * A set of values for a statement
    */
   values?: any[];
+  /**
+   * Enable / Disable transactions
+   * default Enable (true)
+   * @since 3.0.0-beta.10
+   */
+  transaction?: boolean;
 }
 export interface capSQLiteQueryOptions {
   /**
@@ -565,6 +597,14 @@ export interface ISQLiteConnection {
    */
   closeAllConnections(): Promise<void>;
   /**
+   * Check the consistency between Js Connections
+   * and Native Connections
+   * if inconsistency all connections are removed
+   * @returns Promise<void>
+   * @since 3.0.0-beta.10
+   */
+  checkConnectionsConsistency(): Promise<void>;
+  /**
    * Import a database From a JSON
    * @param jsonstring string
    * @returns Promise<capSQLiteChanges>
@@ -658,6 +698,7 @@ export class SQLiteConnection implements ISQLiteConnection {
         mode,
         version,
       });
+      if (database.endsWith('.db')) database = database.slice(0, -3);
       const conn = new SQLiteDBConnection(database, this.sqlite);
       this._connectionDict.set(database, conn);
       return Promise.resolve(conn);
@@ -667,6 +708,7 @@ export class SQLiteConnection implements ISQLiteConnection {
   }
   async closeConnection(database: string): Promise<void> {
     try {
+      if (database.endsWith('.db')) database = database.slice(0, -3);
       await this.sqlite.closeConnection({ database });
       this._connectionDict.delete(database);
       return Promise.resolve();
@@ -676,10 +718,13 @@ export class SQLiteConnection implements ISQLiteConnection {
   }
   async isConnection(database: string): Promise<capSQLiteResult> {
     const res: capSQLiteResult = {} as capSQLiteResult;
+    if (database.endsWith('.db')) database = database.slice(0, -3);
     res.result = this._connectionDict.has(database);
-    return res;
+    console.log(`isConnection ${res.result}`)
+    return Promise.resolve(res);
   }
   async retrieveConnection(database: string): Promise<SQLiteDBConnection> {
+    if (database.endsWith('.db')) database = database.slice(0, -3);
     if (this._connectionDict.has(database)) {
       const conn = this._connectionDict.get(database);
       if (typeof conn != 'undefined') return Promise.resolve(conn);
@@ -708,6 +753,19 @@ export class SQLiteConnection implements ISQLiteConnection {
       return Promise.reject(err);
     }
   }
+  async checkConnectionsConsistency(): Promise<void> {
+    try {
+      const keys = [...this._connectionDict.keys()];
+      await this.sqlite.checkConnectionsConsistency({
+        dbNames: keys,
+      });
+      return Promise.resolve();
+    } catch (err) {
+      console.log(`checkConnectionsConsistency ${err}`);
+      this._connectionDict = new Map();
+      return Promise.reject('You must redefined the connection');
+    }
+  }
   async importFromJson(jsonstring: string): Promise<capSQLiteChanges> {
     try {
       const ret = await this.sqlite.importFromJson({ jsonstring: jsonstring });
@@ -733,6 +791,7 @@ export class SQLiteConnection implements ISQLiteConnection {
     }
   }
   async isDatabase(database: string): Promise<capSQLiteResult> {
+    if (database.endsWith('.db')) database = database.slice(0, -3);
     try {
       const res = await this.sqlite.isDatabase({ database: database });
       return Promise.resolve(res);
@@ -796,7 +855,7 @@ export interface ISQLiteDBConnection {
    * @returns Promise<capSQLiteChanges>
    * @since 2.9.0 refactor
    */
-  execute(statements: string): Promise<capSQLiteChanges>;
+  execute(statements: string, transaction?: boolean): Promise<capSQLiteChanges>;
   /**
    * Execute SQLite DB Connection Query
    * @param statement
@@ -812,14 +871,21 @@ export interface ISQLiteDBConnection {
    * @returns Promise<capSQLiteChanges>
    * @since 2.9.0 refactor
    */
-  run(statement: string, values?: any[]): Promise<capSQLiteChanges>;
+  run(
+    statement: string,
+    values?: any[],
+    transaction?: boolean,
+  ): Promise<capSQLiteChanges>;
   /**
    * Execute SQLite DB Connection Set
    * @param set
    * @returns Promise<capSQLiteChanges>
    * @since 2.9.0 refactor
    */
-  executeSet(set: capSQLiteSet[]): Promise<capSQLiteChanges>;
+  executeSet(
+    set: capSQLiteSet[],
+    transaction?: boolean,
+  ): Promise<capSQLiteChanges>;
   /**
    * Check if a SQLite DB Connection exists
    * @returns Promise<capSQLiteResult>
@@ -899,11 +965,16 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
       return Promise.reject(err);
     }
   }
-  async execute(statements: string): Promise<capSQLiteChanges> {
+  async execute(
+    statements: string,
+    transaction?: boolean,
+  ): Promise<capSQLiteChanges> {
     try {
+      const trans = transaction ? transaction : true;
       const res: any = await this.sqlite.execute({
         database: this.dbName,
         statements: statements,
+        transaction: trans,
       });
       return Promise.resolve(res);
     } catch (err) {
@@ -931,7 +1002,12 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
       return Promise.reject(err);
     }
   }
-  async run(statement: string, values?: any[]): Promise<capSQLiteChanges> {
+  async run(
+    statement: string,
+    values?: any[],
+    transaction?: boolean,
+  ): Promise<capSQLiteChanges> {
+    const trans = transaction ? transaction : true;
     let res: any;
     try {
       if (values && values.length > 0) {
@@ -939,12 +1015,14 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
           database: this.dbName,
           statement: statement,
           values: values,
+          transaction: trans,
         });
       } else {
         res = await this.sqlite.run({
           database: this.dbName,
           statement: statement,
           values: [],
+          transaction: trans,
         });
       }
       return Promise.resolve(res);
@@ -952,11 +1030,16 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
       return Promise.reject(err);
     }
   }
-  async executeSet(set: capSQLiteSet[]): Promise<capSQLiteChanges> {
+  async executeSet(
+    set: capSQLiteSet[],
+    transaction?: boolean,
+  ): Promise<capSQLiteChanges> {
+    const trans = transaction ? transaction : true;
     try {
       const res: any = await this.sqlite.executeSet({
         database: this.dbName,
         set: set,
+        transaction: trans,
       });
       return Promise.resolve(res);
     } catch (err) {

@@ -78,14 +78,15 @@ Close a SQLite DB Connection
 ### execute(...)
 
 ```typescript
-execute(statements: string) => Promise<capSQLiteChanges>
+execute(statements: string, transaction?: boolean | undefined) => Promise<capSQLiteChanges>
 ```
 
 Execute SQLite DB Connection Statements
 
-| Param            | Type                |
-| ---------------- | ------------------- |
-| **`statements`** | <code>string</code> |
+| Param             | Type                 |
+| ----------------- | -------------------- |
+| **`statements`**  | <code>string</code>  |
+| **`transaction`** | <code>boolean</code> |
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
 
@@ -117,15 +118,16 @@ Execute SQLite DB Connection Query
 ### run(...)
 
 ```typescript
-run(statement: string, values?: any[] | undefined) => Promise<capSQLiteChanges>
+run(statement: string, values?: any[] | undefined, transaction?: boolean | undefined) => Promise<capSQLiteChanges>
 ```
 
 Execute SQLite DB Connection Raw Statement
 
-| Param           | Type                | Description |
-| --------------- | ------------------- | ----------- |
-| **`statement`** | <code>string</code> |             |
-| **`values`**    | <code>any[]</code>  | (optional)  |
+| Param             | Type                 | Description |
+| ----------------- | -------------------- | ----------- |
+| **`statement`**   | <code>string</code>  |             |
+| **`values`**      | <code>any[]</code>   | (optional)  |
+| **`transaction`** | <code>boolean</code> |             |
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
 
@@ -137,14 +139,15 @@ Execute SQLite DB Connection Raw Statement
 ### executeSet(...)
 
 ```typescript
-executeSet(set: capSQLiteSet[]) => Promise<capSQLiteChanges>
+executeSet(set: capSQLiteSet[], transaction?: boolean | undefined) => Promise<capSQLiteChanges>
 ```
 
 Execute SQLite DB Connection Set
 
-| Param     | Type                        |
-| --------- | --------------------------- |
-| **`set`** | <code>capSQLiteSet[]</code> |
+| Param             | Type                        |
+| ----------------- | --------------------------- |
+| **`set`**         | <code>capSQLiteSet[]</code> |
+| **`transaction`** | <code>boolean</code>        |
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
 

@@ -1,3 +1,13 @@
+## 3.0.0-beta.10 (2021-04-14)
+
+### Bug Fixes
+
+- Fix Android app crashes when creating connection with wrong secret issue#105
+- Fix reload of webview breaks connection handling #issue106
+- Fix user provides a name that ends on ".db" #issue107
+- Fix add an option to disable transactions #issue111
+- add Supported SQLite Types in README.md #issue108
+
 ## 3.0.0-beta.9 (2021-04-02)
 
 ### Bug Fixes
@@ -84,6 +94,12 @@
 ### Added Features
 
 - better Error handling throught try...catch
+
+## 2.9.16 (2021-04-13) REFACTOR
+
+### Bug Fixes
+
+- Fix Android app crashes when creating connection with wrong secret issue#105
 
 ## 2.9.15 (2021-04-01) REFACTOR
 

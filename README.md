@@ -162,34 +162,58 @@ No configuration required for this plugin
 
 ## Supported methods
 
-| Name                    | Android | iOS | Electron Mac | Electron Windows | Web |
-| :---------------------- | :------ | :-- | :----------- | :--------------- | :-- |
-| createConnection        | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| closeConnection         | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| isConnection            | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| open (non-encrypted DB) | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| open (encrypted DB)     | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| close                   | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| execute                 | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| executeSet              | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| run                     | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| query                   | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| deleteDatabase          | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| importFromJson          | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| exportToJson            | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| createSyncTable         | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| setSyncDate             | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| getSyncDate             | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| isJsonValid             | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| isDBExists              | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| addUpgradeStatement     | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| copyFromAssets          | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| isDBOpen                | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| isDatabase              | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| isTableExists           | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| getDatabaseList         | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| addSQLiteSuffix         | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| deleteOldDatabases      | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| Name                        | Android | iOS | Electron Mac | Electron Windows | Web |
+| :-------------------------- | :------ | :-- | :----------- | :--------------- | :-- |
+| createConnection            | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| closeConnection             | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| isConnection                | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| open (non-encrypted DB)     | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| open (encrypted DB)         | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| close                       | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| execute                     | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| executeSet                  | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| run                         | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| query                       | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| deleteDatabase              | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| importFromJson              | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| exportToJson                | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| createSyncTable             | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| setSyncDate                 | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| getSyncDate                 | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| isJsonValid                 | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| isDBExists                  | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| addUpgradeStatement         | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| copyFromAssets              | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| isDBOpen                    | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| isDatabase                  | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| isTableExists               | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| getDatabaseList             | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| addSQLiteSuffix             | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| deleteOldDatabases          | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| checkConnectionsConsistency | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+
+## Supported SQLite Types
+
+Only the following types are allowed in `TABLE creation`. 
+They have been tested in each methods of the plugin:
+
+- NULL
+- INTEGER
+- REAL
+- TEXT
+- BLOB
+
+The Boolean values can be stored as INTEGER.
+
+The Date and Time  can be stored as:
+- TEXT as ISO8601 strings ("YYYY-MM-DD HH:MM:SS.SSS").
+- REAL as Julian day numbers, the number of days since noon in Greenwich 
+       on November 24, 4714 B.C. according to the proleptic Gregorian calendar.
+- INTEGER as Unix Time, the number of seconds since 1970-01-01 00:00:00 UTC.
+
+The other types used in other RDBMS should be converted to one of the 5 SQLite types
+when importing or exporting table's schemas and/or data.
+
 
 ## Documentation
 
