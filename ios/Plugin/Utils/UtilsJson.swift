@@ -91,16 +91,9 @@ class UtilsJson {
         values: [UncertainValue<String, Int, Double>]) -> Bool {
         var isRetType: Bool = true
         for ipos in 0..<values.count {
-            if let val = values[ipos].value {
-                if String(describing: val).uppercased() != "NULL" {
-                    isRetType = UtilsJson.isType(
-                        stype: types[ipos], avalue: values[ipos])
-                    if !isRetType {break}
-                }
-            } else {
-                isRetType = false
-                break
-            }
+            isRetType = UtilsJson.isType(
+                stype: types[ipos], avalue: values[ipos])
+            if !isRetType {break}
         }
         return isRetType
     }
@@ -112,7 +105,7 @@ class UtilsJson {
     -> Bool {
         var ret: Bool = false
         // swiftlint:disable force_unwrapping
-        if stype == "NULL" && type(of: avalue.value!) == String.self {
+        if stype == "NULL" /*&& type(of: avalue.value!) == String.self*/ {
             ret = true }
         if stype == "TEXT" && type(of: avalue.value!) == String.self {
             ret = true }
@@ -169,12 +162,10 @@ class UtilsJson {
     class func getValuesFromRow(
         rowValues: [ UncertainValue<String, Int, Double>]) -> [Any] {
         var retArray: [Any] = []
-        // swiftlint:disable force_unwrapping
         for ipos in 0..<rowValues.count {
-            let value = rowValues[ipos].value!
-            retArray.append(value)
+            let value = rowValues[ipos].value
+            retArray.append(value ?? NSNull())
         }
-        // swiftlint:enable force_unwrapping
         return retArray
     }
 

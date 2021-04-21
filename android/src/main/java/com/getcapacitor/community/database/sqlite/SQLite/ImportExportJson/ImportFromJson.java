@@ -80,6 +80,10 @@ public class ImportFromJson {
                     if (changes >= 0) {
                         db.setTransactionSuccessful();
                     }
+                } else {
+                    if (jsonSQL.getMode().equals("partial")) {
+                        changes = Integer.valueOf(0);
+                    }
                 }
             } else {
                 throw new Exception("CreateSchema: Database not opened");
@@ -354,8 +358,8 @@ public class ImportFromJson {
             for (int j = 0; j < values.size(); j++) {
                 // Check the row number of columns
                 ArrayList<Object> row = values.get(j);
-                // Check row validity
-                _uJson.checkRowValidity(mDb, tColNames, tColTypes, row, j, tableName);
+                // Check row validity remove to accept RDBMS types
+                //                _uJson.checkRowValidity(mDb, tColNames, tColTypes, row, j, tableName);
                 // Create INSERT or UPDATE Statements
                 String stmt = createRowStatement(mDb, tColNames, tColTypes, row, j, tableName, mode);
                 // load the values

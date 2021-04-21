@@ -62,7 +62,7 @@ public struct JsonTable: Codable {
                     if let tvItem = vItem.value {
                         row.append(tvItem)
                     } else {
-                        row.append("NULL")
+                        row.append(NSNull())
                     }
                 }
                 print("row: \(row) ")
@@ -134,13 +134,6 @@ public struct UncertainValue<T: Codable, U: Codable, V: Codable>: Codable {
         uValue = try? container.decode(U.self)
         if uValue == nil {
             vValue = try? container.decode(V.self)
-        }
-
-        if tValue == nil && uValue == nil && vValue == nil {
-            //Type mismatch
-            let msg: String = "The value is not of type \(T.self) not of type \(U.self) not even \(V.self)"
-            throw DecodingError.typeMismatch(type(of: self), DecodingError.Context(codingPath: [],
-                                                                                   debugDescription: msg))
         }
     }
 }

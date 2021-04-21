@@ -150,19 +150,18 @@ public class CapacitorSQLite {
         }
     }
 
-    public void checkConnectionsConsistency(JSArray dbNames) throws Exception {
+    public Boolean checkConnectionsConsistency(JSArray dbNames) throws Exception {
         Set<String> keys = new HashSet<String>(Collections.list(dbDict.keys()));
         String msg = "All Native Connections released";
         Set<String> conns = new HashSet<String>(uSqlite.stringJSArrayToArrayList(dbNames));
         if (conns.size() == 0) {
             dbDict = new Hashtable<>();
-            throw new Exception(msg);
+            return false;
         }
-        msg = "Not solvable inconsistency";
         if (keys.size() < conns.size()) {
             // not solvable inconsistency
             dbDict = new Hashtable<>();
-            throw new Exception(msg);
+            return false;
         }
         if (keys.size() > conns.size()) {
             for (String key : keys) {
@@ -179,12 +178,15 @@ public class CapacitorSQLite {
             tmp.retainAll(conns);
             symmetricDiff.removeAll(tmp);
             if (symmetricDiff.size() == 0) {
-                return;
+                return true;
             } else {
                 // not solvable inconsistency
                 dbDict = new Hashtable<>();
-                throw new Exception(msg);
+                return false;
             }
+        } else {
+            dbDict = new Hashtable<>();
+            return false;
         }
     }
 
@@ -380,7 +382,7 @@ public class CapacitorSQLite {
             if (db.isOpen()) {
                 if (values.length() > 0) {
                     try {
-                        ArrayList<String> arrValues = uSqlite.stringJSArrayToArrayList(values);
+                        ArrayList<Object> arrValues = uSqlite.objectJSArrayToArrayList(values);
                         res = db.selectSQL(statement, arrValues);
                         return res;
                     } catch (JSONException e) {
@@ -390,7 +392,7 @@ public class CapacitorSQLite {
                     }
                 } else {
                     try {
-                        res = db.selectSQL(statement, new ArrayList<String>());
+                        res = db.selectSQL(statement, new ArrayList<Object>());
                         return res;
                     } catch (Exception e) {
                         throw new Exception(e.getMessage());

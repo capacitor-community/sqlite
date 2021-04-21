@@ -180,10 +180,9 @@ public class CapacitorSQLitePlugin extends Plugin {
             return;
         }
         JSArray dbNames = call.getArray("dbNames");
-
         try {
-            implementation.checkConnectionsConsistency(dbNames);
-            rHandler.retResult(call, null, null);
+            Boolean res = implementation.checkConnectionsConsistency(dbNames);
+            rHandler.retResult(call, res, null);
             return;
         } catch (Exception e) {
             String msg = "CheckConnectionsConsistency: " + e.getMessage();

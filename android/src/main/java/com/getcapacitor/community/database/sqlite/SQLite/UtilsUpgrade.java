@@ -219,7 +219,7 @@ public class UtilsUpgrade {
     private List<String> getColumnNames(Database db, String table) throws Exception {
         List<String> retNames = new ArrayList<>();
         String query = new StringBuilder("PRAGMA table_info(").append(table).append(");").toString();
-        JSArray resQuery = db.selectSQL(query, new ArrayList<String>());
+        JSArray resQuery = db.selectSQL(query, new ArrayList<Object>());
         List<JSObject> lQuery = resQuery.toList();
         if (lQuery.size() > 0) {
             for (JSObject obj : lQuery) {

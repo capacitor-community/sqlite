@@ -541,17 +541,20 @@ Delete Old Cordova databases
 ### checkConnectionsConsistency(...)
 
 ```typescript
-checkConnectionsConsistency(options: capAllConnectionsOptions) => Promise<void>
+checkConnectionsConsistency(options: capAllConnectionsOptions) => Promise<capSQLiteResult>
 ```
 
 Check Connection Consistency JS &lt;=&gt; Native
-if inconsistency all connections are removed
+return true : consistency, connections are opened
+return false : no consistency, connections are closed
 
 | Param         | Type                                                                          | Description                                                        |
 | ------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------ |
 | **`options`** | <code><a href="#capallconnectionsoptions">capAllConnectionsOptions</a></code> | : <a href="#capallconnectionsoptions">capAllConnectionsOptions</a> |
 
-**Since:** 3.0.0-beta.10
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 3.0.0-beta.11
 
 --------------------
 
@@ -650,11 +653,11 @@ if inconsistency all connections are removed
 
 #### capSQLiteQueryOptions
 
-| Prop            | Type                  | Description                     |
-| --------------- | --------------------- | ------------------------------- |
-| **`database`**  | <code>string</code>   | The database name               |
-| **`statement`** | <code>string</code>   | A statement                     |
-| **`values`**    | <code>string[]</code> | A set of values for a statement |
+| Prop            | Type                | Description                                     | Since         |
+| --------------- | ------------------- | ----------------------------------------------- | ------------- |
+| **`database`**  | <code>string</code> | The database name                               |               |
+| **`statement`** | <code>string</code> | A statement                                     |               |
+| **`values`**    | <code>any[]</code>  | A set of values for a statement Change to any[] | 3.0.0-beta.11 |
 
 
 #### capSQLiteResult

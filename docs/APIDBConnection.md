@@ -98,15 +98,15 @@ Execute SQLite DB Connection Statements
 ### query(...)
 
 ```typescript
-query(statement: string, values?: string[] | undefined) => Promise<capSQLiteValues>
+query(statement: string, values?: any[] | undefined) => Promise<capSQLiteValues>
 ```
 
 Execute SQLite DB Connection Query
 
-| Param           | Type                  | Description |
-| --------------- | --------------------- | ----------- |
-| **`statement`** | <code>string</code>   |             |
-| **`values`**    | <code>string[]</code> | (optional)  |
+| Param           | Type                | Description |
+| --------------- | ------------------- | ----------- |
+| **`statement`** | <code>string</code> |             |
+| **`values`**    | <code>any[]</code>  | (optional)  |
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitevalues">capSQLiteValues</a>&gt;</code>
 

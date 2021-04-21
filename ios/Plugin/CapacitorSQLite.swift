@@ -93,18 +93,17 @@ enum CapacitorSQLiteError: Error {
 
     // MARK: - CheckConnectionsConsistency
 
-    @objc public func checkConnectionsConsistency(_ dbNames: [String]) throws {
+    @objc public func checkConnectionsConsistency(_ dbNames: [String]) -> NSNumber {
         var keys: [String] = Array(self.dbDict.keys)
-        var msg: String = "All Native Connections released"
+
         if dbNames.count == 0 {
             self.dbDict = [:]
-            throw CapacitorSQLiteError.failed(message: msg)
+            return 0
         }
-        msg = "Not solvable inconsistency"
         if keys.count < dbNames.count {
             // not solvable inconsistency
             self.dbDict = [:]
-            throw CapacitorSQLiteError.failed(message: msg)
+            return 0
         }
         if keys.count > dbNames.count {
             for key in keys {
@@ -119,12 +118,15 @@ enum CapacitorSQLiteError: Error {
             let set2 = Set(dbNames)
             let arr = Array(set1.symmetricDifference(set2))
             if arr.count == 0 {
-                return
+                return 1
             } else {
                 // not solvable inconsistency
                 self.dbDict = [:]
-                throw CapacitorSQLiteError.failed(message: msg)
+                return 0
             }
+        } else {
+            self.dbDict = [:]
+            return 0
         }
 
     }
@@ -181,7 +183,19 @@ enum CapacitorSQLiteError: Error {
         }
         if mDb.isDBOpen() {
             do {
-                let res = try mDb.executeSQL(sql: statements,
+                var stmts = statements
+                // remove carriage returns
+                let isReturn = stmts.indicesOf(string: "\n")
+                if isReturn.count != 0 {
+                    let cmds = stmts.split(separator: "\n")
+                    var strcmds: [String] = []
+                    for cmd in cmds {
+                        strcmds.append(String(cmd
+                                                .trimmingCharacters(in: .whitespacesAndNewlines)))
+                    }
+                    stmts = strcmds.joined(separator: "\n")
+                }
+                let res = try mDb.executeSQL(sql: stmts,
                                              transaction: transaction)
                 return ["changes": res]
             } catch DatabaseError.executeSQL(let message) {
@@ -271,7 +285,7 @@ enum CapacitorSQLiteError: Error {
     // MARK: - Query
 
     @objc func query(_ dbName: String, statement: String,
-                     values: [String]) throws -> [[String: Any]] {
+                     values: [Any]) throws -> [[String: Any]] {
         let mDbName = CapacitorSQLite.getDatabaseName(dbName: dbName)
         guard let mDb: Database = dbDict[mDbName] else {
             let msg = "Connection to \(mDbName) not available"

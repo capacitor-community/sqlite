@@ -13,7 +13,7 @@ let SQLITETRANSIENT = unsafeBitCast(-1, to:
                                         sqlite3_destructor_type.self)
 
 class UtilsBinding {
-    class func bindValues( handle: OpaquePointer?, values: [String])
+    class func bindValues( handle: OpaquePointer?, values: [Any])
     -> String {
         var message: String = ""
         var idx: Int = 1
@@ -52,9 +52,6 @@ class UtilsBinding {
                 sqlite3_bind_text(handle, Int32(idx), value, -1,
                                   SQLITETRANSIENT)
 
-            } else if value.uppercased() == "NULL" {
-                // case NULL
-                sqlite3_bind_null(handle, Int32(idx))
             } else {
                 sqlite3_bind_text(handle, Int32(idx), value, -1,
                                   SQLITETRANSIENT)

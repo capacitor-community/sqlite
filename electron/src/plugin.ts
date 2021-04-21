@@ -164,7 +164,9 @@ export class CapacitorSQLiteElectronWeb
       return Promise.reject(`Close: ${err.message}`);
     }
   }
-  async checkConnectionsConsistency(options: capAllConnectionsOptions): Promise<void> {
+  async checkConnectionsConsistency(
+    options: capAllConnectionsOptions,
+  ): Promise<void> {
     console.log('checkConsistency', options);
     throw this.unimplemented('Not implemented on Electron.');
   }

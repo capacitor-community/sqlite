@@ -62,6 +62,7 @@ class ImportFromJson {
 
     // MARK: - ImportFromJson - createSchema
 
+    // swiftlint:disable function_body_length
     class func createSchema(mDB: Database,
                             jsonSQLite: JsonSQLite) throws -> Int {
         var changes: Int = 0
@@ -77,10 +78,12 @@ class ImportFromJson {
             .createSchemaStatement(jsonSQLite: jsonSQLite )
         if statements.count > 0 {
             let joined = statements.joined(separator: "\n")
+            let mStmt: String = joined.replacingOccurrences(of: "\'", with: "'")
+
             do {
                 initChanges = UtilsSQLCipher.dbChanges(mDB: mDB.mDb)
                 // Execute Schema Statements
-                try UtilsSQLCipher.execute(mDB: mDB, sql: joined)
+                try UtilsSQLCipher.execute(mDB: mDB, sql: mStmt)
                 changes = UtilsSQLCipher.dbChanges(mDB: mDB.mDb) -
                     initChanges
                 if changes < 0 {
@@ -118,6 +121,7 @@ class ImportFromJson {
         }
         return changes
     }
+    // swiftlint:enable function_body_length
 
     // MARK: - ImportFromJson - createSchemaStatement
 
@@ -366,14 +370,16 @@ class ImportFromJson {
             // Check row validity
             let row: [UncertainValue<String, Int, Double>] =
                 mValues[jpos]
-            do {
-                try UtilsJson.checkRowValidity(
-                    mDB: mDB, jsonNamesTypes: jsonNamesTypes,
-                    row: row, pos: jpos, tableName: tableName)
-            } catch UtilsJsonError.checkRowValidity(let message) {
-                throw ImportFromJsonError.createTableData(
-                    message: message)
-            }
+            /* Remove types checking for allowing RDBMS Types
+             do {
+             try UtilsJson.checkRowValidity(
+             mDB: mDB, jsonNamesTypes: jsonNamesTypes,
+             row: row, pos: jpos, tableName: tableName)
+             } catch UtilsJsonError.checkRowValidity(let message) {
+             throw ImportFromJsonError.createTableData(
+             message: message)
+             }
+             */
             // Create INSERT or UPDATE Statements
             do {
                 let data: [String: Any] = ["pos": jpos, "mode": mode,

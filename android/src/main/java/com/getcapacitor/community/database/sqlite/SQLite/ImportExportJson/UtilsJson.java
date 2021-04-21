@@ -29,7 +29,7 @@ public class UtilsJson {
             .append("';")
             .toString();
         try {
-            JSArray resQuery = db.selectSQL(query, new ArrayList<String>());
+            JSArray resQuery = db.selectSQL(query, new ArrayList<Object>());
             if (resQuery.length() > 0) ret = true;
             return ret;
         } catch (Exception e) {
@@ -57,7 +57,7 @@ public class UtilsJson {
         if (key instanceof String) sbQuery.append(" = '").append(key).append("';");
         String query = sbQuery.toString();
         try {
-            JSArray resQuery = mDb.selectSQL(query, new ArrayList<String>());
+            JSArray resQuery = mDb.selectSQL(query, new ArrayList<Object>());
             if (resQuery.length() == 1) ret = true;
             return ret;
         } catch (Exception e) {
@@ -158,6 +158,8 @@ public class UtilsJson {
             ret = true;
         } else if (val.contains("BASE64")) {
             ret = true;
+        } else if (value == null) {
+            ret = true;
         } else {
             if (type.equals("NULL") && value instanceof JSONObject) ret = true;
             if (type.equals("TEXT") && value instanceof String) ret = true;
@@ -182,7 +184,7 @@ public class UtilsJson {
         ArrayList<String> types = new ArrayList<String>();
         String query = new StringBuilder("PRAGMA table_info(").append(tableName).append(");").toString();
         try {
-            JSArray resQuery = mDb.selectSQL(query, new ArrayList<String>());
+            JSArray resQuery = mDb.selectSQL(query, new ArrayList<Object>());
             List<JSObject> lQuery = resQuery.toList();
             if (lQuery.size() > 0) {
                 for (JSObject obj : lQuery) {

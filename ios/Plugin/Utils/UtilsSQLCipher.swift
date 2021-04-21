@@ -351,7 +351,7 @@ class UtilsSQLCipher {
     // MARK: - querySQL
 
     class func querySQL(mDB: Database, sql: String,
-                        values: [String]) throws -> [[String: Any]] {
+                        values: [Any]) throws -> [[String: Any]] {
         var msg: String = "Error prepareSQL: "
         if !mDB.isDBOpen() {
             msg.append("Database not opened")
@@ -400,140 +400,62 @@ class UtilsSQLCipher {
 
     // MARK: - FetchColumnInfo
 
+    // swiftlint:disable function_body_length
     class func fetchColumnInfo(handle: OpaquePointer?)
     throws -> [[String: Any]] {
         var result: [[String: Any]] = []
-        var fetchColumnInfo = true
         var columnCount: Int32 = 0
-        var columnNames = [String]()
-        var columnTypes = [Int32]()
 
         while sqlite3_step(handle) == SQLITE_ROW {
-            if fetchColumnInfo {
-                columnCount = sqlite3_column_count(handle)
-                for index in 0..<columnCount {
-                    guard let name = sqlite3_column_name(handle, index)
-                    else {
-                        var message = "Error: querySQL column_name "
-                        message.append("failed")
-                        throw UtilsSQLCipherError
-                        .fetchColumnInfo(message: message)
-                    }
-                    columnNames.append(String(cString: name))
-                    columnTypes.append(UtilsSQLCipher.getColumnType(
-                                        index: index, stmt: handle))
-                }
-                fetchColumnInfo = false
-            }
-
+            columnCount = sqlite3_column_count(handle)
             var rowData: [String: Any] = [:]
             for index in 0..<columnCount {
-                let key = columnNames[Int(index)]
-                let type = columnTypes[Int(index)]
 
-                if let val = UtilsSQLCipher.getColumnValue(
-                    index: index, type: type, stmt: handle) {
-                    rowData[key] = val
+                guard let name = sqlite3_column_name(handle, index)
+                else {
+                    var message = "Error: fetchColumnInfo column_name "
+                    message.append("failed")
+                    throw UtilsSQLCipherError
+                    .fetchColumnInfo(message: message)
+                }
+                switch sqlite3_column_type(handle, Int32(index)) {
+                case SQLITE_INTEGER:
+                    let val: Int64 = sqlite3_column_int64(handle, index)
+                    rowData[String(cString: name)] = val
+                case SQLITE_FLOAT:
+                    let val: Double = sqlite3_column_double(handle, index)
+                    rowData[String(cString: name)] = val
+                case SQLITE_BLOB:
+                    let data = sqlite3_column_blob(handle, index)
+                    let size = sqlite3_column_bytes(handle, index)
+                    let val = NSData(bytes: data, length: Int(size))
+                    // Convert to string
+                    let strVal: String = String(decoding: val,
+                                                as: UTF8.self)
+                    rowData[String(cString: name)] = strVal
+                case SQLITE_TEXT:
+                    let buffer = sqlite3_column_text(handle, index)
+                    if let mBuffer = buffer {
+                        let val = String(cString: mBuffer)
+                        rowData[String(cString: name)] = val
+                    } else {
+                        rowData[String(cString: name)] = NSNull()
+                    }
+                case SQLITE_NULL:
+                    rowData[String(cString: name)] = NSNull()
+                case let type:
+                    var message = "Error: fetchColumnInfo column_type \(type) "
+                    message.append("failed")
+                    throw UtilsSQLCipherError
+                    .fetchColumnInfo(message: message)
                 }
             }
             result.append(rowData)
+
         }
         return result
     }
-
-    // MARK: - GetColumnType
-
-    class func getColumnType(index: Int32, stmt: OpaquePointer?)
-    -> Int32 {
-        var type: Int32 = 0
-        // Column types - http://www.sqlite.org/datatype3.html (section 2.2 table column 1)
-        let blobTypes = ["BINARY", "BLOB", "VARBINARY"]
-        var textTypes: [String] = ["CHAR", "CHARACTER", "CLOB",
-                                   "NATIONAL VARYING CHARACTER",
-                                   "NATIVE CHARACTER"]
-        let textTypes1: [String] = ["NCHAR", "NVARCHAR", "TEXT",
-                                    "VARCHAR", "VARIANT",
-                                    "VARYING CHARACTER"]
-        textTypes.append(contentsOf: textTypes1)
-        let dateTypes = ["DATE", "DATETIME", "TIME", "TIMESTAMP"]
-        var intTypes  = ["BIGINT", "BIT", "BOOL", "BOOLEAN", "INT",
-                         "INT2", "INT8", "INTEGER", "MEDIUMINT"]
-        let intTypes1: [String] = ["SMALLINT", "TINYINT"]
-        intTypes.append(contentsOf: intTypes1)
-        let nullTypes = ["NULL"]
-        let realTypes = ["DECIMAL", "DOUBLE", "DOUBLE PRECISION",
-                         "FLOAT", "NUMERIC", "REAL"]
-        // Determine type of column -
-        // http://www.sqlite.org/c3ref/c_blob.html
-        let declaredType = sqlite3_column_decltype(stmt, index)
-        if let dclType = declaredType {
-            var declaredType = String(cString: dclType).uppercased()
-            if let index = declaredType.firstIndex(of: "(" ) {
-                declaredType = String(declaredType[..<index])
-            }
-            if intTypes.contains(declaredType) {
-                return SQLITE_INTEGER
-            }
-            if realTypes.contains(declaredType) {
-                return SQLITE_FLOAT
-            }
-            if textTypes.contains(declaredType) {
-                return SQLITE_TEXT
-            }
-            if blobTypes.contains(declaredType) {
-                return SQLITE_BLOB
-            }
-            if dateTypes.contains(declaredType) {
-                return SQLITE_FLOAT
-            }
-            if nullTypes.contains(declaredType) {
-                return SQLITE_NULL
-            }
-            return SQLITE_NULL
-        } else {
-            type = sqlite3_column_type(stmt, index)
-            return type
-        }
-    }
-
-    // MARK: - GetColumnValue
-
-    class func getColumnValue(index: Int32, type: Int32,
-                              stmt: OpaquePointer?) -> Any? {
-        if sqlite3_column_type(stmt, index) == SQLITE_NULL {
-            return "NULL"
-        } else {
-            switch type {
-            case SQLITE_INTEGER:
-                let val = sqlite3_column_int64(stmt, index)
-                return Int64(val)
-            case SQLITE_FLOAT:
-                let val = sqlite3_column_double(stmt, index)
-                return Double(val)
-            case SQLITE_BLOB:
-                let data = sqlite3_column_blob(stmt, index)
-                let size = sqlite3_column_bytes(stmt, index)
-                let val = NSData(bytes: data, length: Int(size))
-                // Convert to string
-                let strVal: String = String(decoding: val,
-                                            as: UTF8.self)
-                return strVal
-            case SQLITE_TEXT:
-                let buffer = sqlite3_column_text(stmt, index)
-                var val: String
-                if let mBuffer = buffer {
-                    val = String(cString: mBuffer)
-                } else {
-                    val = "NULL"
-                }
-                return val
-            case SQLITE_NULL:
-                return "NULL"
-            default:
-                return "NULL"
-            }
-        }
-    }
+    // swiftlint:enable function_body_length
 
     // MARK: - dbChanges
 

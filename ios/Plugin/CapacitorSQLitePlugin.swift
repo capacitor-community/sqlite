@@ -148,21 +148,13 @@ public class CapacitorSQLitePlugin: CAPPlugin {
                     "Connection Array")
             return
         }
-        do {
-            try implementation.checkConnectionsConsistency(dbNames)
-            retHandler.rResult(call: call)
-            return
-        } catch CapacitorSQLiteError.failed(let message) {
-            let msg = "checkConnectionsConsistency: \(message)"
-            retHandler.rResult(call: call, message: msg)
-            return
-        } catch let error {
-            retHandler.rResult(
-                call: call,
-                message: "checkConnectionsConsistency: " +
-                    "\(error.localizedDescription)")
-            return
+        let res = implementation.checkConnectionsConsistency(dbNames)
+        var bRes: Bool = false
+        if res == 1 {
+            bRes = true
         }
+        retHandler.rResult(call: call, ret: bRes)
+        return
     }
 
     // MARK: - IsDatabase
@@ -453,9 +445,9 @@ public class CapacitorSQLitePlugin: CAPPlugin {
                                message: msg)
             return
         }
-        guard let values = call.options["values"] as? [String] else {
+        guard let values = call.options["values"] as? [Any] else {
             var msg: String = "Query: "
-            msg.append("Must provide an Array of string")
+            msg.append("Must provide an Array of value")
             retHandler.rValues(call: call, ret: [],
                                message: msg)
             return
@@ -603,7 +595,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         }
         do {
             let res: [String: Int]  = try implementation.importFromJson(parsingData)
-            retHandler.rChanges(call: call, ret: ["changes": res])
+            retHandler.rChanges(call: call, ret: res)
             return
         } catch CapacitorSQLiteError.failed(let message) {
             retHandler.rChanges(
@@ -653,12 +645,12 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             retHandler.rJsonSQLite(call: call, ret: res)
             return
         } catch CapacitorSQLiteError.failed(let message) {
-            let msg = "deleteDatabase: \(message)"
+            let msg = "exportToJson: \(message)"
             retHandler.rJsonSQLite(call: call, ret: [:],
                                    message: msg)
             return
         } catch let error {
-            let msg = "deleteDatabase: \(error.localizedDescription)"
+            let msg = "exportToJson: \(error.localizedDescription)"
             retHandler.rJsonSQLite(call: call, ret: [:],
                                    message: msg)
             return

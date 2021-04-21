@@ -337,7 +337,7 @@ class Database {
 
     // MARK: - SelectSQL
 
-    func selectSQL(sql: String, values: [String])
+    func selectSQL(sql: String, values: [Any])
     throws -> [[String: Any]] {
         var result: [[String: Any]] = []
         do {

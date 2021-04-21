@@ -25,7 +25,9 @@ enum ExportToJsonError: Error {
     case getTablesModified(message: String)
     case getSyncDate(message: String)
     case createRowValues(message: String)
+    case modEmbeddedParentheses(message: String)
 }
+
 class ExportToJson {
 
     // MARK: - ExportToJson - CreateExportObject
@@ -534,17 +536,49 @@ class ExportToJson {
 
     // MARK: - ExportToJson - ModEmbeddedParentheses
 
-    class func modEmbeddedParentheses(sqlStmt: String) -> String {
-        var stmt: String = sqlStmt
-        if let openPar = sqlStmt.firstIndex(of: "(") {
-            if let closePar = sqlStmt.lastIndex(of: ")") {
-                let tStmt: String = String(
-                    sqlStmt[sqlStmt.index(after: openPar)..<closePar])
-                let mStmt: String = tStmt.replacingOccurrences(of: ",", with: "§")
-                stmt = sqlStmt.replacingOccurrences(of: tStmt, with: mStmt)
-            }
+    class func modEmbeddedParentheses(sqlStmt: String) throws -> String {
+        let stmt: String = sqlStmt
+        let oPars: [Int] = stmt.indicesOf(string: "(")
+        let cPars: [Int] = stmt.indicesOf(string: ")")
+        if oPars.count != cPars.count {
+            let msg: String = "Not same number of " +
+                "opening and closing parentheses"
+            throw ExportToJsonError.modEmbeddedParentheses(
+                message: msg)
         }
-        return stmt
+        if oPars.count == 0 {
+            return stmt
+        }
+
+        var resStmt: String = String(stmt.stringRange(fromIdx: 0, toIdx: oPars[0]))
+        var ipos = 0
+        while ipos < oPars.count {
+            var str: String
+            if ipos < oPars.count - 1 {
+                if oPars[ipos+1] < cPars[ipos] {
+                    str = String(stmt.stringRange(fromIdx: oPars[ipos],
+                                                  toIdx: cPars[ipos + 1] + 1))
+                    ipos += 1
+                } else {
+                    str = String(stmt.stringRange(fromIdx: oPars[ipos],
+                                                  toIdx: cPars[ipos] + 1))
+                }
+            } else {
+                str = String(stmt.stringRange(fromIdx: oPars[ipos],
+                                              toIdx: cPars[ipos] + 1))
+            }
+            let mStmt: String = str.replacingOccurrences(of: ",", with: "§")
+            resStmt.append(mStmt)
+            if ipos < oPars.count - 1 {
+                resStmt.append(String(stmt.stringRange(fromIdx: cPars[ipos] + 1,
+                                                       toIdx: oPars[ipos + 1])))
+            }
+            ipos += 1
+        }
+        resStmt.append(String(stmt.stringRange(fromIdx: cPars[cPars.count - 1] + 1,
+                                               toIdx: stmt.count)))
+        return resStmt
+
     }
 
     // swiftlint:enable function_body_length
@@ -560,49 +594,55 @@ class ExportToJson {
                 var sqlStmt: String = String(
                     stmt[stmt.index(after: openPar)..<closePar])
                 // check if there is other parenthesis and replace the ',' by '§'
-                sqlStmt = modEmbeddedParentheses(sqlStmt: sqlStmt)
-                let sch: [String] = sqlStmt.components(separatedBy: ",")
-                for ipos in 0..<sch.count {
-                    let rstr: String = sch[ipos]
-                        .trimmingCharacters(in: .whitespacesAndNewlines)
-                    var row = rstr.split(separator: " ", maxSplits: 1)
-                    if  row.count == 2 {
-                        var columns: [String: String] = [:]
-                        if String(row[0]).uppercased() != "FOREIGN" && String(row[0]).uppercased() != "CONSTRAINT" {
-                            columns["column"] =  String(row[0])
-                        } else if String(row[0]).uppercased() == "CONSTRAINT" {
-                            let tRow = row[1].split(separator: " ", maxSplits: 1)
-                            row[0] = tRow[0]
-                            columns["constraint"] = String(row[0])
-                            row[1] = tRow[1]
+                do {
+                    sqlStmt = try modEmbeddedParentheses(sqlStmt: sqlStmt)
+                    let sch: [String] = sqlStmt.components(separatedBy: ",")
+                    for ipos in 0..<sch.count {
+                        let rstr: String = sch[ipos]
+                            .trimmingCharacters(in: .whitespacesAndNewlines)
+                        var row = rstr.split(separator: " ", maxSplits: 1)
+                        if  row.count == 2 {
+                            var columns: [String: String] = [:]
+                            if String(row[0]).uppercased() != "FOREIGN" && String(row[0]).uppercased() != "CONSTRAINT" {
+                                columns["column"] =  String(row[0])
+                            } else if String(row[0]).uppercased() == "CONSTRAINT" {
+                                let tRow = row[1].split(separator: " ", maxSplits: 1)
+                                row[0] = tRow[0]
+                                columns["constraint"] = String(row[0])
+                                row[1] = tRow[1]
+                            } else {
+                                guard let oPar = rstr.firstIndex(of: "(")
+                                else {
+                                    var msg: String = "Create Schema "
+                                    msg.append("FOREIGN KEYS no '('")
+                                    throw ExportToJsonError
+                                    .createSchema(message: msg)
+                                }
+                                guard let cPar = rstr.firstIndex(of: ")")
+                                else {
+                                    var msg: String = "Create Schema "
+                                    msg.append("FOREIGN KEYS no ')'")
+                                    throw ExportToJsonError
+                                    .createSchema(message: msg)
+                                }
+                                row[0] = rstr[rstr.index(
+                                                after: oPar)..<cPar]
+                                row[1] = rstr[rstr.index(
+                                                cPar, offsetBy: 2)..<rstr.endIndex]
+                                print("row[0] \(row[0]) row[1] \(row[1]) ")
+                                columns["foreignkey"] = String(row[0])
+                            }
+                            columns["value"] = String(row[1]).replacingOccurrences(of: "§", with: ",")
+                            retSchema.append(columns)
                         } else {
-                            guard let oPar = rstr.firstIndex(of: "(")
-                            else {
-                                var msg: String = "Create Schema "
-                                msg.append("FOREIGN KEYS no '('")
-                                throw ExportToJsonError
-                                .createSchema(message: msg)
-                            }
-                            guard let cPar = rstr.firstIndex(of: ")")
-                            else {
-                                var msg: String = "Create Schema "
-                                msg.append("FOREIGN KEYS no ')'")
-                                throw ExportToJsonError
-                                .createSchema(message: msg)
-                            }
-                            row[0] = rstr[rstr.index(
-                                            after: oPar)..<cPar]
-                            row[1] = rstr[rstr.index(
-                                            cPar, offsetBy: 2)..<rstr.endIndex]
-                            print("row[0] \(row[0]) row[1] \(row[1]) ")
-                            columns["foreignkey"] = String(row[0])
+                            throw ExportToJsonError.createSchema(
+                                message: "Query result not well formatted")
                         }
-                        columns["value"] = String(row[1]).replacingOccurrences(of: "§", with: ",")
-                        retSchema.append(columns)
-                    } else {
-                        throw ExportToJsonError.createSchema(
-                            message: "Query result not well formatted")
                     }
+
+                } catch ExportToJsonError.modEmbeddedParentheses(let message) {
+                    throw ExportToJsonError.createIndexes(
+                        message: "Error modEmbeddedParentheses failed : \(message)")
                 }
             } else {
                 throw ExportToJsonError.createSchema(
@@ -862,49 +902,46 @@ class ExportToJson {
                                types: [String] ) throws -> [Any] {
         var row: [Any] = []
         for jpos in 0..<names.count {
-            if types[jpos] == "INTEGER" {
-                if values[pos][names[jpos]] is String {
-                    guard let val = values[pos][names[jpos]] as? String
-                    else {
-                        throw ExportToJsonError.createValues(
-                            message: "Error value must be String")
-                    }
-                    row.append(val)
-                } else {
-                    guard let val = values[pos][names[jpos]] as? Int64
-                    else {
-                        throw ExportToJsonError.createValues(
-                            message: "Error value must be String")
-                    }
-                    row.append(val)
-                }
-            } else if types[jpos] == "REAL" {
-                if values[pos][names[jpos]] is String {
-                    guard let val = values[pos][names[jpos]] as? String
-                    else {
-                        throw ExportToJsonError.createValues(
-                            message: "Error value must be String")
-                    }
-                    row.append(val)
-                } else {
-                    guard let val = values[pos][names[jpos]] as? Double
-                    else {
-                        throw ExportToJsonError.createValues(
-                            message: "Error value must be Double")
-                    }
-                    row.append(val)
-                }
-            } else {
+
+            //            if types[jpos] == "INTEGER" {
+            if values[pos][names[jpos]] is String {
                 guard let val = values[pos][names[jpos]] as? String
                 else {
                     throw ExportToJsonError.createValues(
                         message: "Error value must be String")
                 }
                 row.append(val)
+            } else if values[pos][names[jpos]] is NSNull {
+                guard let val = values[pos][names[jpos]] as? NSNull
+                else {
+                    throw ExportToJsonError.createValues(
+                        message: "Error value must be NSNull")
+                }
+                row.append(val)
+            } else if values[pos][names[jpos]] is Int64 {
+                guard let val = values[pos][names[jpos]] as? Int64
+                else {
+                    throw ExportToJsonError.createValues(
+                        message: "Error value must be Int64")
+                }
+                row.append(val)
+            } else if values[pos][names[jpos]] is Double {
+                guard let val = values[pos][names[jpos]] as? Double
+                else {
+                    throw ExportToJsonError.createValues(
+                        message: "Error value must be double")
+                }
+                row.append(val)
+
+            } else {
+                throw ExportToJsonError.createValues(
+                    message: "Error value is not (string, nsnull," +
+                        "int64,double")
             }
         }
         return row
     }
+
 }
 // swiftlint:enable type_body_length
 // swiftlint:enable file_length

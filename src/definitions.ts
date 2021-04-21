@@ -184,12 +184,15 @@ export interface CapacitorSQLitePlugin {
   deleteOldDatabases(options: capSQLitePathOptions): Promise<void>;
   /**
    * Check Connection Consistency JS <=> Native
-   * if inconsistency all connections are removed
+   * return true : consistency, connections are opened
+   * return false : no consistency, connections are closed
    * @param options: capAllConnectionsOptions
-   * @returns Promise<void>
-   * @since 3.0.0-beta.10
+   * @returns Promise<capSQLiteResult>
+   * @since 3.0.0-beta.11
    */
-  checkConnectionsConsistency(options: capAllConnectionsOptions): Promise<void>;
+  checkConnectionsConsistency(
+    options: capAllConnectionsOptions,
+  ): Promise<capSQLiteResult>;
 }
 
 export interface capEchoOptions {
@@ -293,8 +296,10 @@ export interface capSQLiteQueryOptions {
   statement?: string;
   /**
    * A set of values for a statement
+   * Change to any[]
+   * @since 3.0.0-beta.11
    */
-  values?: string[];
+  values?: any[];
 }
 export interface capSQLiteImportOptions {
   /**
@@ -600,10 +605,10 @@ export interface ISQLiteConnection {
    * Check the consistency between Js Connections
    * and Native Connections
    * if inconsistency all connections are removed
-   * @returns Promise<void>
+   * @returns Promise<capSQLiteResult>
    * @since 3.0.0-beta.10
    */
-  checkConnectionsConsistency(): Promise<void>;
+  checkConnectionsConsistency(): Promise<capSQLiteResult>;
   /**
    * Import a database From a JSON
    * @param jsonstring string
@@ -720,7 +725,7 @@ export class SQLiteConnection implements ISQLiteConnection {
     const res: capSQLiteResult = {} as capSQLiteResult;
     if (database.endsWith('.db')) database = database.slice(0, -3);
     res.result = this._connectionDict.has(database);
-    console.log(`isConnection ${res.result}`)
+    console.log(`isConnection ${res.result}`);
     return Promise.resolve(res);
   }
   async retrieveConnection(database: string): Promise<SQLiteDBConnection> {
@@ -753,17 +758,18 @@ export class SQLiteConnection implements ISQLiteConnection {
       return Promise.reject(err);
     }
   }
-  async checkConnectionsConsistency(): Promise<void> {
+  async checkConnectionsConsistency(): Promise<capSQLiteResult> {
     try {
       const keys = [...this._connectionDict.keys()];
-      await this.sqlite.checkConnectionsConsistency({
-        dbNames: keys,
-      });
-      return Promise.resolve();
+      const res: capSQLiteResult = await this.sqlite.checkConnectionsConsistency(
+        { dbNames: keys },
+      );
+      console.log(`$$$$$ SQLiteConnection res.result ${res.result}`);
+      if (!res.result) this._connectionDict = new Map();
+      return Promise.resolve(res);
     } catch (err) {
-      console.log(`checkConnectionsConsistency ${err}`);
       this._connectionDict = new Map();
-      return Promise.reject('You must redefined the connection');
+      return Promise.reject(err);
     }
   }
   async importFromJson(jsonstring: string): Promise<capSQLiteChanges> {
@@ -863,7 +869,7 @@ export interface ISQLiteDBConnection {
    * @returns Promise<Promise<capSQLiteValues>
    * @since 2.9.0 refactor
    */
-  query(statement: string, values?: string[]): Promise<capSQLiteValues>;
+  query(statement: string, values?: any[]): Promise<capSQLiteValues>;
   /**
    * Execute SQLite DB Connection Raw Statement
    * @param statement
@@ -967,21 +973,20 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
   }
   async execute(
     statements: string,
-    transaction?: boolean,
+    transaction = true,
   ): Promise<capSQLiteChanges> {
     try {
-      const trans = transaction ? transaction : true;
       const res: any = await this.sqlite.execute({
         database: this.dbName,
         statements: statements,
-        transaction: trans,
+        transaction: transaction,
       });
       return Promise.resolve(res);
     } catch (err) {
       return Promise.reject(err);
     }
   }
-  async query(statement: string, values?: string[]): Promise<capSQLiteValues> {
+  async query(statement: string, values?: any[]): Promise<capSQLiteValues> {
     let res: any;
     try {
       if (values && values.length > 0) {
@@ -1005,9 +1010,8 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
   async run(
     statement: string,
     values?: any[],
-    transaction?: boolean,
+    transaction = true,
   ): Promise<capSQLiteChanges> {
-    const trans = transaction ? transaction : true;
     let res: any;
     try {
       if (values && values.length > 0) {
@@ -1015,14 +1019,14 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
           database: this.dbName,
           statement: statement,
           values: values,
-          transaction: trans,
+          transaction: transaction,
         });
       } else {
         res = await this.sqlite.run({
           database: this.dbName,
           statement: statement,
           values: [],
-          transaction: trans,
+          transaction: transaction,
         });
       }
       return Promise.resolve(res);
@@ -1032,14 +1036,13 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
   }
   async executeSet(
     set: capSQLiteSet[],
-    transaction?: boolean,
+    transaction = true,
   ): Promise<capSQLiteChanges> {
-    const trans = transaction ? transaction : true;
     try {
       const res: any = await this.sqlite.executeSet({
         database: this.dbName,
         set: set,
-        transaction: trans,
+        transaction: transaction,
       });
       return Promise.resolve(res);
     } catch (err) {

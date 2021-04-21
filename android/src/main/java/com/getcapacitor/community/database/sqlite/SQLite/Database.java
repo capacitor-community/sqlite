@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Dictionary;
 import java.util.Hashtable;
+import java.util.Iterator;
 import net.sqlcipher.Cursor;
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteException;
@@ -404,8 +405,8 @@ public class Database {
                 for (int i = 0; i < values.size(); i++) {
                     if (values.get(i) == null) {
                         valObj[i] = null;
-                    } else if (values.get(i).equals("NULL")) {
-                        valObj[i] = null;
+                        //                    } else if (values.get(i).equals("NULL")) {
+                        //                        valObj[i] = null;
                     } else if (JSONObject.NULL == values.get(i)) {
                         valObj[i] = null;
                     } else {
@@ -439,32 +440,34 @@ public class Database {
      * @param values
      * @return
      */
-    public JSArray selectSQL(String statement, ArrayList<String> values) throws Exception {
+    public JSArray selectSQL(String statement, ArrayList<Object> values) throws Exception {
         JSArray retArray = new JSArray();
         Cursor c = null;
         if (_db == null) {
             return retArray;
         }
         try {
-            c = (Cursor) _db.query(statement, values.toArray(new String[0]));
+            c = (Cursor) _db.query(statement, values.toArray(new Object[0]));
             while (c.moveToNext()) {
                 JSObject row = new JSObject();
                 for (int i = 0; i < c.getColumnCount(); i++) {
+                    String colName = c.getColumnName(i);
                     int type = c.getType(i);
                     switch (type) {
                         case FIELD_TYPE_STRING:
-                            row.put(c.getColumnName(i), c.getString(c.getColumnIndex(c.getColumnName(i))));
+                            row.put(colName, c.getString(c.getColumnIndex(colName)));
                             break;
                         case FIELD_TYPE_INTEGER:
-                            row.put(c.getColumnName(i), c.getLong(c.getColumnIndex(c.getColumnName(i))));
+                            row.put(colName, c.getLong(c.getColumnIndex(colName)));
                             break;
                         case FIELD_TYPE_FLOAT:
-                            row.put(c.getColumnName(i), c.getFloat(c.getColumnIndex(c.getColumnName(i))));
+                            row.put(colName, c.getFloat(c.getColumnIndex(colName)));
                             break;
                         case FIELD_TYPE_BLOB:
-                            row.put(c.getColumnName(i), c.getBlob(c.getColumnIndex(c.getColumnName(i))));
+                            row.put(colName, c.getBlob(c.getColumnIndex(colName)));
                             break;
                         case FIELD_TYPE_NULL:
+                            row.put(colName, JSONObject.NULL);
                             break;
                         default:
                             break;

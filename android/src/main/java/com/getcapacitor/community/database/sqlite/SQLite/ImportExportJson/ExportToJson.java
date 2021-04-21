@@ -7,6 +7,7 @@ import com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLite;
 import java.util.ArrayList;
 import java.util.List;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 public class ExportToJson {
 
@@ -29,7 +30,7 @@ public class ExportToJson {
         stmt += "name NOT LIKE 'sync_table';";
         ArrayList<JsonTable> tables = new ArrayList<>();
         try {
-            JSArray resTables = db.selectSQL(stmt, new ArrayList<String>());
+            JSArray resTables = db.selectSQL(stmt, new ArrayList<Object>());
             if (resTables.length() == 0) {
                 throw new Exception("CreateExportObject: table's names failed");
             } else {
@@ -140,16 +141,49 @@ public class ExportToJson {
      * @param sqlStmt
      * @return
      */
-    private String modEmbeddedParentheses(String sqlStmt) {
+    private String modEmbeddedParentheses(String sqlStmt) throws Exception {
         String stmt = sqlStmt;
-        int openPar = sqlStmt.indexOf("(");
-        if (openPar != -1) {
-            int closePar = sqlStmt.lastIndexOf(")");
-            String tStmt = sqlStmt.substring(openPar + 1, closePar);
-            String mStmt = tStmt.replaceAll(",", "§");
-            stmt = sqlStmt.replace(tStmt, mStmt);
+        List<Integer> oPars = getIndices(stmt, "(");
+        List<Integer> cPars = getIndices(stmt, ")");
+        if (oPars.size() != cPars.size()) {
+            throw new Exception("ModEmbeddedParentheses: Not same number of " + "opening and closing parentheses");
         }
-        return stmt;
+        if (oPars.size() == 0) return stmt;
+        String resStmt = stmt.substring(0, oPars.get(0) - 1);
+        for (int i = 0; i < oPars.size(); i++) {
+            String str;
+            if (i < oPars.size() - 1) {
+                if (oPars.get(i + 1) < cPars.get(i)) {
+                    str = stmt.substring(oPars.get(i) - 1, cPars.get(i + 1));
+                    i++;
+                } else {
+                    str = stmt.substring(oPars.get(i) - 1, cPars.get(i));
+                }
+            } else {
+                str = stmt.substring(oPars.get(i) - 1, cPars.get(i));
+            }
+            String newS = str.replaceAll(",", "§");
+            resStmt += newS;
+            if (i < oPars.size() - 1) {
+                resStmt += stmt.substring(cPars.get(i), oPars.get(i + 1) - 1);
+            }
+        }
+        resStmt += stmt.substring(cPars.get(cPars.size() - 1), stmt.length());
+        return resStmt;
+    }
+
+    private List<Integer> getIndices(String textString, String search) {
+        List<Integer> indexes = new ArrayList<Integer>();
+
+        int index = 0;
+        while (index != -1) {
+            index = textString.indexOf(search, index);
+            if (index != -1) {
+                indexes.add(index);
+                index++;
+            }
+        }
+        return indexes;
     }
 
     /**
@@ -157,36 +191,42 @@ public class ExportToJson {
      * @param sqlStmt
      * @return
      */
-    private ArrayList<JsonColumn> getSchema(String sqlStmt) {
+    private ArrayList<JsonColumn> getSchema(String sqlStmt) throws Exception {
+        String msg = "GetSchema: ";
         ArrayList<JsonColumn> schema = new ArrayList<>();
         // get the sqlStmt between the parenthesis sqlStmt
         sqlStmt = sqlStmt.substring(sqlStmt.indexOf("(") + 1, sqlStmt.lastIndexOf(")"));
         // check if there is other parenthesis and replace the ',' by '§'
-        sqlStmt = modEmbeddedParentheses(sqlStmt);
-        String[] sch = sqlStmt.split(",");
-        // for each element of the array split the
-        // first word as key
-        for (int j = 0; j < sch.length; j++) {
-            String[] row = sch[j].trim().split(" ", 2);
-            JsonColumn jsonRow = new JsonColumn();
-            if (row[0].toUpperCase().equals("FOREIGN")) {
-                Integer oPar = sch[j].indexOf("(");
-                Integer cPar = sch[j].indexOf(")");
-                row[0] = sch[j].substring(oPar + 1, cPar);
-                row[1] = sch[j].substring(cPar + 2);
-                jsonRow.setForeignkey(row[0]);
-            } else if (row[0].toUpperCase().equals("CONSTRAINT")) {
-                String[] tRow = row[1].trim().split(" ", 2);
-                row[0] = tRow[0];
-                jsonRow.setConstraint(row[0]);
-                row[1] = tRow[1];
-            } else {
-                jsonRow.setColumn(row[0]);
+        try {
+            sqlStmt = modEmbeddedParentheses(sqlStmt);
+            String[] sch = sqlStmt.split(",");
+            // for each element of the array split the
+            // first word as key
+            for (int j = 0; j < sch.length; j++) {
+                String[] row = sch[j].trim().split(" ", 2);
+                JsonColumn jsonRow = new JsonColumn();
+                if (row[0].toUpperCase().equals("FOREIGN")) {
+                    Integer oPar = sch[j].indexOf("(");
+                    Integer cPar = sch[j].indexOf(")");
+                    row[0] = sch[j].substring(oPar + 1, cPar);
+                    row[1] = sch[j].substring(cPar + 2);
+                    jsonRow.setForeignkey(row[0]);
+                } else if (row[0].toUpperCase().equals("CONSTRAINT")) {
+                    String[] tRow = row[1].trim().split(" ", 2);
+                    row[0] = tRow[0];
+                    jsonRow.setConstraint(row[0]);
+                    row[1] = tRow[1];
+                } else {
+                    jsonRow.setColumn(row[0]);
+                }
+                jsonRow.setValue(row[1].replaceAll("§", ","));
+                schema.add(jsonRow);
             }
-            jsonRow.setValue(row[1].replaceAll("§", ","));
-            schema.add(jsonRow);
+        } catch (JSONException e) {
+            throw new Exception(msg + e.getMessage());
+        } finally {
+            return schema;
         }
-        return schema;
     }
 
     /**
@@ -204,7 +244,7 @@ public class ExportToJson {
         stmt += "type = 'index' AND tbl_name = '" + tableName;
         stmt += "' AND sql NOTNULL;";
         try {
-            JSArray retIndexes = mDb.selectSQL(stmt, new ArrayList<String>());
+            JSArray retIndexes = mDb.selectSQL(stmt, new ArrayList<Object>());
             List<JSObject> lIndexes = retIndexes.toList();
             if (lIndexes.size() > 0) {
                 for (int j = 0; j < lIndexes.size(); j++) {
@@ -246,7 +286,7 @@ public class ExportToJson {
         stmt += "type = 'trigger' AND tbl_name = '" + tableName;
         stmt += "' AND sql NOTNULL;";
         try {
-            JSArray retTriggers = mDb.selectSQL(stmt, new ArrayList<String>());
+            JSArray retTriggers = mDb.selectSQL(stmt, new ArrayList<Object>());
             List<JSObject> lTriggers = retTriggers.toList();
             if (lTriggers.size() > 0) {
                 for (int j = 0; j < lTriggers.size(); j++) {
@@ -322,7 +362,7 @@ public class ExportToJson {
             } else {
                 throw new Exception("GetValues: Table " + tableName + " no types");
             }
-            JSArray retValues = mDb.selectSQL(query, new ArrayList<String>());
+            JSArray retValues = mDb.selectSQL(query, new ArrayList<Object>());
             List<JSObject> lValues = retValues.toList();
             if (lValues.size() > 0) {
                 for (int j = 0; j < lValues.size(); j++) {
@@ -330,19 +370,24 @@ public class ExportToJson {
                     for (int k = 0; k < rowNames.size(); k++) {
                         String nType = rowTypes.get(k);
                         String nName = rowNames.get(k);
-                        if (nType.equals("INTEGER")) {
-                            if (lValues.get(j).has(nName)) {
-                                Object obj = lValues.get(j).get(nName);
-                                if (obj instanceof Long) {
-                                    row.add(lValues.get(j).getLong(nName));
-                                }
-                                if (obj instanceof String) {
-                                    row.add(lValues.get(j).getString(nName));
-                                }
-                            } else {
-                                row.add("NULL");
+
+                        //                       if (nType.equals("INTEGER")) {
+                        if (lValues.get(j).has(nName)) {
+                            Object obj = lValues.get(j).get(nName);
+                            if (obj.toString().equals("null")) {
+                                row.add(JSONObject.NULL);
+                            } else if (obj instanceof Long) {
+                                row.add(lValues.get(j).getLong(nName));
+                            } else if (obj instanceof String) {
+                                row.add(lValues.get(j).getString(nName));
+                            } else if (obj instanceof Double) {
+                                row.add(lValues.get(j).getDouble(nName));
                             }
-                        } else if (nType.equals("REAL")) {
+                        } else {
+                            String msg = "GetValues: value is not (string, nsnull," + "int64,double";
+                            throw new Exception("GetValues: " + msg);
+                        }
+                        /*                       } else if (nType.equals("REAL")) {
                             if (lValues.get(j).has(nName)) {
                                 Object obj = lValues.get(j).get(nName);
                                 if (obj instanceof Double) {
@@ -352,15 +397,17 @@ public class ExportToJson {
                                     row.add(lValues.get(j).getString(nName));
                                 }
                             } else {
-                                row.add("NULL");
+                                row.add(null);
                             }
                         } else {
                             if (lValues.get(j).has(nName)) {
                                 row.add(lValues.get(j).getString(nName));
                             } else {
-                                row.add("NULL");
+                                row.add(null);
                             }
+
                         }
+                    */
                     }
                     values.add(row);
                 }
@@ -522,7 +569,7 @@ public class ExportToJson {
         String stmt = "SELECT sync_date FROM sync_table;";
         JSArray retQuery = new JSArray();
         try {
-            retQuery = mDb.selectSQL(stmt, new ArrayList<String>());
+            retQuery = mDb.selectSQL(stmt, new ArrayList<Object>());
             List<JSObject> lQuery = retQuery.toList();
             if (lQuery.size() == 1) {
                 long syncDate = lQuery.get(0).getLong("sync_date");
@@ -556,13 +603,13 @@ public class ExportToJson {
                     throw new Exception("GetTablesModified: no name");
                 }
                 String stmt = "SELECT count(*) AS count FROM " + tableName + ";";
-                JSArray retQuery = mDb.selectSQL(stmt, new ArrayList<String>());
+                JSArray retQuery = mDb.selectSQL(stmt, new ArrayList<Object>());
                 List<JSObject> lQuery = retQuery.toList();
                 if (lQuery.size() != 1) break;
                 long totalCount = lQuery.get(0).getLong("count");
                 // get total count of modified since last sync
                 stmt = "SELECT count(*) AS count FROM " + tableName + " WHERE last_modified > " + syncDate + ";";
-                retQuery = mDb.selectSQL(stmt, new ArrayList<String>());
+                retQuery = mDb.selectSQL(stmt, new ArrayList<Object>());
                 lQuery = retQuery.toList();
                 if (lQuery.size() != 1) break;
                 long totalModCnt = lQuery.get(0).getLong("count");

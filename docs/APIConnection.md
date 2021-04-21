@@ -183,12 +183,14 @@ Close all database connections
 ### checkConnectionsConsistency()
 
 ```typescript
-checkConnectionsConsistency() => Promise<void>
+checkConnectionsConsistency() => Promise<capSQLiteResult>
 ```
 
 Check the consistency between Js Connections
 and Native Connections
 if inconsistency all connections are removed
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
 
 **Since:** 3.0.0-beta.10
 

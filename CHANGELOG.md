@@ -1,3 +1,13 @@
+## 3.0.0-beta.11 (2021-04-21)
+
+### Bug Fixes
+
+- Checking on Types has been removed #issue108
+- NULL values are now returned as null #issue109
+- values in Query method accepts from now an Array of any #issue110
+- fix disable transaction #issue111
+
+
 ## 3.0.0-beta.10 (2021-04-14)
 
 ### Bug Fixes

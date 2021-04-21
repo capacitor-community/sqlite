@@ -32,6 +32,21 @@ The refactor release has been upgraded to `@capacitor/core@3.0.0-beta.1`.
 
 🚨 !!! ONLY iOS and Android plugins have been upgraded !!! 🚨
 
+🚨 Since release 3.0.0-beta.11 ->> 🚨
+
+  - Checking of types has been removed in all methods of the plugin
+    both iOS & Android. This has been achieved to allow the use of
+    others RDBMS types. 
+    The type checking is now under the responsability of the developers.
+
+  - NULL values are now returned as null
+
+  - values for the `query` method is now an Array of any.
+
+  - option to disable `transaction` for the `execute`, `executeSet`, `run`.
+
+🚨 Since release 3.0.0-beta.11 <<- 🚨
+
 The test has been achieved on:
 
 - a [Ionic/Angular app](https://github.com/jepiqueau/angular-sqlite-app-starter)
@@ -194,26 +209,7 @@ No configuration required for this plugin
 
 ## Supported SQLite Types
 
-Only the following types are allowed in `TABLE creation`. 
-They have been tested in each methods of the plugin:
-
-- NULL
-- INTEGER
-- REAL
-- TEXT
-- BLOB
-
-The Boolean values can be stored as INTEGER.
-
-The Date and Time  can be stored as:
-- TEXT as ISO8601 strings ("YYYY-MM-DD HH:MM:SS.SSS").
-- REAL as Julian day numbers, the number of days since noon in Greenwich 
-       on November 24, 4714 B.C. according to the proleptic Gregorian calendar.
-- INTEGER as Unix Time, the number of seconds since 1970-01-01 00:00:00 UTC.
-
-The other types used in other RDBMS should be converted to one of the 5 SQLite types
-when importing or exporting table's schemas and/or data.
-
+ -[Datatypes In SQLite Version 3](https://www.sqlite.org/datatype3.html)
 
 ## Documentation
 
