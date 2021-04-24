@@ -81,8 +81,8 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 * [`deleteOldDatabases(...)`](#deleteolddatabases)
 * [`checkConnectionsConsistency(...)`](#checkconnectionsconsistency)
 * [Interfaces](#interfaces)
-
 </docgen-index>
+* [Listeners](#listeners)
 
 ## API Plugin
 
@@ -795,6 +795,24 @@ return false : no consistency, connections are closed
 | **`dbNames`** | <code>string[]</code> | the dbName of all connections | 3.0.0-beta.10 |
 
 </docgen-api>
+
+### Listeners
+
+`Available since 3.0.0-beta.12`
+
+The listeners are attached to the plugin.
+
+| Listener                      | Type                                                |  Description                                     |
+| ----------------------------- | --------------------------------------------------- | ----------------------------------------------- |
+| **sqliteImportProgressEvent** | [capJsonProgressListener](#capJsonProgressListener) | Emitted at different steps of the `importFromJson` process |
+| **sqliteExportProgressEvent** | [capJsonProgressListener](#capJsonProgressListener) | Emitted at different steps of the `exportToJson` process   |
+
+#### capJsonProgressListener 
+
+| Prop           | Type                |Description       |
+| -------------- | ------------------- | ---------------- |
+| **`progress`** | <code>string</code> | progress message |
+
 
 ## Remote Server databases Synchronization Process
 

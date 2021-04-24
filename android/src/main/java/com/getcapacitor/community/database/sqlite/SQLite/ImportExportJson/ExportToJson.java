@@ -2,10 +2,13 @@ package com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson;
 
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
+import com.getcapacitor.community.database.sqlite.NotificationCenter;
 import com.getcapacitor.community.database.sqlite.SQLite.Database;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLite;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -14,6 +17,20 @@ public class ExportToJson {
     private static final String TAG = ImportFromJson.class.getName();
     private UtilsJson uJson = new UtilsJson();
     private UtilsSQLite uSqlite = new UtilsSQLite();
+
+    /**
+     * Notify progress export event
+     * @param msg
+     */
+    public void notifyExportProgressEvent(String msg) {
+        String message = "Export: " + msg;
+        Map<String, Object> info = new HashMap<String, Object>() {
+            {
+                put("progress", message);
+            }
+        };
+        NotificationCenter.defaultCenter().postNotification("exportJsonProgress", info);
+    }
 
     /**
      * Create Export Json Object from Database (Schema, Data)
@@ -105,6 +122,7 @@ public class ExportToJson {
                     // check triggers validity
                     uJson.checkTriggersValidity(triggers);
                 }
+
                 // create Table's Data
                 String query = "SELECT * FROM " + tableName + ";";
                 ArrayList<ArrayList<Object>> values = getValues(mDb, query, tableName);
@@ -121,6 +139,9 @@ public class ExportToJson {
                 if (triggers.size() != 0) {
                     table.setTriggers(triggers);
                 }
+                String msg = "Full: Table ".concat(tableName).concat(" schema export completed");
+                msg += " " + (i + 1) + "/" + lTables.size() + " ...";
+                notifyExportProgressEvent(msg);
                 if (values.size() != 0) {
                     table.setValues(values);
                 }
@@ -128,10 +149,15 @@ public class ExportToJson {
                     throw new Exception("GetTablesFull: table " + tableName + " is not a jsonTable");
                 }
                 tables.add(table);
+                msg = "Full: Table ".concat(tableName).concat(" data export completed");
+                msg += " " + (i + 1) + "/" + lTables.size() + " ...";
+                notifyExportProgressEvent(msg);
             }
         } catch (Exception e) {
             throw new Exception("GetTablesFull: " + e.getMessage());
         } finally {
+            String msg = "Full: Table's export completed";
+            notifyExportProgressEvent(msg);
             return tables;
         }
     }
@@ -513,6 +539,10 @@ public class ExportToJson {
                 if (triggers.size() != 0) {
                     table.setTriggers(triggers);
                 }
+                String msg = "Partial: Table ".concat(tableName).concat(" schema export completed");
+                msg += " " + (i + 1) + "/" + lTables.size() + " ...";
+                notifyExportProgressEvent(msg);
+
                 if (values.size() != 0) {
                     table.setValues(values);
                 }
@@ -520,10 +550,15 @@ public class ExportToJson {
                     throw new Exception("GetTablesPartial: table " + tableName + " is not a jsonTable");
                 }
                 tables.add(table);
+                msg = "Partial: Table ".concat(tableName).concat(" data export completed");
+                msg += " " + (i + 1) + "/" + lTables.size() + " ...";
+                notifyExportProgressEvent(msg);
             }
         } catch (Exception e) {
             throw new Exception("GetTablesPartial: " + e.getMessage());
         } finally {
+            String msg = "Partial: Table's export completed";
+            notifyExportProgressEvent(msg);
             return tables;
         }
     }

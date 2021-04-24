@@ -9,6 +9,16 @@ public class CapacitorSQLitePlugin: CAPPlugin {
     private let modeList: [String] = ["no-encryption", "encryption", "secret", "newsecret", "wrongsecret"]
     private let retHandler: ReturnHandler = ReturnHandler()
     private var versionUpgrades: [String: [Int: [String: Any]]] = [:]
+    var importObserver: Any?
+    var exportObserver: Any?
+
+    override public func load() {
+        self.addObserversToNotificationCenter()
+    }
+    deinit {
+        NotificationCenter.default.removeObserver(importObserver as Any)
+        NotificationCenter.default.removeObserver(exportObserver as Any)
+    }
 
     // MARK: - Echo
 
@@ -795,6 +805,34 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
     }
+
+    // MARK: - Add Observers
+
+    @objc func addObserversToNotificationCenter() {
+        // add Observers
+        importObserver = NotificationCenter.default.addObserver(forName: .importJsonProgress, object: nil, queue: nil,
+                                                                using: importJsonProgress)
+        exportObserver = NotificationCenter.default.addObserver(forName: .exportJsonProgress, object: nil, queue: nil,
+                                                                using: exportJsonProgress)
+    }
+
+    // MARK: - Handle Notifications
+
+    @objc func importJsonProgress(notification: Notification) {
+        guard let info = notification.userInfo as? [String: Any] else { return }
+        DispatchQueue.main.async {
+            self.notifyListeners("sqliteImportProgressEvent", data: info, retainUntilConsumed: true)
+            return
+        }
+    }
+    @objc func exportJsonProgress(notification: Notification) {
+        guard let info = notification.userInfo as? [String: Any] else { return }
+        DispatchQueue.main.async {
+            self.notifyListeners("sqliteExportProgressEvent", data: info, retainUntilConsumed: true)
+            return
+        }
+    }
+
 }
 // swiftlint:enable type_body_length
 // swiftlint:enable file_length

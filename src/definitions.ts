@@ -518,6 +518,12 @@ export interface JsonIndex {
    */
   mode?: string;
 }
+export interface capJsonProgressListener {
+  /**
+   * Progress message
+   */
+  progress?: string;
+}
 export interface capSQLiteVersionUpgrade {
   fromVersion: number;
   toVersion: number;

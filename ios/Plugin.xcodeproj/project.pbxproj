@@ -25,6 +25,7 @@
 		2CB9B9352601EEE500743730 /* ImportFromJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB9B9322601EEE500743730 /* ImportFromJson.swift */; };
 		2CB9B9362601EEE500743730 /* ExportToJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB9B9332601EEE500743730 /* ExportToJson.swift */; };
 		2CB9B93A2601EF3700743730 /* UtilsMigrate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB9B9392601EF3700743730 /* UtilsMigrate.swift */; };
+		2CBB5E0426333DD2000FA0A6 /* Notification.Name.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CBB5E0326333DD2000FA0A6 /* Notification.Name.swift */; };
 		2F98D68224C9AAE500613A4C /* CapacitorSQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F98D68124C9AAE400613A4C /* CapacitorSQLite.swift */; };
 		50ADFF92201F53D600D50D53 /* Plugin.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50ADFF88201F53D600D50D53 /* Plugin.framework */; };
 		50ADFF97201F53D600D50D53 /* CapacitorSQLitePluginTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50ADFF96201F53D600D50D53 /* CapacitorSQLitePluginTests.swift */; };
@@ -61,6 +62,7 @@
 		2CB9B9322601EEE500743730 /* ImportFromJson.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImportFromJson.swift; sourceTree = "<group>"; };
 		2CB9B9332601EEE500743730 /* ExportToJson.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExportToJson.swift; sourceTree = "<group>"; };
 		2CB9B9392601EF3700743730 /* UtilsMigrate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilsMigrate.swift; sourceTree = "<group>"; };
+		2CBB5E0326333DD2000FA0A6 /* Notification.Name.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Notification.Name.swift; sourceTree = "<group>"; };
 		2F98D68124C9AAE400613A4C /* CapacitorSQLite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CapacitorSQLite.swift; sourceTree = "<group>"; };
 		3B2A61DA5A1F2DD4F959604D /* Pods_Plugin.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Plugin.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		50ADFF88201F53D600D50D53 /* Plugin.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Plugin.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -120,6 +122,7 @@
 		2C772261262FF94E000C65E9 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				2CBB5E0326333DD2000FA0A6 /* Notification.Name.swift */,
 				2C772262262FF971000C65E9 /* String.swift */,
 			);
 			path = Extensions;
@@ -381,6 +384,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2CBB5E0426333DD2000FA0A6 /* Notification.Name.swift in Sources */,
 				2CB9B9342601EEE500743730 /* JsonSQLite.swift in Sources */,
 				2C3AF30625B592FD00C5EF2F /* UtilsDrop.swift in Sources */,
 				2C3AF2F425B58EC400C5EF2F /* Database.swift in Sources */,

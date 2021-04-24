@@ -4,10 +4,14 @@ import android.util.Log;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
+import com.getcapacitor.Plugin;
+import com.getcapacitor.community.database.sqlite.NotificationCenter;
 import com.getcapacitor.community.database.sqlite.SQLite.Database;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsDrop;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLite;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import org.json.JSONException;
 
 public class ImportFromJson {
@@ -16,6 +20,19 @@ public class ImportFromJson {
     private UtilsJson _uJson = new UtilsJson();
     private UtilsDrop _uDrop = new UtilsDrop();
     private UtilsSQLite _uSqlite = new UtilsSQLite();
+
+    /**
+     * Notify progress import event
+     * @param msg
+     */
+    public void notifyImportProgressEvent(String msg) {
+        Map<String, Object> info = new HashMap<String, Object>() {
+            {
+                put("progress", "Import: " + msg);
+            }
+        };
+        NotificationCenter.defaultCenter().postNotification("importJsonProgress", info);
+    }
 
     /**
      * Create the database schema for import from Json
@@ -49,6 +66,7 @@ public class ImportFromJson {
         }
         try {
             changes = createSchema(db, jsonSQL);
+            notifyImportProgressEvent("Schema creation completed changes: " + changes);
             return changes;
         } catch (Exception e) {
             String msg = "CreateDatabaseSchema: " + e.getMessage();
@@ -303,6 +321,9 @@ public class ImportFromJson {
                                 jsonSQL.getTables().get(i).getValues(),
                                 jsonSQL.getTables().get(i).getName()
                             );
+                            String msg = "Table ".concat(jsonSQL.getTables().get(i).getName()).concat(" data creation completed");
+                            msg += " " + (i + 1) + "/" + jsonSQL.getTables().size() + " ...";
+                            notifyImportProgressEvent(msg);
                         } catch (Exception e) {
                             throw new Exception("CreateDatabaseData: " + e.getMessage());
                         }
@@ -314,6 +335,7 @@ public class ImportFromJson {
                     changes = _uSqlite.dbChanges(db) - initChanges;
                     if (changes >= 0) {
                         db.setTransactionSuccessful();
+                        notifyImportProgressEvent("Tables data creation completed changes: " + changes);
                     }
                 }
             } else {

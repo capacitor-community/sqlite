@@ -28,6 +28,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     public void load() {
         context = getContext();
         implementation = new CapacitorSQLite(context);
+        AddObserversToNotificationCenter();
     }
 
     /**
@@ -759,5 +760,36 @@ public class CapacitorSQLitePlugin extends Plugin {
             rHandler.retResult(call, null, msg);
             return;
         }
+    }
+
+    private void AddObserversToNotificationCenter() {
+        NotificationCenter
+            .defaultCenter()
+            .addMethodForNotification(
+                "importJsonProgress",
+                new MyRunnable() {
+                    @Override
+                    public void run() {
+                        JSObject data = new JSObject();
+                        data.put("progress", this.getInfo().get("progress"));
+                        notifyListeners("sqliteImportProgressEvent", data);
+                        return;
+                    }
+                }
+            );
+        NotificationCenter
+            .defaultCenter()
+            .addMethodForNotification(
+                "exportJsonProgress",
+                new MyRunnable() {
+                    @Override
+                    public void run() {
+                        JSObject data = new JSObject();
+                        data.put("progress", this.getInfo().get("progress"));
+                        notifyListeners("sqliteExportProgressEvent", data);
+                        return;
+                    }
+                }
+            );
     }
 }

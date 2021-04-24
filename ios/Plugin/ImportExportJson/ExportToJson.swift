@@ -30,6 +30,15 @@ enum ExportToJsonError: Error {
 
 class ExportToJson {
 
+    // MARK: - JsonNotifications - NotifyExportProgressEvent
+
+    class func notifyExportProgressEvent(msg: String) {
+        let message = "Export " + msg
+        let vId: [String: Any] = ["progress": message ]
+        NotificationCenter.default.post(name: .exportJsonProgress, object: nil,
+                                        userInfo: vId)
+    }
+
     // MARK: - ExportToJson - CreateExportObject
 
     // swiftlint:disable function_body_length
@@ -216,7 +225,9 @@ class ExportToJson {
                              resTables: [[String: Any]])
     throws -> [[String: Any]] {
         var tables: [[String: Any]] = []
+        var iTable: Int = 0
         for rTable in resTables {
+            iTable += 1
             guard let tableName: String = rTable["name"] as? String
             else {
                 throw ExportToJsonError.getTablesFull(
@@ -250,6 +261,10 @@ class ExportToJson {
                     throw ExportToJsonError.getTablesFull(
                         message: "Error did not find table")
                 }
+                var msg: String = "Full: Table \(tableName) schema export" +
+                    "completed \(iTable)/\(resTables.count) ..."
+                notifyExportProgressEvent(msg: msg)
+
                 table = retTable
                 // create the table data
                 let query: String = "SELECT * FROM \(tableName);"
@@ -277,6 +292,10 @@ class ExportToJson {
                         message: "Error table \(tableName) is not a jsonTable")
                 }
                 tables.append(table)
+                msg = "Full: Table \(tableName) data export completed " +
+                    "\(iTable)/\(resTables.count) ..."
+                notifyExportProgressEvent(msg: msg)
+
             } catch ExportToJsonError.getSchemaIndexes(let message) {
                 throw ExportToJsonError.getTablesFull(
                     message: message)
@@ -285,7 +304,8 @@ class ExportToJson {
                     message: message)
             }
         }
-
+        let msg = "Full: Table's export completed "
+        notifyExportProgressEvent(msg: msg)
         return tables
     }
     // swiftlint:enable function_body_length
@@ -325,8 +345,9 @@ class ExportToJson {
             syncDate = sDate
             modTables = mTables
             modTablesKeys.append(contentsOf: modTables.keys)
-
+            var iTable = 0
             for rTable in resTables {
+                iTable += 1
                 guard let tableName: String = rTable["name"] as? String
                 else {
                     throw ExportToJsonError.getTablesPartial(
@@ -368,6 +389,10 @@ class ExportToJson {
                     isIndexes = isIdxes
                     table = retTable
                 }
+                var msg: String = "Partial: Table \(tableName) schema export" +
+                    "completed \(iTable)/\(resTables.count) ..."
+                notifyExportProgressEvent(msg: msg)
+
                 // create table data
                 let query: String = modTables[tableName] == "Create"
                     ? "SELECT * FROM \(tableName);"
@@ -397,12 +422,19 @@ class ExportToJson {
                         message: "Error table \(tableName) is not a jsonTable")
                 }
                 tables.append(table)
+                msg = "Partial: Table \(tableName) data export completed " +
+                    "\(iTable)/\(resTables.count) ..."
+                notifyExportProgressEvent(msg: msg)
+
             }
         } catch ExportToJsonError.getSchemaIndexes(let message) {
             throw ExportToJsonError.getTablesPartial(message: message)
         } catch ExportToJsonError.getValues(let message) {
             throw ExportToJsonError.getTablesPartial(message: message)
         }
+        let msg = "Partial: Table's export completed "
+        notifyExportProgressEvent(msg: msg)
+
         return tables
     }
     // swiftlint:enable cyclomatic_complexity

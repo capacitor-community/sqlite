@@ -1,3 +1,9 @@
+## 3.0.0-beta.12 (2021-04-24)
+
+### Added Features
+
+- Event Listeners for Import and Export Json #issue112
+
 ## 3.0.0-beta.11 (2021-04-21)
 
 ### Bug Fixes

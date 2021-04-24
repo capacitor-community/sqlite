@@ -21,6 +21,15 @@ enum ImportFromJsonError: Error {
 }
 class ImportFromJson {
 
+    // MARK: - JsonNotifications - NotifyImportProgressEvent
+
+    class func notifyImportProgressEvent(msg: String) {
+        let message = "Import: " + msg
+        let vId: [String: Any] = ["progress": message ]
+        NotificationCenter.default.post(name: .importJsonProgress, object: nil,
+                                        userInfo: vId)
+    }
+
     // MARK: - ImportFromJson - CreateDatabaseSchema
 
     class func createDatabaseSchema(mDB: Database,
@@ -45,6 +54,8 @@ class ImportFromJson {
             changes = try ImportFromJson
                 .createSchema(mDB: mDB,
                               jsonSQLite: jsonSQLite)
+            let msg = "Schema creation completed changes: \(changes)"
+            notifyImportProgressEvent(msg: msg)
             return changes
 
         } catch UtilsSQLCipherError.setVersion(let message) {
@@ -293,11 +304,16 @@ class ImportFromJson {
                 if mValues.count > 0 {
                     isValue = true
                     do {
+                        let tableName = jsonSQLite.tables[ipos].name
                         try ImportFromJson.createTableData(
                             mDB: mDB,
                             mode: jsonSQLite.mode,
                             mValues: mValues,
-                            tableName: jsonSQLite.tables[ipos].name)
+                            tableName: tableName)
+                        let msg = "Table \(tableName) data creation completed " +
+                            "\(ipos + 1)/\(jsonSQLite.tables.count) ..."
+                        notifyImportProgressEvent(msg: msg)
+
                     } catch ImportFromJsonError
                                 .createTableData(let message) {
                         // Rollback Transaction
@@ -326,6 +342,9 @@ class ImportFromJson {
                 try UtilsSQLCipher.commitTransaction(mDB: mDB)
                 changes = UtilsSQLCipher.dbChanges(mDB: mDB.mDb) -
                     initChanges
+                let msg = "Tables data creation completed changes: \(changes)"
+                notifyImportProgressEvent(msg: msg)
+
             } catch UtilsSQLCipherError.commitTransaction(
                         let message) {
                 throw ImportFromJsonError.createDatabaseData(
