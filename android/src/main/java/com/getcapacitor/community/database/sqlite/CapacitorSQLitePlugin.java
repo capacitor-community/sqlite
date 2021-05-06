@@ -1,12 +1,14 @@
 package com.getcapacitor.community.database.sqlite;
 
 import android.content.Context;
+import android.util.Log;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import com.getcapacitor.community.database.sqlite.SQLite.Database;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.JsonSQLite;
 import java.util.Dictionary;
 import java.util.Hashtable;
@@ -16,6 +18,7 @@ import org.json.JSONObject;
 @CapacitorPlugin(name = "CapacitorSQLite")
 public class CapacitorSQLitePlugin extends Plugin {
 
+    private static final String TAG = Database.class.getName();
     private Context context;
     private CapacitorSQLite implementation;
     private Dictionary<String, Dictionary<Integer, JSONObject>> versionUpgrades = new Hashtable<>();
@@ -27,8 +30,13 @@ public class CapacitorSQLitePlugin extends Plugin {
      */
     public void load() {
         context = getContext();
-        implementation = new CapacitorSQLite(context);
-        AddObserversToNotificationCenter();
+        try {
+            implementation = new CapacitorSQLite(context);
+            AddObserversToNotificationCenter();
+        } catch (Exception e) {
+            implementation = null;
+            Log.e(TAG, "CapacitorSQLitePlugin: " + e.getMessage());
+        }
     }
 
     /**
@@ -39,10 +47,88 @@ public class CapacitorSQLitePlugin extends Plugin {
     @PluginMethod
     public void echo(PluginCall call) {
         String value = call.getString("value");
+        try {
+            JSObject ret = new JSObject();
+            ret.put("value", implementation.echo(value));
+            call.resolve(ret);
+        } catch (Exception e) {
+            call.reject(e.getMessage());
+        }
+    }
 
-        JSObject ret = new JSObject();
-        ret.put("value", implementation.echo(value));
-        call.resolve(ret);
+    /**
+     * IsSecretStored
+     * Check if a secret has been stored
+     * @param call
+     */
+    public void isSecretStored(PluginCall call) {
+        try {
+            Boolean res = implementation.isSecretStored();
+            rHandler.retResult(call, res, null);
+            return;
+        } catch (Exception e) {
+            String msg = "IsSecretStored: " + e.getMessage();
+            rHandler.retResult(call, null, msg);
+            return;
+        }
+    }
+
+    /**
+     * SetEncryptionSecret
+     * set a passphrase secret for a database
+     * @param call
+     */
+    @PluginMethod
+    public void setEncryptionSecret(PluginCall call) {
+        String passphrase = null;
+        if (!call.getData().has("passphrase")) {
+            String msg = "SetEncryptionSecret: Must provide a passphrase";
+            rHandler.retResult(call, null, msg);
+            return;
+        }
+        passphrase = call.getString("passphrase");
+        try {
+            implementation.setEncryptionSecret(passphrase);
+            rHandler.retResult(call, null, null);
+            return;
+        } catch (Exception e) {
+            String msg = "SetEncryptionSecret: " + e.getMessage();
+            rHandler.retResult(call, null, msg);
+            return;
+        }
+    }
+
+    /**
+     * ChangeEncryptionSecret
+     * change a passphrase secret for a database
+     * with a new passphrase
+     * @param call
+     */
+    @PluginMethod
+    public void changeEncryptionSecret(PluginCall call) {
+        String passphrase = null;
+        if (!call.getData().has("passphrase")) {
+            String msg = "SetEncryptionSecret: Must provide a passphrase";
+            rHandler.retResult(call, null, msg);
+            return;
+        }
+        passphrase = call.getString("passphrase");
+        String oldpassphrase = null;
+        if (!call.getData().has("oldpassphrase")) {
+            String msg = "SetEncryptionSecret: Must provide a oldpassphrase";
+            rHandler.retResult(call, null, msg);
+            return;
+        }
+        oldpassphrase = call.getString("oldpassphrase");
+        try {
+            implementation.changeEncryptionSecret(passphrase, oldpassphrase);
+            rHandler.retResult(call, null, null);
+            return;
+        } catch (Exception e) {
+            String msg = "ChangeEncryptionSecret: " + e.getMessage();
+            rHandler.retResult(call, null, msg);
+            return;
+        }
     }
 
     /**
@@ -69,14 +155,11 @@ public class CapacitorSQLitePlugin extends Plugin {
         if (encrypted) {
             inMode = call.getString("mode", "no-encryption");
             if (
-                !inMode.equals("no-encryption") &&
-                !inMode.equals("encryption") &&
-                !inMode.equals("secret") &&
-                !inMode.equals("newsecret") &&
-                !inMode.equals("wrongsecret")
+                !inMode.equals("no-encryption") && !inMode.equals("encryption") && !inMode.equals("secret") && !inMode.equals("wrongsecret")
             ) {
                 String msg = "CreateConnection: inMode must ";
-                msg += "be in ['encryption','secret','newsecret']";
+                msg += "be in ['encryption','secret'] ";
+                msg += "** 'newsecret' has been deprecated";
                 rHandler.retResult(call, null, msg);
                 return;
             }

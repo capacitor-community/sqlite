@@ -30,4 +30,7 @@ CAP_PLUGIN(CapacitorSQLitePlugin, "CapacitorSQLite",
            CAP_PLUGIN_METHOD(addSQLiteSuffix, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(deleteOldDatabases, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(checkConnectionsConsistency, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(isSecretStored, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(setEncryptionSecret, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(changeEncryptionSecret, CAPPluginReturnPromise);
 )

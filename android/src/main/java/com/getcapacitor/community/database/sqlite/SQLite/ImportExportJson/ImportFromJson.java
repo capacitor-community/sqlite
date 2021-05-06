@@ -450,18 +450,19 @@ public class ImportFromJson {
             if (setString.length() == 0) {
                 throw new Exception(msg + j + "setString is empty");
             }
-            stmt =
-                new StringBuilder("UPDATE ")
-                    .append(tableName)
-                    .append(" SET ")
-                    .append(setString)
-                    .append(" WHERE ")
-                    .append(tColNames.get(0))
-                    .append(" = ")
-                    .append(row.get(0))
-                    .append(";")
-                    .toString();
-        }
+            Object key = tColNames.get(0);
+            StringBuilder sbQuery = new StringBuilder("UPDATE ")
+                .append(tableName)
+                .append(" SET ")
+                .append(setString)
+                .append(" WHERE ")
+                .append(tColNames.get(0))
+                .append(" = ");
+
+            if (key instanceof Integer) sbQuery.append(row.get(0)).append(";");
+            if (key instanceof String) sbQuery.append("'").append(row.get(0)).append("';");
+            stmt = sbQuery.toString();
+            }
         return stmt;
     }
 }

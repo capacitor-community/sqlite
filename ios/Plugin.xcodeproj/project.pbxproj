@@ -26,6 +26,8 @@
 		2CB9B9362601EEE500743730 /* ExportToJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB9B9332601EEE500743730 /* ExportToJson.swift */; };
 		2CB9B93A2601EF3700743730 /* UtilsMigrate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB9B9392601EF3700743730 /* UtilsMigrate.swift */; };
 		2CBB5E0426333DD2000FA0A6 /* Notification.Name.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CBB5E0326333DD2000FA0A6 /* Notification.Name.swift */; };
+		2CC9CBC226413B9F002028BF /* UtilsSecret.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CC9CBC126413B9F002028BF /* UtilsSecret.swift */; };
+		2CC9CBD8264142FF002028BF /* KeychainServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CC9CBD7264142FF002028BF /* KeychainServices.swift */; };
 		2F98D68224C9AAE500613A4C /* CapacitorSQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F98D68124C9AAE400613A4C /* CapacitorSQLite.swift */; };
 		50ADFF92201F53D600D50D53 /* Plugin.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50ADFF88201F53D600D50D53 /* Plugin.framework */; };
 		50ADFF97201F53D600D50D53 /* CapacitorSQLitePluginTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50ADFF96201F53D600D50D53 /* CapacitorSQLitePluginTests.swift */; };
@@ -63,6 +65,8 @@
 		2CB9B9332601EEE500743730 /* ExportToJson.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExportToJson.swift; sourceTree = "<group>"; };
 		2CB9B9392601EF3700743730 /* UtilsMigrate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilsMigrate.swift; sourceTree = "<group>"; };
 		2CBB5E0326333DD2000FA0A6 /* Notification.Name.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Notification.Name.swift; sourceTree = "<group>"; };
+		2CC9CBC126413B9F002028BF /* UtilsSecret.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilsSecret.swift; sourceTree = "<group>"; };
+		2CC9CBD7264142FF002028BF /* KeychainServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainServices.swift; sourceTree = "<group>"; };
 		2F98D68124C9AAE400613A4C /* CapacitorSQLite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CapacitorSQLite.swift; sourceTree = "<group>"; };
 		3B2A61DA5A1F2DD4F959604D /* Pods_Plugin.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Plugin.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		50ADFF88201F53D600D50D53 /* Plugin.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Plugin.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -115,6 +119,7 @@
 				2CB9B9392601EF3700743730 /* UtilsMigrate.swift */,
 				2C3AF31525B593B600C5EF2F /* UtilsSQLCipher.swift */,
 				2C3AF31925B593E500C5EF2F /* UtilsUpgrade.swift */,
+				2CC9CBC126413B9F002028BF /* UtilsSecret.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -136,6 +141,14 @@
 				2CB9B9332601EEE500743730 /* ExportToJson.swift */,
 			);
 			path = ImportExportJson;
+			sourceTree = "<group>";
+		};
+		2CC9CBD6264142CB002028BF /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				2CC9CBD7264142FF002028BF /* KeychainServices.swift */,
+			);
+			path = Models;
 			sourceTree = "<group>";
 		};
 		50ADFF7E201F53D600D50D53 = {
@@ -161,6 +174,7 @@
 		50ADFF8A201F53D600D50D53 /* Plugin */ = {
 			isa = PBXGroup;
 			children = (
+				2CC9CBD6264142CB002028BF /* Models */,
 				2C772261262FF94E000C65E9 /* Extensions */,
 				2CB9B9302601EEE500743730 /* ImportExportJson */,
 				2C3AF2F725B591BC00C5EF2F /* Utils */,
@@ -393,8 +407,10 @@
 				50E1A94820377CB70090CE1A /* CapacitorSQLitePlugin.swift in Sources */,
 				2C3AF2F025B58E8500C5EF2F /* GlobalSQLite.swift in Sources */,
 				2C3AF30E25B5935B00C5EF2F /* UtilsFile.swift in Sources */,
+				2CC9CBD8264142FF002028BF /* KeychainServices.swift in Sources */,
 				2C3AF2F925B591ED00C5EF2F /* UtilsBinding.swift in Sources */,
 				2C3AF31625B593B600C5EF2F /* UtilsSQLCipher.swift in Sources */,
+				2CC9CBC226413B9F002028BF /* UtilsSecret.swift in Sources */,
 				2C3AF30A25B5932B00C5EF2F /* UtilsEncryption.swift in Sources */,
 				2F98D68224C9AAE500613A4C /* CapacitorSQLite.swift in Sources */,
 				2C772263262FF971000C65E9 /* String.swift in Sources */,

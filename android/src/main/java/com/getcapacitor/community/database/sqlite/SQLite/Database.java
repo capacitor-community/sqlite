@@ -7,6 +7,8 @@ import static android.database.Cursor.FIELD_TYPE_NULL;
 import static android.database.Cursor.FIELD_TYPE_STRING;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.text.TextUtils;
 import android.util.Log;
 import androidx.sqlite.db.SimpleSQLiteQuery;
 import androidx.sqlite.db.SupportSQLiteDatabase;
@@ -42,6 +44,7 @@ public class Database {
     private String _mode;
     private String _secret;
     private Boolean _encrypted;
+    private SharedPreferences _sharedPreferences;
     private File _file;
     private int _version;
     private GlobalSQLite _globVar;
@@ -51,6 +54,7 @@ public class Database {
     private UtilsFile _uFile;
     private UtilsJson _uJson;
     private UtilsUpgrade _uUpg;
+    private UtilsSecret _uSecret;
     private Dictionary<Integer, JSONObject> _vUpgObject = new Hashtable<>();
     private ImportFromJson fromJson = new ImportFromJson();
     private ExportToJson toJson = new ExportToJson();
@@ -61,7 +65,8 @@ public class Database {
         Boolean encrypted,
         String mode,
         int version,
-        Dictionary<Integer, JSONObject> vUpgObject
+        Dictionary<Integer, JSONObject> vUpgObject,
+        SharedPreferences sharedPreferences
     ) {
         this._context = context;
         this._dbName = dbName;
@@ -69,6 +74,7 @@ public class Database {
         this._encrypted = encrypted;
         this._version = version;
         this._vUpgObject = vUpgObject;
+        this._sharedPreferences = sharedPreferences;
         this._file = this._context.getDatabasePath(dbName);
         this._globVar = new GlobalSQLite();
         this._uSqlite = new UtilsSQLite();
@@ -76,14 +82,12 @@ public class Database {
         this._uFile = new UtilsFile();
         this._uJson = new UtilsJson();
         this._uUpg = new UtilsUpgrade();
+        this._uSecret = new UtilsSecret(context, sharedPreferences);
         InitializeSQLCipher();
         if (!this._file.getParentFile().exists()) {
             this._file.getParentFile().mkdirs();
         }
         Log.v(TAG, "&&& file path " + this._file.getAbsolutePath());
-        // added for successive runs
-        //        this._file.delete();
-
     }
 
     /**
@@ -114,19 +118,7 @@ public class Database {
     public void open() throws Exception {
         int curVersion;
 
-        String password = _encrypted && (_mode.equals("secret") || _mode.equals("encryption") || _mode.equals("newsecret"))
-            ? _globVar.secret
-            : "";
-        if (_mode.equals("newsecret")) {
-            try {
-                _uCipher.changePassword(_context, _file, _globVar.secret, _globVar.newsecret);
-                password = _globVar.newsecret;
-            } catch (Exception e) {
-                String msg = "Failed in change password" + e.getMessage();
-                Log.v(TAG, msg);
-                throw new Exception(msg);
-            }
-        }
+        String password = _encrypted && (_mode.equals("secret") || _mode.equals("encryption")) ? _uSecret.getPassphrase() : "";
         if (_mode.equals("encryption")) {
             try {
                 _uCipher.encrypt(_context, _file, SQLiteDatabase.getBytes(password.toCharArray()));
@@ -236,10 +228,10 @@ public class Database {
      * GetDBState Method
      * @return the detected state of the database
      */
-    public UtilsSQLCipher.State getDBState() {
+    /*    public UtilsSQLCipher.State getDBState() {
         return _uCipher.getDatabaseState(_file, _globVar);
     }
-
+*/
     /**
      * IsDBExists Method
      * @return the existence of the database on folder

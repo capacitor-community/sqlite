@@ -1,12 +1,35 @@
-declare module '@capacitor/core' {
-  interface PluginRegistry {
-    CapacitorSQLite: CapacitorSQLitePlugin;
-  }
-}
 /**
  * CapacitorSQLitePlugin Interface
  */
 export interface CapacitorSQLitePlugin {
+  /**
+   * Check if a passphrase exists in a secure store
+   *
+   * @return Promise<capSQLiteResult>
+   * @since 3.0.0-beta.13
+   */
+  isSecretStored(): Promise<capSQLiteResult>;
+  /**
+   * Store a passphrase in a secure store
+   * Update the secret of previous encrypted databases with GlobalSQLite
+   * !!! Only to be used once if you wish to encrypt database !!!
+   *
+   * @param options capSetSecretOptions
+   * @return Promise<void>
+   * @since 3.0.0-beta.13
+   */
+  setEncryptionSecret(options: capSetSecretOptions): Promise<void>;
+  /**
+   * Change the passphrase in a secure store
+   * Update the secret of previous encrypted databases with passphrase
+   * in secure store
+   *
+   * @param options capChangeSecretOptions
+   * @return Promise<void>
+   * @since 3.0.0-beta.13
+   */
+  changeEncryptionSecret(options: capChangeSecretOptions): Promise<void>;
+
   /**
    * create a database connection
    * @param options capConnectionOptions
@@ -195,6 +218,22 @@ export interface CapacitorSQLitePlugin {
   ): Promise<capSQLiteResult>;
 }
 
+export interface capSetSecretOptions {
+  /**
+   * The passphrase for Encrypted Databases
+   */
+  passphrase?: string;
+}
+export interface capChangeSecretOptions {
+  /**
+   * The new passphrase for Encrypted Databases
+   */
+  passphrase?: string;
+  /**
+   * The old passphrase for Encrypted Databases
+   */
+  oldpassphrase?: string;
+}
 export interface capEchoOptions {
   /**
    *  String to be echoed
@@ -543,6 +582,30 @@ export interface ISQLiteConnection {
    */
   echo(value: string): Promise<capEchoResult>;
   /**
+   * Check if a secret is stored
+   * @returns Promise<capSQLiteResult>
+   * @since 3.0.0-beta.13
+   */
+  isSecretStored(): Promise<capSQLiteResult>;
+  /**
+   * Set a passphrase in a secure store
+   * @param passphrase
+   * @returns Promise<void>
+   * @since 3.0.0-beta.13
+   */
+  setEncryptionSecret(passphrase: string): Promise<void>;
+  /**
+   * Change the passphrase in a secure store
+   * @param passphrase
+   * @param oldpassphrase
+   * @returns Promise<void>
+   * @since 3.0.0-beta.13
+   */
+  changeEncryptionSecret(
+    passphrase: string,
+    oldpassphrase: string,
+  ): Promise<void>;
+  /**
    * Add the upgrade Statement for database version upgrading
    * @param database
    * @param fromVersion
@@ -672,6 +735,37 @@ export class SQLiteConnection implements ISQLiteConnection {
   constructor(private sqlite: any) {}
   async echo(value: string): Promise<capEchoResult> {
     return await this.sqlite.echo({ value: value });
+  }
+  async isSecretStored(): Promise<capSQLiteResult> {
+    try {
+      const res: capSQLiteResult = await this.sqlite.isSecretStored();
+      return Promise.resolve(res);
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+
+  async setEncryptionSecret(passphrase: string): Promise<void> {
+    try {
+      await this.sqlite.setEncryptionSecret({ passphrase: passphrase });
+      return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async changeEncryptionSecret(
+    passphrase: string,
+    oldpassphrase: string,
+  ): Promise<void> {
+    try {
+      await this.sqlite.changeEncryptionSecret({
+        passphrase: passphrase,
+        oldpassphrase: oldpassphrase,
+      });
+      return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
+    }
   }
   async addUpgradeStatement(
     database: string,

@@ -1,6 +1,11 @@
 package com.getcapacitor.community.database.sqlite;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.text.TextUtils;
+import android.util.Log;
+import androidx.security.crypto.EncryptedSharedPreferences;
+import androidx.security.crypto.MasterKeys;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.community.database.sqlite.SQLite.Database;
@@ -9,11 +14,15 @@ import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.UtilsJ
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsFile;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsMigrate;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLite;
+import com.getcapacitor.community.database.sqlite.SQLite.UtilsSecret;
 import java.io.File;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Dictionary;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
@@ -22,15 +31,36 @@ import org.json.JSONObject;
 
 public class CapacitorSQLite {
 
+    private static final String TAG = Database.class.getName();
     private Context context;
     private Dictionary<String, Database> dbDict = new Hashtable<>();
     private UtilsSQLite uSqlite = new UtilsSQLite();
     private UtilsFile uFile = new UtilsFile();
     private UtilsJson uJson = new UtilsJson();
     private UtilsMigrate uMigrate = new UtilsMigrate();
+    private UtilsSecret uSecret;
+    private SharedPreferences sharedPreferences;
 
-    public CapacitorSQLite(Context context) {
+    public CapacitorSQLite(Context context) throws Exception {
         this.context = context;
+        try {
+            // create or retrieve masterkey from Android keystore
+            // it will be used to encrypt the passphrase for a database
+            String masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC);
+
+            // get instance of the EncryptedSharedPreferences class
+            this.sharedPreferences =
+                EncryptedSharedPreferences.create(
+                    "sqlite_encrypted_shared_prefs",
+                    masterKeyAlias,
+                    context,
+                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+                );
+            this.uSecret = new UtilsSecret(this.context, this.sharedPreferences);
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
+        }
     }
 
     /**
@@ -40,6 +70,50 @@ public class CapacitorSQLite {
      */
     public String echo(String value) {
         return value;
+    }
+
+    public Boolean isSecretStored() throws Exception {
+        Boolean ret = false;
+        try {
+            String secret = uSecret.getPassphrase();
+            if (secret.length() > 0) ret = true;
+            return ret;
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
+        }
+    }
+
+    /**
+     * SetEncryptionSecret
+     * @param passphrase
+     * @throws Exception
+     */
+    public void setEncryptionSecret(String passphrase) throws Exception {
+        try {
+            // close all connections
+            closeAllConnections();
+            // set encryption secret
+            uSecret.setEncryptionSecret(passphrase);
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
+        }
+    }
+
+    /**
+     * ChangeEncryptionSecret
+     * @param passphrase
+     * @param oldPassphrase
+     * @throws Exception
+     */
+    public void changeEncryptionSecret(String passphrase, String oldPassphrase) throws Exception {
+        try {
+            // close all connections
+            closeAllConnections();
+            // change encryption secret
+            uSecret.changeEncryptionSecret(passphrase, oldPassphrase);
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
+        }
     }
 
     /**
@@ -61,7 +135,7 @@ public class CapacitorSQLite {
             throw new Exception(msg);
         }
         try {
-            Database db = new Database(context, dbName + "SQLite.db", encrypted, mode, version, vUpgObject);
+            Database db = new Database(context, dbName + "SQLite.db", encrypted, mode, version, vUpgObject, sharedPreferences);
             if (db != null) {
                 dbDict.put(dbName, db);
                 return;
@@ -559,7 +633,7 @@ public class CapacitorSQLite {
             if (encrypted) {
                 inMode = "secret";
             }
-            Database db = new Database(context, dbName, encrypted, inMode, dbVersion, new Hashtable<>());
+            Database db = new Database(context, dbName, encrypted, inMode, dbVersion, new Hashtable<>(), sharedPreferences);
             db.open();
             if (!db.isOpen()) {
                 String msg = dbName + "SQLite.db not opened";
@@ -626,5 +700,19 @@ public class CapacitorSQLite {
         }
 
         return retName;
+    }
+
+    private void closeAllConnections() throws Exception {
+        // close all connections
+        try {
+            Enumeration<String> connections = dbDict.keys();
+            while (connections.hasMoreElements()) {
+                String dbName = (String) connections.nextElement();
+                closeConnection(dbName);
+            }
+        } catch (Exception e) {
+            String msg = "close all connections " + e.getMessage();
+            throw new Exception(msg);
+        }
     }
 }

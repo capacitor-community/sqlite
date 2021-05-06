@@ -1,3 +1,18 @@
+## 3.0.0-beta.13 (2021-05-06)
+
+### Chore
+
+ - Update to Capacitor 3.0.0-rc.1
+
+### Added Features
+
+- Allow users to set secret #issue88
+- add isSecretStored, setEncryptionSecret, changeEncryptionSecret methods
+
+### Bug Fixes 
+
+- ImportFromJson in Partial Mode without schema changes #issue113
+
 ## 3.0.0-beta.12 (2021-04-24)
 
 ### Added Features

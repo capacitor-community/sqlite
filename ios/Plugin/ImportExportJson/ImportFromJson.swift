@@ -129,6 +129,12 @@ class ImportFromJson {
                 throw ImportFromJsonError
                 .createSchema(message: message)
             }
+        } else {
+            if jsonSQLite.mode == "partial" {
+                changes = 0
+                // Commit the transaction
+                try UtilsSQLCipher.commitTransaction(mDB: mDB)
+            }
         }
         return changes
     }
@@ -336,20 +342,19 @@ class ImportFromJson {
         }
         if !isValue {
             changes = 0
-        } else {
-            do {
-                // Commit the transaction
-                try UtilsSQLCipher.commitTransaction(mDB: mDB)
-                changes = UtilsSQLCipher.dbChanges(mDB: mDB.mDb) -
-                    initChanges
-                let msg = "Tables data creation completed changes: \(changes)"
-                notifyImportProgressEvent(msg: msg)
+        }
+        do {
+            // Commit the transaction
+            try UtilsSQLCipher.commitTransaction(mDB: mDB)
+            changes = UtilsSQLCipher.dbChanges(mDB: mDB.mDb) -
+                initChanges
+            let msg = "Tables data creation completed changes: \(changes)"
+            notifyImportProgressEvent(msg: msg)
 
-            } catch UtilsSQLCipherError.commitTransaction(
-                        let message) {
-                throw ImportFromJsonError.createDatabaseData(
-                    message: message)
-            }
+        } catch UtilsSQLCipherError.commitTransaction(
+                    let message) {
+            throw ImportFromJsonError.createDatabaseData(
+                message: message)
         }
         return changes
     }
@@ -489,9 +494,12 @@ class ImportFromJson {
                 throw ImportFromJsonError.createRowStatement(
                     message: message)
             }
-            if let rwValue: Any = row[0].value {
-                stmt = "UPDATE \(tableName)  SET \(setString) WHERE " +
-                    "\(jsonNamesTypes.names[0]) = \(rwValue);"
+
+            stmt = "UPDATE \(tableName)  SET \(setString) WHERE "
+            if let rwValue = row[0].value as? String {
+                stmt += "\(jsonNamesTypes.names[0]) = '\(rwValue)';"
+            } else if let rwValue = row[0].value as? Int {
+                stmt += "\(jsonNamesTypes.names[0]) = \(rwValue);"
             } else {
                 var msg: String = "importFromJson: Table "
                 msg.append("\(tableName) values row[0]does not exist")

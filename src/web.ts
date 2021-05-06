@@ -21,21 +21,29 @@ import type {
   capSQLiteJson,
   capSQLiteSyncDate,
   capAllConnectionsOptions,
+  capSetSecretOptions,
+  capChangeSecretOptions,
 } from './definitions';
 
 export class CapacitorSQLiteWeb
   extends WebPlugin
   implements CapacitorSQLitePlugin {
-  constructor() {
-    super({
-      name: 'CapacitorSQLite',
-      platforms: ['web'],
-    });
-  }
 
   async echo(options: capEchoOptions): Promise<capEchoResult> {
     console.log('ECHO in Web plugin', options);
     return options;
+  }
+  async isSecretStored(): Promise<capSQLiteResult> {
+    console.log('isSecretStored');
+    throw this.unimplemented('Not implemented on web.');
+  }
+  async setEncryptionSecret(options: capSetSecretOptions): Promise<void> {
+    console.log('setEncryptionSecret', options);
+    throw this.unimplemented('Not implemented on web.');
+  }
+  async changeEncryptionSecret(options: capChangeSecretOptions): Promise<void> {
+    console.log('changeEncryptionSecret', options);
+    throw this.unimplemented('Not implemented on web.');
   }
   async createConnection(options: capSQLiteOptions): Promise<void> {
     console.log('createConnection', options);

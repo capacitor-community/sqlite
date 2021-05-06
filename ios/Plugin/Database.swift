@@ -69,23 +69,8 @@ class Database {
     // swiftlint:disable function_body_length
     func open () throws {
         var password: String = ""
-        if encrypted && (mode == "secret" || mode == "newsecret"
-                            || mode == "encryption") {
-            password = globalData.secret
-        }
-        if mode == "newsecret" {
-            do {
-                try UtilsSQLCipher
-                    .changePassword(filename: path,
-                                    password: password,
-                                    newpassword: globalData.newsecret)
-                password = globalData.newsecret
-
-            } catch UtilsSQLCipherError.changePassword(let message) {
-                let msg: String = "Failed in changePassword \(message)"
-                throw DatabaseError.open(message: msg)
-
-            }
+        if encrypted && (mode == "secret" || mode == "encryption") {
+            password = UtilsSecret.getPassphrase()
         }
         if mode == "encryption" {
             do {

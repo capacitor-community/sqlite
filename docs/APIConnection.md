@@ -9,6 +9,9 @@
 <docgen-index>
 
 * [`echo(...)`](#echo)
+* [`isSecretStored()`](#issecretstored)
+* [`setEncryptionSecret(...)`](#setencryptionsecret)
+* [`changeEncryptionSecret(...)`](#changeencryptionsecret)
 * [`addUpgradeStatement(...)`](#addupgradestatement)
 * [`createConnection(...)`](#createconnection)
 * [`isConnection(...)`](#isconnection)
@@ -50,6 +53,56 @@ Echo a value
 **Returns:** <code>Promise&lt;<a href="#capechoresult">capEchoResult</a>&gt;</code>
 
 **Since:** 2.9.0 refactor
+
+--------------------
+
+
+### isSecretStored()
+
+```typescript
+isSecretStored() => Promise<capSQLiteResult>
+```
+
+Check if a secret is stored
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 3.0.0-beta.13
+
+--------------------
+
+
+### setEncryptionSecret(...)
+
+```typescript
+setEncryptionSecret(passphrase: string) => Promise<void>
+```
+
+Set a passphrase in a secure store
+
+| Param            | Type                |
+| ---------------- | ------------------- |
+| **`passphrase`** | <code>string</code> |
+
+**Since:** 3.0.0-beta.13
+
+--------------------
+
+
+### changeEncryptionSecret(...)
+
+```typescript
+changeEncryptionSecret(passphrase: string, oldpassphrase: string) => Promise<void>
+```
+
+Change the passphrase in a secure store
+
+| Param               | Type                |
+| ------------------- | ------------------- |
+| **`passphrase`**    | <code>string</code> |
+| **`oldpassphrase`** | <code>string</code> |
+
+**Since:** 3.0.0-beta.13
 
 --------------------
 
@@ -326,19 +379,19 @@ Delete Old Cordova databases
 | **`value`** | <code>string</code> | String returned |
 
 
+#### capSQLiteResult
+
+| Prop         | Type                 | Description                                   |
+| ------------ | -------------------- | --------------------------------------------- |
+| **`result`** | <code>boolean</code> | result set to true when successful else false |
+
+
 #### capSQLiteSet
 
 | Prop            | Type                | Description                      |
 | --------------- | ------------------- | -------------------------------- |
 | **`statement`** | <code>string</code> | A statement                      |
 | **`values`**    | <code>any[]</code>  | the data values list as an Array |
-
-
-#### capSQLiteResult
-
-| Prop         | Type                 | Description                                   |
-| ------------ | -------------------- | --------------------------------------------- |
-| **`result`** | <code>boolean</code> | result set to true when successful else false |
 
 
 #### Map

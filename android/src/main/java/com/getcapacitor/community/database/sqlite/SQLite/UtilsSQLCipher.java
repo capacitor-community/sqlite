@@ -1,6 +1,7 @@
 package com.getcapacitor.community.database.sqlite.SQLite;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.text.Editable;
 import android.util.Log;
 import androidx.sqlite.db.SupportSQLiteDatabase;
@@ -24,7 +25,8 @@ public class UtilsSQLCipher {
         DOES_NOT_EXIST,
         UNENCRYPTED,
         ENCRYPTED_SECRET,
-        ENCRYPTED_NEW_SECRET
+        ENCRYPTED_GLOBAL_SECRET,
+        UNKNOWN
     }
 
     /**
@@ -33,10 +35,12 @@ public class UtilsSQLCipher {
      * the passphrase 'secret'.
      *
      * @param dbPath a File pointing to the database
+     * @param sharedPreferences an instance of SharedPreferences
      * @param globVar an instance of GlobalSQLite
      * @return the detected state of the database
      */
-    public State getDatabaseState(File dbPath, GlobalSQLite globVar) {
+    public State getDatabaseState(Context ctxt, File dbPath, SharedPreferences sharedPreferences, GlobalSQLite globVar) {
+        SQLiteDatabase.loadLibs(ctxt);
         if (dbPath.exists()) {
             SQLiteDatabase db = null;
 
@@ -48,10 +52,26 @@ public class UtilsSQLCipher {
                 return (State.UNENCRYPTED);
             } catch (Exception e) {
                 try {
-                    db = SQLiteDatabase.openDatabase(dbPath.getAbsolutePath(), globVar.secret, null, SQLiteDatabase.OPEN_READONLY);
-                    return (State.ENCRYPTED_SECRET);
+                    String passphrase = sharedPreferences.getString("secret", "");
+                    if (passphrase.length() > 0) {
+                        db = SQLiteDatabase.openDatabase(dbPath.getAbsolutePath(), passphrase, null, SQLiteDatabase.OPEN_READONLY);
+                        db.getVersion();
+                        return (State.ENCRYPTED_SECRET);
+                    } else {
+                        return (State.UNKNOWN);
+                    }
                 } catch (Exception e1) {
-                    return (State.ENCRYPTED_NEW_SECRET);
+                    try {
+                        if (globVar.secret.length() > 0) {
+                            db = SQLiteDatabase.openDatabase(dbPath.getAbsolutePath(), globVar.secret, null, SQLiteDatabase.OPEN_READONLY);
+                            db.getVersion();
+                            return (State.ENCRYPTED_GLOBAL_SECRET);
+                        } else {
+                            return (State.UNKNOWN);
+                        }
+                    } catch (Exception e2) {
+                        return (State.UNKNOWN);
+                    }
                 }
             } finally {
                 if (db != null) {

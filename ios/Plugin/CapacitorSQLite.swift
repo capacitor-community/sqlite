@@ -13,6 +13,51 @@ enum CapacitorSQLiteError: Error {
         return value
     }
 
+    // MARK: - IsSecretStored
+
+    @objc public func isSecretStored()  throws -> NSNumber {
+        let isSecretExists: Bool = UtilsSecret.isPassphrase()
+        if isSecretExists {
+            return 1
+        } else {
+            return 0
+        }
+    }
+
+    // MARK: - SetEncryptionSecret
+
+    @objc public func setEncryptionSecret(passphrase: String) throws {
+        do {
+            // close all connections
+            try closeAllConnections()
+            // set encryption secret
+            try UtilsSecret.setEncryptionSecret(passphrase: passphrase)
+            return
+        } catch UtilsSecretError.setEncryptionSecret(let message) {
+            throw CapacitorSQLiteError.failed(message: message)
+        } catch let error {
+            throw CapacitorSQLiteError.failed(message: error.localizedDescription)
+        }
+    }
+
+    // MARK: - ChangeEncryptionSecret
+
+    @objc public func changeEncryptionSecret(passphrase: String,
+                                             oldPassphrase: String) throws {
+        do {
+            // close all connections
+            try closeAllConnections()
+            // set encryption secret
+            try UtilsSecret.changeEncryptionSecret(passphrase: passphrase, oldPassphrase: oldPassphrase)
+            return
+        } catch UtilsSecretError.changeEncryptionSecret(let message) {
+            throw CapacitorSQLiteError.failed(message: message)
+        } catch let error {
+            throw CapacitorSQLiteError.failed(message: error.localizedDescription)
+        }
+
+    }
+
     // MARK: - CreateConnection
 
     @objc public func createConnection(_ dbName: String,
@@ -703,6 +748,26 @@ enum CapacitorSQLiteError: Error {
             retName = String(retName.dropLast(3))
         }
         return retName
+    }
+
+    func closeAllConnections() throws {
+        var keys: [String] = Array(self.dbDict.keys)
+
+        for key in keys {
+            guard let mDb: Database = dbDict[key] else {
+                let msg = "Connection to \(key) not available"
+                throw CapacitorSQLiteError.failed(message: msg)
+            }
+            if mDb.isDBOpen() {
+                do {
+                    try mDb.close()
+                } catch DatabaseError.close(let message) {
+                    throw CapacitorSQLiteError.failed(message: message)
+                }
+            }
+            dbDict.removeValue(forKey: key)
+            return
+        }
     }
 }
 // swiftlint:enable type_body_length

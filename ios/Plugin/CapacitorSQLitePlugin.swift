@@ -29,6 +29,88 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         ])
     }
 
+    // MARK: - IsSecretStored
+
+    @objc func isSecretStored(_ call: CAPPluginCall) {
+        do {
+            let res = try implementation.isSecretStored()
+            var bRes: Bool = false
+            if res == 1 {
+                bRes = true
+            }
+            retHandler.rResult(call: call, ret: bRes)
+            return
+        } catch CapacitorSQLiteError.failed(let message) {
+            let msg = "IsSecretStored: \(message)"
+            retHandler.rResult(call: call, message: msg)
+            return
+        } catch let error {
+            retHandler.rResult(
+                call: call,
+                message: "IsSecretStored: \(error.localizedDescription)")
+            return
+        }
+
+    }
+
+    // MARK: - SetEncryptionSecret
+
+    @objc func setEncryptionSecret(_ call: CAPPluginCall) {
+
+        guard let passphrase = call.options["passphrase"] as? String else {
+            retHandler.rResult(
+                call: call,
+                message: "SetEncryptionSecret: Must provide a passphrase")
+            return
+        }
+        do {
+            try implementation.setEncryptionSecret(passphrase: passphrase)
+            retHandler.rResult(call: call)
+            return
+        } catch CapacitorSQLiteError.failed(let message) {
+            let msg = "SetEncryptionSecret: \(message)"
+            retHandler.rResult(call: call, message: msg)
+            return
+        } catch let error {
+            retHandler.rResult(
+                call: call,
+                message: "SetEncryptionSecret: \(error.localizedDescription)")
+            return
+        }
+    }
+
+    // MARK: - ChangeEncryptionSecret
+
+    @objc func changeEncryptionSecret(_ call: CAPPluginCall) {
+
+        guard let passphrase = call.options["passphrase"] as? String else {
+            retHandler.rResult(
+                call: call,
+                message: "ChangeEncryptionSecret: Must provide a passphrase")
+            return
+        }
+        guard let oldPassphrase = call.options["oldpassphrase"] as? String else {
+            retHandler.rResult(
+                call: call,
+                message: "ChangeEncryptionSecret: Must provide the old passphrase")
+            return
+        }
+        do {
+            try implementation.changeEncryptionSecret(passphrase: passphrase, oldPassphrase: oldPassphrase)
+            retHandler.rResult(call: call)
+            return
+        } catch CapacitorSQLiteError.failed(let message) {
+            let msg = "ChangeEncryptionSecret: \(message)"
+            retHandler.rResult(call: call, message: msg)
+            return
+        } catch let error {
+            retHandler.rResult(
+                call: call,
+                message: "ChangeEncryptionSecret: \(error.localizedDescription)")
+            return
+        }
+    }
+
     // MARK: - CreateConnection
 
     @objc func createConnection(_ call: CAPPluginCall) {

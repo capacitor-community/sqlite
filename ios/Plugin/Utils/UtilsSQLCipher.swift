@@ -29,11 +29,103 @@ enum UtilsSQLCipherError: Error {
     case executeSet(message: String)
     case restoreDB(message: String)
     case deleteBackupDB(message: String)
+    case openDBNoPassword(message: String)
+    case openDBStoredPassword(message: String)
+    case openDBGlobalPassword(message: String)
+}
+enum State: String {
+    case DOESNOTEXIST, UNENCRYPTED, ENCRYPTEDSECRET,
+         ENCRYPTEDGLOBALSECRET, UNKNOWN, ERROR
+
 }
 
 // swiftlint:disable file_length
 // swiftlint:disable type_body_length
 class UtilsSQLCipher {
+
+    class func getDatabaseState(databaseName: String) -> State {
+        do {
+            let path: String  = try UtilsFile.getFilePath(fileName: databaseName)
+            if UtilsFile.isFileExist(filePath: path) {
+                do {
+                    try openDBNoPassword(dBPath: path)
+                    return State.UNENCRYPTED
+                } catch UtilsSQLCipherError.openDBNoPassword(let message) {
+                    if message == "Open" {
+                        do {
+                            try openDBStoredPassword(dBPath: path)
+                            return State.ENCRYPTEDSECRET
+                        } catch UtilsSQLCipherError.openDBStoredPassword(let message) {
+                            if message == "Open" {
+                                do {
+                                    try openDBGlobalPassword(dBPath: path)
+                                    return State.ENCRYPTEDGLOBALSECRET
+                                } catch UtilsSQLCipherError.openDBGlobalPassword(let message) {
+                                    if message == "Open" {
+                                        return State.UNKNOWN
+                                    } else {
+                                        return State.ERROR
+                                    }
+                                }
+
+                            } else {
+                                return State.ERROR
+                            }
+                        }
+                    } else {
+                        return State.ERROR
+                    }
+                }
+            } else {
+                return State.DOESNOTEXIST
+            }
+        } catch {
+            return State.UNKNOWN
+        }
+    }
+    class func openDBNoPassword(dBPath: String) throws {
+        do {
+            let oDb: OpaquePointer? = try openOrCreateDatabase(
+                filename: dBPath, password: "", readonly: true)
+
+            try close(oDB: oDb)
+            return
+        } catch UtilsSQLCipherError.openOrCreateDatabase(_) {
+            throw UtilsSQLCipherError.openDBNoPassword(message: "Open")
+        } catch UtilsSQLCipherError.close(_) {
+            throw UtilsSQLCipherError.openDBNoPassword(message: "Close")
+        }
+
+    }
+    class func openDBStoredPassword(dBPath: String) throws {
+        do {
+            let password: String = UtilsSecret.getPassphrase()
+            let oDb: OpaquePointer? = try openOrCreateDatabase(
+                filename: dBPath, password: password, readonly: true)
+            try close(oDB: oDb)
+            return
+        } catch UtilsSQLCipherError.openOrCreateDatabase(_) {
+            throw UtilsSQLCipherError.openDBStoredPassword(message: "Open")
+        } catch UtilsSQLCipherError.close(_) {
+            throw UtilsSQLCipherError.openDBStoredPassword(message: "Close")
+        }
+
+    }
+    class func openDBGlobalPassword(dBPath: String) throws {
+        do {
+            let globalData: GlobalSQLite = GlobalSQLite()
+            let password: String = globalData.secret
+            let oDb: OpaquePointer? = try openOrCreateDatabase(
+                filename: dBPath, password: password, readonly: true)
+            try close(oDB: oDb)
+            return
+        } catch UtilsSQLCipherError.openOrCreateDatabase(_) {
+            throw UtilsSQLCipherError.openDBGlobalPassword(message: "Open")
+        } catch UtilsSQLCipherError.close(_) {
+            throw UtilsSQLCipherError.openDBGlobalPassword(message: "Close")
+        }
+
+    }
 
     // MARK: - OpenOrCreateDatabase
 
@@ -52,20 +144,16 @@ class UtilsSQLCipher {
                 let keyStatementString = """
                 PRAGMA key = '\(password)';
                 """
-                let msg: String = "Wrong Secret"
                 if sqlite3_exec(mDB, keyStatementString, nil, nil, nil)
-                    == SQLITE_OK {
-                    var stmt: String = "SELECT count(*) FROM "
-                    stmt.append("sqlite_master;")
-                    if sqlite3_exec(mDB, stmt, nil, nil, nil) !=
-                        SQLITE_OK {
-                        throw UtilsSQLCipherError
-                        .openOrCreateDatabase(message: msg)
-                    }
-                } else {
-                    throw UtilsSQLCipherError
-                    .openOrCreateDatabase(message: msg)
+                    != SQLITE_OK {
+                    let msg: String = "Wrong Secret"
+                    throw UtilsSQLCipherError.openOrCreateDatabase(message: msg)
                 }
+            }
+            let retB: Bool = checkDB(mDB: mDB)
+            if !retB {
+                let msg: String = "Cannot open the DB"
+                throw UtilsSQLCipherError.openOrCreateDatabase(message: msg)
             }
 
             /* this should work but doe not sqlite3_key_v2 is not known
@@ -96,6 +184,17 @@ class UtilsSQLCipher {
         }
     }
 
+    // MARK: - CheckDB
+
+    class func checkDB(mDB: OpaquePointer?) -> Bool {
+        var ret: Bool = false
+        var stmt: String = "SELECT count(*) FROM "
+        stmt.append("sqlite_master;")
+        if sqlite3_exec(mDB, stmt, nil, nil, nil) == SQLITE_OK {
+            ret = true
+        }
+        return ret
+    }
     // MARK: - ChangePassword
 
     class func changePassword(filename: String, password: String,

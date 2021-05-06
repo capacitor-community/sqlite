@@ -32,6 +32,24 @@ The refactor release has been upgraded to `@capacitor/core@3.0.0-beta.1`.
 
 🚨 !!! ONLY iOS and Android plugins have been upgraded !!! 🚨
 
+🚨 Since release 3.0.0-beta.13 ->> 🚨
+
+  - GlobalSQLite `secret`and `newsecret` are deprecated
+
+  - The user can now set its own secure secret (passphrase)
+
+    - use `setEncryptionSecret` ONCE to migrate encrypted databases
+      from `secret` to `secure stored secret`
+    
+    - use `changeEncryptionSecret` to change your `secure stored secret`
+
+  - iOS used `KeyChain service` to store the `secret`
+
+  - Android used `Encrypted SharedPreferences` to store the `secret`,
+    the minimun sdk should be set to 23 (limitation from Google)
+
+🚨 Since release 3.0.0-beta.13 ->> 🚨
+
 🚨 Since release 3.0.0-beta.11 ->> 🚨
 
   - Checking of types has been removed in all methods of the plugin
@@ -206,6 +224,9 @@ No configuration required for this plugin
 | addSQLiteSuffix             | ✅      | ✅  | 🚧           | 🚧               | ❌  |
 | deleteOldDatabases          | ✅      | ✅  | 🚧           | 🚧               | ❌  |
 | checkConnectionsConsistency | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| isSecretStored              | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| setEncryptionSecret         | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| changeEncryptionSecret      | ✅      | ✅  | 🚧           | 🚧               | ❌  |
 
 ## Supported SQLite Types
 

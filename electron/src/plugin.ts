@@ -24,6 +24,8 @@ import type {
   capSQLitePathOptions,
   JsonSQLite,
   capAllConnectionsOptions,
+  capSetSecretOptions,
+  capChangeSecretOptions,
 } from './definitions';
 import { Database } from './electron-utils/Database';
 import { UtilsJson } from './electron-utils/ImportExportJson/utilsJson';
@@ -48,14 +50,24 @@ export class CapacitorSQLiteElectronWeb
   > = {};
 
   constructor() {
-    super({
-      name: 'CapacitorSQLite',
-      platforms: ['electron'],
-    });
+    super();
     console.log('CapacitorSQLite Electron');
     this.RemoteRef = remote;
     this._osType = this._uFile.osType;
   }
+  async isSecretStored(): Promise<capSQLiteResult> {
+    console.log('isSecretStored');
+    throw this.unimplemented('Not implemented on Electron.');
+  }
+  async setEncryptionSecret(options: capSetSecretOptions): Promise<void> {
+    console.log('setEncryptionSecret', options);
+    throw this.unimplemented('Not implemented on Electron.');
+  }
+  async changeEncryptionSecret(options: capChangeSecretOptions): Promise<void> {
+    console.log('changeEncryptionSecret', options);
+    throw this.unimplemented('Not implemented on Electron.');
+  }
+
   async createConnection(options: capConnectionOptions): Promise<void> {
     const keys = Object.keys(options);
     if (!keys.includes('database')) {
