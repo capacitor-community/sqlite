@@ -304,8 +304,10 @@ enum CapacitorSQLiteError: Error {
                             val.append(obj)
                         } else if let obj = value as? Float {
                             val.append(obj)
+                        } else if let obj = value as? Double {
+                            val.append(obj)
                         } else if value is NSNull {
-                            val.append("NULL")
+                            val.append(value)
                         } else {
                             let msg: String = "Not a SQL type"
                             throw CapacitorSQLiteError.failed(message: msg)
