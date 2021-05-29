@@ -462,7 +462,7 @@ public class ImportFromJson {
             if (key instanceof Integer) sbQuery.append(row.get(0)).append(";");
             if (key instanceof String) sbQuery.append("'").append(row.get(0)).append("';");
             stmt = sbQuery.toString();
-            }
+        }
         return stmt;
     }
 }

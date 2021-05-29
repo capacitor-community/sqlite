@@ -283,6 +283,7 @@ enum CapacitorSQLiteError: Error {
 
     // MARK: - Run
 
+    // swiftlint:disable cyclomatic_complexity
     @objc func run(_ dbName: String, statement: String, values: [Any],
                    transaction: Bool)
     throws -> [String: Any] {
@@ -328,6 +329,7 @@ enum CapacitorSQLiteError: Error {
             throw CapacitorSQLiteError.failed(message: msg)
         }
     }
+    // swiftlint:enable cyclomatic_complexity
 
     // MARK: - Query
 

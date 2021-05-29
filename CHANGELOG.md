@@ -1,3 +1,14 @@
+## 3.0.0-beta.14 (2021-05-29)
+
+### Chore
+
+ - Update to Capacitor 3.0.0
+
+### Bug Fixes 
+
+- iOS null or empty column return as string "NULL" #issue119, #issue120
+- JS float numbers are rejected in run statements (iOS) #issue121
+
 ## 3.0.0-beta.13 (2021-05-06)
 
 ### Chore

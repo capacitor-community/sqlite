@@ -28,7 +28,6 @@ import type {
 export class CapacitorSQLiteWeb
   extends WebPlugin
   implements CapacitorSQLitePlugin {
-
   async echo(options: capEchoOptions): Promise<capEchoResult> {
     console.log('ECHO in Web plugin', options);
     return options;
