@@ -1,3 +1,9 @@
+## 3.0.0-rc.1 (2021-06-02)
+
+### Bug Fixes 
+
+- CapacitorSQLite.isSecretStored()" is not implemented on android #issue123
+
 ## 3.0.0-beta.14 (2021-05-29)
 
 ### Chore

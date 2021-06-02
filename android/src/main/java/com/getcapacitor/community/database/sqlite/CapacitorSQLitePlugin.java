@@ -61,6 +61,7 @@ public class CapacitorSQLitePlugin extends Plugin {
      * Check if a secret has been stored
      * @param call
      */
+    @PluginMethod
     public void isSecretStored(PluginCall call) {
         try {
             Boolean res = implementation.isSecretStored();
