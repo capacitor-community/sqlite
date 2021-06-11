@@ -1,6 +1,6 @@
 # Using capacitor-sqlite with TypeORM
 
-*Currently a [PR with fix for the capacitor driver is still open on the TypeORM repo](https://github.com/typeorm/typeorm/pull/7728) which solves an error on Android when using certain `PRAGMA` requests*
+*Currently a [PR with a fix for the capacitor driver is still open on the TypeORM repo](https://github.com/typeorm/typeorm/pull/7728) which solves an error on Android when using certain `PRAGMA` requests*
 
 ```typescript
 import { CapacitorSQLite, SQLiteConnection } from '@capacitor-community/sqlite';
@@ -10,8 +10,8 @@ import { createConnection } from 'typeorm';
 const sqliteConnection = new SQLiteConnection(CapacitorSQLite);
 
 // copy preloaded dbs (optional, not TypeORM related):
-// the preloaded dbs must have the `YOUR_DB_NAME.db` format (i.e. including the suffix, 
-// NOT including the `SQLITE` suffix from capacitor-sqlite)
+// the preloaded dbs must have the `YOUR_DB_NAME.db` format (i.e. including the `.db` suffix, 
+// NOT including the internal `SQLITE` suffix from capacitor-sqlite)
 await sqliteConnection.copyFromAssets();
 
 // create the TypeORM connection
