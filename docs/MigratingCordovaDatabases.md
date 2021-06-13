@@ -86,7 +86,7 @@ result = await this._sqlite.addSQLiteSuffix("files/.../.../...");
 
 ### deleteOldDatabases
 
-When the addSQLiteSuffix method is completed and all new databases with suffix SQLite have been fully tested, the deleteOldDatabases can be used to remove the Cordova plugin databases.
+When the addSQLiteSuffix method is completed and all new databases with suffix SQLite have been fully tested, the deleteOldDatabases should be used to remove the Cordova plugin databases. Otherwise the database will be migrated each time the `addSQLiteSuffix` method is called. This would overwrite the previously migrated one again.
 
 If you were using the "default" location in the cordova plugin, you just call the deleteOldDatabases method with no parameters
 
