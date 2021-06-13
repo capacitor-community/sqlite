@@ -453,7 +453,7 @@ public class Database {
                             row.put(colName, c.getLong(c.getColumnIndex(colName)));
                             break;
                         case FIELD_TYPE_FLOAT:
-                            row.put(colName, c.getFloat(c.getColumnIndex(colName)));
+                            row.put(colName, c.getDouble(c.getColumnIndex(colName)));
                             break;
                         case FIELD_TYPE_BLOB:
                             row.put(colName, c.getBlob(c.getColumnIndex(colName)));

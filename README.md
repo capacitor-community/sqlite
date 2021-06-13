@@ -32,6 +32,10 @@ The refactor release has been upgraded to `@capacitor/core@3.0.0-beta.1`.
 
 🚨 !!! ONLY iOS and Android plugins have been upgraded !!! 🚨
 
+🚨 Since release 3.0.0-rc.2 ->> 🚨
+
+Thanks to Chris, a driver to TypeORM is now available
+
 🚨 Since release 3.0.0-beta.13 ->> 🚨
 
   - GlobalSQLite `secret`and `newsecret` are deprecated
@@ -74,6 +78,8 @@ The test has been achieved on:
 - a [Ionic/Vue app](https://github.com/jepiqueau/vue-sqlite-app-starter)
 
 ## REFACTOR 🚀 (Move to branch 2.9.x)
+
+The `2.9.x` is now 🛑 NOT MAINTAINED ANYMORE 🛑.
 
 The refactor offers now (since `2.9.0-beta.1`) all the features that the previous was offering. It has been a quite heavy process, hoping that the developpers will take benefit from it.
 
@@ -247,6 +253,9 @@ No configuration required for this plugin
 - [UpgradeDatabaseVersion_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/UpgradeDatabaseVersion.md)
 
 - [MigratingCordovaDatabases_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/MigratingCordovaDatabases.md)
+
+- [TypeORM_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/TypeORM-Usage.md)
+
 
 ### Framework's Usage 
 

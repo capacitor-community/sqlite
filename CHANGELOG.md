@@ -1,3 +1,14 @@
+## 3.0.0-rc.2 (2021-06-13)
+
+## Added Features
+
+- Thanks to Chris, a driver to TypeORM is now available.
+- TypeORM-Usage.md
+
+### Bug Fixes 
+
+- Double precision type numbers are read as floats Android #issue124
+
 ## 3.0.0-rc.1 (2021-06-02)
 
 ### Bug Fixes 
