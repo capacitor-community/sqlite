@@ -105,8 +105,6 @@ Check if a passphrase exists in a secure store
 
 **Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
 
-**Since:** 3.0.0-beta.13
-
 --------------------
 
 
@@ -123,8 +121,6 @@ Update the secret of previous encrypted databases with GlobalSQLite
 | Param         | Type                                                                | Description                                            |
 | ------------- | ------------------------------------------------------------------- | ------------------------------------------------------ |
 | **`options`** | <code><a href="#capsetsecretoptions">capSetSecretOptions</a></code> | <a href="#capsetsecretoptions">capSetSecretOptions</a> |
-
-**Since:** 3.0.0-beta.13
 
 --------------------
 
@@ -143,8 +139,6 @@ in secure store
 | ------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------ |
 | **`options`** | <code><a href="#capchangesecretoptions">capChangeSecretOptions</a></code> | <a href="#capchangesecretoptions">capChangeSecretOptions</a> |
 
-**Since:** 3.0.0-beta.13
-
 --------------------
 
 
@@ -160,8 +154,6 @@ create a database connection
 | ------------- | --------------------------------------------------------------------- | -------------------------------------------------------- |
 | **`options`** | <code><a href="#capconnectionoptions">capConnectionOptions</a></code> | <a href="#capconnectionoptions">capConnectionOptions</a> |
 
-**Since:** 2.9.0 refactor
-
 --------------------
 
 
@@ -176,8 +168,6 @@ close a database connection
 | Param         | Type                                                          | Description                                      |
 | ------------- | ------------------------------------------------------------- | ------------------------------------------------ |
 | **`options`** | <code><a href="#capsqliteoptions">capSQLiteOptions</a></code> | <a href="#capsqliteoptions">capSQLiteOptions</a> |
-
-**Since:** 2.9.0 refactor
 
 --------------------
 
@@ -196,8 +186,6 @@ Echo a given string
 
 **Returns:** <code>Promise&lt;<a href="#capechoresult">capEchoResult</a>&gt;</code>
 
-**Since:** 0.0.1
-
 --------------------
 
 
@@ -213,8 +201,6 @@ Open a SQLite database
 | ------------- | ------------------------------------------------------------- | -------------------------------------------------- |
 | **`options`** | <code><a href="#capsqliteoptions">capSQLiteOptions</a></code> | : <a href="#capsqliteoptions">capSQLiteOptions</a> |
 
-**Since:** 0.0.1
-
 --------------------
 
 
@@ -229,8 +215,6 @@ Close a SQLite database
 | Param         | Type                                                          | Description                                        |
 | ------------- | ------------------------------------------------------------- | -------------------------------------------------- |
 | **`options`** | <code><a href="#capsqliteoptions">capSQLiteOptions</a></code> | : <a href="#capsqliteoptions">capSQLiteOptions</a> |
-
-**Since:** 0.0.1
 
 --------------------
 
@@ -249,8 +233,6 @@ Execute a Batch of Raw Statements as String
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
 
-**Since:** 0.0.1
-
 --------------------
 
 
@@ -267,8 +249,6 @@ Execute a Set of Raw Statements as Array of CapSQLiteSet
 | **`options`** | <code><a href="#capsqlitesetoptions">capSQLiteSetOptions</a></code> | : <a href="#capsqlitesetoptions">capSQLiteSetOptions</a> |
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
-
-**Since:** 2.2.0-2
 
 --------------------
 
@@ -287,8 +267,6 @@ Execute a Single Statement
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
 
-**Since:** 0.0.1
-
 --------------------
 
 
@@ -305,8 +283,6 @@ Query a Single Statement
 | **`options`** | <code><a href="#capsqlitequeryoptions">capSQLiteQueryOptions</a></code> | : <a href="#capsqlitequeryoptions">capSQLiteQueryOptions</a> |
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitevalues">capSQLiteValues</a>&gt;</code>
-
-**Since:** 0.0.1
 
 --------------------
 
@@ -325,8 +301,6 @@ Check if a SQLite database exists with opened connection
 
 **Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
 
-**Since:** 2.0.1-1
-
 --------------------
 
 
@@ -343,8 +317,6 @@ Check if a SQLite database is opened
 | **`options`** | <code><a href="#capsqliteoptions">capSQLiteOptions</a></code> | : <a href="#capsqliteoptions">capSQLiteOptions</a> |
 
 **Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
-
-**Since:** 3.0.0-beta.5
 
 --------------------
 
@@ -363,8 +335,6 @@ Check if a SQLite database exists without connection
 
 **Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
 
-**Since:** 3.0.0-beta.5
-
 --------------------
 
 
@@ -382,8 +352,6 @@ Check if a table exists in a SQLite database
 
 **Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
 
-**Since:** 3.0.0-beta.5
-
 --------------------
 
 
@@ -398,8 +366,6 @@ Delete a SQLite database
 | Param         | Type                                                          | Description                                        |
 | ------------- | ------------------------------------------------------------- | -------------------------------------------------- |
 | **`options`** | <code><a href="#capsqliteoptions">capSQLiteOptions</a></code> | : <a href="#capsqliteoptions">capSQLiteOptions</a> |
-
-**Since:** 0.0.1
 
 --------------------
 
@@ -418,8 +384,6 @@ Is Json Object Valid
 
 **Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
 
-**Since:** 2.0.1-1
-
 --------------------
 
 
@@ -436,8 +400,6 @@ Import from Json Object
 | **`options`** | <code><a href="#capsqliteimportoptions">capSQLiteImportOptions</a></code> | : <a href="#capsqliteimportoptions">capSQLiteImportOptions</a> |
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
-
-**Since:** 2.0.0-3
 
 --------------------
 
@@ -456,8 +418,6 @@ Export to Json Object
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitejson">capSQLiteJson</a>&gt;</code>
 
-**Since:** 2.0.1-1
-
 --------------------
 
 
@@ -475,8 +435,6 @@ Create a synchronization table
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
 
-**Since:** 2.0.1-1
-
 --------------------
 
 
@@ -491,8 +449,6 @@ Set the synchronization date
 | Param         | Type                                                                          | Description                                                        |
 | ------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------ |
 | **`options`** | <code><a href="#capsqlitesyncdateoptions">capSQLiteSyncDateOptions</a></code> | : <a href="#capsqlitesyncdateoptions">capSQLiteSyncDateOptions</a> |
-
-**Since:** 2.0.1-1
 
 --------------------
 
@@ -511,8 +467,6 @@ Get the synchronization date
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitesyncdate">capSQLiteSyncDate</a>&gt;</code>
 
-**Since:** 2.9.0
-
 --------------------
 
 
@@ -528,8 +482,6 @@ Add the upgrade Statement for database version upgrading
 | ------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------- |
 | **`options`** | <code><a href="#capsqliteupgradeoptions">capSQLiteUpgradeOptions</a></code> | : <a href="#capsqliteupgradeoptions">capSQLiteUpgradeOptions</a> |
 
-**Since:** 2.4.2-6 iOS & Electron 2.4.2-7 Android
-
 --------------------
 
 
@@ -540,8 +492,6 @@ copyFromAssets() => Promise<void>
 ```
 
 Copy databases from public/assets/databases folder to application databases folder
-
-**Since:** 2.9.0 refactor
 
 --------------------
 
@@ -555,8 +505,6 @@ getDatabaseList() => Promise<capSQLiteValues>
 Get the database list
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitevalues">capSQLiteValues</a>&gt;</code>
-
-**Since:** 3.0.0-beta.5
 
 --------------------
 
@@ -573,8 +521,6 @@ Add SQLIte Suffix to existing databases
 | ------------- | --------------------------------------------------------------------- | ---------------------------------------------------------- |
 | **`options`** | <code><a href="#capsqlitepathoptions">capSQLitePathOptions</a></code> | : <a href="#capsqlitepathoptions">capSQLitePathOptions</a> |
 
-**Since:** 3.0.0-beta.5
-
 --------------------
 
 
@@ -589,8 +535,6 @@ Delete Old Cordova databases
 | Param         | Type                                                                  | Description                                                |
 | ------------- | --------------------------------------------------------------------- | ---------------------------------------------------------- |
 | **`options`** | <code><a href="#capsqlitepathoptions">capSQLitePathOptions</a></code> | : <a href="#capsqlitepathoptions">capSQLitePathOptions</a> |
-
-**Since:** 3.0.0-beta.5
 
 --------------------
 
@@ -610,8 +554,6 @@ return false : no consistency, connections are closed
 | **`options`** | <code><a href="#capallconnectionsoptions">capAllConnectionsOptions</a></code> | : <a href="#capallconnectionsoptions">capAllConnectionsOptions</a> |
 
 **Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
-
-**Since:** 3.0.0-beta.11
 
 --------------------
 
@@ -689,20 +631,20 @@ return false : no consistency, connections are closed
 
 #### capSQLiteExecuteOptions
 
-| Prop              | Type                 | Description                                         | Since         |
-| ----------------- | -------------------- | --------------------------------------------------- | ------------- |
-| **`database`**    | <code>string</code>  | The database name                                   |               |
-| **`statements`**  | <code>string</code>  | The batch of raw SQL statements as string           |               |
-| **`transaction`** | <code>boolean</code> | Enable / Disable transactions default Enable (true) | 3.0.0-beta.10 |
+| Prop              | Type                 | Description                                         |
+| ----------------- | -------------------- | --------------------------------------------------- |
+| **`database`**    | <code>string</code>  | The database name                                   |
+| **`statements`**  | <code>string</code>  | The batch of raw SQL statements as string           |
+| **`transaction`** | <code>boolean</code> | Enable / Disable transactions default Enable (true) |
 
 
 #### capSQLiteSetOptions
 
-| Prop              | Type                        | Description                                               | Since         |
-| ----------------- | --------------------------- | --------------------------------------------------------- | ------------- |
-| **`database`**    | <code>string</code>         | The database name                                         |               |
-| **`set`**         | <code>capSQLiteSet[]</code> | The batch of raw SQL statements as Array of capSQLLiteSet |               |
-| **`transaction`** | <code>boolean</code>        | Enable / Disable transactions default Enable (true)       | 3.0.0-beta.10 |
+| Prop              | Type                        | Description                                               |
+| ----------------- | --------------------------- | --------------------------------------------------------- |
+| **`database`**    | <code>string</code>         | The database name                                         |
+| **`set`**         | <code>capSQLiteSet[]</code> | The batch of raw SQL statements as Array of capSQLLiteSet |
+| **`transaction`** | <code>boolean</code>        | Enable / Disable transactions default Enable (true)       |
 
 
 #### capSQLiteSet
@@ -715,12 +657,12 @@ return false : no consistency, connections are closed
 
 #### capSQLiteRunOptions
 
-| Prop              | Type                 | Description                                         | Since         |
-| ----------------- | -------------------- | --------------------------------------------------- | ------------- |
-| **`database`**    | <code>string</code>  | The database name                                   |               |
-| **`statement`**   | <code>string</code>  | A statement                                         |               |
-| **`values`**      | <code>any[]</code>   | A set of values for a statement                     |               |
-| **`transaction`** | <code>boolean</code> | Enable / Disable transactions default Enable (true) | 3.0.0-beta.10 |
+| Prop              | Type                 | Description                                         |
+| ----------------- | -------------------- | --------------------------------------------------- |
+| **`database`**    | <code>string</code>  | The database name                                   |
+| **`statement`**   | <code>string</code>  | A statement                                         |
+| **`values`**      | <code>any[]</code>   | A set of values for a statement                     |
+| **`transaction`** | <code>boolean</code> | Enable / Disable transactions default Enable (true) |
 
 
 #### capSQLiteValues
@@ -732,11 +674,11 @@ return false : no consistency, connections are closed
 
 #### capSQLiteQueryOptions
 
-| Prop            | Type                | Description                                     | Since         |
-| --------------- | ------------------- | ----------------------------------------------- | ------------- |
-| **`database`**  | <code>string</code> | The database name                               |               |
-| **`statement`** | <code>string</code> | A statement                                     |               |
-| **`values`**    | <code>any[]</code>  | A set of values for a statement Change to any[] | 3.0.0-beta.11 |
+| Prop            | Type                | Description                                     |
+| --------------- | ------------------- | ----------------------------------------------- |
+| **`database`**  | <code>string</code> | The database name                               |
+| **`statement`** | <code>string</code> | A statement                                     |
+| **`values`**    | <code>any[]</code>  | A set of values for a statement Change to any[] |
 
 
 #### capSQLiteTableOptions
@@ -862,9 +804,9 @@ return false : no consistency, connections are closed
 
 #### capAllConnectionsOptions
 
-| Prop          | Type                  | Description                   | Since         |
-| ------------- | --------------------- | ----------------------------- | ------------- |
-| **`dbNames`** | <code>string[]</code> | the dbName of all connections | 3.0.0-beta.10 |
+| Prop          | Type                  | Description                   |
+| ------------- | --------------------- | ----------------------------- |
+| **`dbNames`** | <code>string[]</code> | the dbName of all connections |
 
 </docgen-api>
 

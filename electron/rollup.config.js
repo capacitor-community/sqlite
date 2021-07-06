@@ -1,11 +1,16 @@
-import nodeResolve from 'rollup-plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
+import resolve from '@rollup/plugin-node-resolve';
+
 export default {
-  input: 'dist/esm/electron/src/index.js',
-  output: {
-    file: 'dist/plugin.js',
-    format: 'iife',
-    name: 'capacitorPlugin',
-    sourcemap: true,
-  },
-  plugins: [nodeResolve()],
+  input: 'electron/build/electron/src/index.js',
+  output: [
+    {
+      file: 'electron/dist/plugin.js',
+      format: 'cjs',
+      sourcemap: true,
+      inlineDynamicImports: true,
+    },
+  ],
+  external: ['@capacitor/core', 'path', 'fs', 'os'],
+  plugins: [resolve(),commonjs()]
 };

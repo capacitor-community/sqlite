@@ -1,4 +1,3 @@
-import nodeResolve from '@rollup/plugin-node-resolve';
 
 export default {
   input: 'dist/esm/index.js',
@@ -21,11 +20,4 @@ export default {
     },
   ],
   external: ['@capacitor/core'],
-  plugins: [
-    nodeResolve({
-      // allowlist of dependencies to bundle in
-      // @see https://github.com/rollup/plugins/tree/master/packages/node-resolve#resolveonly
-      resolveOnly: ['lodash'],
-    }),
-  ],
 };

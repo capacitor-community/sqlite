@@ -47,22 +47,23 @@
     "docgenConnection": "docgen --api ISQLiteConnection --output-readme docs/APIConnection.md",
     "docgenDBConnection": "docgen --api ISQLiteDBConnection --output-readme docs/APIDBConnection.md",
     "build": "npm run clean && npm run docgen && tsc && rollup -c rollup.config.js",
-    "build-electron": "rimraf ./electron/dist && cd ./electron && tsc && rollup --config rollup.config.js",
+    "build-electron": "tsc --project electron/tsconfig.json && rollup -c electron/rollup.config.js && rimraf ./electron/build",
     "clean": "rimraf ./dist",
     "watch": "tsc --watch",
     "test": "echo \"No test specified\"",
     "prepublishOnly": "npm run build && npm run build-electron && npm run docgen"
   },
   "devDependencies": {
-    "@capacitor/android": "^3.0.0",
-    "@capacitor/core": "3.0.0",
-    "@capacitor/docgen": "^0.0.14",
-    "@capacitor/ios": "^3.0.0",
+    "@capacitor/android": "^3.0.1",
+    "@capacitor/core": "3.0.1",
+    "@capacitor/docgen": "^0.0.16",
+    "@capacitor/ios": "^3.0.1",
     "@ionic/eslint-config": "^0.3.0",
     "@ionic/prettier-config": "^1.0.1",
     "@ionic/swiftlint-config": "^1.1.2",
-    "@rollup/plugin-node-resolve": "^11.1.0",
-    "electron": "^11.2.0",
+    "@rollup/plugin-commonjs": "^19.0.0",
+    "@rollup/plugin-node-resolve": "^13.0.0",
+    "electron": "^13.1.3",
     "eslint": "^7.11.0",
     "prettier": "~2.2.0",
     "prettier-plugin-java": "~1.0.0",
@@ -73,7 +74,7 @@
     "typescript": "~4.0.5"
   },
   "peerDependencies": {
-    "@capacitor/core": "^3.0.0"
+    "@capacitor/core": "^3.0.1"
   },
   "prettier": "@ionic/prettier-config",
   "swiftlint": "@ionic/swiftlint-config",
@@ -88,7 +89,7 @@
       "src": "android"
     },
     "electron": {
-      "src": "electron/dist/plugin.js"
+      "src": "electron"
     }
   }
 }

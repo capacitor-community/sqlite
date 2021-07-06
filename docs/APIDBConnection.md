@@ -44,8 +44,6 @@ Get SQLite DB Connection DB name
 
 **Returns:** <code>string</code>
 
-**Since:** 2.9.0 refactor
-
 --------------------
 
 
@@ -57,8 +55,6 @@ open() => Promise<void>
 
 Open a SQLite DB Connection
 
-**Since:** 2.9.0 refactor
-
 --------------------
 
 
@@ -69,8 +65,6 @@ close() => Promise<void>
 ```
 
 Close a SQLite DB Connection
-
-**Since:** 2.9.0 refactor
 
 --------------------
 
@@ -90,8 +84,6 @@ Execute SQLite DB Connection Statements
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
 
-**Since:** 2.9.0 refactor
-
 --------------------
 
 
@@ -109,8 +101,6 @@ Execute SQLite DB Connection Query
 | **`values`**    | <code>any[]</code>  | (optional)  |
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitevalues">capSQLiteValues</a>&gt;</code>
-
-**Since:** 2.9.0 refactor
 
 --------------------
 
@@ -131,8 +121,6 @@ Execute SQLite DB Connection Raw Statement
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
 
-**Since:** 2.9.0 refactor
-
 --------------------
 
 
@@ -151,8 +139,6 @@ Execute SQLite DB Connection Set
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
 
-**Since:** 2.9.0 refactor
-
 --------------------
 
 
@@ -165,8 +151,6 @@ isExists() => Promise<capSQLiteResult>
 Check if a SQLite DB Connection exists
 
 **Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
-
-**Since:** 2.9.0 refactor
 
 --------------------
 
@@ -185,8 +169,6 @@ Check if a SQLite database is opened
 
 **Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
 
-**Since:** 3.0.0-beta.5
-
 --------------------
 
 
@@ -204,8 +186,6 @@ Check if a table exists
 
 **Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
 
-**Since:** 3.0.0-beta.5
-
 --------------------
 
 
@@ -216,8 +196,6 @@ delete() => Promise<void>
 ```
 
 Delete a SQLite DB Connection
-
-**Since:** 2.9.0 refactor
 
 --------------------
 
@@ -231,8 +209,6 @@ createSyncTable() => Promise<capSQLiteChanges>
 Create a synchronization table
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
-
-**Since:** 2.9.0 refactor
 
 --------------------
 
@@ -249,8 +225,6 @@ Set the synchronization date
 | -------------- | ------------------- |
 | **`syncdate`** | <code>string</code> |
 
-**Since:** 2.9.0 refactor
-
 --------------------
 
 
@@ -263,8 +237,6 @@ getSyncDate() => Promise<string>
 Get the synchronization date
 
 **Returns:** <code>Promise&lt;string&gt;</code>
-
-**Since:** 2.9.0 refactor
 
 --------------------
 
@@ -282,8 +254,6 @@ Export the given database to a JSON Object
 | **`mode`** | <code>string</code> |
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitejson">capSQLiteJson</a>&gt;</code>
-
-**Since:** 2.9.0 refactor
 
 --------------------
 
