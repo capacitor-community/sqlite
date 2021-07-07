@@ -136,7 +136,7 @@ meaning that it will not work in IE11 without additional JavaScript transformati
 ## Installation
 
 ```bash
-npm install @capacitor-community/sqlite@next
+npm install @capacitor-community/sqlite
 npm run build
 npx cap sync
 npx cap add android
