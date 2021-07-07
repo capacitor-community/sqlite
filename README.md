@@ -2,7 +2,7 @@
 <h3 align="center">SQLITE DATABASE</h3>
 <p align="center"><strong><code>@capacitor-community/sqlite</code></strong></p>
 <br>
-<p align="center" style="font-size:50px;color:red"><strong>CAPACITOR 3 🚧</strong></p><br>
+<p align="center" style="font-size:50px;color:red"><strong>CAPACITOR 3</strong></p><br>
 
 <p align="center">
   Capacitor community plugin for Native and Electron SQLite Databases. In Native databases could be encrypted with SQLCipher
@@ -26,11 +26,9 @@
 | ----------------- | ----------------------------------------- | ------ |
 | Quéau Jean Pierre | [jepiqueau](https://github.com/jepiqueau) |        |
 
-## NEXT FOR CAPACITOR 3 🚧 (Master)
+## CAPACITOR 3 (Master)
 
-The refactor release has been upgraded to `@capacitor/core@3.0.0-beta.1`.
-
-🚨 !!! ONLY iOS and Android plugins have been upgraded !!! 🚨
+🚨 !!! Sorry for Electron developper, they will have to wait for @capacitor-community/electron release 4 before getting the @capacitor-community/sqlite Electron plugin part  !!! 🚨
 
 🚨 Since release 3.0.0-rc.2 ->> 🚨
 
@@ -77,7 +75,7 @@ The test has been achieved on:
 
 - a [Ionic/Vue app](https://github.com/jepiqueau/vue-sqlite-app-starter)
 
-## REFACTOR 🚀 (Move to branch 2.9.x)
+## REFACTOR (Move to branch 2.9.x)
 
 The `2.9.x` is now 🛑 NOT MAINTAINED ANYMORE 🛑.
 
@@ -159,16 +157,12 @@ npx cap add ios
 
 - On Electron, go to the Electron folder of YOUR_APPLICATION
 
-```
-npm install --save @journeyapps/sqlcipher
-```
 
 ## Build & Run
 
 ```
 npm run build
 npx cap copy
-npx cap copy @capacitor-community/electron
 ```
 
 ### IOS
@@ -189,8 +183,6 @@ npx cap open android
 npx cap open @capacitor-community/electron
 ```
 ## Issues
-
-When you will find issues, please report them with the `NEXT` word at the start of the issue title.
 
 [issues](https://github.com/capacitor-community/sqlite/issues)
 
@@ -290,7 +282,6 @@ No configuration required for this plugin
 ## Dependencies
 
 The IOS and Android codes are using `SQLCipher` allowing for database encryption
-The Electron code use `@journeyapps/sqlcipher` allowing for database encryption for MacOS 🚨 !!! NOT for Windows !!! 🚨 
 
 ## Contributors ✨
 

@@ -18,7 +18,7 @@ import org.json.JSONObject;
 @CapacitorPlugin(name = "CapacitorSQLite")
 public class CapacitorSQLitePlugin extends Plugin {
 
-    private static final String TAG = Database.class.getName();
+    private static final String TAG = CapacitorSQLitePlugin.class.getName();
     private Context context;
     private CapacitorSQLite implementation;
     private Dictionary<String, Dictionary<Integer, JSONObject>> versionUpgrades = new Hashtable<>();
@@ -502,6 +502,8 @@ public class CapacitorSQLitePlugin extends Plugin {
             return;
         }
         JSArray values = call.getArray("values");
+        Log.v(TAG, "CapacitorSQLitePlugin: " + values);
+
         Boolean transaction = call.getBoolean("transaction", true);
 
         try {

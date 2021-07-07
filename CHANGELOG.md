@@ -1,3 +1,15 @@
+## 3.0.0 (2021-07-07)
+
+### Chore
+
+ - Update to Capacitor 3.0.2
+
+### Bug Fixes 
+
+ - Update README.md
+ - Fix Insert Null as Foreign Key Android issue#125
+ - Fix SetEncryptionSecret Android issue#141
+
 ## 3.0.0-rc.2 (2021-06-13)
 
 ## Added Features

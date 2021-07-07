@@ -51,6 +51,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':capacitor-android')
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
+    implementation 'androidx.room:room-runtime:2.2.5'
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
@@ -59,5 +60,6 @@ dependencies {
     implementation "androidx.sqlite:sqlite:2.1.0"
     //security library
     implementation "androidx.security:security-crypto:1.0.0"
+    annotationProcessor 'androidx.room:room-compiler:2.2.5'
 
 }

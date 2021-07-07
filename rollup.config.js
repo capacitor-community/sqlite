@@ -1,4 +1,3 @@
-
 export default {
   input: 'dist/esm/index.js',
   output: [

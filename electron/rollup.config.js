@@ -9,8 +9,9 @@ export default {
       format: 'cjs',
       sourcemap: true,
       inlineDynamicImports: true,
+      exports: 'named',
     },
   ],
   external: ['@capacitor/core', 'path', 'fs', 'os'],
-  plugins: [resolve(),commonjs()]
+  plugins: [resolve(), commonjs()],
 };

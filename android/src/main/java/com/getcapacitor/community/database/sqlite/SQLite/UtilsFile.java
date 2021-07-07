@@ -23,7 +23,15 @@ public class UtilsFile {
     }
 
     public String[] getListOfFiles(Context context) {
-        return context.databaseList();
+        String[] files = context.databaseList();
+        List<String> dbs = new ArrayList<>();
+        for (String file : files) {
+            if (file.endsWith("SQLite.db")) {
+                dbs.add(file);
+            }
+        }
+        String[] retArray = dbs.toArray(new String[0]);
+        return retArray;
     }
 
     public Boolean deleteDatabase(Context context, String dbName) {

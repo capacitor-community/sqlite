@@ -52,6 +52,8 @@ Echo a value
 
 **Returns:** <code>Promise&lt;<a href="#capechoresult">capEchoResult</a>&gt;</code>
 
+**Since:** 2.9.0 refactor
+
 --------------------
 
 
@@ -64,6 +66,8 @@ isSecretStored() => Promise<capSQLiteResult>
 Check if a secret is stored
 
 **Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 3.0.0-beta.13
 
 --------------------
 
@@ -80,6 +84,8 @@ Set a passphrase in a secure store
 | ---------------- | ------------------- |
 | **`passphrase`** | <code>string</code> |
 
+**Since:** 3.0.0-beta.13
+
 --------------------
 
 
@@ -95,6 +101,8 @@ Change the passphrase in a secure store
 | ------------------- | ------------------- |
 | **`passphrase`**    | <code>string</code> |
 | **`oldpassphrase`** | <code>string</code> |
+
+**Since:** 3.0.0-beta.13
 
 --------------------
 
@@ -114,6 +122,8 @@ Add the upgrade Statement for database version upgrading
 | **`toVersion`**   | <code>number</code>         |
 | **`statement`**   | <code>string</code>         |
 | **`set`**         | <code>capSQLiteSet[]</code> |
+
+**Since:** 2.9.0 refactor
 
 --------------------
 
@@ -135,6 +145,8 @@ Create a connection to a database
 
 **Returns:** <code>Promise&lt;SQLiteDBConnection&gt;</code>
 
+**Since:** 2.9.0 refactor
+
 --------------------
 
 
@@ -151,6 +163,8 @@ Check if a connection exists
 | **`database`** | <code>string</code> |
 
 **Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 3.0.0-beta.5
 
 --------------------
 
@@ -169,6 +183,8 @@ Retrieve an existing database connection
 
 **Returns:** <code>Promise&lt;SQLiteDBConnection&gt;</code>
 
+**Since:** 2.9.0 refactor
+
 --------------------
 
 
@@ -181,6 +197,8 @@ retrieveAllConnections() => Promise<Map<string, SQLiteDBConnection>>
 Retrieve all database connections
 
 **Returns:** <code>Promise&lt;<a href="#map">Map</a>&lt;string, SQLiteDBConnection&gt;&gt;</code>
+
+**Since:** 2.9.0 refactor
 
 --------------------
 
@@ -197,6 +215,8 @@ Close a database connection
 | -------------- | ------------------- |
 | **`database`** | <code>string</code> |
 
+**Since:** 2.9.0 refactor
+
 --------------------
 
 
@@ -207,6 +227,8 @@ closeAllConnections() => Promise<void>
 ```
 
 Close all database connections
+
+**Since:** 2.9.0 refactor
 
 --------------------
 
@@ -222,6 +244,8 @@ and Native Connections
 if inconsistency all connections are removed
 
 **Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 3.0.0-beta.10
 
 --------------------
 
@@ -240,6 +264,8 @@ Import a database From a JSON
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
 
+**Since:** 2.9.0 refactor
+
 --------------------
 
 
@@ -257,6 +283,8 @@ Check the validity of a JSON Object
 
 **Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
 
+**Since:** 2.9.0 refactor
+
 --------------------
 
 
@@ -267,6 +295,8 @@ copyFromAssets() => Promise<void>
 ```
 
 Copy databases from public/assets/databases folder to application databases folder
+
+**Since:** 2.9.0 refactor
 
 --------------------
 
@@ -285,6 +315,8 @@ Check if a database exists
 
 **Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
 
+**Since:** 3.0.0-beta.5
+
 --------------------
 
 
@@ -297,6 +329,8 @@ getDatabaseList() => Promise<capSQLiteValues>
 Get the database list
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitevalues">capSQLiteValues</a>&gt;</code>
+
+**Since:** 3.0.0-beta.5
 
 --------------------
 
@@ -313,6 +347,8 @@ Add SQLIte Suffix to existing databases
 | ---------------- | ------------------- |
 | **`folderPath`** | <code>string</code> |
 
+**Since:** 3.0.0-beta.5
+
 --------------------
 
 
@@ -327,6 +363,8 @@ Delete Old Cordova databases
 | Param            | Type                |
 | ---------------- | ------------------- |
 | **`folderPath`** | <code>string</code> |
+
+**Since:** 3.0.0-beta.5
 
 --------------------
 

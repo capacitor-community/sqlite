@@ -1115,10 +1115,21 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
     let res: any;
     try {
       if (values && values.length > 0) {
+        console.log(`$$$$ in dbConnection ${values.length}`);
+        console.log(`$$$$ in dbConnection values ${values}`);
+        const vals: any[] = [];
+        for (const val of values) {
+          if (val != null) {
+            vals.push(val);
+          } else {
+            vals.push(undefined);
+          }
+        }
+        console.log(`$$$$ in dbConnection vals ${vals}`);
         res = await this.sqlite.run({
           database: this.dbName,
           statement: statement,
-          values: values,
+          values: vals,
           transaction: transaction,
         });
       } else {

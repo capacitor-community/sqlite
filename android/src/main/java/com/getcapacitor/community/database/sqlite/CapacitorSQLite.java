@@ -31,7 +31,7 @@ import org.json.JSONObject;
 
 public class CapacitorSQLite {
 
-    private static final String TAG = Database.class.getName();
+    private static final String TAG = CapacitorSQLite.class.getName();
     private Context context;
     private Dictionary<String, Database> dbDict = new Hashtable<>();
     private UtilsSQLite uSqlite = new UtilsSQLite();
