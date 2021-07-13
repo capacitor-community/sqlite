@@ -1,5 +1,5 @@
 import commonjs from '@rollup/plugin-commonjs';
-import resolve from '@rollup/plugin-node-resolve';
+import NodeResolve from '@rollup/plugin-node-resolve';
 
 export default {
   input: 'electron/build/electron/src/index.js',
@@ -12,6 +12,6 @@ export default {
       exports: 'named',
     },
   ],
-  external: ['@capacitor/core', 'path', 'fs', 'os'],
-  plugins: [resolve(), commonjs()],
+  external: ['@capacitor/core'],
+  plugins: [NodeResolve(), commonjs()],
 };

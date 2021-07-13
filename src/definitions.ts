@@ -1048,14 +1048,11 @@ export interface ISQLiteDBConnection {
  * SQLiteDBConnection Class
  */
 export class SQLiteDBConnection implements ISQLiteDBConnection {
-  constructor(private dbName: string, private sqlite: any) {
-    console.log('>>> in SQLiteDBConnection dbName ' + dbName);
-  }
+  constructor(private dbName: string, private sqlite: any) {}
   getConnectionDBName(): string {
     return this.dbName;
   }
   async open(): Promise<void> {
-    console.log('>>> in SQLiteDBConnection open dbName ' + this.dbName);
     try {
       await this.sqlite.open({ database: this.dbName });
       return Promise.resolve();
@@ -1115,8 +1112,7 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
     let res: any;
     try {
       if (values && values.length > 0) {
-        console.log(`$$$$ in dbConnection ${values.length}`);
-        console.log(`$$$$ in dbConnection values ${values}`);
+        /* temporary fix for [null,null] -> [null,"..."] */
         const vals: any[] = [];
         for (const val of values) {
           if (val != null) {
@@ -1125,13 +1121,21 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
             vals.push(undefined);
           }
         }
-        console.log(`$$$$ in dbConnection vals ${vals}`);
         res = await this.sqlite.run({
           database: this.dbName,
           statement: statement,
           values: vals,
           transaction: transaction,
         });
+        /* end of temporary fix */
+        /*
+        res = await this.sqlite.run({
+          database: this.dbName,
+          statement: statement,
+          values: values,
+          transaction: transaction,
+        });
+      */
       } else {
         res = await this.sqlite.run({
           database: this.dbName,
@@ -1225,11 +1229,9 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
       const res: any = await this.sqlite.getSyncDate({
         database: this.dbName,
       });
-      console.log(`in DBConnection syncDate ${res.syncDate}`);
       let retDate = '';
       if (res.syncDate > 0)
         retDate = new Date(res.syncDate * 1000).toISOString();
-      console.log(`in DBConnection retDate ${retDate}`);
       return Promise.resolve(retDate);
     } catch (err) {
       return Promise.reject(err);

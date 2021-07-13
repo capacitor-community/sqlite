@@ -1,3 +1,14 @@
+## 3.1.1 (2021-07-13)
+
+### Chore
+
+ - Update to Capacitor 3.1.1
+
+### Bug Fixes 
+
+ - Remove console.log in SQLiteDBConnection
+ - update npm Version in README.md
+
 ## 3.0.0 (2021-07-07)
 
 ### Chore
