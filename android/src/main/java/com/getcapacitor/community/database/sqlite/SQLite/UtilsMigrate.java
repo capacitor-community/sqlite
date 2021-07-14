@@ -11,6 +11,10 @@ public class UtilsMigrate {
 
     public void addSQLiteSuffix(Context context, String folderPath) throws Exception {
         String pathDB = new File(context.getFilesDir().getParentFile(), "databases").getAbsolutePath();
+        File dirDB = new File(pathDB);
+        if (!dirDB.isDirectory()) {
+            dirDB.mkdir();
+        }
         String pathFiles = this.getFolder(context, folderPath);
         // check if the path exists
         File dir = new File(pathFiles);
@@ -18,6 +22,9 @@ public class UtilsMigrate {
             throw new Exception("Folder " + dir + " does not exist");
         }
         String[] listFiles = dir.list();
+        if (!pathDB.equals(pathFiles) && listFiles.length == 0) {
+            throw new Exception("Folder " + dir + " no database files");
+        }
         for (String file : listFiles) {
             if (uFile.getFileExtension((file)).equals("db")) {
                 if (!file.contains("SQLite.db")) {
