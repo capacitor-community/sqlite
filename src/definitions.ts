@@ -1113,12 +1113,30 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
     let res: any;
     try {
       if (values && values.length > 0) {
+        /* temporary fix for [null,null] -> [null,"..."] */
+        const vals: any[] = [];
+        for (const val of values) {
+          if (val != null) {
+            vals.push(val);
+          } else {
+            vals.push(undefined);
+          }
+        }
+        res = await this.sqlite.run({
+          database: this.dbName,
+          statement: statement,
+          values: vals,
+          transaction: transaction,
+        });
+        /* end of temporary fix */
+        /*
         res = await this.sqlite.run({
           database: this.dbName,
           statement: statement,
           values: values,
           transaction: transaction,
         });
+      */
       } else {
         res = await this.sqlite.run({
           database: this.dbName,
@@ -1137,11 +1155,39 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
     transaction = true,
   ): Promise<capSQLiteChanges> {
     try {
+      console.log(`$$$ executeSet ${JSON.stringify(set)}`);
+      /* temporary fix for null */
+      const modSet: capSQLiteSet[] = [];
+      for (const s of set) {
+        const mS: capSQLiteSet = {};
+        mS.statement = s.statement;
+        if (s.values) {
+          // change null by undefined
+          const ns: any[] = [];
+          for (const sv of s.values) {
+            if (sv != null) {
+              ns.push(sv);
+            } else {
+              ns.push(undefined);
+            }
+          }
+          mS.values = ns;
+        }
+        modSet.push(mS);
+      }
+      const res: any = await this.sqlite.executeSet({
+        database: this.dbName,
+        set: modSet,
+        transaction: transaction,
+      });
+      /* end temporary fix */
+      /*
       const res: any = await this.sqlite.executeSet({
         database: this.dbName,
         set: set,
         transaction: transaction,
       });
+*/
       return Promise.resolve(res);
     } catch (err) {
       return Promise.reject(err);

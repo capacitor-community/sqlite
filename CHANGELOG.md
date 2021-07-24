@@ -1,3 +1,9 @@
+## 3.1.2-1 (2021-07-24)
+
+### Bug Fixes 
+
+ - put back temporary fix for Wrong values on insert and query issue#125 not fixed by Capacitor 3.1.2 
+
 ## 3.1.2 (2021-07-24)
 
 ### Chore
