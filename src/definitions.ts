@@ -1099,6 +1099,7 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
           values: [],
         });
       }
+      console.log(`&&&&& in DBConnection query ${JSON.stringify(res)}`);
       return Promise.resolve(res);
     } catch (err) {
       return Promise.reject(err);
@@ -1112,30 +1113,12 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
     let res: any;
     try {
       if (values && values.length > 0) {
-        /* temporary fix for [null,null] -> [null,"..."] */
-        const vals: any[] = [];
-        for (const val of values) {
-          if (val != null) {
-            vals.push(val);
-          } else {
-            vals.push(undefined);
-          }
-        }
-        res = await this.sqlite.run({
-          database: this.dbName,
-          statement: statement,
-          values: vals,
-          transaction: transaction,
-        });
-        /* end of temporary fix */
-        /*
         res = await this.sqlite.run({
           database: this.dbName,
           statement: statement,
           values: values,
           transaction: transaction,
         });
-      */
       } else {
         res = await this.sqlite.run({
           database: this.dbName,

@@ -33,3 +33,28 @@ const typeOrmConnection = await createConnection({
     database: 'YOUR_DB_NAME' // database name without the `.db` suffix
 });
 ```
+
+An example of a Ionic/Vue app has been developed `https://github.com/jepiqueau/vue-typeorm-app` demonstrating the use of TypeORM migrations and multiple connections. it will be enhanced in the future.
+It requires to add in or create a `vue.config.js` file the following
+
+```js
+module.exports = {
+	chainWebpack: config => {
+		if (process.env.NODE_ENV === 'production') {
+			config.optimization.minimizer('terser').tap((args) => {
+				// see https://cli.vuejs.org/guide/webpack.html#chaining-advanced
+				// https://cli.vuejs.org/migrating-from-v3/#vue-cli-service
+				//   => chainWebpack for a chain override example
+				// https://github.com/terser/terser#minify-options for terser options
+				const terserOptions = args[0].terserOptions
+				// Avoid to mangle entities (leads to query errors)
+				terserOptions["keep_classnames"] = true
+				terserOptions["keep_fnames"] = true
+				// console.log(JSON.stringify(args[0], null, 2))
+				return args
+			})
+		}
+	},
+}
+```
+

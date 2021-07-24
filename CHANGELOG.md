@@ -1,3 +1,15 @@
+## 3.1.2 (2021-07-24)
+
+### Chore
+
+ - Update to Capacitor 3.1.2
+
+### Bug Fixes 
+
+ - copyFromAssets fails on Android 6 issue#151
+ - CapacitorSQLite.toJSON Android #144 fix by Capacitor 3.1.2
+ - remove temporary fix for Wrong values on insert and query issue#125 fix by Capacitor 3.1.2 
+
 ## 3.1.2-1 (2021-07-14)
 
 ### Bug Fixes 

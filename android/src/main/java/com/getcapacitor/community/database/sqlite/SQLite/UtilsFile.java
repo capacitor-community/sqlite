@@ -53,15 +53,22 @@ public class UtilsFile {
         return file.delete();
     }
 
-    public boolean copyFromAssetsToDatabase(Context context) {
+    public void copyFromAssetsToDatabase(Context context) throws Exception {
         AssetManager assetManager = context.getAssets();
         String assetsDatabasePath = "public/assets/databases";
         try {
+            // check if databases directory exists else create it
+            String pathDB = new File(context.getFilesDir().getParentFile(), "databases").getAbsolutePath();
+            File dirDB = new File(pathDB);
+            if (!dirDB.isDirectory()) {
+                dirDB.mkdir();
+            }
+
+            // look into the public/assets/databases to get databases to copy
             String[] filelist = assetManager.list(assetsDatabasePath);
             if (filelist.length == 0) {
                 // dir does not exist or is not a directory
-                Log.e(TAG, "Error: public/assets/databases does not exist");
-                return false;
+                throw new Exception("Folder public/assets/databases does not exist or is empty");
             } else {
                 for (int i = 0; i < filelist.length; i++) {
                     // Get filename of file or directory
@@ -75,20 +82,16 @@ public class UtilsFile {
                     }
                     String fromPathName = assetsDatabasePath + "/" + fileName;
                     String toPathName = context.getDatabasePath(toFileName).getAbsolutePath();
-                    boolean isCopy = copyDatabaseFromAssets(assetManager, fromPathName, toPathName);
-                    if (!isCopy) {
-                        return false;
-                    }
+                    copyDatabaseFromAssets(assetManager, fromPathName, toPathName);
                 }
-                return true;
+                return;
             }
         } catch (IOException e) {
-            Log.e(TAG, "Error: in isDirExists " + e);
-            return false;
+            throw new Exception("in isDirExists " + e.getLocalizedMessage());
         }
     }
 
-    public boolean copyDatabaseFromAssets(AssetManager asm, String inPath, String outPath) {
+    public void copyDatabaseFromAssets(AssetManager asm, String inPath, String outPath) throws IOException {
         try {
             byte[] buffer = new byte[1024];
             int length;
@@ -100,10 +103,9 @@ public class UtilsFile {
             sOutput.close();
             sOutput.flush();
             sInput.close();
-            return true;
+            return;
         } catch (IOException e) {
-            Log.e(TAG, "Error: in copyDatabaseFromAssets " + e);
-            return false;
+            throw new IOException("in copyDatabaseFromAssets " + e.getLocalizedMessage());
         }
     }
 
