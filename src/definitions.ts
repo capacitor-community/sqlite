@@ -825,7 +825,6 @@ export class SQLiteConnection implements ISQLiteConnection {
     const res: capSQLiteResult = {} as capSQLiteResult;
     if (database.endsWith('.db')) database = database.slice(0, -3);
     res.result = this._connectionDict.has(database);
-    console.log(`isConnection ${res.result}`);
     return Promise.resolve(res);
   }
   async retrieveConnection(database: string): Promise<SQLiteDBConnection> {
@@ -864,7 +863,6 @@ export class SQLiteConnection implements ISQLiteConnection {
       const res: capSQLiteResult = await this.sqlite.checkConnectionsConsistency(
         { dbNames: keys },
       );
-      console.log(`$$$$$ SQLiteConnection res.result ${res.result}`);
       if (!res.result) this._connectionDict = new Map();
       return Promise.resolve(res);
     } catch (err) {
@@ -1099,7 +1097,6 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
           values: [],
         });
       }
-      console.log(`&&&&& in DBConnection query ${JSON.stringify(res)}`);
       return Promise.resolve(res);
     } catch (err) {
       return Promise.reject(err);
@@ -1155,7 +1152,6 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
     transaction = true,
   ): Promise<capSQLiteChanges> {
     try {
-      console.log(`$$$ executeSet ${JSON.stringify(set)}`);
       /* temporary fix for null */
       const modSet: capSQLiteSet[] = [];
       for (const s of set) {

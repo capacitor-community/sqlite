@@ -1,3 +1,9 @@
+## 3.1.3-2 (2021-07-27)
+
+### Bug Fixes 
+
+ - copyFromAssets only takes files with SQLite.db suffix on iOS (contrary to Android) issue#152 
+
 ## 3.1.3-1 (2021-07-24)
 
 ### Bug Fixes 

@@ -184,7 +184,7 @@ class UtilsFile {
             var dbs: [String] = []
             let filenames = try FileManager.default
                 .contentsOfDirectory(atPath: path)
-            let ext: String = "SQLite.db"
+            let ext: String = ".db"
             for file in filenames {
                 if file.hasSuffix(ext) {
                     dbs.append(file)
