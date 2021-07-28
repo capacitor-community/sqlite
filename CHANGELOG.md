@@ -1,3 +1,9 @@
+## 3.1.3-3 (2021-07-28)
+
+### Bug Fixes 
+
+ - remove trial web implementation with sql.js
+
 ## 3.1.3-2 (2021-07-27)
 
 ### Bug Fixes 

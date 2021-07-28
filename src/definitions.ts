@@ -734,7 +734,17 @@ export class SQLiteConnection implements ISQLiteConnection {
   private _connectionDict: Map<string, SQLiteDBConnection> = new Map();
   constructor(private sqlite: any) {}
   async echo(value: string): Promise<capEchoResult> {
-    return await this.sqlite.echo({ value: value });
+    console.log(`>>> in SQLiteConnection Echo ${value} >>>`);
+    try {
+      const res = await this.sqlite.echo({ value: value });
+      console.log(
+        `>>> in SQLiteConnection Echo res ${JSON.stringify(res)} >>>`,
+      );
+      return res;
+    } catch (err) {
+      console.log(`>>> in SQLiteConnection Echo err ${err} >>>`);
+      return Promise.reject(err);
+    }
   }
   async isSecretStored(): Promise<capSQLiteResult> {
     try {
