@@ -1,3 +1,9 @@
+## 3.1.3-web.1 (2021-07-29)
+
+### Added Features 
+
+ - start web implementation based on `jeep-sqlite` Stencil component
+
 ## 3.1.3-3 (2021-07-28)
 
 ### Bug Fixes 
