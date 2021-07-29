@@ -25,12 +25,21 @@ import type {
   capChangeSecretOptions,
 } from './definitions';
 
-export class CapacitorSQLiteWeb
-  extends WebPlugin
-  implements CapacitorSQLitePlugin {
+export class CapacitorSQLiteWeb extends WebPlugin implements CapacitorSQLitePlugin {
+  private jeepSqlite: any = null;
+  private isStoreOpen = false;
+
+  constructor() {
+    super();
+    this.jeepSqlite = document.querySelector('jeep-sqlite');
+  }
   async echo(options: capEchoOptions): Promise<capEchoResult> {
-    console.log('ECHO in Web plugin', options);
-    return options;
+    if(this.jeepSqlite != null) {
+      console.log('ECHO in Web plugin', options);
+      return options;  
+    } else {
+      throw this.unimplemented('Not implemented on web.');
+    }
   }
   async isSecretStored(): Promise<capSQLiteResult> {
     console.log('isSecretStored');
@@ -44,17 +53,54 @@ export class CapacitorSQLiteWeb
     console.log('changeEncryptionSecret', options);
     throw this.unimplemented('Not implemented on web.');
   }
-  async createConnection(options: capSQLiteOptions): Promise<void> {
-    console.log('createConnection', options);
-    throw this.unimplemented('Not implemented on web.');
+  async createConnection(options: capSQLiteOptions): Promise<void> {    
+    if(this.jeepSqlite != null) {
+      if(!this.isStoreOpen) this.isStoreOpen = await this.jeepSqlite.isStoreOpen();
+      if(this.isStoreOpen) {
+        try {
+          await this.jeepSqlite.createConnection(options);
+
+        } catch (err) {
+          return Promise.reject(`${err}`);
+        }
+      } else {
+        return Promise.reject(`Store "jeepSqliteStore" failed to open`);
+      }
+    } else {
+      throw this.unimplemented('Not implemented on web.');
+    }
   }
   async open(options: capSQLiteOptions): Promise<void> {
-    console.log('open', options);
-    throw this.unimplemented('Not implemented on web.');
+    if(this.jeepSqlite != null) {
+      if(this.isStoreOpen) {
+        try {
+          await this.jeepSqlite.open(options);
+
+        } catch (err) {
+          return Promise.reject(`${err}`);
+        }
+      } else {
+        return Promise.reject(`Store "jeepSqliteStore" failed to open`);
+      }
+    } else {
+      throw this.unimplemented('Not implemented on web.');
+    }
   }
   async closeConnection(options: capSQLiteOptions): Promise<void> {
-    console.log('closeConnection', options);
-    throw this.unimplemented('Not implemented on web.');
+    if(this.jeepSqlite != null) {
+      if(this.isStoreOpen) {
+        try {
+          await this.jeepSqlite.closeConnection(options);
+
+        } catch (err) {
+          return Promise.reject(`${err}`);
+        }
+      } else {
+        return Promise.reject(`Store "jeepSqliteStore" failed to open`);
+      }
+    } else {
+      throw this.unimplemented('Not implemented on web.');
+    }
   }
   async checkConnectionsConsistency(
     options: capAllConnectionsOptions,
@@ -63,32 +109,104 @@ export class CapacitorSQLiteWeb
     throw this.unimplemented('Not implemented on web.');
   }
   async close(options: capSQLiteOptions): Promise<void> {
-    console.log('close', options);
-    throw this.unimplemented('Not implemented on web.');
+    if(this.jeepSqlite != null) {
+      if(this.isStoreOpen) {
+        try {
+          await this.jeepSqlite.close(options);
+
+        } catch (err) {
+          return Promise.reject(`${err}`);
+        }
+      } else {
+        return Promise.reject(`Store "jeepSqliteStore" failed to open`);
+      }
+    } else {
+      throw this.unimplemented('Not implemented on web.');
+    }
   }
   async execute(options: capSQLiteExecuteOptions): Promise<capSQLiteChanges> {
-    console.log('execute', options);
-    throw this.unimplemented('Not implemented on web.');
+    if(this.jeepSqlite != null) {
+      if(this.isStoreOpen) {
+        try {
+          const ret: capSQLiteChanges = await this.jeepSqlite.execute(options);
+          return Promise.resolve(ret);
+        } catch (err) {
+          return Promise.reject(`${err}`);
+        }
+      } else {
+        return Promise.reject(`Store "jeepSqliteStore" failed to open`);
+      }
+    } else {
+      throw this.unimplemented('Not implemented on web.');
+    }
   }
   async executeSet(options: capSQLiteSetOptions): Promise<capSQLiteChanges> {
     console.log('execute', options);
     throw this.unimplemented('Not implemented on web.');
   }
   async run(options: capSQLiteRunOptions): Promise<capSQLiteChanges> {
-    console.log('run', options);
-    throw this.unimplemented('Not implemented on web.');
+    if(this.jeepSqlite != null) {
+      if(this.isStoreOpen) {
+        try {
+          const ret: capSQLiteChanges = await this.jeepSqlite.run(options);
+          return Promise.resolve(ret);
+        } catch (err) {
+          return Promise.reject(`${err}`);
+        }
+      } else {
+        return Promise.reject(`Store "jeepSqliteStore" failed to open`);
+      }
+    } else {
+      throw this.unimplemented('Not implemented on web.');
+    }
   }
   async query(options: capSQLiteQueryOptions): Promise<capSQLiteValues> {
-    console.log('query', options);
-    throw this.unimplemented('Not implemented on web.');
+    if(this.jeepSqlite != null) {
+      if(this.isStoreOpen) {
+        try {
+          const ret: capSQLiteValues = await this.jeepSqlite.query(options);
+          return Promise.resolve(ret);
+        } catch (err) {
+          return Promise.reject(`${err}`);
+        }
+      } else {
+        return Promise.reject(`Store "jeepSqliteStore" failed to open`);
+      }
+    } else {
+      throw this.unimplemented('Not implemented on web.');
+    }
   }
   async isDBExists(options: capSQLiteOptions): Promise<capSQLiteResult> {
-    console.log('in Web isDBExists', options);
-    throw this.unimplemented('Not implemented on web.');
+    if(this.jeepSqlite != null) {
+      if(this.isStoreOpen) {
+        try {
+          const ret: capSQLiteResult = await this.jeepSqlite.isDBExists(options);
+          return Promise.resolve(ret);
+        } catch (err) {
+          return Promise.reject(`${err}`);
+        }
+      } else {
+        return Promise.reject(`Store "jeepSqliteStore" failed to open`);
+      }
+    } else {
+      throw this.unimplemented('Not implemented on web.');
+    }
   }
   async isDBOpen(options: capSQLiteOptions): Promise<capSQLiteResult> {
-    console.log('in Web isDBOpen', options);
-    throw this.unimplemented('Not implemented on web.');
+    if(this.jeepSqlite != null) {
+      if(this.isStoreOpen) {
+        try {
+          const ret: capSQLiteResult = await this.jeepSqlite.isDBOpen(options);
+          return Promise.resolve(ret);
+        } catch (err) {
+          return Promise.reject(`${err}`);
+        }
+      } else {
+        return Promise.reject(`Store "jeepSqliteStore" failed to open`);
+      }
+    } else {
+      throw this.unimplemented('Not implemented on web.');
+    }
   }
   async isDatabase(options: capSQLiteOptions): Promise<capSQLiteResult> {
     console.log('in Web isDatabase', options);
@@ -102,8 +220,20 @@ export class CapacitorSQLiteWeb
     throw this.unimplemented('Not implemented on web.');
   }
   async deleteDatabase(options: capSQLiteOptions): Promise<void> {
-    console.log('deleteDatabase', options);
-    throw this.unimplemented('Not implemented on web.');
+    if(this.jeepSqlite != null) {
+      if(this.isStoreOpen) {
+        try {
+          await this.jeepSqlite.deleteDatabase(options);
+
+        } catch (err) {
+          return Promise.reject(`${err}`);
+        }
+      } else {
+        return Promise.reject(`Store "jeepSqliteStore" failed to open`);
+      }
+    } else {
+      throw this.unimplemented('Not implemented on web.');
+    }
   }
   async isJsonValid(options: capSQLiteImportOptions): Promise<capSQLiteResult> {
     console.log('isJsonValid', options);
