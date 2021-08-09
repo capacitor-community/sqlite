@@ -1,3 +1,15 @@
+## 3.1.3-web.2 (2021-08-09)
+
+### Added Features
+
+ - implement all web methods
+ - add a Web_Usage.md file for Ionic/Angular app
+
+### Bug Fixes
+
+ - in checkConnectionsConsistency close all connections when not consistent
+ - Support for Android API level 21 issue#132
+
 ## 3.1.3-web.1 (2021-07-29)
 
 ### Added Features 

@@ -138,42 +138,44 @@ enum CapacitorSQLiteError: Error {
 
     // MARK: - CheckConnectionsConsistency
 
-    @objc public func checkConnectionsConsistency(_ dbNames: [String]) -> NSNumber {
+    @objc public func checkConnectionsConsistency(_ dbNames: [String]) throws ->  NSNumber {
         var keys: [String] = Array(self.dbDict.keys)
-
-        if dbNames.count == 0 {
-            self.dbDict = [:]
-            return 0
-        }
-        if keys.count < dbNames.count {
-            // not solvable inconsistency
-            self.dbDict = [:]
-            return 0
-        }
-        if keys.count > dbNames.count {
-            for key in keys {
-                if !dbNames.contains(key) {
-                    self.dbDict.removeValue(forKey: key)
-                }
-            }
-        }
-        keys = Array(self.dbDict.keys)
-        if keys.count == dbNames.count {
-            let set1 = Set(keys)
-            let set2 = Set(dbNames)
-            let arr = Array(set1.symmetricDifference(set2))
-            if arr.count == 0 {
-                return 1
-            } else {
-                // not solvable inconsistency
-                self.dbDict = [:]
+        do {
+            if dbNames.count == 0 {
+                try closeAllConnections()
                 return 0
             }
-        } else {
-            self.dbDict = [:]
-            return 0
+            if keys.count < dbNames.count {
+                // not solvable inconsistency
+                try closeAllConnections()
+                return 0
+            }
+            if keys.count > dbNames.count {
+                for key in keys {
+                    if !dbNames.contains(key) {
+                        self.dbDict.removeValue(forKey: key)
+                    }
+                }
+            }
+            keys = Array(self.dbDict.keys)
+            if keys.count == dbNames.count {
+                let set1 = Set(keys)
+                let set2 = Set(dbNames)
+                let arr = Array(set1.symmetricDifference(set2))
+                if arr.count == 0 {
+                    return 1
+                } else {
+                    // not solvable inconsistency
+                    try closeAllConnections()
+                    return 0
+                }
+            } else {
+                try closeAllConnections()
+                return 0
+            }
+        } catch let error {
+            throw CapacitorSQLiteError.failed(message: error.localizedDescription)
         }
-
     }
     // MARK: - IsDatabase
 

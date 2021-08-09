@@ -1,3 +1,5 @@
+import { Capacitor } from '@capacitor/core';
+
 /**
  * CapacitorSQLitePlugin Interface
  */
@@ -791,6 +793,7 @@ export class SQLiteConnection implements ISQLiteConnection {
       set: set ? set : [],
     };
     try {
+      if (database.endsWith('.db')) database = database.slice(0, -3);
       await this.sqlite.addUpgradeStatement({
         database,
         upgrade: [upgrade],
@@ -807,13 +810,13 @@ export class SQLiteConnection implements ISQLiteConnection {
     version: number,
   ): Promise<SQLiteDBConnection> {
     try {
+      if (database.endsWith('.db')) database = database.slice(0, -3);
       await this.sqlite.createConnection({
         database,
         encrypted,
         mode,
         version,
       });
-      if (database.endsWith('.db')) database = database.slice(0, -3);
       const conn = new SQLiteDBConnection(database, this.sqlite);
       this._connectionDict.set(database, conn);
       return Promise.resolve(conn);
@@ -1121,29 +1124,31 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
     try {
       if (values && values.length > 0) {
         /* temporary fix for [null,null] -> [null,"..."] */
-        const vals: any[] = [];
-        for (const val of values) {
-          if (val != null) {
-            vals.push(val);
-          } else {
-            vals.push(undefined);
+        const platform = Capacitor.getPlatform();
+        if (platform === 'android') {
+          const vals: any[] = [];
+          for (const val of values) {
+            if (val != null) {
+              vals.push(val);
+            } else {
+              vals.push(undefined);
+            }
           }
+          res = await this.sqlite.run({
+            database: this.dbName,
+            statement: statement,
+            values: vals,
+            transaction: transaction,
+          });
+        } else {
+          /* end of temporary fix */
+          res = await this.sqlite.run({
+            database: this.dbName,
+            statement: statement,
+            values: values,
+            transaction: transaction,
+          });
         }
-        res = await this.sqlite.run({
-          database: this.dbName,
-          statement: statement,
-          values: vals,
-          transaction: transaction,
-        });
-        /* end of temporary fix */
-        /*
-        res = await this.sqlite.run({
-          database: this.dbName,
-          statement: statement,
-          values: values,
-          transaction: transaction,
-        });
-      */
       } else {
         res = await this.sqlite.run({
           database: this.dbName,
@@ -1163,37 +1168,40 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
   ): Promise<capSQLiteChanges> {
     try {
       /* temporary fix for null */
-      const modSet: capSQLiteSet[] = [];
-      for (const s of set) {
-        const mS: capSQLiteSet = {};
-        mS.statement = s.statement;
-        if (s.values) {
-          // change null by undefined
-          const ns: any[] = [];
-          for (const sv of s.values) {
-            if (sv != null) {
-              ns.push(sv);
-            } else {
-              ns.push(undefined);
+      const platform = Capacitor.getPlatform();
+      let res: any;
+      if (platform === 'android') {
+        const modSet: capSQLiteSet[] = [];
+        for (const s of set) {
+          const mS: capSQLiteSet = {};
+          mS.statement = s.statement;
+          if (s.values) {
+            // change null by undefined
+            const ns: any[] = [];
+            for (const sv of s.values) {
+              if (sv != null) {
+                ns.push(sv);
+              } else {
+                ns.push(undefined);
+              }
             }
+            mS.values = ns;
           }
-          mS.values = ns;
+          modSet.push(mS);
         }
-        modSet.push(mS);
+        res = await this.sqlite.executeSet({
+          database: this.dbName,
+          set: modSet,
+          transaction: transaction,
+        });
+      } else {
+        /* end temporary fix */
+        res = await this.sqlite.executeSet({
+          database: this.dbName,
+          set: set,
+          transaction: transaction,
+        });
       }
-      const res: any = await this.sqlite.executeSet({
-        database: this.dbName,
-        set: modSet,
-        transaction: transaction,
-      });
-      /* end temporary fix */
-      /*
-      const res: any = await this.sqlite.executeSet({
-        database: this.dbName,
-        set: set,
-        transaction: transaction,
-      });
-*/
       return Promise.resolve(res);
     } catch (err) {
       return Promise.reject(err);

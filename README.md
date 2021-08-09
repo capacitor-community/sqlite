@@ -199,33 +199,33 @@ No configuration required for this plugin
 
 | Name                        | Android | iOS | Electron Mac | Electron Windows | Web |
 | :-------------------------- | :------ | :-- | :----------- | :--------------- | :-- |
-| createConnection            | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| closeConnection             | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| isConnection                | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| open (non-encrypted DB)     | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| createConnection            | ✅      | ✅  | 🚧           | 🚧               | ✅  |
+| closeConnection             | ✅      | ✅  | 🚧           | 🚧               | ✅  |
+| isConnection                | ✅      | ✅  | 🚧           | 🚧               | ✅  |
+| open (non-encrypted DB)     | ✅      | ✅  | 🚧           | 🚧               | ✅  |
 | open (encrypted DB)         | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| close                       | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| execute                     | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| executeSet                  | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| run                         | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| query                       | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| deleteDatabase              | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| importFromJson              | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| exportToJson                | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| createSyncTable             | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| setSyncDate                 | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| getSyncDate                 | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| isJsonValid                 | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| isDBExists                  | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| addUpgradeStatement         | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| copyFromAssets              | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| isDBOpen                    | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| isDatabase                  | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| isTableExists               | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| getDatabaseList             | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| close                       | ✅      | ✅  | 🚧           | 🚧               | ✅  |
+| execute                     | ✅      | ✅  | 🚧           | 🚧               | ✅  |
+| executeSet                  | ✅      | ✅  | 🚧           | 🚧               | ✅  |
+| run                         | ✅      | ✅  | 🚧           | 🚧               | ✅  |
+| query                       | ✅      | ✅  | 🚧           | 🚧               | ✅  |
+| deleteDatabase              | ✅      | ✅  | 🚧           | 🚧               | ✅  |
+| importFromJson              | ✅      | ✅  | 🚧           | 🚧               | ✅  |
+| exportToJson                | ✅      | ✅  | 🚧           | 🚧               | ✅  |
+| createSyncTable             | ✅      | ✅  | 🚧           | 🚧               | ✅  |
+| setSyncDate                 | ✅      | ✅  | 🚧           | 🚧               | ✅  |
+| getSyncDate                 | ✅      | ✅  | 🚧           | 🚧               | ✅  |
+| isJsonValid                 | ✅      | ✅  | 🚧           | 🚧               | ✅  |
+| isDBExists                  | ✅      | ✅  | 🚧           | 🚧               | ✅  |
+| addUpgradeStatement         | ✅      | ✅  | 🚧           | 🚧               | ✅  |
+| copyFromAssets              | ✅      | ✅  | 🚧           | 🚧               | ✅  |
+| isDBOpen                    | ✅      | ✅  | 🚧           | 🚧               | ✅  |
+| isDatabase                  | ✅      | ✅  | 🚧           | 🚧               | ✅  |
+| isTableExists               | ✅      | ✅  | 🚧           | 🚧               | ✅  |
+| getDatabaseList             | ✅      | ✅  | 🚧           | 🚧               | ✅  |
 | addSQLiteSuffix             | ✅      | ✅  | 🚧           | 🚧               | ❌  |
 | deleteOldDatabases          | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| checkConnectionsConsistency | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| checkConnectionsConsistency | ✅      | ✅  | 🚧           | 🚧               | ✅  |
 | isSecretStored              | ✅      | ✅  | 🚧           | 🚧               | ❌  |
 | setEncryptionSecret         | ✅      | ✅  | 🚧           | 🚧               | ❌  |
 | changeEncryptionSecret      | ✅      | ✅  | 🚧           | 🚧               | ❌  |

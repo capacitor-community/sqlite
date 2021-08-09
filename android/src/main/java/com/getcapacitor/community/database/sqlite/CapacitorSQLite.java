@@ -228,39 +228,43 @@ public class CapacitorSQLite {
         Set<String> keys = new HashSet<String>(Collections.list(dbDict.keys()));
         String msg = "All Native Connections released";
         Set<String> conns = new HashSet<String>(uSqlite.stringJSArrayToArrayList(dbNames));
-        if (conns.size() == 0) {
-            dbDict = new Hashtable<>();
-            return false;
-        }
-        if (keys.size() < conns.size()) {
-            // not solvable inconsistency
-            dbDict = new Hashtable<>();
-            return false;
-        }
-        if (keys.size() > conns.size()) {
-            for (String key : keys) {
-                if (!conns.contains(key)) {
-                    dbDict.remove(key);
-                }
-            }
-        }
-        keys = new HashSet<String>(Collections.list(dbDict.keys()));
-        if (keys.size() == conns.size()) {
-            Set<String> symmetricDiff = new HashSet<String>(keys);
-            symmetricDiff.addAll(conns);
-            Set<String> tmp = new HashSet<String>(keys);
-            tmp.retainAll(conns);
-            symmetricDiff.removeAll(tmp);
-            if (symmetricDiff.size() == 0) {
-                return true;
-            } else {
-                // not solvable inconsistency
-                dbDict = new Hashtable<>();
+        try {
+            if (conns.size() == 0) {
+                closeAllConnections();
                 return false;
             }
-        } else {
-            dbDict = new Hashtable<>();
-            return false;
+            if (keys.size() < conns.size()) {
+                // not solvable inconsistency
+                closeAllConnections();
+                return false;
+            }
+            if (keys.size() > conns.size()) {
+                for (String key : keys) {
+                    if (!conns.contains(key)) {
+                        dbDict.remove(key);
+                    }
+                }
+            }
+            keys = new HashSet<String>(Collections.list(dbDict.keys()));
+            if (keys.size() == conns.size()) {
+                Set<String> symmetricDiff = new HashSet<String>(keys);
+                symmetricDiff.addAll(conns);
+                Set<String> tmp = new HashSet<String>(keys);
+                tmp.retainAll(conns);
+                symmetricDiff.removeAll(tmp);
+                if (symmetricDiff.size() == 0) {
+                    return true;
+                } else {
+                    // not solvable inconsistency
+                    closeAllConnections();
+                    return false;
+                }
+            } else {
+                closeAllConnections();
+                return false;
+            }
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
         }
     }
 

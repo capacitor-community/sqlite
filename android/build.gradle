@@ -11,7 +11,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.2.1'
+        classpath 'com.android.tools.build:gradle:4.2.2'
     }
 }
 
@@ -60,7 +60,7 @@ dependencies {
     implementation 'net.zetetic:android-database-sqlcipher:4.4.3'
     implementation "androidx.sqlite:sqlite:2.1.0"
     //security library
-    implementation "androidx.security:security-crypto:1.0.0"
+    implementation "androidx.security:security-crypto:1.1.0-alpha03"
     annotationProcessor 'androidx.room:room-compiler:2.2.5'
 
 }
