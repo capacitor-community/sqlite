@@ -1,3 +1,9 @@
+## 3.1.3-web.3 (2021-08-10)
+
+### Bug Fixes
+
+ - fix listeners sqliteImportProgressEvent & sqliteExportProgressEvent
+
 ## 3.1.3-web.2 (2021-08-09)
 
 ### Added Features

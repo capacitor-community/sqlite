@@ -89,14 +89,6 @@ export class AppComponent {
   initializeApp() {
     this.platform.ready().then(async () => {
       await customElements.whenDefined('jeep-sqlite');
-      const jeepSqlite = document.querySelector('jeep-sqlite');
-
-      jeepSqlite.addEventListener('jeepSqliteImportProgress', (event:CustomEvent) => {
-        console.log(`Import: ${event.detail.progress}`)
-      });
-      jeepSqlite.addEventListener('jeepSqliteExportProgress', (event:CustomEvent) => {
-        console.log(`Export: ${event.detail.progress}`)
-      });
       this.detail.setExistingConnection(false);
       this.detail.setExportJson(false);
       this.sqlite.initializePlugin().then(async (ret) => {
@@ -152,7 +144,6 @@ export class SQLiteService {
             try {
                 return await this.sqlite.echo(value);
             } catch (err) {
-                console.log(`Error ${err}`)
                 return Promise.reject(new Error(err));
             }
         } else {
@@ -295,10 +286,12 @@ export class SQLiteService {
         if(this.sqlite != null) {
             try {
                 const myConns =  await this.sqlite.retrieveAllConnections();
+                /*
                 let keys = [...myConns.keys()];
                 keys.forEach( (value) => {
                     console.log("Connection: " + value);
                 }); 
+                */
                 return Promise.resolve(myConns);
             } catch (err) {
                 return Promise.reject(new Error(err));
@@ -343,9 +336,7 @@ export class SQLiteService {
     async checkConnectionsConsistency(): Promise<capSQLiteResult> {
         if(this.sqlite != null) {
             try {
-                console.log(`in Service checkConnectionsConsistency`)
                 const res = await this.sqlite.checkConnectionsConsistency();
-                console.log(`&&&& in service res.result ${res.result}`)
                 return Promise.resolve(res);
             } catch (err) {
                 return Promise.reject(new Error(err));
@@ -393,8 +384,7 @@ export class SQLiteService {
         if(this.sqlite != null) {
             try {
                 const path: string = folderPath ? folderPath : "default";
-                console.log(`in service path: ${path} `)
-                return Promise.resolve(await this.sqlite.addSQLiteSuffix(folderPath));
+                return Promise.resolve(await this.sqlite.addSQLiteSuffix(path));
             } catch (err) {
                 return Promise.reject(new Error(err));
             }
@@ -412,8 +402,7 @@ export class SQLiteService {
         if(this.sqlite != null) {
             try {
                 const path: string = folderPath ? folderPath : "default";
-                console.log(`in service path: ${path} `)
-                return Promise.resolve(await this.sqlite.deleteOldDatabases(folderPath));
+                return Promise.resolve(await this.sqlite.deleteOldDatabases(path));
             } catch (err) {
                 return Promise.reject(new Error(err));
             }

@@ -34,18 +34,30 @@ export class CapacitorSQLiteWeb
   constructor() {
     super();
     this.jeepSqlite = document.querySelector('jeep-sqlite');
+    if (this.jeepSqlite != null) {
+      this.jeepSqlite.addEventListener(
+        'jeepSqliteImportProgress',
+        (event: CustomEvent) => {
+          this.notifyListeners('sqliteImportProgressEvent', event.detail);
+        },
+      );
+      this.jeepSqlite.addEventListener(
+        'jeepSqliteExportProgress',
+        (event: CustomEvent) => {
+          this.notifyListeners('sqliteExportProgressEvent', event.detail);
+        },
+      );
+    }
   }
   async echo(options: capEchoOptions): Promise<capEchoResult> {
     if (this.jeepSqlite != null) {
       const echo = await this.jeepSqlite.echo(options);
-      console.log(`echo in web.ts ${JSON.stringify(echo)}`);
       return echo;
     } else {
       throw this.unimplemented('Not implemented on web.');
     }
   }
   async isSecretStored(): Promise<capSQLiteResult> {
-    console.log('isSecretStored');
     throw this.unimplemented('Not implemented on web.');
   }
   async setEncryptionSecret(options: capSetSecretOptions): Promise<void> {
