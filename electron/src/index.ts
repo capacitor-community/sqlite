@@ -1,3 +1,5 @@
+//import { app } from "electron";
+
 import type {
   CapacitorSQLitePlugin,
   capConnectionOptions,
@@ -26,7 +28,16 @@ import type {
   capChangeSecretOptions,
 } from '../../src/definitions';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+
+
 export class CapacitorSQLite implements CapacitorSQLitePlugin {
+  Os: any = null;
+  Path: any = null;
+  constructor() {
+    this.Os = require('os');
+    this.Path = require('path');
+  }
   async isSecretStored(): Promise<capSQLiteResult> {
     return Promise.reject('Method not implemented.');
   }
@@ -47,8 +58,22 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     return Promise.reject('Method not implemented.');
   }
   async echo(options: capEchoOptions): Promise<capEchoResult> {
-    console.log(`${JSON.stringify(options)}`);
-    return Promise.reject('Method not implemented.');
+    console.log(`in Electron Plugin ${JSON.stringify(options)}`);
+    const ret: capEchoResult = {} as capEchoResult;
+    const appName = this.Os.homedir();
+
+/*    const appPath = app.getAppPath();
+    let sep = '/';
+    const idx: number = appPath.indexOf('\\');
+    if (idx != -1) sep = '\\';
+    const mypath = appPath.substring(
+      0,
+      appPath.indexOf('electron') - 1,
+    );
+    const appName = mypath.substring(mypath.lastIndexOf(sep) + 1);
+ */
+    ret.value = "in Electron plugin" + options.value + " " + appName ? options.value : '';
+    return Promise.resolve(ret);
   }
   async open(options: capSQLiteOptions): Promise<void> {
     console.log(`${JSON.stringify(options)}`);

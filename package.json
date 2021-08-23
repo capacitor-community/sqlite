@@ -10,8 +10,8 @@
     "android/src/main/",
     "android/build.gradle",
     "dist/",
-    "electron/",
     "ios/Plugin/",
+    "electron/",
     "CapacitorCommunitySqlite.podspec"
   ],
   "author": "Jean Pierre Quéau",
@@ -54,14 +54,14 @@
     "prepublishOnly": "npm run build && npm run build-electron && npm run docgen"
   },
   "devDependencies": {
-    "@capacitor/android": "^3.1.2",
-    "@capacitor/core": "3.1.2",
+    "@capacitor/android": "^3.2.0",
+    "@capacitor/core": "3.2.0",
     "@capacitor/docgen": "^0.0.17",
-    "@capacitor/ios": "^3.1.2",
+    "@capacitor/ios": "^3.2.0",
     "@ionic/eslint-config": "^0.3.0",
     "@ionic/prettier-config": "^1.0.1",
     "@ionic/swiftlint-config": "^1.1.2",
-    "@rollup/plugin-commonjs": "^19.0.0",
+    "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
     "electron": "^13.1.3",
     "eslint": "^7.11.0",
@@ -73,7 +73,7 @@
     "typescript": "~4.0.5"
   },
   "peerDependencies": {
-    "@capacitor/core": "^3.1.2"
+    "@capacitor/core": "^3.2.0"
   },
   "prettier": "@ionic/prettier-config",
   "swiftlint": "@ionic/swiftlint-config",

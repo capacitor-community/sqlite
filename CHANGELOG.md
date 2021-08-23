@@ -1,3 +1,11 @@
+## 3.2.0-1 (2021-08-23)
+
+### Bug Fixes
+
+ - in checkConnectionsConsistency close all connections when not consistent
+ - Support for Android API level 21 issue#132
+ - remove temporary fix for Wrong values on insert and query issue#125 fix by Capacitor 3.1.2 
+
 ## 3.1.3-3 (2021-07-28)
 
 ### Bug Fixes 

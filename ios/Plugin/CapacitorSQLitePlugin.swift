@@ -236,17 +236,24 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         guard let dbNames = call.options["dbNames"] as? [String] else {
             retHandler.rResult(
                 call: call,
-                message: "checkConnectionsConsistency: Must provide a " +
+                message: "CheckConnectionsConsistency: Must provide a " +
                     "Connection Array")
             return
         }
-        let res = implementation.checkConnectionsConsistency(dbNames)
-        var bRes: Bool = false
-        if res == 1 {
-            bRes = true
+        do {
+            let res = try implementation.checkConnectionsConsistency(dbNames)
+            var bRes: Bool = false
+            if res == 1 {
+                bRes = true
+            }
+            retHandler.rResult(call: call, ret: bRes)
+            return
+        } catch let error {
+            retHandler.rResult(
+                call: call,
+                message: "CheckConnectionsConsistency: \(error.localizedDescription)")
+            return
         }
-        retHandler.rResult(call: call, ret: bRes)
-        return
     }
 
     // MARK: - IsDatabase
