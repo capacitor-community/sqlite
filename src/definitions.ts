@@ -1079,6 +1079,7 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
     statements: string,
     transaction = true,
   ): Promise<capSQLiteChanges> {
+    console.log(`in DBConnection execute transaction: ${transaction}`);
     try {
       const res: any = await this.sqlite.execute({
         database: this.dbName,
@@ -1116,12 +1117,12 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
     values?: any[],
     transaction = true,
   ): Promise<capSQLiteChanges> {
+    console.log(`in DBConnection run transaction: ${transaction}`);
     let res: any;
     try {
       if (values && values.length > 0) {
-
         /* temporary fix for [null,null] -> [null,"..."] */
-/*        const platform = Capacitor.getPlatform();
+        /*        const platform = Capacitor.getPlatform();
         if (platform === 'android') {
           const vals: any[] = [];
           for (const val of values) {
@@ -1139,15 +1140,15 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
           });
         } else {
 */
-          /* end of temporary fix */
+        /* end of temporary fix */
 
-          res = await this.sqlite.run({
-            database: this.dbName,
-            statement: statement,
-            values: values,
-            transaction: transaction,
-          });
-//        }
+        res = await this.sqlite.run({
+          database: this.dbName,
+          statement: statement,
+          values: values,
+          transaction: transaction,
+        });
+        //        }
       } else {
         res = await this.sqlite.run({
           database: this.dbName,
@@ -1166,8 +1167,9 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
     transaction = true,
   ): Promise<capSQLiteChanges> {
     try {
+      console.log(`in DBConnection executeSet transaction: ${transaction}`);
       /* temporary fix for null */
-/*      const platform = Capacitor.getPlatform();
+      /*      const platform = Capacitor.getPlatform();
       let res: any;
       if (platform === 'android') {
         const modSet: capSQLiteSet[] = [];
@@ -1195,13 +1197,13 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
         });
       } else {
   */
-        /* end temporary fix */
-        const res: any = await this.sqlite.executeSet({
-          database: this.dbName,
-          set: set,
-          transaction: transaction,
-        });
-//      }
+      /* end temporary fix */
+      const res: any = await this.sqlite.executeSet({
+        database: this.dbName,
+        set: set,
+        transaction: transaction,
+      });
+      //      }
       return Promise.resolve(res);
     } catch (err) {
       return Promise.reject(err);

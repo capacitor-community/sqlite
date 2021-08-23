@@ -28,7 +28,11 @@
 
 ## CAPACITOR 3 (Master)
 
-🚨 !!! Sorry for Electron developper, they will have to wait for @capacitor-community/electron release 4 before getting the @capacitor-community/sqlite Electron plugin part  !!! 🚨
+🚨 Since release 3.2.0-2 ->> 🚨
+🚨 !!! for Electron developper, the Electron plugin is back !!! 🚨
+
+Based on `sqlite3`, so without encryption
+The two listeners `sqliteImportProgressEvent` and `sqliteExportProgressEvent` are not available.
 
 🚨 Since release 3.1.2 ->> 🚨
 
@@ -181,7 +185,7 @@ npx cap open ios
 npx cap open android
 ```
 
-### Electron 🚧 (NOT WORKING YET)
+### Electron
 
 ```
 npx cap open @capacitor-community/electron
@@ -197,38 +201,38 @@ No configuration required for this plugin
 
 ## Supported methods
 
-| Name                        | Android | iOS | Electron Mac | Electron Windows | Web |
-| :-------------------------- | :------ | :-- | :----------- | :--------------- | :-- |
-| createConnection            | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| closeConnection             | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| isConnection                | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| open (non-encrypted DB)     | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| open (encrypted DB)         | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| close                       | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| execute                     | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| executeSet                  | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| run                         | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| query                       | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| deleteDatabase              | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| importFromJson              | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| exportToJson                | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| createSyncTable             | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| setSyncDate                 | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| getSyncDate                 | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| isJsonValid                 | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| isDBExists                  | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| addUpgradeStatement         | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| copyFromAssets              | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| isDBOpen                    | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| isDatabase                  | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| isTableExists               | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| getDatabaseList             | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| addSQLiteSuffix             | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| deleteOldDatabases          | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| checkConnectionsConsistency | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| isSecretStored              | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| setEncryptionSecret         | ✅      | ✅  | 🚧           | 🚧               | ❌  |
-| changeEncryptionSecret      | ✅      | ✅  | 🚧           | 🚧               | ❌  |
+| Name                        | Android | iOS | Electron | Web |
+| :-------------------------- | :------ | :-- | :------- | :-- |
+| createConnection            | ✅      | ✅  | ✅        | ❌  |
+| closeConnection             | ✅      | ✅  | ✅        | ❌  |
+| isConnection                | ✅      | ✅  | ✅        | ❌  |
+| open (non-encrypted DB)     | ✅      | ✅  | ✅        | ❌  |
+| open (encrypted DB)         | ✅      | ✅  | ❌        | ❌  |
+| close                       | ✅      | ✅  | ✅        | ❌  |
+| execute                     | ✅      | ✅  | ✅        | ❌  |
+| executeSet                  | ✅      | ✅  | ✅        | ❌  |
+| run                         | ✅      | ✅  | ✅        | ❌  |
+| query                       | ✅      | ✅  | ✅        | ❌  |
+| deleteDatabase              | ✅      | ✅  | ✅        | ❌  |
+| importFromJson              | ✅      | ✅  | ✅        | ❌  |
+| exportToJson                | ✅      | ✅  | ✅        | ❌  |
+| createSyncTable             | ✅      | ✅  | ✅        | ❌  |
+| setSyncDate                 | ✅      | ✅  | ✅        | ❌  |
+| getSyncDate                 | ✅      | ✅  | ✅        | ❌  |
+| isJsonValid                 | ✅      | ✅  | ✅        | ❌  |
+| isDBExists                  | ✅      | ✅  | ✅        | ❌  |
+| addUpgradeStatement         | ✅      | ✅  | ✅        | ❌  |
+| copyFromAssets              | ✅      | ✅  | ✅        | ❌  |
+| isDBOpen                    | ✅      | ✅  | ✅        | ❌  |
+| isDatabase                  | ✅      | ✅  | ✅        | ❌  |
+| isTableExists               | ✅      | ✅  | ✅        | ❌  |
+| getDatabaseList             | ✅      | ✅  | ✅        | ❌  |
+| addSQLiteSuffix             | ✅      | ✅  | ❌        | ❌  |
+| deleteOldDatabases          | ✅      | ✅  | ❌        | ❌  |
+| checkConnectionsConsistency | ✅      | ✅  | ✅        | ❌  |
+| isSecretStored              | ✅      | ✅  | ❌        | ❌  |
+| setEncryptionSecret         | ✅      | ✅  | ❌        | ❌  |
+| changeEncryptionSecret      | ✅      | ✅  | ❌        | ❌  |
 
 ## Supported SQLite Types
 

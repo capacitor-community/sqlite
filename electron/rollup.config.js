@@ -1,4 +1,3 @@
-
 import commonjs from '@rollup/plugin-commonjs';
 import nodeResolve from '@rollup/plugin-node-resolve';
 
@@ -13,6 +12,6 @@ export default {
       exports: 'named',
     },
   ],
-  external: ['@capacitor/core'],
+  external: ['@capacitor/core', 'sqlite3'],
   plugins: [nodeResolve(), commonjs()],
 };

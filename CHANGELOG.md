@@ -1,3 +1,13 @@
+## 3.2.0-2 (2021-08-23)
+
+### Chore
+
+ - Update to @capacitor/core 3.2.0
+
+### Added Features
+
+ - Add Electron plugin part based on sqlite3
+
 ## 3.2.0-1 (2021-08-23)
 
 ### Bug Fixes
@@ -67,7 +77,7 @@
 
 ## 3.0.0-rc.2 (2021-06-13)
 
-## Added Features
+### Added Features
 
 - Thanks to Chris, a driver to TypeORM is now available.
 - TypeORM-Usage.md

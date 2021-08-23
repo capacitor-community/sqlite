@@ -868,7 +868,7 @@ return false : no consistency, connections are closed
 
 </docgen-api>
 
-### Listeners
+### Listeners (NOT AVAILABLE FOR ELECTRON PLATFORM)
 
 `Available since 3.0.0-beta.12`
 
