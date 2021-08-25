@@ -53,8 +53,13 @@ public class UtilsJson {
             .append(tableName)
             .append(" WHERE ")
             .append(firstColumnName);
-        if (key instanceof Integer) sbQuery.append(" = ").append(key).append(";");
-        if (key instanceof String) sbQuery.append(" = '").append(key).append("';");
+
+        // fix #160 by peakcool
+        if (key instanceof String) {
+            sbQuery.append(" = '").append(key).append("';");
+        } else {
+            sbQuery.append(" = ").append(key).append(";");
+        }
         String query = sbQuery.toString();
         try {
             JSArray resQuery = mDb.selectSQL(query, new ArrayList<Object>());
