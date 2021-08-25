@@ -28,6 +28,10 @@
 
 ## CAPACITOR 3 (Master)
 
+🚨 Since release 3.2.0-5 ->> 🚨
+
+The Web plugin is now implemented based on the stencil companion `jeep-sqlite@0.0.7` which is using `sql.js@1.5.0` for database queries and `localeforage@1.9.0`for database persistency.
+
 🚨 Since release 3.2.0-3 ->> 🚨
 
 The Electron plugin is now based on `@capacitor-community/electron@4.0.3` thanks to the hard and heavy work from `Mike Summerfeldt IT-MikeS` 👏 🙏
@@ -219,33 +223,33 @@ No configuration required for this plugin
 
 | Name                        | Android | iOS | Electron | Web |
 | :-------------------------- | :------ | :-- | :------- | :-- |
-| createConnection            | ✅      | ✅  | ✅        | ❌  |
-| closeConnection             | ✅      | ✅  | ✅        | ❌  |
-| isConnection                | ✅      | ✅  | ✅        | ❌  |
-| open (non-encrypted DB)     | ✅      | ✅  | ✅        | ❌  |
+| createConnection            | ✅      | ✅  | ✅        | ✅  |
+| closeConnection             | ✅      | ✅  | ✅        | ✅  |
+| isConnection                | ✅      | ✅  | ✅        | ✅  |
+| open (non-encrypted DB)     | ✅      | ✅  | ✅        | ✅  |
 | open (encrypted DB)         | ✅      | ✅  | ❌        | ❌  |
-| close                       | ✅      | ✅  | ✅        | ❌  |
-| execute                     | ✅      | ✅  | ✅        | ❌  |
-| executeSet                  | ✅      | ✅  | ✅        | ❌  |
-| run                         | ✅      | ✅  | ✅        | ❌  |
-| query                       | ✅      | ✅  | ✅        | ❌  |
-| deleteDatabase              | ✅      | ✅  | ✅        | ❌  |
-| importFromJson              | ✅      | ✅  | ✅        | ❌  |
-| exportToJson                | ✅      | ✅  | ✅        | ❌  |
-| createSyncTable             | ✅      | ✅  | ✅        | ❌  |
-| setSyncDate                 | ✅      | ✅  | ✅        | ❌  |
-| getSyncDate                 | ✅      | ✅  | ✅        | ❌  |
-| isJsonValid                 | ✅      | ✅  | ✅        | ❌  |
-| isDBExists                  | ✅      | ✅  | ✅        | ❌  |
-| addUpgradeStatement         | ✅      | ✅  | ✅        | ❌  |
-| copyFromAssets              | ✅      | ✅  | ✅        | ❌  |
-| isDBOpen                    | ✅      | ✅  | ✅        | ❌  |
-| isDatabase                  | ✅      | ✅  | ✅        | ❌  |
-| isTableExists               | ✅      | ✅  | ✅        | ❌  |
-| getDatabaseList             | ✅      | ✅  | ✅        | ❌  |
+| close                       | ✅      | ✅  | ✅        | ✅  |
+| execute                     | ✅      | ✅  | ✅        | ✅  |
+| executeSet                  | ✅      | ✅  | ✅        | ✅  |
+| run                         | ✅      | ✅  | ✅        | ✅  |
+| query                       | ✅      | ✅  | ✅        | ✅  |
+| deleteDatabase              | ✅      | ✅  | ✅        | ✅  |
+| importFromJson              | ✅      | ✅  | ✅        | ✅  |
+| exportToJson                | ✅      | ✅  | ✅        | ✅  |
+| createSyncTable             | ✅      | ✅  | ✅        | ✅  |
+| setSyncDate                 | ✅      | ✅  | ✅        | ✅  |
+| getSyncDate                 | ✅      | ✅  | ✅        | ✅  |
+| isJsonValid                 | ✅      | ✅  | ✅        | ✅  |
+| isDBExists                  | ✅      | ✅  | ✅        | ✅  |
+| addUpgradeStatement         | ✅      | ✅  | ✅        | ✅  |
+| copyFromAssets              | ✅      | ✅  | ✅        | ✅  |
+| isDBOpen                    | ✅      | ✅  | ✅        | ✅  |
+| isDatabase                  | ✅      | ✅  | ✅        | ✅  |
+| isTableExists               | ✅      | ✅  | ✅        | ✅  |
+| getDatabaseList             | ✅      | ✅  | ✅        | ✅  |
 | addSQLiteSuffix             | ✅      | ✅  | ❌        | ❌  |
 | deleteOldDatabases          | ✅      | ✅  | ❌        | ❌  |
-| checkConnectionsConsistency | ✅      | ✅  | ✅        | ❌  |
+| checkConnectionsConsistency | ✅      | ✅  | ✅        | ✅  |
 | isSecretStored              | ✅      | ✅  | ❌        | ❌  |
 | setEncryptionSecret         | ✅      | ✅  | ❌        | ❌  |
 | changeEncryptionSecret      | ✅      | ✅  | ❌        | ❌  |

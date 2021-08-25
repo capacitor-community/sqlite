@@ -1,3 +1,10 @@
+## 3.2.0-5 (2021-08-25)
+
+### Added Features
+
+ - Add Web plugin part based on `sql.js@1.5.0` and `localeforage@1.9.0`for database persistency.
+ - Add Web_Usage.md doc
+
 ## 3.2.0-4 (2021-08-25)
 
 ### Bug Fixes
