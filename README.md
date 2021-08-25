@@ -16,7 +16,7 @@
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/dw/@capacitor-community/sqlite?style=flat-square" /></a>
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/v/@capacitor-community/sqlite?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-<a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-5-orange?style=flat-square" /></a>
+<a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-7-orange?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 </p>
 
@@ -27,6 +27,10 @@
 | Quéau Jean Pierre | [jepiqueau](https://github.com/jepiqueau) |        |
 
 ## CAPACITOR 3 (Master)
+
+🚨 Since release 3.2.0-3 ->> 🚨
+
+The Electron plugin is now based on `@capacitor-community/electron@4.0.3` thanks to the hard and heavy work from `Mike Summerfeldt IT-MikeS` 👏 🙏
 
 🚨 Since release 3.2.0-2 ->> 🚨
 🚨 !!! for Electron developper, the Electron plugin is back !!! 🚨
@@ -146,10 +150,16 @@ meaning that it will not work in IE11 without additional JavaScript transformati
 ```bash
 npm install @capacitor-community/sqlite
 npm run build
-npx cap sync
 npx cap add android
 npx cap add ios
-// npx cap add @capacitor-community/electron not working
+npx cap add @capacitor-community/electron
+```
+
+and do when you update 
+
+```bash
+npx cap sync
+npx cap sync @capacitor-community/electron
 ```
 
 ### IOS
@@ -161,16 +171,22 @@ npx cap add ios
 - On Android, no further steps needed.
 
 
-### Electron 🚧 (NOT WORKING YET)
+### Electron
 
 - On Electron, go to the Electron folder of YOUR_APPLICATION
 
+```bash
+npm install --save sqlite3
+npm install --save-dev @types/sqlite3
+npm run build
+```
 
 ## Build & Run
 
 ```
 npm run build
 npx cap copy
+npx cap copy @capacitor-community/electron
 ```
 
 ### IOS
@@ -290,6 +306,7 @@ No configuration required for this plugin
 ## Dependencies
 
 The IOS and Android codes are using `SQLCipher` allowing for database encryption
+The Electron code is using `sqlite3` 
 
 ## Contributors ✨
 
@@ -305,6 +322,8 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/karyfars"><img src="https://avatars2.githubusercontent.com/u/303016?s=60&u=1ce232ae3c22eac7b0b4778e46fe079939c39b40&v=4" width="100px;" alt=""/><br /><sub><b>Karyfars</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=jepiqueau" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/chriswep"><img src="https://avatars2.githubusercontent.com/u/1055809?s=400&u=e555940f143da8be255743028d6838cb5c020b44&v=4" width="100px;" alt=""/><br /><sub><b>Chriswep</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=jepiqueau" title="Documentation">📖</a></td>    
     <td align="center"><a href="https://github.com/nirajhinge"><img src="https://avatars.githubusercontent.com/u/54309996?v=4" width="100px;" alt=""/><br /><sub><b>Nirajhinge</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=jepiqueau" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/digaus"><img src="https://avatars.githubusercontent.com/u/15358538?v=4" width="100px;" alt=""/><br /><sub><b>Digaus</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=jepiqueau" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/IT-MikeS"><img src="https://avatars.githubusercontent.com/u/20338451?v=4" width="100px;" alt=""/><br /><sub><b>Mike Summerfeldt</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=jepiqueau" title="Code">💻</a></td>
   </tr>
 </table>
 

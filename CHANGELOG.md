@@ -1,3 +1,9 @@
+## 3.2.0-3 (2021-08-25)
+
+### Chore
+
+ - Update to @capacitor-community/electron 4.0.3
+
 ## 3.2.0-2 (2021-08-23)
 
 ### Chore
@@ -6,7 +12,7 @@
 
 ### Added Features
 
- - Add Electron plugin part based on sqlite3
+ - Add Electron plugin part based on sqlite3 and @capacitor-community/electron 3.1.0
 
 ## 3.2.0-1 (2021-08-23)
 
