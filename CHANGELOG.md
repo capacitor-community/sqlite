@@ -1,3 +1,9 @@
+## 3.2.0-4 (2021-08-25)
+
+### Bug Fixes
+
+ - android in partial model importFromJson failed of update data: NIQUE constraint failed: xxx.id issue#160
+
 ## 3.2.0-3 (2021-08-25)
 
 ### Chore
