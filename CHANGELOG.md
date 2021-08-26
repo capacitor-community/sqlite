@@ -1,3 +1,9 @@
+## 3.2.0-6 (2021-08-26)
+
+### Bug Fixes
+
+ - Fix Electron echo method
+ 
 ## 3.2.0-5 (2021-08-25)
 
 ### Added Features

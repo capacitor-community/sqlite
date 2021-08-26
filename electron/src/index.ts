@@ -124,8 +124,12 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     return Promise.resolve();
   }
   async echo(options: capEchoOptions): Promise<capEchoResult> {
-    console.log(`in Electron Plugin ${JSON.stringify(options)}`);
+    const keys = Object.keys(options);
+    if (!keys.includes('value')) {
+      return Promise.reject('Must provide a value to echo');
+    }
     const ret: capEchoResult = {} as capEchoResult;
+    ret.value = options.value;
     return Promise.resolve(ret);
   }
   async open(options: capSQLiteOptions): Promise<void> {
