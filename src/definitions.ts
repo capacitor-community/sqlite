@@ -1079,7 +1079,6 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
     statements: string,
     transaction = true,
   ): Promise<capSQLiteChanges> {
-    console.log(`in DBConnection execute transaction: ${transaction}`);
     try {
       const res: any = await this.sqlite.execute({
         database: this.dbName,
@@ -1117,31 +1116,9 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
     values?: any[],
     transaction = true,
   ): Promise<capSQLiteChanges> {
-    console.log(`in DBConnection run transaction: ${transaction}`);
     let res: any;
     try {
       if (values && values.length > 0) {
-        /* temporary fix for [null,null] -> [null,"..."] */
-        /*        const platform = Capacitor.getPlatform();
-        if (platform === 'android') {
-          const vals: any[] = [];
-          for (const val of values) {
-            if (val != null) {
-              vals.push(val);
-            } else {
-              vals.push(undefined);
-            }
-          }
-          res = await this.sqlite.run({
-            database: this.dbName,
-            statement: statement,
-            values: vals,
-            transaction: transaction,
-          });
-        } else {
-*/
-        /* end of temporary fix */
-
         res = await this.sqlite.run({
           database: this.dbName,
           statement: statement,
@@ -1167,37 +1144,6 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
     transaction = true,
   ): Promise<capSQLiteChanges> {
     try {
-      console.log(`in DBConnection executeSet transaction: ${transaction}`);
-      /* temporary fix for null */
-      /*      const platform = Capacitor.getPlatform();
-      let res: any;
-      if (platform === 'android') {
-        const modSet: capSQLiteSet[] = [];
-        for (const s of set) {
-          const mS: capSQLiteSet = {};
-          mS.statement = s.statement;
-          if (s.values) {
-            // change null by undefined
-            const ns: any[] = [];
-            for (const sv of s.values) {
-              if (sv != null) {
-                ns.push(sv);
-              } else {
-                ns.push(undefined);
-              }
-            }
-            mS.values = ns;
-          }
-          modSet.push(mS);
-        }
-        res = await this.sqlite.executeSet({
-          database: this.dbName,
-          set: modSet,
-          transaction: transaction,
-        });
-      } else {
-  */
-      /* end temporary fix */
       const res: any = await this.sqlite.executeSet({
         database: this.dbName,
         set: set,

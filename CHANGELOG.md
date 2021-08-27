@@ -1,3 +1,9 @@
+## 3.2.0-7 (2021-08-27)
+
+### Bug Fixes
+
+ - Fix web store initialization
+
 ## 3.2.0-6 (2021-08-26)
 
 ### Bug Fixes

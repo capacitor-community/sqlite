@@ -48,6 +48,10 @@ export class CapacitorSQLiteWeb
           this.notifyListeners('sqliteExportProgressEvent', event.detail);
         },
       );
+      if (!this.isStoreOpen)
+        this.sqliteEl.isStoreOpen().then((isOpen: boolean) => {
+          this.isStoreOpen = isOpen;
+        });
     } else {
       console.log(`$$$$$$ this.sqliteEl is null $$$$$$`);
     }
@@ -74,8 +78,6 @@ export class CapacitorSQLiteWeb
   }
   async createConnection(options: capSQLiteOptions): Promise<void> {
     if (this.sqliteEl != null) {
-      if (!this.isStoreOpen)
-        this.isStoreOpen = await this.sqliteEl.isStoreOpen();
       if (this.isStoreOpen) {
         try {
           await this.sqliteEl.createConnection(options);
