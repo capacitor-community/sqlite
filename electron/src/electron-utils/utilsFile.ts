@@ -6,6 +6,8 @@ export class UtilsFile {
   AppName = '';
   HomeDir = '';
   osType: string;
+  sep = '/';
+  appPath: string;
 
   constructor() {
     this.Path = require('path');
@@ -13,9 +15,14 @@ export class UtilsFile {
     this.Os = require('os');
     this.HomeDir = this.Os.homedir();
     const dir: string = __dirname;
-    const appPath = dir.substring(0, dir.indexOf('electron') + 8);
+    const idx: number = dir.indexOf('\\');
+    if (idx != -1) this.sep = '\\';
+    this.appPath = dir.substring(
+      0,
+      dir.indexOf(`electron${this.sep}`) /* + 8*/,
+    );
     const rawdata = this.NodeFs.readFileSync(
-      this.Path.resolve(appPath, 'package.json'),
+      this.Path.resolve(this.appPath, 'package.json'),
     );
     this.AppName = JSON.parse(rawdata).name;
     this.osType = this.Os.type();
@@ -99,23 +106,17 @@ export class UtilsFile {
    */
   public getAssetsDatabasesPath(): string {
     let retPath = '';
-    /*      let sep = '/';
-      const idx: number = __dirname.indexOf('\\');
-      if (idx != -1) sep = '\\';
-*/
-    const dir: string = __dirname;
-    const appPath = dir.substring(0, dir.indexOf('electron'));
+    const rawdata = this.NodeFs.readFileSync(
+      this.Path.resolve(this.appPath, 'capacitor.config.json'),
+    );
+    const webDir = JSON.parse(rawdata).webDir;
+    const dir = webDir === 'www' ? 'src' : 'public';
     retPath = this.Path.resolve(
-      appPath,
-      'src',
+      this.appPath,
+      dir,
       'assets',
       this.pathDB.toLowerCase(),
     );
-    /*
-      const dir: string = __dirname.substring(0, __dirname.lastIndexOf(sep) + 1);
-      retPath = this.Path.join(dir, 'app', 'assets', this.pathDB.toLowerCase());
-      console.log(`$$$ AssetsDatabases ${retPath}`);
-      */
     return retPath;
   }
   /**

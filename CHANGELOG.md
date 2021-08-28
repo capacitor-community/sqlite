@@ -1,3 +1,14 @@
+## 3.2.0-8 (2021-08-28)
+
+### Added Features
+
+ - Add Ionic/Vue App to Web_Usage.md
+
+### Bug Fixes
+
+ - Fix Electron with "electron" in the app name issue#163
+ - Fix Electron `assets/databases` under `public` folder for Vue and React frameworks
+
 ## 3.2.0-7 (2021-08-27)
 
 ### Bug Fixes

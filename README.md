@@ -166,6 +166,16 @@ npx cap sync
 npx cap sync @capacitor-community/electron
 ```
 
+### Web
+
+#### For Angular framework
+
+- copy manually the file `sql-wasm.wasm` from `nodes_modules/sql.js/dist/sql-wasm.wasm` to the `src/assets` folder of YOUR_APP 
+
+#### For Vue & React frameworks
+
+- copy manually the file `sql-wasm.wasm` from `nodes_modules/sql.js/dist/sql-wasm.wasm` to the `public/assets` folder of YOUR_APP 
+
 ### IOS
 
 - on iOS, no further steps needed.
@@ -190,7 +200,18 @@ npm run build
 ```
 npm run build
 npx cap copy
+npx cap copy web
 npx cap copy @capacitor-community/electron
+```
+
+### Web
+
+```
+ionic serve
+```
+or 
+```
+npm run serve
 ```
 
 ### IOS
@@ -276,6 +297,7 @@ No configuration required for this plugin
 
 - [TypeORM_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/TypeORM-Usage.md)
 
+- [Web_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Web-Usage.md)
 
 ### Framework's Usage 
 
