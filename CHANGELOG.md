@@ -1,3 +1,13 @@
+## 3.2.0-10 (2021-08-29)
+
+### Added Features
+
+ - Add Ionic/React App to Web_Usage.md
+
+### Bug Fixes
+
+ - fix README.md
+
 ## 3.2.0-9 (2021-08-29)
 
 ### Bug Fixes

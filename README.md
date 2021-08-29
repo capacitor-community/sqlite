@@ -190,6 +190,7 @@ npx cap sync @capacitor-community/electron
 - On Electron, go to the Electron folder of YOUR_APPLICATION
 
 ```bash
+cd electron
 npm install --save sqlite3
 npm install --save-dev @types/sqlite3
 npm run build
@@ -205,13 +206,17 @@ npx cap copy @capacitor-community/electron
 ```
 
 ### Web
-
+- Angular
 ```
 ionic serve
 ```
-or 
+- Vue
 ```
 npm run serve
+```
+- React
+```
+npm run start
 ```
 
 ### IOS
@@ -314,15 +319,17 @@ No configuration required for this plugin
 
 - [angular-sqlite-app-starter](https://github.com/jepiqueau/angular-sqlite-app-starter)
 
-### Ionic/React (to come later)
+### Ionic/React
 
 - [react-sqlite-app-starter](https://github.com/jepiqueau/react-sqlite-app-starter)
 
-### Ionic/Vue (to come later)
+### Ionic/Vue
 
 - [vue-sqlite-app-starter](https://github.com/jepiqueau/vue-sqlite-app-starter)
 
-### Vue (to come later)
+### Vue
+
+- [vue-sqlite-app](https://github.com/jepiqueau/vue-sqlite-app)
 
 ## Usage
 
