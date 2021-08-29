@@ -1,3 +1,10 @@
+## 3.2.0-9 (2021-08-29)
+
+### Bug Fixes
+
+ - Fix Android importFromJson throwing error mentioned in issue#164
+ - Fix iOS importFromJson throwing error mentioned in issue#164
+
 ## 3.2.0-8 (2021-08-28)
 
 ### Added Features

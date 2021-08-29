@@ -107,15 +107,15 @@ public class ImportFromJson {
                 throw new Exception("CreateSchema: Database not opened");
             }
         } catch (IllegalStateException e) {
-            throw e;
+            throw new Exception("CreateSchema: " + e.getMessage());
         } catch (android.database.SQLException e) {
-            throw e;
+            throw new Exception("CreateSchema: " + e.getMessage());
         } catch (Exception e) {
-            throw e;
+            throw new Exception("CreateSchema: " + e.getMessage());
         } finally {
             if (db != null && db.inTransaction()) db.endTransaction();
-            return changes;
         }
+        return changes;
     }
 
     /**
@@ -342,11 +342,11 @@ public class ImportFromJson {
                 throw new Exception("CreateDatabaseData: Database not opened");
             }
         } catch (IllegalStateException e) {
-            throw e;
+            throw new Exception("CreateDatabaseData: " + e.getMessage());
         } catch (android.database.SQLException e) {
-            throw e;
+            throw new Exception("CreateDatabaseData: " + e.getMessage());
         } catch (Exception e) {
-            throw e;
+            throw new Exception("CreateDatabaseData: " + e.getMessage());
         } finally {
             if (db != null && db.inTransaction()) db.endTransaction();
         }

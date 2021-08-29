@@ -299,7 +299,6 @@ class Database {
                 }
             }
             msg.append(" \(message)")
-            print("\(msg)")
             lastId = -1
         }
 

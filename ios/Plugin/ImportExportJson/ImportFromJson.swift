@@ -68,6 +68,9 @@ class ImportFromJson {
         } catch UtilsDropError.dropAllFailed(let message) {
             throw ImportFromJsonError.createDatabaseSchema(
                 message: "\(msg) \(message)")
+        } catch ImportFromJsonError.createSchema(let message) {
+            throw ImportFromJsonError.createDatabaseSchema(
+                message: "\(msg) \(message)")
         }
     }
 

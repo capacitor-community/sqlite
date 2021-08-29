@@ -449,61 +449,61 @@ enum CapacitorSQLiteError: Error {
     throws -> [String: Int] {
         var mDb: Database
         if let data = ("["+parsingData+"]").data(using: .utf8) {
+            var jsonSQLite: [JsonSQLite]
             do {
-                let jsonSQLite = try JSONDecoder()
+                jsonSQLite = try JSONDecoder()
                     .decode([JsonSQLite].self, from: data)
-                let encrypted: Bool = jsonSQLite[0].encrypted ?
-                    true : false
-                let inMode: String = encrypted ? "secret"
-                    : "no-encryption"
-                var dbName: String = CapacitorSQLite.getDatabaseName(dbName: jsonSQLite[0].database)
-                dbName.append("SQLite.db")
-                // open the database
-                do {
-                    mDb = try Database(
-                        databaseName: dbName, encrypted: encrypted,
-                        mode: inMode, vUpgDict: [:])
-                    try mDb.open()
-                } catch DatabaseError.open(let message) {
-                    throw CapacitorSQLiteError.failed(message: message)
-                } catch let error {
-                    let msg: String = "\(error.localizedDescription)"
-                    throw CapacitorSQLiteError.failed(message: msg)
-                }
-                // import from Json Object
-                do {
-                    let res: [String: Int] = try mDb
-                        .importFromJson(jsonSQLite: jsonSQLite[0])
-                    try mDb.close()
-                    if let result = res["changes"] {
-                        if result < 0 {
-                            let msg: String = "changes < 0"
-                            throw CapacitorSQLiteError
-                            .failed(message: msg)
-                        } else {
-                            return res
-                        }
-                    } else {
-                        let msg: String = "changes not found"
-                        throw CapacitorSQLiteError.failed(message: msg)
-                    }
-                } catch DatabaseError.importFromJson(
-                            let message) {
-                    var msg = message
-                    do {
-                        try mDb.close()
-                        throw CapacitorSQLiteError.failed(message: msg)
-                    } catch DatabaseError.close(let message) {
-                        msg.append(" \(message)")
-                        throw CapacitorSQLiteError.failed(message: msg)
-                    }
-                } catch DatabaseError.close(let message) {
-                    throw CapacitorSQLiteError.failed(message: message)
-                }
             } catch let error {
                 var msg: String = "Stringify Json Object not Valid "
                 msg.append("\(error.localizedDescription)")
                 throw CapacitorSQLiteError.failed(message: msg)
+            }
+            let encrypted: Bool = jsonSQLite[0].encrypted ?
+                true : false
+            let inMode: String = encrypted ? "secret"
+                : "no-encryption"
+            var dbName: String = CapacitorSQLite.getDatabaseName(dbName: jsonSQLite[0].database)
+            dbName.append("SQLite.db")
+            // open the database
+            do {
+                mDb = try Database(
+                    databaseName: dbName, encrypted: encrypted,
+                    mode: inMode, vUpgDict: [:])
+                try mDb.open()
+            } catch DatabaseError.open(let message) {
+                throw CapacitorSQLiteError.failed(message: message)
+            } catch let error {
+                let msg: String = "\(error.localizedDescription)"
+                throw CapacitorSQLiteError.failed(message: msg)
+            }
+            // import from Json Object
+            do {
+                let res: [String: Int] = try mDb
+                    .importFromJson(jsonSQLite: jsonSQLite[0])
+                try mDb.close()
+                if let result = res["changes"] {
+                    if result < 0 {
+                        let msg: String = "changes < 0"
+                        throw CapacitorSQLiteError
+                        .failed(message: msg)
+                    } else {
+                        return res
+                    }
+                } else {
+                    let msg: String = "changes not found"
+                    throw CapacitorSQLiteError.failed(message: msg)
+                }
+            } catch DatabaseError.importFromJson(let message) {
+                var msg = message
+                do {
+                    try mDb.close()
+                    throw CapacitorSQLiteError.failed(message: msg)
+                } catch DatabaseError.close(let message) {
+                    msg.append(" \(message)")
+                    throw CapacitorSQLiteError.failed(message: msg)
+                }
+            } catch DatabaseError.close(let message) {
+                throw CapacitorSQLiteError.failed(message: message)
             }
         } else {
             let msg: String = "Stringify Json Object not Valid"
