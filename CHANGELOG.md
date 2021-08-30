@@ -1,3 +1,13 @@
+## 3.2.0-11 (2021-08-30)
+
+### Bug Fixes
+
+ - Fix Android importFromJson change in version throwing error mentioned in issue#164
+ - Fix iOS importFromJson change in version throwing error mentioned in issue#164
+ - Fix Electron importFromJson change in version throwing error mentioned in issue#164
+ - Fix Web importFromJson change in version throwing error mentioned in issue#164
+
+
 ## 3.2.0-10 (2021-08-29)
 
 ### Added Features

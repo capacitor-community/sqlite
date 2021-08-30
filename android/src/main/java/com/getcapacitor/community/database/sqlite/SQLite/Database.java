@@ -162,25 +162,36 @@ public class Database {
                         throw new Exception(msg);
                     }
                     if (_version > curVersion) {
-                        try {
-                            _uUpg.onUpgrade(this, _context, _dbName, _vUpgObject, curVersion, _version);
-                            boolean ret = _uFile.deleteBackupDB(_context, _dbName);
-                            if (!ret) {
-                                String msg = "Failed in deleteBackupDB backup-\" + _dbName";
+                        if (_vUpgObject.size() > 0) {
+                            try {
+                                _uUpg.onUpgrade(this, _context, _dbName, _vUpgObject, curVersion, _version);
+                                boolean ret = _uFile.deleteBackupDB(_context, _dbName);
+                                if (!ret) {
+                                    String msg = "Failed in deleteBackupDB backup-\" + _dbName";
+                                    Log.v(TAG, msg);
+                                    close();
+                                    _db = null;
+                                    throw new Exception(msg);
+                                }
+                            } catch (Exception e) {
+                                // restore DB
+                                boolean ret = _uFile.restoreDatabase(_context, _dbName);
+                                String msg = e.getMessage();
+                                if (!ret) msg += "Failed in restoreDatabase " + _dbName;
                                 Log.v(TAG, msg);
                                 close();
                                 _db = null;
                                 throw new Exception(msg);
                             }
-                        } catch (Exception e) {
-                            // restore DB
-                            boolean ret = _uFile.restoreDatabase(_context, _dbName);
-                            String msg = e.getMessage();
-                            if (!ret) msg += "Failed in restoreDatabase " + _dbName;
-                            Log.v(TAG, msg);
-                            close();
-                            _db = null;
-                            throw new Exception(msg);
+                        } else {
+                            try {
+                                _db.setVersion(_version);
+                            } catch (Exception e) {
+                                String msg = e.getMessage() + "Failed in setting version " + _version;
+                                close();
+                                _db = null;
+                                throw new Exception(msg);
+                            }
                         }
                     }
                     _isOpen = true;

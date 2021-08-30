@@ -38,8 +38,8 @@ class Database {
     let uUpg: UtilsUpgrade = UtilsUpgrade()
 
     // MARK: - Init
-    init(databaseName: String, encrypted: Bool = false,
-         mode: String = "no-encryption", version: Int = 1,
+    init(databaseName: String, encrypted: Bool,
+         mode: String, version: Int,
          vUpgDict: [Int: [String: Any]] = [:]) throws {
         print("databaseName: \(databaseName) ")
         self.dbVersion = version
@@ -104,11 +104,15 @@ class Database {
                 curVersion = try UtilsSQLCipher.getVersion(mDB: self)
             }
             if dbVersion > curVersion {
-                _ = try uUpg.onUpgrade(mDB: self, upgDict: vUpgDict,
-                                       dbName: dbName,
-                                       currentVersion: curVersion,
-                                       targetVersion: dbVersion)
-                try UtilsSQLCipher.deleteBackupDB(databaseName: dbName)
+                if vUpgDict.count > 0 {
+                    _ = try uUpg.onUpgrade(mDB: self, upgDict: vUpgDict,
+                                           dbName: dbName,
+                                           currentVersion: curVersion,
+                                           targetVersion: dbVersion)
+                    try UtilsSQLCipher.deleteBackupDB(databaseName: dbName)
+                } else {
+                    try UtilsSQLCipher.setVersion(mDB: self, version: dbVersion)
+                }
             }
         } catch UtilsSQLCipherError.openOrCreateDatabase(let message) {
             var msg: String = "Failed in "

@@ -82,13 +82,18 @@ export class ImportFromJson {
         );
       }
     } else {
-      try {
-        await this._uSQLite.rollbackTransaction(mDB, true);
-        return Promise.reject(new Error(`createTablesData: ${msg}`));
-      } catch (err) {
-        return Promise.reject(
-          new Error('createTablesData: ' + `${err.message}: ${msg}`),
-        );
+      if(msg.length > 0) {
+        try {
+          await this._uSQLite.rollbackTransaction(mDB, true);
+          return Promise.reject(new Error(`createTablesData: ${msg}`));
+        } catch (err) {
+          return Promise.reject(
+            new Error('createTablesData: ' + `${err.message}: ${msg}`),
+          );
+        }
+      } else {
+        // case were no values given
+        return Promise.resolve(0);
       }
     }
   }

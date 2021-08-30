@@ -458,17 +458,17 @@ enum CapacitorSQLiteError: Error {
                 msg.append("\(error.localizedDescription)")
                 throw CapacitorSQLiteError.failed(message: msg)
             }
-            let encrypted: Bool = jsonSQLite[0].encrypted ?
-                true : false
+            let encrypted: Bool = jsonSQLite[0].encrypted
             let inMode: String = encrypted ? "secret"
                 : "no-encryption"
+            let version: Int = jsonSQLite[0].version
             var dbName: String = CapacitorSQLite.getDatabaseName(dbName: jsonSQLite[0].database)
             dbName.append("SQLite.db")
             // open the database
             do {
                 mDb = try Database(
                     databaseName: dbName, encrypted: encrypted,
-                    mode: inMode, vUpgDict: [:])
+                    mode: inMode, version: version, vUpgDict: [:])
                 try mDb.open()
             } catch DatabaseError.open(let message) {
                 throw CapacitorSQLiteError.failed(message: message)

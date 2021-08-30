@@ -96,23 +96,35 @@ export class Database {
       this._isDBOpen = true;
 
       if (this._version > curVersion) {
-        try {
-          // execute the upgrade flow process
-          await this._uUpg.onUpgrade(
-            this._mDB,
-            this._vUpgDict,
-            this._dbName,
-            curVersion,
-            this._version,
-          );
-          // delete the backup database
-          await this._uFile.deleteFileName(`backup-${this._dbName}`);
-        } catch (err) {
-          // restore the database from backup
+        const keys: string[] = Object.keys(this._vUpgDict);
+
+        if (keys.length > 0) {
           try {
-            await this._uFile.restoreFileName(this._dbName, 'backup');
+            // execute the upgrade flow process
+            await this._uUpg.onUpgrade(
+              this._mDB,
+              this._vUpgDict,
+              this._dbName,
+              curVersion,
+              this._version,
+            );
+            // delete the backup database
+            await this._uFile.deleteFileName(`backup-${this._dbName}`);
           } catch (err) {
-            return Promise.reject(new Error(`Open: ${err.message}`));
+            // restore the database from backup
+            try {
+              await this._uFile.restoreFileName(this._dbName, 'backup');
+            } catch (err) {
+              return Promise.reject(new Error(`Open: ${err.message}`));
+            }
+          }
+        } else {
+          try {
+            await this._uSQLite.setVersion(this._mDB, this._version);
+          } catch (err) {
+            return Promise.reject(
+              new Error(`SetVersion: ${this._version} ${err.message}`),
+            );
           }
         }
       }
