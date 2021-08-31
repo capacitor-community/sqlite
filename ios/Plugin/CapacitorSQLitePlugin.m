@@ -9,6 +9,7 @@ CAP_PLUGIN(CapacitorSQLitePlugin, "CapacitorSQLite",
            CAP_PLUGIN_METHOD(closeConnection, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(open, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(close, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(getVersion, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(execute, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(executeSet, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(run, CAPPluginReturnPromise);

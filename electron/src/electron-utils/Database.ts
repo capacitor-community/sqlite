@@ -154,6 +154,26 @@ export class Database {
     return Promise.resolve();
   }
   /**
+   * GetVersion
+   * get the database version
+   * @returns Promise<number>
+   */
+  async getVersion(): Promise<number> {
+    if (this._mDB != null && this._isDBOpen) {
+      try {
+        const curVersion: number = await this._uSQLite.getVersion(this._mDB);
+        return Promise.resolve(curVersion);
+      } catch (err) {
+        if (this._isDBOpen) this.close();
+        return Promise.reject(new Error(`getVersion: ${err.message}`));
+      }
+    } else {
+      let msg = `getVersion: Database ${this._dbName} `;
+      msg += `not opened`;
+      return Promise.reject(new Error(msg));
+    }
+  }
+  /**
    * DeleteDB
    * delete a database
    * @param dbName: string

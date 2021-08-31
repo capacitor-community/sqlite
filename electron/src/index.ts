@@ -11,6 +11,7 @@ import type {
   capSQLiteOptions,
   capSQLiteQueryOptions,
   capSQLiteResult,
+  capVersionResult,
   capSQLiteRunOptions,
   capSQLiteSetOptions,
   capSQLiteSyncDateOptions,
@@ -168,6 +169,27 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       return Promise.resolve();
     } catch (err) {
       return Promise.reject(`Close: ${err}`);
+    }
+  }
+  async getVersion(options: capSQLiteOptions): Promise<capVersionResult> {
+    let keys = Object.keys(options);
+    if (!keys.includes('database')) {
+      return Promise.reject('Must provide a database name');
+    }
+    const dbName: string = options.database;
+    keys = Object.keys(this._dbDict);
+    if (!keys.includes(dbName)) {
+      return Promise.reject(`Open: No available connection for ${dbName}`);
+    }
+
+    const mDB = this._dbDict[dbName];
+    try {
+      const version: number = await mDB.getVersion();
+      const ret: capVersionResult = {} as capVersionResult;
+      ret.version = version;
+      return Promise.resolve(ret);
+    } catch (err) {
+      return Promise.reject(`Open: ${err}`);
     }
   }
   async execute(options: capSQLiteExecuteOptions): Promise<capSQLiteChanges> {

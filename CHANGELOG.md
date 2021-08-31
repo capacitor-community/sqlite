@@ -1,3 +1,9 @@
+## 3.2.0 (2021-08-31)
+
+### Added Features
+
+ - Add getVersion method
+
 ## 3.2.0-11 (2021-08-30)
 
 ### Bug Fixes

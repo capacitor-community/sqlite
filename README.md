@@ -255,6 +255,7 @@ No configuration required for this plugin
 | open (non-encrypted DB)     | ✅      | ✅  | ✅        | ✅  |
 | open (encrypted DB)         | ✅      | ✅  | ❌        | ❌  |
 | close                       | ✅      | ✅  | ✅        | ✅  |
+| getVersion                  | ✅      | ✅  | ✅        | ✅  |
 | execute                     | ✅      | ✅  | ✅        | ✅  |
 | executeSet                  | ✅      | ✅  | ✅        | ✅  |
 | run                         | ✅      | ✅  | ✅        | ✅  |

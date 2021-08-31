@@ -34,6 +34,30 @@ public class RetHandler {
     }
 
     /**
+     * RetVersion Method
+     * Create and return the capVersionResult object
+     * @param call
+     * @param res
+     * @param message
+     */
+    public void retVersion(PluginCall call, Integer res, String message) {
+        JSObject ret = new JSObject();
+        if (message != null) {
+            ret.put("message", message);
+            Log.v(TAG, "*** ERROR " + message);
+            call.reject(message);
+            return;
+        }
+        if (res != null) {
+            ret.put("version", res);
+            call.resolve(ret);
+            return;
+        } else {
+            call.resolve();
+        }
+    }
+
+    /**
      * RetChanges Method
      * Create and return the capSQLiteChanges object
      * @param call

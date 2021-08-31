@@ -82,7 +82,7 @@ export class ImportFromJson {
         );
       }
     } else {
-      if(msg.length > 0) {
+      if (msg.length > 0) {
         try {
           await this._uSQLite.rollbackTransaction(mDB, true);
           return Promise.reject(new Error(`createTablesData: ${msg}`));

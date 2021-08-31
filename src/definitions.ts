@@ -69,6 +69,13 @@ export interface CapacitorSQLitePlugin {
    */
   close(options: capSQLiteOptions): Promise<void>;
   /**
+   * Get a SQLite database version
+   * @param options: capSQLiteOptions
+   * @returns Promise<void>
+   * @since 3.2.0
+   */
+  getVersion(options: capSQLiteOptions): Promise<capVersionResult>;
+  /**
    * Execute a Batch of Raw Statements as String
    * @param options: capSQLiteExecuteOptions
    * @returns Promise<capSQLiteChanges>
@@ -414,6 +421,12 @@ export interface capEchoResult {
    * String returned
    */
   value?: string;
+}
+export interface capVersionResult {
+  /**
+   * Number returned
+   */
+  version?: number;
 }
 export interface capSQLiteResult {
   /**
@@ -963,6 +976,12 @@ export interface ISQLiteDBConnection {
    */
   close(): Promise<void>;
   /**
+   * Get the a SQLite DB Version
+   * @returns Promise<capVersionResult>
+   * @since 3.2.0
+   */
+  getVersion(): Promise<capVersionResult>;
+  /**
    * Execute SQLite DB Connection Statements
    * @param statements
    * @returns Promise<capSQLiteChanges>
@@ -1071,6 +1090,14 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
     try {
       await this.sqlite.close({ database: this.dbName });
       return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async getVersion(): Promise<capVersionResult> {
+    try {
+      const version: capVersionResult = await this.sqlite.getVersion({ database: this.dbName });
+      return Promise.resolve(version);
     } catch (err) {
       return Promise.reject(err);
     }

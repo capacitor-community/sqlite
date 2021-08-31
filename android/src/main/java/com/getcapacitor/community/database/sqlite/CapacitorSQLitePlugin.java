@@ -229,6 +229,30 @@ public class CapacitorSQLitePlugin extends Plugin {
     }
 
     /**
+     * GetVersion Method
+     * Get a database Version
+     * @param call
+     */
+    @PluginMethod
+    public void getVersion(PluginCall call) {
+        if (!call.getData().has("database")) {
+            String msg = "GetVersion: Must provide a database name";
+            rHandler.retVersion(call, null, msg);
+            return;
+        }
+        String dbName = call.getString("database");
+        try {
+            Integer res = implementation.getVersion(dbName);
+            rHandler.retVersion(call, res, null);
+            return;
+        } catch (Exception e) {
+            String msg = "Open: " + e.getMessage();
+            rHandler.retVersion(call, null, msg);
+            return;
+        }
+    }
+
+    /**
      * CloseConnection Method
      * Close the connection to a database
      * @param call

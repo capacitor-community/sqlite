@@ -235,6 +235,21 @@ public class Database {
         }
     }
 
+    public Integer getVersion() throws Exception {
+        if (_db.isOpen()) {
+            try {
+                Integer curVersion = _db.getVersion();
+                return curVersion;
+            } catch (Exception e) {
+                String msg = "Failed in database getVersion" + e.getMessage();
+                Log.v(TAG, msg);
+                throw new Exception(msg);
+            }
+        } else {
+            throw new Exception("Database not opened");
+        }
+    }
+
     /**
      * GetDBState Method
      * @return the detected state of the database

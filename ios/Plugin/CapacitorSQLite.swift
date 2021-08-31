@@ -117,6 +117,22 @@ enum CapacitorSQLiteError: Error {
         }
     }
 
+    // MARK: - GetVersion
+
+    @objc public func getVersion(_ dbName: String) throws ->  NSNumber {
+        let mDbName = CapacitorSQLite.getDatabaseName(dbName: dbName)
+        guard let mDb: Database = dbDict[mDbName] else {
+            let msg = "Connection to \(mDbName) not available"
+            throw CapacitorSQLiteError.failed(message: msg)
+        }
+        do {
+            let version: Int = try mDb.getVersion()
+            return NSNumber(value: version)
+
+        } catch DatabaseError.open(let message) {
+            throw CapacitorSQLiteError.failed(message: message)
+        }
+    }
     // MARK: - Close Connection
 
     @objc public func closeConnection(_ dbName: String) throws {

@@ -12,6 +12,7 @@ enum DatabaseError: Error {
     case filePath(message: String)
     case open(message: String)
     case close(message: String)
+    case getVersion(message: String)
     case executeSQL(message: String)
     case runSQL(message: String)
     case selectSQL(message: String)
@@ -169,6 +170,24 @@ class Database {
             }
         }
         return
+    }
+
+    // MARK: - GetVersion
+
+    func getVersion () throws -> Int {
+        if isOpen {
+            do {
+                let curVersion: Int = try UtilsSQLCipher
+                    .getVersion(mDB: self)
+                return curVersion
+            } catch UtilsSQLCipherError.getVersion(let message) {
+                let msg: String = "Failed in getVersion \(message)"
+                throw DatabaseError.getVersion(message: msg)
+            }
+        } else {
+            let msg: String = "Failed in getVersion database not opened"
+            throw DatabaseError.getVersion(message: msg)
+        }
     }
 
     // MARK: - ExecuteSQL

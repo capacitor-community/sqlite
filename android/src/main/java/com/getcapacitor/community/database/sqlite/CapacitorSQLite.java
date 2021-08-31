@@ -201,6 +201,28 @@ public class CapacitorSQLite {
     }
 
     /**
+     * GetVersion
+     * @param dbName
+     * @throws Exception
+     * @return Integer
+     */
+    public Integer getVersion(String dbName) throws Exception {
+        dbName = getDatabaseName(dbName);
+        Database db = dbDict.get(dbName);
+        if (db != null) {
+            try {
+                Integer version = db.getVersion();
+                return version;
+            } catch (Exception e) {
+                throw new Exception(e.getMessage());
+            }
+        } else {
+            String msg = "No available connection for database " + dbName;
+            throw new Exception(msg);
+        }
+    }
+
+    /**
      * CloseConnection
      * @param dbName
      * @throws Exception

@@ -204,6 +204,31 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         }
     }
 
+    // MARK: - getVersion
+
+    @objc func getVersion(_ call: CAPPluginCall) {
+        guard let dbName = call.options["database"] as? String else {
+            retHandler.rResult(
+                call: call,
+                message: "getVersion: Must provide a database name")
+            return
+        }
+        do {
+            let version: NSNumber = try implementation.getVersion(dbName)
+            retHandler.rVersion(call: call, ret: version)
+            return
+        } catch CapacitorSQLiteError.failed(let message) {
+            let msg = "GetVersion: \(message)"
+            retHandler.rVersion(call: call, message: msg)
+            return
+        } catch let error {
+            retHandler.rVersion(
+                call: call,
+                message: "GetVersion: \(error.localizedDescription)")
+            return
+        }
+    }
+
     // MARK: - Close Connection
 
     @objc func closeConnection(_ call: CAPPluginCall) {

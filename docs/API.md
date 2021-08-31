@@ -62,6 +62,7 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 * [`echo(...)`](#echo)
 * [`open(...)`](#open)
 * [`close(...)`](#close)
+* [`getVersion(...)`](#getversion)
 * [`execute(...)`](#execute)
 * [`executeSet(...)`](#executeset)
 * [`run(...)`](#run)
@@ -231,6 +232,25 @@ Close a SQLite database
 | **`options`** | <code><a href="#capsqliteoptions">capSQLiteOptions</a></code> | : <a href="#capsqliteoptions">capSQLiteOptions</a> |
 
 **Since:** 0.0.1
+
+--------------------
+
+
+### getVersion(...)
+
+```typescript
+getVersion(options: capSQLiteOptions) => Promise<capVersionResult>
+```
+
+Get a SQLite database version
+
+| Param         | Type                                                          | Description                                        |
+| ------------- | ------------------------------------------------------------- | -------------------------------------------------- |
+| **`options`** | <code><a href="#capsqliteoptions">capSQLiteOptions</a></code> | : <a href="#capsqliteoptions">capSQLiteOptions</a> |
+
+**Returns:** <code>Promise&lt;<a href="#capversionresult">capVersionResult</a>&gt;</code>
+
+**Since:** 3.2.0
 
 --------------------
 
@@ -670,6 +690,13 @@ return false : no consistency, connections are closed
 | Prop        | Type                | Description         |
 | ----------- | ------------------- | ------------------- |
 | **`value`** | <code>string</code> | String to be echoed |
+
+
+#### capVersionResult
+
+| Prop          | Type                | Description     |
+| ------------- | ------------------- | --------------- |
+| **`version`** | <code>number</code> | Number returned |
 
 
 #### capSQLiteChanges

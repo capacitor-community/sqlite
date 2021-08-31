@@ -55,6 +55,19 @@ class ReturnHandler {
         }
     }
 
+    // MARK: - rVersion
+
+    func rVersion(call: CAPPluginCall, ret: NSNumber? = nil,
+                  message: String? = nil) {
+        if let intMessage = message {
+            call.reject(intMessage)
+            return
+        } else {
+            call.resolve(["version": ret])
+            return
+        }
+    }
+
     // MARK: - rJsonSQLite
 
     func rJsonSQLite(call: CAPPluginCall, ret: [String: Any],

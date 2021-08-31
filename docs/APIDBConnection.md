@@ -11,6 +11,7 @@
 * [`getConnectionDBName()`](#getconnectiondbname)
 * [`open()`](#open)
 * [`close()`](#close)
+* [`getVersion()`](#getversion)
 * [`execute(...)`](#execute)
 * [`query(...)`](#query)
 * [`run(...)`](#run)
@@ -71,6 +72,21 @@ close() => Promise<void>
 Close a SQLite DB Connection
 
 **Since:** 2.9.0 refactor
+
+--------------------
+
+
+### getVersion()
+
+```typescript
+getVersion() => Promise<capVersionResult>
+```
+
+Get the a SQLite DB Version
+
+**Returns:** <code>Promise&lt;<a href="#capversionresult">capVersionResult</a>&gt;</code>
+
+**Since:** 3.2.0
 
 --------------------
 
@@ -289,6 +305,13 @@ Export the given database to a JSON Object
 
 
 ### Interfaces
+
+
+#### capVersionResult
+
+| Prop          | Type                | Description     |
+| ------------- | ------------------- | --------------- |
+| **`version`** | <code>number</code> | Number returned |
 
 
 #### capSQLiteChanges

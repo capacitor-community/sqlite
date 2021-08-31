@@ -15,6 +15,7 @@ import type {
   capSQLiteTableOptions,
   capSQLitePathOptions,
   capEchoResult,
+  capVersionResult,
   capSQLiteResult,
   capSQLiteChanges,
   capSQLiteValues,
@@ -81,6 +82,7 @@ export class CapacitorSQLiteWeb
       if (this.isStoreOpen) {
         try {
           await this.sqliteEl.createConnection(options);
+          return Promise.resolve();
         } catch (err) {
           return Promise.reject(`${err}`);
         }
@@ -96,6 +98,7 @@ export class CapacitorSQLiteWeb
       if (this.isStoreOpen) {
         try {
           await this.sqliteEl.open(options);
+          return Promise.resolve();
         } catch (err) {
           return Promise.reject(`${err}`);
         }
@@ -111,6 +114,23 @@ export class CapacitorSQLiteWeb
       if (this.isStoreOpen) {
         try {
           await this.sqliteEl.closeConnection(options);
+          return Promise.resolve();
+        } catch (err) {
+          return Promise.reject(`${err}`);
+        }
+      } else {
+        return Promise.reject(`Store "jeepSqliteStore" failed to open`);
+      }
+    } else {
+      throw this.unimplemented('Not implemented on web.');
+    }
+  }
+  async getVersion(options: capSQLiteOptions): Promise<capVersionResult> {
+    if (this.sqliteEl != null) {
+      if (this.isStoreOpen) {
+        try {
+          const ret: capVersionResult = await this.sqliteEl.getVersion(options);
+          return Promise.resolve(ret);
         } catch (err) {
           return Promise.reject(`${err}`);
         }
@@ -142,6 +162,7 @@ export class CapacitorSQLiteWeb
       if (this.isStoreOpen) {
         try {
           await this.sqliteEl.close(options);
+          return Promise.resolve();
         } catch (err) {
           return Promise.reject(`${err}`);
         }
@@ -290,6 +311,7 @@ export class CapacitorSQLiteWeb
       if (this.isStoreOpen) {
         try {
           await this.sqliteEl.deleteDatabase(options);
+          return Promise.resolve();
         } catch (err) {
           return Promise.reject(`${err}`);
         }
