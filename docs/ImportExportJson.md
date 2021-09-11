@@ -18,6 +18,8 @@
   - [`Full Mode Two Steps`](#full-mode-two-steps)
   - [`Partial Mode`](#partial-mode)
   - [`Full Mode with Triggers and UUID`](#full-mode-with-triggers-and-uuid)
+  - [`Full Mode with Views`](#full-mode-with-views)
+  - [`Partial Mode with Views`](#partial-mode-with-views)
 
 ## Methods
 
@@ -30,7 +32,7 @@ The created database can be encrypted or not based on the value of the name **_e
 
 The import mode can be selected either **full** or **partial**
 
-When mode **_full_** is choosen, all the existing **tables are dropped** if the database exists and they already exist in that database.
+When mode **_full_** is choosen, all the existing **tables and views are dropped** if the database exists and they already exist in that database.
 
 When mode **_partial_** is choosen, you can perform the following actions on an existing database
 
@@ -38,10 +40,14 @@ When mode **_partial_** is choosen, you can perform the following actions on an 
 - create new indexes to existing tables,
 - inserting new data to existing tables,
 - updating existing data to existing tables.
+- create new views
 
-if in mode **_partial_**, you include schema of tables which are already existing, the tables will not be modified.
+When mode **_partial_**, if you include views and/or schema of tables already existing, the views and/or tables will not be modified.
 
-Internally the `importFromJson`method is splitted into two SQL Transactions: - transaction building the schema (Tables, Indexes) - transaction creating the Table's Data (Insert, Update)
+Internally the `importFromJson`method is splitted into three SQL Transactions: 
+  - transaction building the schema (Tables, Indexes) 
+  - transaction creating the Table's Data (Insert, Update)
+  - transaction creating the Views
 
 ### exportToJson
 
@@ -78,7 +84,9 @@ export type jsonSQLite = {
   encrypted: boolean,
   mode: string,
   tables: Array<jsonTable>,
+  views?: Array<jsonView>,
 };
+
 export type jsonTable = {
   name: string,
   schema?: Array<jsonColumn>,
@@ -105,14 +113,21 @@ export type jsonIndex = {
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 Modified in 2.9.8 to allow import/export triggers
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-export interface JsonTrigger {
-  name: string;
-  timeevent: string;
-  condition?: string;
-  logic: string;
-}
-```
+export type JsonTrigger = {
+  name: string,
+  timeevent: string,
+  condition?: string,
+  logic: string,
+};
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Added in 3.2.2-1 to allow for View creation
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+export type jsonView = {
+  name: string,
+  value: string
+};
 
+```
 ## JSON Template Examples
 
 ### Full Mode One Step
@@ -457,4 +472,83 @@ export const dataToImport59: any = {
     },
   ],
 };
+```
+
+### Full Mode with Views
+
+```ts
+export const dataToImport167: any = {
+  database: "db-issue167",
+  version: 1,
+  encrypted: false,
+  mode: "full",
+  tables: [
+    {
+      name: "departments",
+      schema: [
+        {column: "id", value: "INTEGER PRIMARY KEY AUTOINCREMENT" },
+        {column: "name", value: "TEXT NOT NULL" },
+        {column:"last_modified", value:"INTEGER"}
+      ],
+      indexes: [
+        {name: "index_departments_on_last_modified",value: "last_modified DESC"}
+      ],
+      values: [
+        [1,"Admin",1608216034],
+        [2,"Sales",1608216034],
+        [3,"Quality Control",1608216034],
+        [4,"Marketing",1608216034],
+      ]
+    },
+    {
+      name: "employees",
+      schema: [
+        {column: "id", value: "INTEGER PRIMARY KEY AUTOINCREMENT" },
+        {column: "first_name", value: "TEXT" },
+        {column: "last_name", value: "TEXT" },
+        {column: "salary", value: "NUMERIC" },
+        {column: "dept_id", value: "INTEGER" },
+        {column: "last_modified", value: "INTEGER"}
+      ],
+      indexes: [
+        {name: "index_departments_on_last_modified",value: "last_modified DESC"}
+      ],
+      values: [
+        [1,"John","Brown",27500,1,1608216034],
+        [2,"Sally","Brown",37500,2,1608216034],
+        [3,'Vinay','Jariwala', 35100,3,1608216034],
+        [4,'Jagruti','Viras', 9500,2,1608216034],
+        [5,'Shweta','Rana',12000,3,1608216034],
+        [6,'sonal','Menpara', 13000,1,1608216034],
+        [7,'Yamini','Patel', 10000,2,1608216034],
+        [8,'Khyati','Shah', 50000,3,1608216034],
+        [9,'Shwets','Jariwala',19400,2,1608216034],
+        [10,'Kirk','Douglas',36400,4,1608216034],
+        [11,'Leo','White',45000,4,1608216034],
+      ],
+    }
+  ],
+  views: [
+    {name: "SalesTeam", value: "SELECT id,first_name,last_name from employees WHERE dept_id IN (SELECT id FROM departments where name='Sales')"},
+    {name: "AdminTeam", value: "SELECT id,first_name,last_name from employees WHERE dept_id IN (SELECT id FROM departments where name='Admin')"},
+  ]
+}
+
+```
+
+### Partial Mode with Views
+
+```ts
+export const viewsToImport167: any = {
+  database: "db-issue167",
+  version: 1,
+  encrypted: false,
+  mode: "partial",
+  tables: [],
+  views: [
+    {name: "QualityControlTeam", value: "SELECT id,first_name,last_name from employees WHERE dept_id IN (SELECT id FROM departments where name='Quality Control')"},
+    {name: "MarketingTeam", value: "SELECT id,first_name,last_name from employees WHERE dept_id IN (SELECT id FROM departments where name='Marketing')"},
+  ]
+}
+
 ```

@@ -466,14 +466,23 @@ export class Database {
     }
   }
   public async importJson(jsonData: JsonSQLite): Promise<number> {
-    let changes = -1;
+    let changes = 0;
     if (this._isDBOpen) {
       try {
-        // create the database schema
-        changes = await this._iFJson.createDatabaseSchema(this._mDB, jsonData);
-        if (changes != -1) {
-          // create the tables data
-          changes = await this._iFJson.createTablesData(this._mDB, jsonData);
+        if (jsonData.tables && jsonData.tables.length > 0) {
+          // create the database schema
+          changes = await this._iFJson.createDatabaseSchema(
+            this._mDB,
+            jsonData,
+          );
+          if (changes != -1) {
+            // create the tables data
+            changes += await this._iFJson.createTablesData(this._mDB, jsonData);
+          }
+        }
+        if (jsonData.views && jsonData.views.length > 0) {
+          // create the views
+          changes += await this._iFJson.createViews(this._mDB, jsonData);
         }
         return Promise.resolve(changes);
       } catch (err) {

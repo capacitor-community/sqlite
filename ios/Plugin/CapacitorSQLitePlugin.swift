@@ -47,7 +47,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         } catch let error {
             retHandler.rResult(
                 call: call,
-                message: "IsSecretStored: \(error.localizedDescription)")
+                message: "IsSecretStored: \(error)")
             return
         }
 
@@ -74,7 +74,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         } catch let error {
             retHandler.rResult(
                 call: call,
-                message: "SetEncryptionSecret: \(error.localizedDescription)")
+                message: "SetEncryptionSecret: \(error)")
             return
         }
     }
@@ -106,7 +106,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         } catch let error {
             retHandler.rResult(
                 call: call,
-                message: "ChangeEncryptionSecret: \(error.localizedDescription)")
+                message: "ChangeEncryptionSecret: \(error)")
             return
         }
     }
@@ -149,7 +149,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         } catch let error {
             retHandler.rResult(
                 call: call,
-                message: "CreateConnection: \(error.localizedDescription)")
+                message: "CreateConnection: \(error)")
             return
         }
     }
@@ -174,7 +174,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         } catch let error {
             retHandler.rResult(
                 call: call,
-                message: "Open: \(error.localizedDescription)")
+                message: "Open: \(error)")
             return
         }
     }
@@ -199,7 +199,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         } catch let error {
             retHandler.rResult(
                 call: call,
-                message: "Close: \(error.localizedDescription)")
+                message: "Close: \(error)")
             return
         }
     }
@@ -224,7 +224,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         } catch let error {
             retHandler.rVersion(
                 call: call,
-                message: "GetVersion: \(error.localizedDescription)")
+                message: "GetVersion: \(error)")
             return
         }
     }
@@ -249,7 +249,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         } catch let error {
             retHandler.rResult(
                 call: call,
-                message: "CloseConnection: \(error.localizedDescription)")
+                message: "CloseConnection: \(error)")
             return
         }
 
@@ -276,7 +276,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         } catch let error {
             retHandler.rResult(
                 call: call,
-                message: "CheckConnectionsConsistency: \(error.localizedDescription)")
+                message: "CheckConnectionsConsistency: \(error)")
             return
         }
     }
@@ -304,7 +304,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         } catch let error {
             retHandler.rResult(
                 call: call,
-                message: "isDatabase: \(error.localizedDescription)")
+                message: "isDatabase: \(error)")
             return
         }
 
@@ -339,7 +339,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         } catch let error {
             retHandler.rResult(
                 call: call,
-                message: "IsTableExists: \(error.localizedDescription)")
+                message: "IsTableExists: \(error)")
             return
         }
     }
@@ -360,7 +360,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         } catch let error {
             retHandler.rValues(
                 call: call, ret: [],
-                message: "getDatabaseList: \(error.localizedDescription)")
+                message: "getDatabaseList: \(error)")
             return
         }
     }
@@ -380,7 +380,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         } catch let error {
             retHandler.rResult(
                 call: call,
-                message: "AddSQLiteSuffix: \(error.localizedDescription)")
+                message: "AddSQLiteSuffix: \(error)")
             return
         }
     }
@@ -401,7 +401,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         } catch let error {
             retHandler.rResult(
                 call: call,
-                message: "DeleteOldDatabases: \(error.localizedDescription)")
+                message: "DeleteOldDatabases: \(error)")
             return
         }
     }
@@ -438,7 +438,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         } catch let error {
             retHandler.rChanges(
                 call: call, ret: ["changes": -1],
-                message: "Execute: \(error.localizedDescription)")
+                message: "Execute: \(error)")
             return
         }
 
@@ -494,7 +494,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         } catch let error {
             retHandler.rChanges(
                 call: call, ret: ["changes": -1],
-                message: "ExecuteSet: \(error.localizedDescription)")
+                message: "ExecuteSet: \(error)")
             return
         }
 
@@ -543,7 +543,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         } catch let error {
             retHandler.rChanges(
                 call: call, ret: ["changes": -1],
-                message: "Run: \(error.localizedDescription)")
+                message: "Run: \(error)")
             return
         }
 
@@ -592,7 +592,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         } catch let error {
             retHandler.rValues(
                 call: call, ret: [],
-                message: "Query: \(error.localizedDescription)")
+                message: "Query: \(error)")
             return
         }
 
@@ -623,7 +623,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         } catch let error {
             retHandler.rResult(
                 call: call,
-                message: "isDBExists: \(error.localizedDescription)")
+                message: "isDBExists: \(error)")
             return
         }
 
@@ -653,7 +653,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         } catch let error {
             retHandler.rResult(
                 call: call,
-                message: "isDBOpen: \(error.localizedDescription)")
+                message: "isDBOpen: \(error)")
             return
         }
     }
@@ -676,7 +676,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             retHandler.rResult(call: call, message: msg)
             return
         } catch let error {
-            let msg = "deleteDatabase: \(error.localizedDescription)"
+            let msg = "deleteDatabase: \(error)"
             retHandler.rResult(call: call, message: msg)
             return
         }
@@ -701,7 +701,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             retHandler.rResult(call: call, message: msg)
             return
         } catch let error {
-            let msg = "isJsonValid: \(error.localizedDescription)"
+            let msg = "isJsonValid: \(error)"
             retHandler.rResult(call: call, message: msg)
             return
         }
@@ -728,7 +728,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         } catch let error {
             let msg = "importFromJson: " +
-                "\(error.localizedDescription)"
+                "\(error)"
             retHandler.rChanges(
                 call: call, ret: ["changes": -1],
                 message: msg)
@@ -774,7 +774,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
                                    message: msg)
             return
         } catch let error {
-            let msg = "exportToJson: \(error.localizedDescription)"
+            let msg = "exportToJson: \(error)"
             retHandler.rJsonSQLite(call: call, ret: [:],
                                    message: msg)
             return
@@ -804,7 +804,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
                                 message: msg)
             return
         } catch let error {
-            let msg = "createSyncTable: \(error.localizedDescription)"
+            let msg = "createSyncTable: \(error)"
             retHandler.rChanges(call: call, ret: ["changes": -1],
                                 message: msg)
             return
@@ -836,7 +836,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             retHandler.rResult(call: call, message: msg)
             return
         } catch let error {
-            let msg = "setSyncDate: \(error.localizedDescription)"
+            let msg = "setSyncDate: \(error)"
             retHandler.rResult(call: call, message: msg)
             return
         }
@@ -861,7 +861,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             retHandler.rSyncDate(call: call, ret: 0, message: msg)
             return
         } catch let error {
-            let msg = "getSyncDate: \(error.localizedDescription)"
+            let msg = "getSyncDate: \(error)"
             retHandler.rSyncDate(call: call, ret: 0, message: msg)
             return
         }
@@ -896,7 +896,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         } catch let error {
             var  msg = "addUpgradeStatement: "
-            msg.append("\(error.localizedDescription)")
+            msg.append("\(error)")
             retHandler.rResult(call: call, message: msg)
             return
         }
@@ -914,7 +914,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             retHandler.rResult(call: call, message: msg)
             return
         } catch let error {
-            let msg = "copyFromAssets: \(error.localizedDescription)"
+            let msg = "copyFromAssets: \(error)"
             retHandler.rResult(call: call, message: msg)
             return
         }

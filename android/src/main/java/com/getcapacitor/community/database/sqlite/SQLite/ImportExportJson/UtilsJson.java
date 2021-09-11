@@ -15,6 +15,7 @@ public class UtilsJson {
     private JsonColumn uJCol = new JsonColumn();
     private JsonIndex uJIdx = new JsonIndex();
     private JsonTrigger uJTrg = new JsonTrigger();
+    private JsonView uJView = new JsonView();
 
     /**
      * Check if a table exists
@@ -34,6 +35,27 @@ public class UtilsJson {
             return ret;
         } catch (Exception e) {
             throw new Exception("isTableExists: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Check if a view exists
+     * @param db
+     * @param viewName
+     * @return
+     */
+    public boolean isViewExists(Database db, String viewName) throws Exception {
+        boolean ret = false;
+        String query = new StringBuilder("SELECT name FROM " + "sqlite_master WHERE type='view' AND name='")
+            .append(viewName)
+            .append("';")
+            .toString();
+        try {
+            JSArray resQuery = db.selectSQL(query, new ArrayList<Object>());
+            if (resQuery.length() > 0) ret = true;
+            return ret;
+        } catch (Exception e) {
+            throw new Exception("isViewExists: " + e.getMessage());
         }
     }
 
@@ -334,6 +356,29 @@ public class UtilsJson {
             boolean isValid = uJTrg.isTrigger(jsTrg);
             if (!isValid) {
                 throw new Exception("checkTriggersValidity: triggers[" + i + "] not valid");
+            }
+        }
+        return;
+    }
+
+    /**
+     * Check Views Validity
+     * @param views
+     * @throws Exception
+     */
+    public void checkViewsValidity(ArrayList<JsonView> views) throws Exception {
+        for (int i = 0; i < views.size(); i++) {
+            JSONObject jsView = new JSONObject();
+            ArrayList<String> keys = views.get(i).getKeys();
+            if (keys.contains("value")) {
+                jsView.put("value", views.get(i).getValue());
+            }
+            if (keys.contains("name")) {
+                jsView.put("name", views.get(i).getName());
+            }
+            boolean isValid = uJView.isView(jsView);
+            if (!isValid) {
+                throw new Exception("checkViewsValidity: views[" + i + "] not valid");
             }
         }
         return;

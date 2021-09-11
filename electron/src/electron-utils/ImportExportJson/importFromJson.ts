@@ -97,4 +97,58 @@ export class ImportFromJson {
       }
     }
   }
+  /**
+   * CreateViews
+   * @param mDB
+   * @param jsonData
+   */
+  public async createViews(mDB: any, jsonData: JsonSQLite): Promise<number> {
+    let isView = false;
+    let msg = '';
+    let initChanges = -1;
+    let changes = -1;
+    try {
+      initChanges = await this._uSQLite.dbChanges(mDB);
+      // start a transaction
+      await this._uSQLite.beginTransaction(mDB, true);
+    } catch (err) {
+      return Promise.reject(new Error(`createViews: ${err.message}`));
+    }
+    for (const jView of jsonData.views) {
+      if (jView.value != null) {
+        // Create the view
+        try {
+          await this._uJson.createView(mDB, jView);
+          isView = true;
+        } catch (err) {
+          msg = err.message;
+          isView = false;
+          break;
+        }
+      }
+    }
+    if (isView) {
+      try {
+        await this._uSQLite.commitTransaction(mDB, true);
+        changes = (await this._uSQLite.dbChanges(mDB)) - initChanges;
+        return Promise.resolve(changes);
+      } catch (err) {
+        return Promise.reject(new Error('createViews: ' + `${err.message}`));
+      }
+    } else {
+      if (msg.length > 0) {
+        try {
+          await this._uSQLite.rollbackTransaction(mDB, true);
+          return Promise.reject(new Error(`createViews: ${msg}`));
+        } catch (err) {
+          return Promise.reject(
+            new Error('createViews: ' + `${err.message}: ${msg}`),
+          );
+        }
+      } else {
+        // case were no views given
+        return Promise.resolve(0);
+      }
+    }
+  }
 }

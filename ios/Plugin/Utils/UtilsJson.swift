@@ -9,14 +9,17 @@ import Foundation
 
 enum UtilsJsonError: Error {
     case tableNotExists(message: String)
+    case viewNotExists(message: String)
     case getTableColumnNamesTypes(message: String)
     case isIdExists(message: String)
     case checkRowValidity(message: String)
     case validateSchema(message: String)
     case validateIndexes(message: String)
     case validateTriggers(message: String)
+    case validateViews(message: String)
 }
 
+// swiftlint:disable type_body_length
 class UtilsJson {
 
     // MARK: - ImportFromJson - IsTableExists
@@ -39,6 +42,30 @@ class UtilsJson {
             if resQuery.count > 0 {ret = true}
         } catch UtilsSQLCipherError.querySQL(let message) {
             throw UtilsJsonError.tableNotExists(message: message)
+        }
+        return ret
+    }
+
+    // MARK: - ImportFromJson - IsViewExists
+
+    class func isViewExists(mDB: Database, viewName: String)
+    throws -> Bool {
+        var msg: String = "Error isViewExists: "
+        if !mDB.isDBOpen() {
+            msg.append("Database not opened")
+            throw UtilsJsonError.viewNotExists(message: msg)
+        }
+        var ret: Bool = false
+        var query = "SELECT name FROM sqlite_master WHERE type='view'"
+        query.append(" AND name='")
+        query.append(viewName)
+        query.append("';")
+        do {
+            let resQuery: [Any] = try UtilsSQLCipher
+                .querySQL(mDB: mDB, sql: query, values: [])
+            if resQuery.count > 0 {ret = true}
+        } catch UtilsSQLCipherError.querySQL(let message) {
+            throw UtilsJsonError.viewNotExists(message: message)
         }
         return ret
     }
@@ -278,4 +305,30 @@ class UtilsJson {
         return isTriggers
     }
 
+    // MARK: - ExportToJson - validateIndexes
+
+    class func validateViews(views: [[String: String]])
+    throws -> Bool {
+
+        var isViews = false
+        do {
+            let eViews = try JSONEncoder().encode(views)
+            guard let eViewsString: String =
+                    String(data: eViews, encoding: .utf8) else {
+                var message: String = "Error in converting "
+                message.append("eViews to String")
+                throw UtilsJsonError.validateViews(
+                    message: message)
+            }
+            if eViewsString.count > 0 {
+                isViews = true
+            }
+        } catch {
+            throw UtilsJsonError.validateViews(
+                message: "Error in encoding views")
+        }
+        return isViews
+    }
+
 }
+// swiftlint:enable type_body_length

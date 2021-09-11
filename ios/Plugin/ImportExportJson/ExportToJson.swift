@@ -26,6 +26,7 @@ enum ExportToJsonError: Error {
     case getSyncDate(message: String)
     case createRowValues(message: String)
     case modEmbeddedParentheses(message: String)
+    case getViews(message: String)
 }
 
 class ExportToJson {
@@ -64,14 +65,26 @@ class ExportToJson {
             throw ExportToJsonError.createExportObject(
                 message: message + "version")
         }
-
+        var views: [[String: String]] = []
         var tables: [[String: Any]] = []
-
-        // get the table's name
-        var query: String = "SELECT name,sql FROM sqlite_master WHERE "
-        query.append("type = 'table' AND name NOT LIKE 'sqlite_%' ")
-        query.append("AND name NOT LIKE 'sync_table';")
         do {
+            // Get the views
+            // get the view's name
+            var stmtV: String = "SELECT name,sql FROM sqlite_master WHERE "
+            stmtV.append("type = 'view' AND name NOT LIKE 'sqlite_%';")
+            let resViews =  try UtilsSQLCipher.querySQL(
+                mDB: mDB, sql: stmtV, values: [])
+            if resViews.count > 0 {
+                views = try ExportToJson
+                    .getViews(mDB: mDB,
+                              resViews: resViews)
+            }
+            // Get the tables
+
+            // get the table's name
+            var query: String = "SELECT name,sql FROM sqlite_master WHERE "
+            query.append("type = 'table' AND name NOT LIKE 'sqlite_%' ")
+            query.append("AND name NOT LIKE 'sync_table';")
             let resTables =  try UtilsSQLCipher.querySQL(
                 mDB: mDB, sql: query, values: [])
             if resTables.count > 0 {
@@ -92,6 +105,9 @@ class ExportToJson {
         } catch UtilsSQLCipherError.querySQL(let message) {
             throw ExportToJsonError.createExportObject(
                 message: "Error get table's names failed : \(message)")
+        } catch ExportToJsonError.getViews(let message) {
+            throw ExportToJsonError.createExportObject(
+                message: "Error get views failed : \(message)")
         } catch ExportToJsonError.getTablesFull(let message) {
             throw ExportToJsonError.createExportObject(
                 message: "Error get tables 'Full' failed : \(message)")
@@ -106,6 +122,9 @@ class ExportToJson {
             retObj["encrypted"] = encrypted
             retObj["mode"] = expMode
             retObj["tables"] = tables
+            if views.count > 0 {
+                retObj["views"] = views
+            }
         }
 
         return retObj
@@ -215,6 +234,32 @@ class ExportToJson {
         } catch ExportToJsonError.createValues(let message) {
             throw ExportToJsonError.getValues(message: message)
         }
+    }
+
+    // MARK: - ExportToJson - GetViews
+
+    class func getViews(mDB: Database,
+                        resViews: [[String: Any]])
+    throws -> [[String: String]] {
+        var views: [[String: String]] = []
+        var iView: Int = 0
+        for rView in resViews {
+            iView += 1
+            guard let viewName: String = rView["name"] as? String
+            else {
+                throw ExportToJsonError.getViews(
+                    message: "Error did not find view name")
+            }
+            guard let sqlStmt: String = rView["sql"] as? String else {
+                throw ExportToJsonError.getViews(
+                    message: "Error did not find sql statement")
+            }
+            var view: [String: String] = [:]
+            view["name"] = viewName
+            view["value"] = sqlStmt.components(separatedBy: "AS ")[1]
+            views.append(view)
+        }
+        return views
     }
 
     // MARK: - ExportToJson - GetTablesFull

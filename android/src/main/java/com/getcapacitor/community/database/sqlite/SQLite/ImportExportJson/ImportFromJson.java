@@ -465,4 +465,47 @@ public class ImportFromJson {
         }
         return stmt;
     }
+
+    /**
+     * Create from the Json Object the database views
+     * @param mDb
+     * @param views
+     * @return
+     * @throws Exception
+     */
+    public Integer createViews(Database mDb, ArrayList<JsonView> views) throws Exception {
+        int changes = Integer.valueOf(0);
+        SupportSQLiteDatabase db = mDb.getDb();
+        try {
+            if (mDb != null && mDb.isOpen() && views.size() > 0) {
+                db.beginTransaction();
+                // Create Views
+                Integer initChanges = _uSqlite.dbChanges(db);
+                for (JsonView view : views) {
+                    if (view.getName().length() > 0 && view.getValue().length() > 0) {
+                        StringBuilder sBuilder = new StringBuilder("CREATE VIEW IF NOT EXISTS ")
+                            .append(view.getName())
+                            .append(" AS ")
+                            .append(view.getValue())
+                            .append(" ;");
+                        String stmt = sBuilder.toString();
+                        db.execSQL(stmt);
+                    } else {
+                        throw new Exception("CreateViews: no name and value");
+                    }
+                }
+                changes = _uSqlite.dbChanges(db) - initChanges;
+                if (changes >= 0) {
+                    db.setTransactionSuccessful();
+                }
+            } else {
+                throw new Exception("CreateViews: Database not opened");
+            }
+        } catch (Exception e) {
+            throw new Exception("CreateViews: " + e.getMessage());
+        } finally {
+            if (db != null && db.inTransaction()) db.endTransaction();
+        }
+        return changes;
+    }
 }

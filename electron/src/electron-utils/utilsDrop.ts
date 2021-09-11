@@ -25,6 +25,25 @@ export class UtilsDrop {
     }
   }
   /**
+   * GetViewsNames
+   * @param mDb
+   */
+  public async getViewsNames(mDb: any): Promise<string[]> {
+    let sql = 'SELECT name FROM sqlite_master WHERE ';
+    sql += "type='view' AND name NOT LIKE 'sqlite_%' ";
+    sql += 'ORDER BY rootpage DESC;';
+    const retArr: string[] = [];
+    try {
+      const retQuery: any[] = await this._uSQLite.queryAll(mDb, sql, []);
+      for (const query of retQuery) {
+        retArr.push(query.name);
+      }
+      return Promise.resolve(retArr);
+    } catch (err) {
+      return Promise.reject(new Error(`getViewsNames: ${err.message}`));
+    }
+  }
+  /**
    * DropElements
    * @param db
    * @param type ["table","index","trigger"]
@@ -40,6 +59,9 @@ export class UtilsDrop {
         break;
       case 'table':
         msg = 'DropTables';
+        break;
+      case 'view':
+        msg = 'DropViews';
         break;
       default:
         return Promise.reject(
@@ -84,6 +106,8 @@ export class UtilsDrop {
       await this.dropElements(db, 'index');
       // drop triggers
       await this.dropElements(db, 'trigger');
+      // drop views
+      await this.dropElements(db, 'view');
       // vacuum the database
       await this._uSQLite.prepareRun(db, 'VACUUM;', []);
       return Promise.resolve();

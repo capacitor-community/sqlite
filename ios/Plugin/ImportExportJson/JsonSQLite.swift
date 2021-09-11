@@ -13,6 +13,7 @@ public struct JsonSQLite: Codable {
     let encrypted: Bool
     let mode: String
     let tables: [JsonTable]
+    var views: [JsonView]?
 
     public func show() {
         print("databaseName: \(database) ")
@@ -22,6 +23,12 @@ public struct JsonSQLite: Codable {
         print("Number of Tables: \(tables.count) ")
         for table in tables {
             table.show()
+        }
+        if let mViews = views {
+            print("Number of Views: \(mViews.count) ")
+            for view in mViews {
+                view.show()
+            }
         }
     }
 }
@@ -135,6 +142,15 @@ public struct UncertainValue<T: Codable, U: Codable, V: Codable>: Codable {
         if uValue == nil {
             vValue = try? container.decode(V.self)
         }
+    }
+}
+public struct JsonView: Codable {
+    let name: String
+    let value: String
+
+    public func show() {
+        print("name: \(name) ")
+        print("value: \(value) ")
     }
 }
 

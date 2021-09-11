@@ -4,6 +4,7 @@ import type {
   JsonColumn,
   JsonIndex,
   JsonTrigger,
+  JsonView,
 } from '../../../../src/definitions';
 import { UtilsSQLite } from '../utilsSQLite';
 
@@ -23,8 +24,11 @@ export class ExportToJson {
   ): Promise<JsonSQLite> {
     const retObj: JsonSQLite = {} as JsonSQLite;
     let tables: JsonTable[] = [];
+    let views: JsonView[] = [];
     let errmsg = '';
     try {
+      // get View's name
+      views = await this.getViewsName(mDB);
       // get Table's name
       const resTables: any[] = await this.getTablesNameSQL(mDB);
       if (resTables.length === 0) {
@@ -56,6 +60,9 @@ export class ExportToJson {
           retObj.encrypted = sqlObj.encrypted;
           retObj.mode = sqlObj.mode;
           retObj.tables = tables;
+          if (views.length > 0) {
+            retObj.views = views;
+          }
         }
         return Promise.resolve(retObj);
       }
@@ -77,10 +84,32 @@ export class ExportToJson {
       retQuery = await this._uSQLite.queryAll(mDb, sql, []);
       return Promise.resolve(retQuery);
     } catch (err) {
-      return Promise.reject(new Error(`getTablesNames: ${err.message}`));
+      return Promise.reject(new Error(`getTablesNameSQL: ${err.message}`));
     }
   }
 
+  /**
+   * GetViewsNameSQL
+   * @param mDb
+   */
+  public async getViewsName(mDb: any): Promise<JsonView[]> {
+    const views: JsonView[] = [];
+    let sql = 'SELECT name,sql FROM sqlite_master WHERE ';
+    sql += "type='view' AND name NOT LIKE 'sqlite_%';";
+    let retQuery: any[] = [];
+    try {
+      retQuery = await this._uSQLite.queryAll(mDb, sql, []);
+      for (const query of retQuery) {
+        const view: JsonView = {} as JsonView;
+        view.name = query.name;
+        view.value = query.sql.substring(query.sql.indexOf('AS ') + 3);
+        views.push(view);
+      }
+      return Promise.resolve(views);
+    } catch (err) {
+      return Promise.reject(new Error(`getViewsName: ${err.message}`));
+    }
+  }
   /**
    * GetSyncDate
    * @param mDb

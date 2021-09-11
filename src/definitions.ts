@@ -492,6 +492,10 @@ export interface JsonSQLite {
    * Array of Table (JsonTable)
    */
   tables: JsonTable[];
+  /***
+   * Array of View (JsonView)
+   */
+  views?: JsonView[];
 }
 export interface JsonTable {
   /**
@@ -571,6 +575,16 @@ export interface JsonIndex {
    * UNIQUE
    */
   mode?: string;
+}
+export interface JsonView {
+  /**
+   * The view name
+   */
+  name: string;
+  /**
+   * The view create statement
+   */
+  value: string;
 }
 export interface capJsonProgressListener {
   /**
@@ -1096,7 +1110,9 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
   }
   async getVersion(): Promise<capVersionResult> {
     try {
-      const version: capVersionResult = await this.sqlite.getVersion({ database: this.dbName });
+      const version: capVersionResult = await this.sqlite.getVersion({
+        database: this.dbName,
+      });
       return Promise.resolve(version);
     } catch (err) {
       return Promise.reject(err);

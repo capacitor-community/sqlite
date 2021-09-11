@@ -1,3 +1,15 @@
+## 3.2.2-1 (2021-09-11)
+
+### Chore
+
+ - Update to @capacitor/core 3.2.2
+ - Update to @capacitor/ios 3.2.2
+ - Update to @capacitor/android 3.2.2
+
+### Added Features
+
+ - Add Views in JsonSQLite (issue#167)
+ 
 ## 3.2.0 (2021-08-31)
 
 ### Added Features

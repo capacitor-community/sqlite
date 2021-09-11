@@ -2,6 +2,7 @@ import type {
   JsonColumn,
   JsonIndex,
   JsonTrigger,
+  JsonView,
 } from '../../../../src/definitions';
 import { UtilsSQLite } from '../utilsSQLite';
 
@@ -28,6 +29,37 @@ export class UtilsJson {
         // process the row here
         if (err) {
           reject(`isTableExists: failed: ${err.message}`);
+        } else {
+          if (rows.length === 0) {
+            resolve(false);
+          } else {
+            resolve(true);
+          }
+        }
+      });
+    });
+  }
+  /**
+   * IsViewExists
+   * @param db
+   * @param isOpen
+   * @param viewName
+   */
+  public async isViewExists(
+    db: any,
+    isOpen: boolean,
+    viewName: string,
+  ): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      if (!isOpen) {
+        reject('isViewExists: database not opened');
+      }
+      let query = 'SELECT name FROM sqlite_master WHERE ';
+      query += `type='view' AND name='${viewName}';`;
+      db.all(query, [], (err: Error, rows: any[]) => {
+        // process the row here
+        if (err) {
+          reject(`isViewExists: failed: ${err.message}`);
         } else {
           if (rows.length === 0) {
             resolve(false);
@@ -435,6 +467,7 @@ export class UtilsJson {
       'encrypted',
       'mode',
       'tables',
+      'views',
     ];
     if (
       obj == null ||
@@ -452,6 +485,13 @@ export class UtilsJson {
         for (const oKey of obj[key]) {
           const retTable: boolean = this.isTable(oKey);
           if (!retTable) return false;
+        }
+      }
+      if (key === 'views' && typeof obj[key] != 'object') return false;
+      if (key === 'views') {
+        for (const oKey of obj[key]) {
+          const retView: boolean = this.isView(oKey);
+          if (!retView) return false;
         }
       }
     }
@@ -598,6 +638,24 @@ export class UtilsJson {
     }
     return true;
   }
+  /**
+   * IsViews
+   * @param obj
+   */
+  private isView(obj: any): boolean {
+    const keyViewLevel: string[] = ['name', 'value'];
+    if (
+      obj == null ||
+      (Object.keys(obj).length === 0 && obj.constructor === Object)
+    )
+      return false;
+    for (const key of Object.keys(obj)) {
+      if (keyViewLevel.indexOf(key) === -1) return false;
+      if (key === 'name' && typeof obj[key] != 'string') return false;
+      if (key === 'value' && typeof obj[key] != 'string') return false;
+    }
+    return true;
+  }
 
   /**
    * checkSchemaValidity
@@ -684,5 +742,46 @@ export class UtilsJson {
       }
     }
     return Promise.resolve();
+  }
+  /**
+   * checkViewsValidity
+   * @param views
+   */
+  public async checkViewsValidity(views: JsonView[]): Promise<void> {
+    for (let i = 0; i < views.length; i++) {
+      const view: JsonView = {} as JsonView;
+      const keys: string[] = Object.keys(views[i]);
+      if (keys.includes('value')) {
+        view.value = views[i].value;
+      }
+      if (keys.includes('name')) {
+        view.name = views[i].name;
+      }
+
+      const isValid: boolean = this.isView(view);
+      if (!isValid) {
+        return Promise.reject(
+          new Error(`CheckViewsValidity: views[${i}] not valid`),
+        );
+      }
+    }
+    return Promise.resolve();
+  }
+  /**
+   * CreateView
+   * @param mDB
+   * @param table
+   */
+  public async createView(mDB: any, view: JsonView): Promise<void> {
+    const stmt = `CREATE VIEW IF NOT EXISTS ${view.name} AS ${view.value};`;
+    try {
+      const changes = await this._uSQLite.execute(mDB, stmt);
+      if (changes < 0) {
+        return Promise.reject(new Error(`CreateView: ${view.name} failed`));
+      }
+      return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(new Error(`CreateView: ${err.message}`));
+    }
   }
 }

@@ -44,6 +44,34 @@ public class UtilsDrop {
     }
 
     /**
+     * Get all view's name
+     * @param db
+     * @return List<String>
+     */
+
+    public List<String> getViewNames(Database db) throws Exception {
+        List<String> views = new ArrayList<String>();
+        Cursor cursor = null;
+        String query = "SELECT name FROM sqlite_master WHERE ";
+        query += "type='view' AND name NOT LIKE 'sqlite_%' ";
+        query += "ORDER BY rootpage DESC;";
+        try {
+            cursor = (Cursor) db.getDb().query(query);
+            cursor.moveToFirst();
+            while (!cursor.isAfterLast()) {
+                String viewName = cursor.getString(0);
+                views.add(viewName);
+                cursor.moveToNext();
+            }
+        } catch (Exception e) {
+            throw new Exception("GetTablesNames failed " + e);
+        } finally {
+            cursor.close();
+            return views;
+        }
+    }
+
+    /**
      * Drop all Tables
      * @param db
      */
@@ -51,10 +79,27 @@ public class UtilsDrop {
         try {
             List<String> tables = getTablesNames(db);
             for (String tableName : tables) {
-                db.getDb().execSQL("DROP TABLE IF EXISTS " + tableName);
+                db.getDb().execSQL("DROP TABLE IF EXISTS " + tableName + " ;");
             }
         } catch (Exception e) {
             String msg = "DropAllTables failed: " + e;
+            Log.d(TAG, msg);
+            throw new Exception(msg);
+        }
+    }
+
+    /**
+     * Drop all Views
+     * @param db
+     */
+    public void dropViews(Database db) throws Exception {
+        try {
+            List<String> views = getViewNames(db);
+            for (String viewName : views) {
+                db.getDb().execSQL("DROP VIEW IF EXISTS " + viewName + " ;");
+            }
+        } catch (Exception e) {
+            String msg = "DropAllViews failed: " + e;
             Log.d(TAG, msg);
             throw new Exception(msg);
         }
@@ -149,6 +194,7 @@ public class UtilsDrop {
             dropTables(db);
             dropIndexes(db);
             dropTriggers(db);
+            dropViews(db);
             db.getDb().setTransactionSuccessful();
             success = true;
         } catch (Exception e) {
@@ -157,6 +203,13 @@ public class UtilsDrop {
             throw new Exception(msg);
         } finally {
             if (success) db.getDb().endTransaction();
+            try {
+                db.getDb().execSQL("VACUUM;");
+            } catch (Exception e) {
+                String msg = "DropAll VACUUM failed: " + e;
+                Log.d(TAG, msg);
+                throw new Exception(msg);
+            }
         }
     }
 

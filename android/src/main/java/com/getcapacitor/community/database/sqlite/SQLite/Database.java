@@ -603,12 +603,17 @@ public class Database {
     public JSObject importFromJson(JsonSQLite jsonSQL) throws Exception {
         Log.d(TAG, "importFromJson:  ");
         JSObject retObj = new JSObject();
-        int changes = Integer.valueOf(-1);
+        int changes = Integer.valueOf(0);
         try {
-            // create the database schema
-            changes = fromJson.createDatabaseSchema(this, jsonSQL);
-            if (changes != -1) {
-                changes = fromJson.createDatabaseData(this, jsonSQL);
+            if (jsonSQL.getTables().size() > 0) {
+                // create the database schema
+                changes = fromJson.createDatabaseSchema(this, jsonSQL);
+                if (changes != -1) {
+                    changes += fromJson.createDatabaseData(this, jsonSQL);
+                }
+            }
+            if (jsonSQL.getViews().size() > 0) {
+                changes += fromJson.createViews(this, jsonSQL.getViews());
             }
             retObj.put("changes", changes);
             return retObj;
@@ -640,6 +645,9 @@ public class Database {
                     retObj.put("encrypted", retJson.getEncrypted());
                     retObj.put("mode", retJson.getMode());
                     retObj.put("tables", retJson.getTablesAsJSObject());
+                    if (keys.contains("views") && retJson.getViews().size() > 0) {
+                        retObj.put("views", retJson.getViewsAsJSObject());
+                    }
                 }
             }
         } catch (Exception e) {

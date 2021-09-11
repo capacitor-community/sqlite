@@ -36,7 +36,7 @@ enum CapacitorSQLiteError: Error {
         } catch UtilsSecretError.setEncryptionSecret(let message) {
             throw CapacitorSQLiteError.failed(message: message)
         } catch let error {
-            throw CapacitorSQLiteError.failed(message: error.localizedDescription)
+            throw CapacitorSQLiteError.failed(message: "\(error)")
         }
     }
 
@@ -53,7 +53,7 @@ enum CapacitorSQLiteError: Error {
         } catch UtilsSecretError.changeEncryptionSecret(let message) {
             throw CapacitorSQLiteError.failed(message: message)
         } catch let error {
-            throw CapacitorSQLiteError.failed(message: error.localizedDescription)
+            throw CapacitorSQLiteError.failed(message: "\(error)")
         }
 
     }
@@ -81,7 +81,7 @@ enum CapacitorSQLiteError: Error {
             dbDict[mDbName] = mDb
             return
         } catch let error {
-            throw CapacitorSQLiteError.failed(message: error.localizedDescription)
+            throw CapacitorSQLiteError.failed(message: "\(error)")
         }
     }
 
@@ -190,7 +190,7 @@ enum CapacitorSQLiteError: Error {
                 return 0
             }
         } catch let error {
-            throw CapacitorSQLiteError.failed(message: error.localizedDescription)
+            throw CapacitorSQLiteError.failed(message: "\(error)")
         }
     }
     // MARK: - IsDatabase
@@ -229,7 +229,7 @@ enum CapacitorSQLiteError: Error {
             throw CapacitorSQLiteError.failed(message: msg)
         } catch let error {
             var msg: String = "IsTableExists:"
-            msg.append(" \(error.localizedDescription)")
+            msg.append(" \(error)")
             throw CapacitorSQLiteError.failed(message: msg)
         }
     }
@@ -264,7 +264,7 @@ enum CapacitorSQLiteError: Error {
             } catch DatabaseError.executeSQL(let message) {
                 throw CapacitorSQLiteError.failed(message: message)
             } catch let error {
-                let msg: String = "\(error.localizedDescription)"
+                let msg: String = "\(error)"
                 throw CapacitorSQLiteError.failed(message: msg)
             }
         } else {
@@ -290,7 +290,7 @@ enum CapacitorSQLiteError: Error {
             } catch DatabaseError.execSet(let message) {
                 throw CapacitorSQLiteError.failed(message: message)
             } catch let error {
-                let msg: String = "\(error.localizedDescription)"
+                let msg: String = "\(error)"
                 throw CapacitorSQLiteError.failed(message: msg)
             }
         } else {
@@ -339,7 +339,7 @@ enum CapacitorSQLiteError: Error {
             } catch DatabaseError.runSQL(let message) {
                 throw CapacitorSQLiteError.failed(message: message)
             } catch let error {
-                let msg: String = "\(error.localizedDescription)"
+                let msg: String = "\(error)"
                 throw CapacitorSQLiteError.failed(message: msg)
             }
         } else {
@@ -366,7 +366,7 @@ enum CapacitorSQLiteError: Error {
             } catch DatabaseError.selectSQL(let message) {
                 throw CapacitorSQLiteError.failed(message: message)
             } catch let error {
-                let msg: String = "\(error.localizedDescription)"
+                let msg: String = "\(error)"
                 throw CapacitorSQLiteError.failed(message: msg)
             }
         } else {
@@ -434,7 +434,7 @@ enum CapacitorSQLiteError: Error {
         } catch DatabaseError.deleteDB(let message) {
             throw CapacitorSQLiteError.failed(message: message)
         } catch let error {
-            let msg: String = "\(error.localizedDescription)"
+            let msg: String = "\(error)"
             throw CapacitorSQLiteError.failed(message: msg)
         }
     }
@@ -449,7 +449,7 @@ enum CapacitorSQLiteError: Error {
                                              from: data)
                 return
             } catch let error {
-                let msg: String = "\(error.localizedDescription)"
+                let msg: String = "\(error)"
                 throw CapacitorSQLiteError.failed(message: msg)
             }
         } else {
@@ -471,7 +471,7 @@ enum CapacitorSQLiteError: Error {
                     .decode([JsonSQLite].self, from: data)
             } catch let error {
                 var msg: String = "Stringify Json Object not Valid "
-                msg.append("\(error.localizedDescription)")
+                msg.append("\(error)")
                 throw CapacitorSQLiteError.failed(message: msg)
             }
             let encrypted: Bool = jsonSQLite[0].encrypted
@@ -489,7 +489,7 @@ enum CapacitorSQLiteError: Error {
             } catch DatabaseError.open(let message) {
                 throw CapacitorSQLiteError.failed(message: message)
             } catch let error {
-                let msg: String = "\(error.localizedDescription)"
+                let msg: String = "\(error)"
                 throw CapacitorSQLiteError.failed(message: msg)
             }
             // import from Json Object
@@ -542,7 +542,7 @@ enum CapacitorSQLiteError: Error {
             do {
                 let res: [String: Any] = try
                     mDb.exportToJson(expMode: expMode)
-                if res.count == 5 {
+                if res.count == 5 || res.count == 6 {
                     return res
                 } else {
                     var msg: String = "return Object is not a "
@@ -552,7 +552,7 @@ enum CapacitorSQLiteError: Error {
             } catch DatabaseError.exportToJson(let message) {
                 throw CapacitorSQLiteError.failed(message: message)
             } catch let error {
-                let msg: String = "\(error.localizedDescription)"
+                let msg: String = "\(error)"
                 throw CapacitorSQLiteError.failed(message: msg)
             }
         } else {
@@ -576,7 +576,7 @@ enum CapacitorSQLiteError: Error {
             } catch DatabaseError.createSyncTable(let message) {
                 throw CapacitorSQLiteError.failed(message: message)
             } catch let error {
-                let msg: String = "\(error.localizedDescription)"
+                let msg: String = "\(error)"
                 throw CapacitorSQLiteError.failed(message: msg)
             }
         } else {
@@ -608,7 +608,7 @@ enum CapacitorSQLiteError: Error {
             } catch DatabaseError.createSyncDate(let message) {
                 throw CapacitorSQLiteError.failed(message: message)
             } catch let error {
-                let msg: String = "\(error.localizedDescription)"
+                let msg: String = "\(error)"
                 throw CapacitorSQLiteError.failed(message: msg)
             }
         } else {
@@ -637,7 +637,7 @@ enum CapacitorSQLiteError: Error {
             } catch DatabaseError.getSyncDate(let message) {
                 throw CapacitorSQLiteError.failed(message: message)
             } catch let error {
-                let msg: String = "\(error.localizedDescription)"
+                let msg: String = "\(error)"
                 throw CapacitorSQLiteError.failed(message: msg)
             }
         } else {
@@ -706,7 +706,7 @@ enum CapacitorSQLiteError: Error {
                 throw CapacitorSQLiteError.failed(message: msg)
             }
         } catch let error {
-            let msg: String = "\(error.localizedDescription)"
+            let msg: String = "\(error)"
             throw CapacitorSQLiteError.failed(message: msg)
         }
     }
@@ -721,7 +721,7 @@ enum CapacitorSQLiteError: Error {
             return dbList
 
         } catch let error {
-            let msg: String = "\(error.localizedDescription)"
+            let msg: String = "\(error)"
             throw CapacitorSQLiteError.failed(message: msg)
         }
 
@@ -741,7 +741,7 @@ enum CapacitorSQLiteError: Error {
 
         } catch let error {
             var msg: String = "addSQLiteSuffix:"
-            msg.append(" \(error.localizedDescription)")
+            msg.append(" \(error)")
             throw CapacitorSQLiteError.failed(message: msg)
         }
     }
@@ -759,7 +759,7 @@ enum CapacitorSQLiteError: Error {
 
         } catch let error {
             var msg: String = "deleteOldDatabases:"
-            msg.append(" \(error.localizedDescription)")
+            msg.append(" \(error)")
             throw CapacitorSQLiteError.failed(message: msg)
         }
 

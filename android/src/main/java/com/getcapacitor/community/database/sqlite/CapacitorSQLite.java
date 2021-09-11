@@ -687,7 +687,7 @@ public class CapacitorSQLite {
             try {
                 JSObject ret = db.exportToJson(expMode);
 
-                if (ret.length() == 5) {
+                if (ret.length() == 5 || ret.length() == 6) {
                     return ret;
                 } else {
                     String msg = "ExportToJson: return Obj is not a JsonSQLite Obj";

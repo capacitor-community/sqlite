@@ -11,9 +11,11 @@ import SQLCipher
 
 enum UtilsDropError: Error {
     case getTablesNamesFailed(message: String)
+    case getViewsNamesFailed(message: String)
     case getIndexesNamesFailed(message: String)
     case getTriggersNamesFailed(message: String)
     case dropTablesFailed(message: String)
+    case dropViewsFailed(message: String)
     case dropIndexesFailed(message: String)
     case dropTriggersFailed(message: String)
     case dropAllFailed(message: String)
@@ -68,6 +70,54 @@ class UtilsDrop {
             throw UtilsDropError.dropTablesFailed(message: message)
         } catch DatabaseError.executeSQL(let message) {
             throw UtilsDropError.dropTablesFailed(message: message)
+        }
+    }
+
+    // MARK: - getViewsNames
+
+    class func getViewsNames(mDB: Database) throws -> [String] {
+        var names: [String] = []
+        var query: String = "SELECT name FROM sqlite_master WHERE "
+        query.append("type='view' AND name NOT LIKE 'sqlite_%' ")
+        query.append("ORDER BY rootpage DESC;")
+        do {
+            let resQuery = try mDB.selectSQL(sql: query, values: [])
+            if resQuery.count > 0 {
+                for ipos in 0..<resQuery.count {
+                    if let mName = resQuery[ipos]["name"] as? String {
+                        names.append("\(mName)")
+                    }
+                }
+            }
+            return names
+        } catch DatabaseError.selectSQL(let message) {
+            throw UtilsDropError.getViewsNamesFailed(message: message)
+        }
+    }
+
+    // MARK: - dropViews
+
+    class func dropViews(mDB: Database)
+    throws -> Int {
+        var changes: Int = 0
+        do {
+            let views: [String] = try getViewsNames(mDB: mDB)
+            var statements: [String] = []
+            for view in views {
+                var stmt: String = "DROP VIEW IF EXISTS "
+                stmt.append(view)
+                stmt.append(";")
+                statements.append(stmt)
+            }
+            if statements.count > 0 {
+                let joined = statements.joined(separator: "\n")
+                changes = try mDB.executeSQL(sql: joined)
+            }
+            return changes
+        } catch UtilsDropError.getViewsNamesFailed(let message) {
+            throw UtilsDropError.dropViewsFailed(message: message)
+        } catch DatabaseError.executeSQL(let message) {
+            throw UtilsDropError.dropViewsFailed(message: message)
         }
     }
 
@@ -172,13 +222,11 @@ class UtilsDrop {
 
         do {
             var retChanges: Int = try self.dropTables(mDB: mDB)
-            print("after dropTables retChanges: \(retChanges)")
             retChanges = try self.dropIndexes(mDB: mDB)
             changes += retChanges
-            print("after dropIndexes retChanges: \(retChanges)")
             retChanges = try self.dropTriggers(mDB: mDB)
-            print("after dropTriggers retChanges: \(retChanges)")
             changes += retChanges
+            retChanges = try self.dropViews(mDB: mDB)
             if changes >= 0 {
                 _ = try UtilsSQLCipher.prepareSQL(mDB: mDB,
                                                   sql: "VACUUM;", values: [])
@@ -191,6 +239,8 @@ class UtilsDrop {
         } catch UtilsDropError.dropIndexesFailed(let message) {
             throw UtilsDropError.dropAllFailed(message: message)
         } catch UtilsDropError.dropTriggersFailed(let message) {
+            throw UtilsDropError.dropAllFailed(message: message)
+        } catch UtilsDropError.dropViewsFailed(let message) {
             throw UtilsDropError.dropAllFailed(message: message)
         } catch UtilsSQLCipherError.prepareSQL(let message) {
             throw UtilsDropError.dropAllFailed(message: message)

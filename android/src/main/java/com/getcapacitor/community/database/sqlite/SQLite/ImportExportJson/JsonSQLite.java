@@ -19,9 +19,10 @@ public class JsonSQLite {
     private Boolean encrypted = null;
     private String mode = "";
     private ArrayList<JsonTable> tables = new ArrayList<JsonTable>();
+    private ArrayList<JsonView> views = new ArrayList<JsonView>();
 
     private static final List<String> keyFirstLevel = new ArrayList<String>(
-        Arrays.asList("database", "version", "encrypted", "mode", "tables")
+        Arrays.asList("database", "version", "encrypted", "mode", "tables", "views")
     );
 
     // Getter
@@ -45,6 +46,10 @@ public class JsonSQLite {
         return tables;
     }
 
+    public ArrayList<JsonView> getViews() {
+        return views;
+    }
+
     // Setter
     public void setDatabase(String newDatabase) {
         this.database = newDatabase;
@@ -66,6 +71,10 @@ public class JsonSQLite {
         this.tables = newTables;
     }
 
+    public void setViews(ArrayList<JsonView> newViews) {
+        this.views = newViews;
+    }
+
     public ArrayList<String> getKeys() {
         ArrayList<String> retArray = new ArrayList<String>();
         if (getDatabase().length() > 0) retArray.add("database");
@@ -73,6 +82,7 @@ public class JsonSQLite {
         if (getEncrypted() != null) retArray.add("encrypted");
         if (getMode().length() > 0) retArray.add("mode");
         if (getTables().size() > 0) retArray.add("tables");
+        if (getViews().size() > 0) retArray.add("views");
         return retArray;
     }
 
@@ -138,6 +148,23 @@ public class JsonSQLite {
                         }
                     }
                 }
+                if (key.equals("views")) {
+                    if (!(value instanceof JSONArray)) {
+                        String msg = "value: not instance of JSONArray";
+                        Log.d(TAG, msg);
+                        return false;
+                    } else {
+                        JSONArray arrJS = jsObj.getJSONArray(key);
+                        views = new ArrayList<>();
+
+                        for (int i = 0; i < arrJS.length(); i++) {
+                            JsonView view = new JsonView();
+                            boolean retView = view.isView(arrJS.getJSONObject(i));
+                            if (!retView) return false;
+                            views.add(view);
+                        }
+                    }
+                }
             } catch (JSONException e) {
                 e.printStackTrace();
                 return false;
@@ -155,6 +182,12 @@ public class JsonSQLite {
         for (JsonTable table : this.getTables()) {
             table.print();
         }
+        if (this.getViews().size() > 0) {
+            Log.d(TAG, "number of Views: " + this.getViews().size());
+            for (JsonView view : this.getViews()) {
+                view.print();
+            }
+        }
     }
 
     public JSArray getTablesAsJSObject() {
@@ -163,5 +196,13 @@ public class JsonSQLite {
             JSTables.put(table.getTableAsJSObject());
         }
         return JSTables;
+    }
+
+    public JSArray getViewsAsJSObject() {
+        JSArray JSViews = new JSArray();
+        for (JsonView view : this.views) {
+            JSViews.put(view.getViewAsJSObject());
+        }
+        return JSViews;
     }
 }

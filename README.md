@@ -339,8 +339,9 @@ No configuration required for this plugin
 
 ## Dependencies
 
-The IOS and Android codes are using `SQLCipher` allowing for database encryption
-The Electron code is using `sqlite3` 
+The IOS and Android codes are using `SQLCipher` allowing for database encryption.
+The Electron code is using `sqlite3`.
+The Web code is using the Stencil component `jeep-sqlite` based on `sql.js` and `localforage`. 
 
 ## Contributors ✨
 

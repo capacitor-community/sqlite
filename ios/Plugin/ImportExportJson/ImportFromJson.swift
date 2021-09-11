@@ -18,6 +18,8 @@ enum ImportFromJsonError: Error {
     case createSchemaStatement(message: String)
     case createTableData(message: String)
     case createRowStatement(message: String)
+    case createView(message: String)
+    case createViews(message: String)
 }
 class ImportFromJson {
 
@@ -511,6 +513,79 @@ class ImportFromJson {
             }
         }
         return stmt
+    }
+    // swiftlint:disable function_body_length
+    class func createViews(mDB: Database, views: [JsonView]) throws -> Int {
+        var changes: Int = 0
+        var initChanges: Int = -1
+        var isView: Bool = false
+        var msg: String = ""
+
+        do {
+            initChanges = UtilsSQLCipher.dbChanges(mDB: mDB.mDb)
+            // Start a transaction
+            try UtilsSQLCipher.beginTransaction(mDB: mDB)
+        } catch UtilsSQLCipherError.beginTransaction(let message) {
+            throw ImportFromJsonError.createDatabaseData(message: message)
+        }
+        for view in views {
+            if view.name.count > 0 && view.value.count > 0 {
+                do {
+                    try ImportFromJson.createView(
+                        mDB: mDB,
+                        view: view)
+                    isView = true
+                } catch ImportFromJsonError
+                            .createView(let message) {
+                    msg = message
+                }
+            } else {
+                msg = "no name and value"
+                break
+            }
+        }
+        if isView {
+            // commit
+            do {
+                // Commit the transaction
+                try UtilsSQLCipher.commitTransaction(mDB: mDB)
+                changes = UtilsSQLCipher
+                    .dbChanges(mDB: mDB.mDb) - initChanges
+            } catch UtilsSQLCipherError.commitTransaction(
+                        let message) {
+                throw ImportFromJsonError.createDatabaseData(
+                    message: message)
+            }
+        } else {
+            if msg.count > 0 {
+                // rollback
+                do {
+                    // Rollback the transaction
+                    try UtilsSQLCipher
+                        .rollbackTransaction(mDB: mDB)
+                    throw ImportFromJsonError
+                    .createViews(message: msg)
+                } catch UtilsSQLCipherError
+                            .rollbackTransaction(let message) {
+                    msg.append(" rollback: \(message)")
+                    throw ImportFromJsonError
+                    .createViews(message: msg)
+                }
+            } else {
+                changes = 0
+            }
+        }
+        return changes
+
+    }
+    class func createView(mDB: Database, view: JsonView) throws {
+        let stmt = "CREATE VIEW IF NOT EXISTS \(view.name) AS \(view.value);"
+        do {
+            try UtilsSQLCipher.execute(mDB: mDB, sql: stmt)
+        } catch UtilsSQLCipherError.execute(let message) {
+            throw ImportFromJsonError
+            .createView(message: message)
+        }
     }
 }
 // swiftlint:enable type_body_length

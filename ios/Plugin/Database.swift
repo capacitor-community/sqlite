@@ -477,23 +477,34 @@ class Database {
 
     func importFromJson(jsonSQLite: JsonSQLite)
     throws -> [String: Int] {
-        var changes: Int = -1
+        var changes: Int = 0
 
         // Create the Database Schema
         do {
-            changes = try ImportFromJson
-                .createDatabaseSchema(mDB: self,
-                                      jsonSQLite: jsonSQLite)
-            if changes != -1 {
-                // Create the Database Data
+            if jsonSQLite.tables.count > 0 {
                 changes = try ImportFromJson
-                    .createDatabaseData(mDB: self,
-                                        jsonSQLite: jsonSQLite)
+                    .createDatabaseSchema(mDB: self,
+                                          jsonSQLite: jsonSQLite)
+                if changes != -1 {
+                    // Create the Database Data
+                    changes += try ImportFromJson
+                        .createDatabaseData(mDB: self,
+                                            jsonSQLite: jsonSQLite)
+                }
             }
+            if let mViews = jsonSQLite.views {
+                if mViews.count > 0 {
+                    changes += try ImportFromJson
+                        .createViews(mDB: self, views: mViews)
+                }
+            }
+
             return ["changes": changes]
         } catch ImportFromJsonError.createDatabaseSchema(let message) {
             throw DatabaseError.importFromJson(message: message)
         } catch ImportFromJsonError.createDatabaseData(let message) {
+            throw DatabaseError.importFromJson(message: message)
+        } catch ImportFromJsonError.createViews(let message) {
             throw DatabaseError.importFromJson(message: message)
         }
     }

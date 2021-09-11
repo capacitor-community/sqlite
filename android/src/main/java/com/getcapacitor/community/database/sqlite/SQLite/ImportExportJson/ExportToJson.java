@@ -40,13 +40,30 @@ public class ExportToJson {
      */
     public JsonSQLite createExportObject(Database db, JsonSQLite sqlObj) throws Exception {
         JsonSQLite retObj = new JsonSQLite();
-
-        String stmt = "SELECT name,sql FROM sqlite_master WHERE ";
-        stmt += "type = 'table' AND name NOT LIKE 'sqlite_%' AND ";
-        stmt += "name NOT LIKE 'android_%' AND ";
-        stmt += "name NOT LIKE 'sync_table';";
+        ArrayList<JsonView> views = new ArrayList<>();
         ArrayList<JsonTable> tables = new ArrayList<>();
         try {
+            // Get Views
+            String stmtV = "SELECT name,sql FROM sqlite_master WHERE ";
+            stmtV += "type = 'view' AND name NOT LIKE 'sqlite_%';";
+            JSArray resViews = db.selectSQL(stmtV, new ArrayList<Object>());
+            if (resViews.length() > 0) {
+                for (int i = 0; i < resViews.length(); i++) {
+                    JSONObject oView = resViews.getJSONObject(i);
+                    JsonView v = new JsonView();
+                    String val = (String) oView.get("sql");
+                    val = val.substring(val.indexOf("AS ") + 3);
+                    v.setName((String) oView.get("name"));
+                    v.setValue(val);
+                    views.add(v);
+                }
+            }
+            // Get Tables
+            String stmt = "SELECT name,sql FROM sqlite_master WHERE ";
+            stmt += "type = 'table' AND name NOT LIKE 'sqlite_%' AND ";
+            stmt += "name NOT LIKE 'android_%' AND ";
+            stmt += "name NOT LIKE 'sync_table';";
+
             JSArray resTables = db.selectSQL(stmt, new ArrayList<Object>());
             if (resTables.length() == 0) {
                 throw new Exception("CreateExportObject: table's names failed");
@@ -71,6 +88,9 @@ public class ExportToJson {
                 retObj.setEncrypted(sqlObj.getEncrypted());
                 retObj.setMode(sqlObj.getMode());
                 retObj.setTables(tables);
+                if (views.size() > 0) {
+                    retObj.setViews(views);
+                }
             }
             return retObj;
         }

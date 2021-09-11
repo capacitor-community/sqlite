@@ -63,7 +63,7 @@ class ReturnHandler {
             call.reject(intMessage)
             return
         } else {
-            call.resolve(["version": ret])
+            call.resolve(["version": ret as Any])
             return
         }
     }

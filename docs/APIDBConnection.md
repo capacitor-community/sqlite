@@ -374,6 +374,7 @@ Export the given database to a JSON Object
 | **`encrypted`** | <code>boolean</code>     | Set to true (database encryption) / false             |
 | **`mode`**      | <code>string</code>      | * Set the mode ["full", "partial"]                    |
 | **`tables`**    | <code>JsonTable[]</code> | * Array of Table (<a href="#jsontable">JsonTable</a>) |
+| **`views`**     | <code>JsonView[]</code>  | * Array of View (<a href="#jsonview">JsonView</a>)    |
 
 
 #### JsonTable
@@ -414,5 +415,13 @@ Export the given database to a JSON Object
 | **`timeevent`** | <code>string</code> | The trigger time event fired |
 | **`condition`** | <code>string</code> | The trigger condition        |
 | **`logic`**     | <code>string</code> | The logic of the trigger     |
+
+
+#### JsonView
+
+| Prop        | Type                | Description               |
+| ----------- | ------------------- | ------------------------- |
+| **`name`**  | <code>string</code> | The view name             |
+| **`value`** | <code>string</code> | The view create statement |
 
 </docgen-api>
