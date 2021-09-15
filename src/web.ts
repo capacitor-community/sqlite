@@ -37,22 +37,26 @@ export class CapacitorSQLiteWeb
 
     this.sqliteEl = document.querySelector('jeep-sqlite');
     if (this.sqliteEl != null) {
-      this.sqliteEl.addEventListener(
-        'jeepSqliteImportProgress',
-        (event: CustomEvent) => {
-          this.notifyListeners('sqliteImportProgressEvent', event.detail);
-        },
-      );
-      this.sqliteEl.addEventListener(
-        'jeepSqliteExportProgress',
-        (event: CustomEvent) => {
-          this.notifyListeners('sqliteExportProgressEvent', event.detail);
-        },
-      );
-      if (!this.isStoreOpen)
-        this.sqliteEl.isStoreOpen().then((isOpen: boolean) => {
-          this.isStoreOpen = isOpen;
-        });
+      this.sqliteEl.componentOnReady().then(() => {
+        this.sqliteEl.addEventListener(
+          'jeepSqliteImportProgress',
+          (event: CustomEvent) => {
+            this.notifyListeners('sqliteImportProgressEvent', event.detail);
+          },
+        );
+        this.sqliteEl.addEventListener(
+          'jeepSqliteExportProgress',
+          (event: CustomEvent) => {
+            this.notifyListeners('sqliteExportProgressEvent', event.detail);
+          },
+        );
+        if (!this.isStoreOpen)
+          this.sqliteEl.isStoreOpen().then((isOpen: boolean) => {
+            this.isStoreOpen = isOpen;
+          });
+  
+      });
+
     } else {
       console.log(`$$$$$$ this.sqliteEl is null $$$$$$`);
     }

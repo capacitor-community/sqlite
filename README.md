@@ -28,6 +28,18 @@
 
 ## CAPACITOR 3 (Master)
 
+🚨 Since release 3.2.2-2 ->> 🚨
+
+The executeSet method accepts now no values, see below
+
+```
+const setIssue170: Array<capSQLiteSet>  = [
+  { statement: "DROP TABLE IF EXISTS issue170", values: [] },
+  { statement: "CREATE TABLE issue170 (src VARCHAR(255))", values: [] },
+  { statement: "INSERT INTO issue170 (src) values (?)", values: ["google.com"] },
+]
+```
+
 🚨 Since release 3.2.0-5 ->> 🚨
 
 The Web plugin is now implemented based on the stencil companion `jeep-sqlite@0.0.7` which is using `sql.js@1.5.0` for database queries and `localeforage@1.9.0`for database persistency.
