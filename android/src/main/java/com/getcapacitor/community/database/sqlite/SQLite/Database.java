@@ -329,7 +329,7 @@ public class Database {
                     for (int j = 0; j < valuesJson.length(); j++) {
                         values.add(valuesJson.get(j));
                     }
-                    Boolean isArray = _uSqlite.parse(values.get(0));
+                    Boolean isArray = values.size() > 0 ? _uSqlite.parse(values.get(0)) : false;
                     if (isArray) {
                         for (int j = 0; j < values.size(); j++) {
                             JSONArray valsJson = (JSONArray) values.get(j);

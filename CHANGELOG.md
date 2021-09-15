@@ -1,3 +1,9 @@
+## 3.2.2-2 (2021-09-15)
+
+### Bug Fixes
+
+ - Fix All Platforms, executeSet breaks with empty array issue#170
+
 ## 3.2.2-1 (2021-09-11)
 
 ### Chore

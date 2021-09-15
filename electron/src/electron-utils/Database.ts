@@ -47,7 +47,6 @@ export class Database {
 
     if (this._pathDB.length === 0)
       throw new Error('Could not generate a path to ' + dbName);
-    console.log('DB Path: ' + this._pathDB);
   }
   /**
    * IsDBOpen
@@ -289,9 +288,7 @@ export class Database {
       const sDate: number = Math.round(new Date(syncDate).getTime() / 1000);
       let stmt = `UPDATE sync_table SET sync_date = `;
       stmt += `${sDate} WHERE id = 1;`;
-      console.log(`>>> setSyncDate stmt ${stmt}`);
       const changes: number = await this._uSQLite.execute(this._mDB, stmt);
-      console.log(`>>> setSyncDate changes ${changes}`);
       if (changes < 0) {
         return { result: false, message: 'setSyncDate failed' };
       } else {
@@ -454,7 +451,7 @@ export class Database {
       retRes.changes = (await this._uSQLite.dbChanges(this._mDB)) - initChanges;
       return Promise.resolve(retRes);
     } catch (err) {
-      const msg: string = err.message;
+      const msg: string = err;
       try {
         if (transaction)
           await this._uSQLite.rollbackTransaction(this._mDB, this._isDBOpen);

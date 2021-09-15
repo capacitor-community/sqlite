@@ -595,7 +595,6 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       // loop through the database files
       const toDbList: string[] = [];
       dbList.forEach(async (db: string) => {
-        console.log(`>>> ${db}`);
         // for each check if the suffix SQLite.db is there or add it
         const toDb: string = this._uFile.setPathSuffix(db);
         toDbList.push(toDb);

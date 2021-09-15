@@ -629,7 +629,7 @@ class UtilsSQLCipher {
                     throw UtilsSQLCipherError.executeSet(
                         message: "No values given")
                 }
-                let isArray = UtilsSQLCipher.parse(mVar: values[0])
+                let isArray = values.count > 0 ? UtilsSQLCipher.parse(mVar: values[0]) : false
                 if isArray {
                     if let arrValues = values as? [[Any]] {
                         for vals in arrValues {
