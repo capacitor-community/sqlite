@@ -54,9 +54,7 @@ export class CapacitorSQLiteWeb
           this.sqliteEl.isStoreOpen().then((isOpen: boolean) => {
             this.isStoreOpen = isOpen;
           });
-  
       });
-
     } else {
       console.log(`$$$$$$ this.sqliteEl is null $$$$$$`);
     }

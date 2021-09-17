@@ -18,7 +18,7 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 
 ### Android
 
-- **data/data/YOUR_PACKAGE/databases**
+- **in data/data/YOUR_PACKAGE/databases**
 
 ### IOS
 
@@ -32,6 +32,11 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
   - under **User/Databases/APP_NAME/** to not loose them when updating the application. This was manage in the index.html file of the application.
 
 - since **2.4.2-1** the databases location is : **User/Databases/APP_NAME/**
+
+### Web
+
+- the database is stored in Web browser INDEXEDDB storage as a `localforage` store under the `jeepSqliteStore` name and `databases` table name.
+
 
 ## Error Return values
 

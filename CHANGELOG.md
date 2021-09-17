@@ -1,3 +1,9 @@
+## 3.2.2 (2021-09-17)
+
+### Bug Fixes
+
+ - Update API.md databases location for Web platform
+
 ## 3.2.2-3 (2021-09-15)
 
 ### Bug Fixes
