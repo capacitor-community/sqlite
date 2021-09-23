@@ -59,6 +59,8 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 
 <docgen-index>
 
+* [`initWebStore()`](#initwebstore)
+* [`saveToStore(...)`](#savetostore)
 * [`isSecretStored()`](#issecretstored)
 * [`setEncryptionSecret(...)`](#setencryptionsecret)
 * [`changeEncryptionSecret(...)`](#changeencryptionsecret)
@@ -100,6 +102,36 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 <!--Update the source file JSDoc comments and rerun docgen to update the docs below-->
 
 CapacitorSQLitePlugin Interface
+
+### initWebStore()
+
+```typescript
+initWebStore() => Promise<void>
+```
+
+Initialize the web store
+
+**Since:** 3.2.3-1
+
+--------------------
+
+
+### saveToStore(...)
+
+```typescript
+saveToStore(options: capSQLiteOptions) => Promise<void>
+```
+
+Save database to  the web store
+
+| Param         | Type                                                          | Description                                        |
+| ------------- | ------------------------------------------------------------- | -------------------------------------------------- |
+| **`options`** | <code><a href="#capsqliteoptions">capSQLiteOptions</a></code> | : <a href="#capsqliteoptions">capSQLiteOptions</a> |
+
+**Since:** 3.2.3-1
+
+--------------------
+
 
 ### isSecretStored()
 
@@ -644,6 +676,13 @@ return false : no consistency, connections are closed
 ### Interfaces
 
 
+#### capSQLiteOptions
+
+| Prop           | Type                | Description       |
+| -------------- | ------------------- | ----------------- |
+| **`database`** | <code>string</code> | The database name |
+
+
 #### capSQLiteResult
 
 | Prop         | Type                 | Description                                   |
@@ -674,13 +713,6 @@ return false : no consistency, connections are closed
 | **`version`**   | <code>number</code>  | The database version                                                       |
 | **`encrypted`** | <code>boolean</code> | Set to true (database encryption) / false                                  |
 | **`mode`**      | <code>string</code>  | Set the mode for database encryption ["encryption", "secret", "newsecret"] |
-
-
-#### capSQLiteOptions
-
-| Prop           | Type                | Description       |
-| -------------- | ------------------- | ----------------- |
-| **`database`** | <code>string</code> | The database name |
 
 
 #### capEchoResult

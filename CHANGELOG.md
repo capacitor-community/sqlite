@@ -1,3 +1,20 @@
+## 3.2.3-1 (2021-09-23)
+
+### Chore
+
+ - Update to @capacitor/core 3.2.3
+ - Update to @capacitor/ios 3.2.3
+ - Update to @capacitor/android 3.2.3
+
+### Added Features
+
+ - add initWebStore and saveToStore methods to the web plugin
+
+### Bug Fixes
+
+ - Update API.md databases location for Web platform
+
+
 ## 3.2.2 (2021-09-17)
 
 ### Bug Fixes

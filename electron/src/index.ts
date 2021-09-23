@@ -40,6 +40,13 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   private _uFile: UtilsFile = new UtilsFile();
   private _uJson: UtilsJson = new UtilsJson();
 
+  async initWebStore(): Promise<void> {
+    return Promise.reject('Method not implemented.');
+  }
+  async saveToStore(options: capSQLiteOptions): Promise<void> {
+    console.log(`${JSON.stringify(options)}`);
+    return Promise.reject('Method not implemented.');
+  }
   async isSecretStored(): Promise<capSQLiteResult> {
     return Promise.reject('Method not implemented.');
   }

@@ -28,6 +28,24 @@
 
 ## CAPACITOR 3 (Master)
 
+🚨 Since release 3.2.3-1 ->> 🚨
+
+The `initWebStore` and `saveToStore` methods have been added to the Web platform.
+ - The `initWebStore` has been added to fix the issue#172
+  ```js
+  ...
+  if(platform === "web") {
+    await customElements.whenDefined('jeep-sqlite');
+    const jeepSqliteEl = document.querySelector('jeep-sqlite');
+    if(jeepSqliteEl != null) {
+      await sqliteConnection.initWebStore()
+      ...
+    }
+  }
+  ...
+  ```
+ - the `saveToStore` allows to perform intermediate save of the database in case the browser needs to delete the cache.
+ 
 🚨 Since release 3.2.2-2 ->> 🚨
 
 The executeSet method accepts now no values, see below
@@ -292,6 +310,8 @@ No configuration required for this plugin
 | isSecretStored              | ✅      | ✅  | ❌        | ❌  |
 | setEncryptionSecret         | ✅      | ✅  | ❌        | ❌  |
 | changeEncryptionSecret      | ✅      | ✅  | ❌        | ❌  |
+| initWebStore                | ❌      | ❌  | ❌        | ✅  |
+| saveToStore                 | ❌      | ❌  | ❌        | ✅  |
 
 ## Supported SQLite Types
 

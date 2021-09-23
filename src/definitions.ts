@@ -5,6 +5,23 @@
  */
 export interface CapacitorSQLitePlugin {
   /**
+   * Initialize the web store
+   *
+   * @return Promise<void>
+   * @since 3.2.3-1
+   */
+
+  initWebStore(): Promise<void>;
+  /**
+   * Save database to  the web store
+   *
+   * @param options: capSQLiteOptions
+   * @return Promise<void>
+   * @since 3.2.3-1
+   */
+
+  saveToStore(options: capSQLiteOptions): Promise<void>;
+  /**
    * Check if a passphrase exists in a secure store
    *
    * @return Promise<capSQLiteResult>
@@ -604,6 +621,19 @@ export interface capSQLiteVersionUpgrade {
  */
 export interface ISQLiteConnection {
   /**
+   * Init the web store
+   * @returns Promise<void>
+   * @since 3.2.3-1
+   */
+  initWebStore(): Promise<void>;
+  /**
+   * Save the datbase to the web store
+   * @param database
+   * @returns Promise<void>
+   * @since 3.2.3-1
+   */
+  saveToStore(database: string): Promise<void>;
+  /**
    * Echo a value
    * @param value
    * @returns Promise<capEchoResult>
@@ -763,9 +793,25 @@ export class SQLiteConnection implements ISQLiteConnection {
   private _connectionDict: Map<string, SQLiteDBConnection> = new Map();
   constructor(private sqlite: any) {}
 
+  async initWebStore(): Promise<void> {
+    try {
+      await this.sqlite.initWebStore();
+      return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async saveToStore(database: string): Promise<void> {
+    try {
+      await this.sqlite.saveToStore({ database });
+      return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
   async echo(value: string): Promise<capEchoResult> {
     try {
-      const res = await this.sqlite.echo({ value: value });
+      const res = await this.sqlite.echo({ value });
       return Promise.resolve(res);
     } catch (err) {
       return Promise.reject(err);

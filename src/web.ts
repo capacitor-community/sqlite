@@ -32,31 +32,43 @@ export class CapacitorSQLiteWeb
   private sqliteEl: any = null;
   private isStoreOpen = false;
 
-  constructor() {
-    super();
-
+  async initWebStore(): Promise<void> {
+    await customElements.whenDefined('jeep-sqlite');
     this.sqliteEl = document.querySelector('jeep-sqlite');
     if (this.sqliteEl != null) {
-      this.sqliteEl.componentOnReady().then(() => {
-        this.sqliteEl.addEventListener(
-          'jeepSqliteImportProgress',
-          (event: CustomEvent) => {
-            this.notifyListeners('sqliteImportProgressEvent', event.detail);
-          },
-        );
-        this.sqliteEl.addEventListener(
-          'jeepSqliteExportProgress',
-          (event: CustomEvent) => {
-            this.notifyListeners('sqliteExportProgressEvent', event.detail);
-          },
-        );
-        if (!this.isStoreOpen)
-          this.sqliteEl.isStoreOpen().then((isOpen: boolean) => {
-            this.isStoreOpen = isOpen;
-          });
-      });
+      this.sqliteEl.addEventListener(
+        'jeepSqliteImportProgress',
+        (event: CustomEvent) => {
+          this.notifyListeners('sqliteImportProgressEvent', event.detail);
+        },
+      );
+      this.sqliteEl.addEventListener(
+        'jeepSqliteExportProgress',
+        (event: CustomEvent) => {
+          this.notifyListeners('sqliteExportProgressEvent', event.detail);
+        },
+      );
+      if (!this.isStoreOpen)
+        this.isStoreOpen = await this.sqliteEl.isStoreOpen();
+      return Promise.resolve();
     } else {
-      console.log(`$$$$$$ this.sqliteEl is null $$$$$$`);
+      return Promise.reject('InitWeb: this.sqliteEl is null');
+    }
+  }
+  async saveToStore(options: capSQLiteOptions): Promise<void> {
+    if (this.sqliteEl != null) {
+      if (this.isStoreOpen) {
+        try {
+          await this.sqliteEl.saveToStore(options);
+          return Promise.resolve();
+        } catch (err) {
+          return Promise.reject(`${err}`);
+        }
+      } else {
+        return Promise.reject(`Store "jeepSqliteStore" failed to open`);
+      }
+    } else {
+      throw this.unimplemented('Not implemented on web.');
     }
   }
 

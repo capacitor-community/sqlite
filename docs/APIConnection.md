@@ -8,6 +8,8 @@
 
 <docgen-index>
 
+* [`initWebStore()`](#initwebstore)
+* [`saveToStore(...)`](#savetostore)
 * [`echo(...)`](#echo)
 * [`isSecretStored()`](#issecretstored)
 * [`setEncryptionSecret(...)`](#setencryptionsecret)
@@ -37,6 +39,36 @@
 <!--Update the source file JSDoc comments and rerun docgen to update the docs below-->
 
 SQLiteConnection Interface
+
+### initWebStore()
+
+```typescript
+initWebStore() => Promise<void>
+```
+
+Init the web store
+
+**Since:** 3.2.3-1
+
+--------------------
+
+
+### saveToStore(...)
+
+```typescript
+saveToStore(database: string) => Promise<void>
+```
+
+Save the datbase to the web store
+
+| Param          | Type                |
+| -------------- | ------------------- |
+| **`database`** | <code>string</code> |
+
+**Since:** 3.2.3-1
+
+--------------------
+
 
 ### echo(...)
 
