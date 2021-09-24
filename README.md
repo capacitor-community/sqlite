@@ -31,7 +31,7 @@
 🚨 Since release 3.2.3-1 ->> 🚨
 
 The `initWebStore` and `saveToStore` methods have been added to the Web platform.
- - The `initWebStore` has been added to fix the issue#172
+ - The `initWebStore` has been added to fix the issue#172 and since then is `MANDATORY`
   ```js
   ...
   if(platform === "web") {

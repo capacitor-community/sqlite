@@ -9,7 +9,8 @@
 ## Vue SQLite Hook
 
 - [`Vue SQLite Hook Definition`](#vue-sqlite-hook-definition)
-- [`Vue SQLite Hook Declaration`](#vue-sqlite-hook-declaration)
+- [`Vue SQLite Hook Declaration for platforms other than Web`](#vue-sqlite-hook-declaration-for-platforms-other-than-web)
+- [`Vue SQLite Hook Declaration for platforms including Web`](#vue-sqlite-hook-declaration-for-platforms-including-web)
 - [`Vue SQLite Hook Use in Components`](#vue-sqlite-hook-use-in-components)
 
 ### Vue SQLite Hook Definition
@@ -25,7 +26,7 @@ To install it in your Ionic/Vue App
     npm i --save-dev vue-sqlite-hook@next
 ```
 
-### Vue SQLite Hook Declaration
+### Vue SQLite Hook Declaration for platforms other than Web
 
 To use the `vue-sqlite-hook`as a singleton hook, the declaration must be done in the `main.ts` file of your application
 
@@ -35,32 +36,54 @@ import { useSQLite } from 'vue-sqlite-hook/dist';
 import { useState } from '@/composables/state';
 
 ...
-// SQLite Hook
-const {echo, getPlatform, createConnection, closeConnection,
-  retrieveConnection, retrieveAllConnections, closeAllConnections,
-  addUpgradeStatement, importFromJson, isJsonValid,
-  copyFromAssets, isAvailable} = useSQLite();
 //Existing Connections
 const [existConn, setExistConn] = useState(false);
+
+// Listeners onProgressImport and Export
+const [jsonListeners, setJsonListeners] = useState(false);
+const [isModal, setIsModal] = useState(false);
+const [message, setMessage] = useState("");
+
 ...
 const app = createApp(App)
   .use(IonicVue)
   .use(router);
 ...
 // Singleton SQLite Hook
-app.config.globalProperties.$sqlite = {echo: echo, getPlatform: getPlatform,
-  createConnection: createConnection,
-  closeConnection: closeConnection,
-  retrieveConnection: retrieveConnection,
-  retrieveAllConnections: retrieveAllConnections,
-  closeAllConnections: closeAllConnections,
-  addUpgradeStatement: addUpgradeStatement,
-  importFromJson: importFromJson,
-  isJsonValid: isJsonValid,
-  copyFromAssets: copyFromAssets,
-  isAvailable:isAvailable};
 
-//  Existing Connections Store
+// !!!!! if you do not want to use the progress events !!!!!
+// since vue-sqlite-hook 2.1.1
+// app.appContext.config.globalProperties.$sqlite = useSQLite()
+// before
+// app.appContext.config.globalProperties.$sqlite = useSQLite({})
+// !!!!!                                               !!!!!
+const onProgressImport = async (progress: string) => {
+  if(jsonListeners.jsonListeners.value) {
+    if(!isModalOpen.isModal.value) isModalOpen.setIsModal(true);
+    contentMessage.setMessage(
+        contentMessage.message.value.concat(`${progress}\n`));
+  }
+}
+const onProgressExport = async (progress: string) => {
+  if(jsonListeners.jsonListeners.value) {
+    if(!isModalOpen.isModal.value) isModalOpen.setIsModal(true);
+    contentMessage.setMessage(
+      contentMessage.message.value.concat(`${progress}\n`));
+  }
+}
+
+// SQLite Hook definition
+app.appContext.config.globalProperties.$sqlite = useSQLite({
+  onProgressImport,
+  onProgressExport
+});
+
+// Listeners onProgressImport and Export
+app.config.globalProperties.$isModalOpen = {isModal: isModal, setIsModal: setIsModal};
+app.config.globalProperties.$isJsonListeners = {jsonListeners: jsonListeners, setJsonListeners: setJsonListeners};
+app.config.globalProperties.$messageContent = {message: message, setMessage: setMessage};
+
+//  Existing Connections
 app.config.globalProperties.$existingConn = {existConn: existConn, setExistConn: setExistConn};
 ...
 router.isReady().then(() => {
@@ -69,6 +92,131 @@ router.isReady().then(() => {
 ```
 
 Now the Singleton SQLite Hook `$sqlite`and Existing Connections Store `$existingConn` can be use in app's components
+
+### Vue SQLite Hook Declaration for platforms including Web
+
+As for the Web platform, the `jeep-sqlite` Stencil component is used and requires the DOM:
+the declaration of the SQLite Hook has to be moved to the App.vue
+
+So the `main.ts`file 
+```js
+...
+/* SQLite imports */
+import { defineCustomElements as jeepSqlite, applyPolyfills } from "jeep-sqlite/loader";
+import { useState } from '@/composables/state';
+
+applyPolyfills().then(() => {
+    jeepSqlite(window);
+});
+
+const app = createApp(App)
+  .use(IonicVue)
+  .use(router);
+
+/* SQLite Global Variables required if you use onProgressImport/Export Listeners*/
+const [jsonListeners, setJsonListeners] = useState(false);
+const [isModal, setIsModal] = useState(false);
+const [message, setMessage] = useState("");
+app.config.globalProperties.$isModalOpen = {isModal: isModal, setIsModal: setIsModal};
+app.config.globalProperties.$isJsonListeners = {jsonListeners: jsonListeners, setJsonListeners: setJsonListeners};
+app.config.globalProperties.$messageContent = {message: message, setMessage: setMessage};
+
+//  Existing Connections Store
+const [existConn, setExistConn] = useState(false);
+app.config.globalProperties.$existingConn = {existConn: existConn, setExistConn: setExistConn};
+    
+router.isReady().then(() => {
+  app.mount('#app');
+});
+
+```
+
+and the `App.vue`file
+```js
+<template>
+  <ion-app>
+    <template v-if="platform === 'web'">
+      <jeep-sqlite />
+    </template>
+    <ion-router-outlet />
+  </ion-app>
+</template>
+
+<script lang="ts">
+import { IonApp, IonRouterOutlet } from '@ionic/vue';
+import { defineComponent, getCurrentInstance, onMounted} from 'vue';
+import { useSQLite} from 'vue-sqlite-hook/dist';
+import { Capacitor } from '@capacitor/core';
+
+export default defineComponent({
+  name: 'App',
+  components: {
+    IonApp,
+    IonRouterOutlet,
+  },
+  setup() {
+    const platform = Capacitor.getPlatform();
+    const app = getCurrentInstance();
+    const isModalOpen = app?.appContext.config.globalProperties.$isModalOpen;
+    const contentMessage = app?.appContext.config.globalProperties.$messageContent;
+    const jsonListeners = app?.appContext.config.globalProperties.$isJsonListeners;
+
+    onMounted(async () => {
+      console.log(' in App on Mounted')
+
+      const ionAppEl = document.querySelector('ion-app');
+      if(ionAppEl != null) {
+        console.log(`ionAppEl ${JSON.stringify(ionAppEl)}`);
+      } else {
+        console.log(' ionAppEl is null');
+      }
+      const onProgressImport = async (progress: string) => {
+        if(jsonListeners.jsonListeners.value) {
+          if(!isModalOpen.isModal.value) isModalOpen.setIsModal(true);
+          contentMessage.setMessage(
+              contentMessage.message.value.concat(`${progress}\n`));
+        }
+      }
+      const onProgressExport = async (progress: string) => {
+        if(jsonListeners.jsonListeners.value) {
+          if(!isModalOpen.isModal.value) isModalOpen.setIsModal(true);
+          contentMessage.setMessage(
+            contentMessage.message.value.concat(`${progress}\n`));
+        }
+      }
+      if( app != null) { 
+        // !!!!! if you do not want to use the progress events !!!!!
+        // since vue-sqlite-hook 2.1.1
+        // app.appContext.config.globalProperties.$sqlite = useSQLite()
+        // before
+        // app.appContext.config.globalProperties.$sqlite = useSQLite({})
+        // !!!!!                                               !!!!!
+        app.appContext.config.globalProperties.$sqlite = useSQLite({
+          onProgressImport,
+          onProgressExport
+        });
+        if(platform === "web") {
+          await customElements.whenDefined('jeep-sqlite');
+          const jeepSqliteEl = document.querySelector('jeep-sqlite');
+          if(jeepSqliteEl != null) {
+            // Initialize the Web Store since @capacitor-community/sqlite@3.2.3-1
+            await app.appContext.config.globalProperties.$sqlite.initWebStore()
+            console.log(`$$ jeepSqliteEl ${JSON.stringify(jeepSqliteEl)}`);
+          } else {
+            console.log('$$ jeepSqliteEl is null');
+          }
+        }
+          console.log('after useSQLite')
+      }
+    });
+    return {platform}
+  }
+});
+</script>
+
+```
+Now the Singleton SQLite Hook `$sqlite`and Existing Connections Store `$existingConn` can be use in app's components
+
 
 ### Vue SQLite Hook Use in Components
 
@@ -411,3 +559,4 @@ export async function deleteDatabase(db: SQLiteDBConnection): Promise<void> {
   }
 }
 ```
+

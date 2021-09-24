@@ -1,4 +1,4 @@
-## 3.2.3-1 (2021-09-23)
+## 3.2.3-1 (2021-09-24)
 
 ### Chore
 
@@ -13,6 +13,7 @@
 ### Bug Fixes
 
  - Update API.md databases location for Web platform
+ - Update Ionic-Vue-Usage.md
 
 
 ## 3.2.2 (2021-09-17)
