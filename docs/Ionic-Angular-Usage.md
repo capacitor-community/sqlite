@@ -194,7 +194,7 @@ export class SQLiteService {
      * Check Connections Consistency
      * @returns 
      */
-    async checkConnectionsConsistency(): Promise<void> {
+    async checkConnectionsConsistency(): Promise<capSQLiteResult> {
         if(this.sqlite != null) {
             try {
                 console.log(`in Service checkConnectionsConsistency`)
