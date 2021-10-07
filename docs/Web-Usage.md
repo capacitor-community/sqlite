@@ -1160,3 +1160,9 @@ npm run start
 ```
 
 that is it.
+    
+
+    
+## Troubleshooting
+
+* The web-implementation uses IndexedDB to store the data. IndexedDB-support is checked via userAgent. Pay attention not to modify your userAgent (e.g. using an iPhone in the Chrome device simulator), as this may break the user-agent check and result in an uninitialized DB (causing an error like this:`No available storage method found`). 
