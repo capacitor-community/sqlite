@@ -517,32 +517,137 @@ that is it.
 
 ```js
 ...
-import { defineCustomElements as jeepSqlite, applyPolyfills} from 'jeep-sqlite/loader';
+import { defineCustomElements as jeepSqlite, applyPolyfills } from "jeep-sqlite/loader";
+import { Capacitor } from '@capacitor/core';
+import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite';
 import { useState } from '@/composables/state';
+
 
 ...
 applyPolyfills().then(() => {
     jeepSqlite(window);
 });
-const app = createApp(App)
-  .use(IonicVue)
-  .use(router);
 
-...
+window.addEventListener('DOMContentLoaded', async () => {
+  const platform = Capacitor.getPlatform();
+  const sqlite: SQLiteConnection = new SQLiteConnection(CapacitorSQLite)
 
-/* SQLite Global Variables*/
-const [jsonListeners, setJsonListeners] = useState(false);
-const [isModal, setIsModal] = useState(false);
-const [message, setMessage] = useState("");
-app.config.globalProperties.$isModalOpen = {isModal: isModal, setIsModal: setIsModal};
-app.config.globalProperties.$isJsonListeners = {jsonListeners: jsonListeners, setJsonListeners: setJsonListeners};
-app.config.globalProperties.$messageContent = {message: message, setMessage: setMessage};
+  const app = createApp(App)
+    .use(IonicVue)
+    .use(router);
 
-... 
+  /* SQLite Global Variables*/
 
-router.isReady().then(() => {
-  app.mount('#app');
+  // Only if you want to use the onProgressImport/Export events
+  const [jsonListeners, setJsonListeners] = useState(false);
+  const [isModal, setIsModal] = useState(false);
+  const [message, setMessage] = useState("");
+  app.config.globalProperties.$isModalOpen = {isModal: isModal, setIsModal: setIsModal};
+  app.config.globalProperties.$isJsonListeners = {jsonListeners: jsonListeners, setJsonListeners: setJsonListeners};
+  app.config.globalProperties.$messageContent = {message: message, setMessage: setMessage};
+
+  //  Existing Connections Store
+  const [existConn, setExistConn] = useState(false);
+  app.config.globalProperties.$existingConn = {existConn: existConn, setExistConn: setExistConn};
+
+  try {
+    if(platform === "web") {
+      // Create the 'jeep-sqlite' Stencil component
+      const jeepSqlite = document.createElement('jeep-sqlite');
+      document.body.appendChild(jeepSqlite);
+      await customElements.whenDefined('jeep-sqlite');
+      // Initialize the Web store
+      await sqlite.initWebStore();
+    }
+    // here you can initialize some database schema if required
+
+    // example: database creation with standard SQLite statements 
+    const ret = await sqlite.checkConnectionsConsistency();
+    const isConn = (await sqlite.isConnection("db_tab3")).result;
+    let db: SQLiteDBConnection
+    if (ret.result && isConn) {
+      db = await sqlite.retrieveConnection("db_tab3");
+    } else {
+      db = await sqlite.createConnection("db_tab3", false, "no-encryption", 1);
+    }
+    await db.open();
+    const query = `
+    CREATE TABLE IF NOT EXISTS test (
+      id INTEGER PRIMARY KEY NOT NULL,
+      name TEXT NOT NULL
+    );
+    `
+    const res = await db.execute(query);
+    if(res.changes && res.changes.changes && res.changes.changes < 0) {
+      throw new Error(`Error: execute failed`);
+    }
+    await sqlite.closeConnection("db_tab3");
+
+    // example: database creation from importFromJson 
+    const schemaToImport179 = {
+        database: 'db-issue179',
+        version: 1,
+        encrypted: false,
+        mode: 'full',
+        tables: [
+          {
+            name: 'album',
+            schema: [
+                { column: 'albumartist', value: 'TEXT NOT NULL' },
+                { column: 'albumname', value: 'TEXT NOT NULL' },
+                { column: 'albumcover', value: 'BINARY' },
+                { column: 'last_modified', value: 'INTEGER' },
+                { constraint: 'PK_albumartist_albumname', value: 'PRIMARY KEY (albumartist,albumname)'},
+            ],
+            indexes: [
+                { name: 'index_album_on_albumartist_albumname', value: 'albumartist,albumname' },
+                { name: 'index_album_on_last_modified', value: 'last_modified DESC' },
+            ],
+          },
+          {
+            name: 'song',
+            schema: [
+                { column: 'songid', value: 'INTEGER PRIMARY KEY NOT NULL' },
+                { column: 'songartist', value: 'TEXT NOT NULL' },
+                { column: 'songalbum', value: 'TEXT NOT NULL' },
+                { column: 'songname', value: 'TEXT NOT NULL' },
+                { column: 'last_modified', value: 'INTEGER' },
+                {
+                foreignkey: 'songartist,songalbum',
+                value: 'REFERENCES album(albumartist,albumname)',
+                },
+            ],
+            indexes: [
+                { name: 'index_song_on_songartist_songalbum', value: 'songartist,songalbum' },
+                {
+                name: 'index_song_on_last_modified',
+                value: 'last_modified DESC',
+                },
+            ],
+          },
+        ],
+    };
+    const result = await sqlite.isJsonValid(JSON.stringify(schemaToImport179));
+    if(!result.result) {
+      throw new Error(`isJsonValid: "schemaToImport179" is not valid`);
+    }
+    // full import
+    const resJson = await sqlite.importFromJson(JSON.stringify(schemaToImport179));    
+    if(resJson.changes && resJson.changes.changes && resJson.changes.changes < 0) {
+      throw new Error(`importFromJson: "full" failed`);
+    }
+
+    ...
+
+    router.isReady().then(() => {
+      app.mount('#app');
+    });
+  } catch (err) {
+    console.log(`Error: ${err}`);
+    throw new Error(`Error: ${err}`)
+  }
 });
+
 ```
 
 - open the `App.vue` file
@@ -550,18 +655,14 @@ router.isReady().then(() => {
 ```js
 <template>
   <ion-app>
-    <template v-if="platform === 'web'">
-      <jeep-sqlite />
-    </template>
     <ion-router-outlet />
   </ion-app>
 </template>
 
 <script lang="ts">
 import { IonApp, IonRouterOutlet } from '@ionic/vue';
-import { defineComponent, getCurrentInstance, onMounted} from 'vue';
+import { defineComponent, getCurrentInstance} from 'vue';
 import { useSQLite} from 'vue-sqlite-hook/dist';
-import { Capacitor } from '@capacitor/core';
 
 export default defineComponent({
   name: 'App',
@@ -570,15 +671,10 @@ export default defineComponent({
     IonRouterOutlet,
   },
   setup() {
-    const platform = Capacitor.getPlatform();
     const app = getCurrentInstance();
     const isModalOpen = app?.appContext.config.globalProperties.$isModalOpen;
     const contentMessage = app?.appContext.config.globalProperties.$messageContent;
     const jsonListeners = app?.appContext.config.globalProperties.$isJsonListeners;
-
-    onMounted(async () => {
-      console.log(' in App on Mounted')
-
       const onProgressImport = async (progress: string) => {
         if(jsonListeners.jsonListeners.value) {
           if(!isModalOpen.isModal.value) isModalOpen.setIsModal(true);
@@ -593,17 +689,19 @@ export default defineComponent({
             contentMessage.message.value.concat(`${progress}\n`));
         }
       }
-      if( app != null) {  
+      if( app != null) { 
+        // !!!!! if you do not want to use the progress events !!!!!
+        // since vue-sqlite-hook 2.1.1
+        // app.appContext.config.globalProperties.$sqlite = useSQLite()
+        // before
+        // app.appContext.config.globalProperties.$sqlite = useSQLite({})
+        // !!!!!                                               !!!!!
         app.appContext.config.globalProperties.$sqlite = useSQLite({
           onProgressImport,
           onProgressExport
         });
-        if(platform === "web") {
-          await customElements.whenDefined('jeep-sqlite');
-        }
       }
-    });
-    return {platform}
+    return;
   }
 });
 </script>
@@ -826,6 +924,8 @@ that is it.
 ...
 import { defineCustomElements as jeepSqlite, applyPolyfills, JSX as LocalJSX  } from "jeep-sqlite/loader";
 import { HTMLAttributes } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite';
 
 type StencilToReact<T> = {
   [P in keyof T]?: T[P] & Omit<HTMLAttributes<Element>, 'className'> & {
@@ -840,15 +940,60 @@ declare global {
   }
 }
 
-ReactDOM.render(<App />, document.getElementById('root'));
-
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();
-
 applyPolyfills().then(() => {
     jeepSqlite(window);
+});
+
+window.addEventListener('DOMContentLoaded', async () => {
+  const platform = Capacitor.getPlatform();
+  const sqlite: SQLiteConnection = new SQLiteConnection(CapacitorSQLite)
+  try {
+    if(platform === "web") {
+      // add 'jeep-sqlite' Stencil component to the DOM
+      const jeepEl = document.createElement("jeep-sqlite");
+      document.body.appendChild(jeepEl);
+      await customElements.whenDefined('jeep-sqlite');
+      // initialize the web store
+      await sqlite.initWebStore();
+    }
+    // initialize some database schema if needed
+    const ret = await sqlite.checkConnectionsConsistency();
+    const isConn = (await sqlite.isConnection("db_issue10")).result;
+    var db: SQLiteDBConnection
+    if (ret.result && isConn) {
+      db = await sqlite.retrieveConnection("db_issue10");
+    } else {
+      db = await sqlite.createConnection("db_issue10", false, "no-encryption", 1);
+    }
+    await db.open();
+    let query = `
+    CREATE TABLE IF NOT EXISTS test (
+      id INTEGER PRIMARY KEY NOT NULL,
+      name TEXT NOT NULL
+    );
+    `
+    const res: any = await db.execute(query);
+    await db.close();
+     await sqlite.closeConnection("db_issue10");
+    
+    // launch the React App
+    ReactDOM.render(
+      <React.StrictMode>
+        <App /> 
+      </React.StrictMode>,
+      document.getElementById('root')
+    );
+
+    // If you want your app to work offline and load faster, you can change
+    // unregister() to register() below. Note this comes with some pitfalls.
+    // Learn more about service workers: https://bit.ly/CRA-PWA
+    serviceWorker.unregister();
+
+  } catch (err) {
+    console.log(`Error: ${err}`);
+    throw new Error(`Error: ${err}`)
+  }
+
 });
 ```
 
@@ -873,7 +1018,6 @@ import Tab2 from './pages/Tab2';
 import Tab3 from './pages/Tab3';
 import { useSQLite } from 'react-sqlite-hook/dist';
 import ModalJsonMessages from './components/ModalJsonMessages';
-import { Capacitor } from '@capacitor/core';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -903,8 +1047,6 @@ export let existingConn: any;
 export let isJsonListeners: any;
 
 const App: React.FC = () => {
-  const platform = Capacitor.getPlatform();
-  const isWeb = useRef(platform === 'web' ? true : false);
   const [existConn, setExistConn] = useState(false);
   existingConn = {existConn: existConn, setExistConn: setExistConn};
   const [jsonListeners, setJsonListeners] = useState(false);
@@ -923,20 +1065,17 @@ const App: React.FC = () => {
       message.current = message.current.concat(`${progress}\n`);
     }
   }
+  // !!!!! if you do not want to use the progress events !!!!!
+  // since react-sqlite-hook 2.1.0
+  // sqlite = useSQLite()
+  // before
+  // sqlite = useSQLite({})
+  // !!!!!                                               !!!!!
+
   sqlite = useSQLite({
     onProgressImport,
     onProgressExport
   });
-  if(isWeb.current) {
-    customElements.whenDefined('jeep-sqlite').then(() => {
-      const jeepSqliteEl = document.querySelector('jeep-sqlite');
-      if(jeepSqliteEl != null) {
-        console.log(`$$ jeepSqliteEl is defined}`);
-      } else {
-        console.log('$$ jeepSqliteEl is null');
-      }
-    });
-  }
   const handleClose = () => {
     setIsModal(false);
     message.current = "";
@@ -970,10 +1109,6 @@ const App: React.FC = () => {
     </IonReactRouter>
     { isModal
       ? <ModalJsonMessages close={handleClose} message={message.current}></ModalJsonMessages>
-      : null
-    }
-    { isWeb
-      ? <jeep-sqlite></jeep-sqlite>
       : null
     }
   </IonApp>

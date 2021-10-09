@@ -1,3 +1,9 @@
+## 3.2.3 (2021-10-09)
+
+### Bug Fixes
+
+ - Update Web-Usage.md for React and Vue frameworks
+
 ## 3.2.3-1 (2021-09-24)
 
 ### Chore
