@@ -10,6 +10,22 @@ public class UtilsMigrate {
     private static final String TAG = UtilsMigrate.class.getName();
     private UtilsFile uFile = new UtilsFile();
 
+    public String[] getMigratableList(Context context, String folderPath) throws Exception {
+        String pathDB = new File(context.getFilesDir().getParentFile(), "databases").getAbsolutePath();
+        File dirDB = new File(pathDB);
+        if (!dirDB.isDirectory()) {
+            dirDB.mkdir();
+        }
+        String pathFiles = this.getFolder(context, folderPath);
+        // check if the path exists
+        File dir = new File(pathFiles);
+        if (!dir.exists()) {
+            throw new Exception("Folder " + dir + " does not exist");
+        }
+        String[] listFiles = dir.list();
+        return listFiles;
+    }
+
     public void addSQLiteSuffix(Context context, String folderPath, ArrayList<String> dbList) throws Exception {
         String pathDB = new File(context.getFilesDir().getParentFile(), "databases").getAbsolutePath();
         File dirDB = new File(pathDB);

@@ -626,6 +626,13 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       return Promise.reject(`isTableExists: No databases found`);
     }
   }
+  async getMigratableDbList(
+    options: capSQLitePathOptions,
+  ): Promise<capSQLiteValues> {
+    console.log('getCordovaDbList', options);
+    return Promise.reject('Method not implemented.');
+  }
+
   async addSQLiteSuffix(options: capSQLitePathOptions): Promise<void> {
     console.log(`${JSON.stringify(options)}`);
     throw new Error('Method not implemented.');

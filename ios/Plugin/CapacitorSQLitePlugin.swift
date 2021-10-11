@@ -365,6 +365,33 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         }
     }
 
+    // MARK: - getMigratableDbList
+
+    @objc func getMigratableDbList(_ call: CAPPluginCall) {
+        guard let dbFolder = call.options["folderPath"] as? String else {
+            retHandler.rValues(
+                call: call, ret: [],
+                message: "getMigratableDbList: Must provide a folder path")
+            return
+        }
+
+        do {
+            let res = try implementation.getMigratableDbList(dbFolder)
+            retHandler.rValues(call: call, ret: res)
+            return
+        } catch CapacitorSQLiteError.failed(let message) {
+            retHandler.rValues(
+                call: call, ret: [],
+                message: "getMigratableDbList: \(message)")
+            return
+        } catch let error {
+            retHandler.rValues(
+                call: call, ret: [],
+                message: "getMigratableDbList: \(error)")
+            return
+        }
+    }
+
     // MARK: - addSQLiteSuffix
 
     @objc func addSQLiteSuffix(_ call: CAPPluginCall) {

@@ -369,6 +369,30 @@ public class CapacitorSQLitePlugin extends Plugin {
     }
 
     /**
+     * GetMigratableDbList Method
+     * Return the list of migratable databases
+     */
+    @PluginMethod
+    public void getMigratableDbList(PluginCall call) {
+        String folderPath = null;
+        if (!call.getData().has("folderPath")) {
+            String msg = "getMigratableDbList: Must provide a folder path";
+            rHandler.retValues(call, new JSArray(), msg);
+        } else {
+            folderPath = call.getString("folderPath");
+        }
+        try {
+            JSArray res = implementation.getMigratableDbList(folderPath);
+            rHandler.retValues(call, res, null);
+            return;
+        } catch (Exception e) {
+            String msg = "getMigratableDbList: " + e.getMessage();
+            rHandler.retValues(call, new JSArray(), msg);
+            return;
+        }
+    }
+
+    /**
      * AddSQLiteSuffix Method
      * Add SQLITE suffix to a list of databases
      */

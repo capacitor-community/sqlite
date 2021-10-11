@@ -304,6 +304,7 @@ No configuration required for this plugin
 | isDatabase                  | ✅      | ✅  | ✅        | ✅  |
 | isTableExists               | ✅      | ✅  | ✅        | ✅  |
 | getDatabaseList             | ✅      | ✅  | ✅        | ✅  |
+| getMigratableDbList         | ✅      | ✅  | ❌        | ❌  |
 | addSQLiteSuffix             | ✅      | ✅  | ❌        | ❌  |
 | deleteOldDatabases          | ✅      | ✅  | ❌        | ❌  |
 | checkConnectionsConsistency | ✅      | ✅  | ✅        | ✅  |

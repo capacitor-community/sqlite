@@ -320,12 +320,31 @@ public class CapacitorSQLite {
     }
 
     /**
-     *
+     * GetDatabaseList
      * @return JSArray
      * @throws Exception
      */
     public JSArray getDatabaseList() throws Exception {
         String[] listFiles = uFile.getListOfFiles(context);
+        JSArray retArray = new JSArray();
+        for (String file : listFiles) {
+            retArray.put(file);
+        }
+        if (retArray.length() > 0) {
+            return retArray;
+        } else {
+            String msg = "No databases available ";
+            throw new Exception(msg);
+        }
+    }
+
+    /**
+     * GetMigratableDbList
+     * @return JSArray
+     * @throws Exception
+     */
+    public JSArray getMigratableDbList(String folderPath) throws Exception {
+        String[] listFiles = uMigrate.getMigratableList(context, folderPath);
         JSArray retArray = new JSArray();
         for (String file : listFiles) {
             retArray.put(file);

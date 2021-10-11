@@ -727,6 +727,25 @@ enum CapacitorSQLiteError: Error {
 
     }
 
+    // MARK: - getMigratableDbList
+
+    @objc func getMigratableDbList(_ folderPath: String) throws -> [String] {
+        do {
+            let dbList: [String] = try UtilsMigrate
+                .getMigratableList(folderPath: folderPath)
+            return dbList
+
+        } catch UtilsMigrateError.getMigratableList(let message) {
+            var msg: String = "getMigratableList:"
+            msg.append(" \(message)")
+            throw CapacitorSQLiteError.failed(message: msg)
+        } catch let error {
+            let msg: String = "\(error)"
+            throw CapacitorSQLiteError.failed(message: msg)
+        }
+
+    }
+
     // MARK: - addSQLiteSuffix
 
     @objc func addSQLiteSuffix(_ folderPath: String, dbList: [String]) throws {

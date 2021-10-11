@@ -7,11 +7,44 @@
 import Foundation
 enum UtilsMigrateError: Error {
     case addSQLiteSuffix(message: String)
+    case getMigratableList(message: String)
     case deleteOldDatabases(message: String)
     case getFolderURL(message: String)
 }
 
 class UtilsMigrate {
+
+    // MARK: - addSQLiteSuffix
+
+    class func getMigratableList(folderPath: String) throws -> [String] {
+        var mDbList: [String] = []
+        do {
+            let dbPathURL: URL = try UtilsMigrate
+                .getFolderURL(folderPath: folderPath)
+            var isDir = ObjCBool(true)
+            if FileManager.default.fileExists(atPath: dbPathURL.relativePath,
+                                              isDirectory: &isDir) &&
+                isDir.boolValue {
+                mDbList = try UtilsFile.getFileList(path: dbPathURL.relativePath)
+
+                return mDbList
+            } else {
+                var msg: String = "getMigratableList command failed :"
+                msg.append(" Folder '\(dbPathURL.absoluteString)' not found")
+                throw UtilsMigrateError.getMigratableList(message: msg)
+            }
+
+        } catch UtilsFileError.getDatabasesURLFailed {
+            throw UtilsMigrateError
+            .getMigratableList(message: "getDatabasesURLFailed")
+        } catch UtilsFileError.getFileListFailed {
+            throw UtilsMigrateError.getMigratableList(message: "getFileListFailed")
+        } catch let error {
+            var msg: String = "getMigratableList command failed :"
+            msg.append(" \(error.localizedDescription)")
+            throw UtilsMigrateError.getMigratableList(message: msg)
+        }
+    }
 
     // MARK: - addSQLiteSuffix
     // swiftlint:disable function_body_length

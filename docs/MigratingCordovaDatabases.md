@@ -9,6 +9,7 @@
 - [`Methods`](#methods)
   - [`Add SQLite Suffix`](#addsqlitesuffix)
   - [`Delete Old Databases`](#deleteolddatabases)
+  - [`Get Migratable Database List`](#getmigratabledatabaselist)
 
 ## Methods
 
@@ -59,6 +60,12 @@ result = await this._sqlite.addSQLiteSuffix("Documents/.../.../...");
 ...
 ```
 
+If you specify an array of database names only those databases will be copied and renamed
+
+```ts
+result = await this._sqlite.addSQLiteSuffix("Applications/Files/Databases", ["test1.db", "test2.db", ... ]);
+...
+```
 #### Android
 
 The accessible locations are under the `databases` or `files` folders. ie
@@ -98,4 +105,18 @@ If you were using a custom location you have to give the location as parameter, 
 
 ```ts
 result = await this._sqlite.deleteOldDatabases(YOUR_PATH_LOCATION);
+```
+or if you want to specify an array of database names
+```ts
+result = await this._sqlite.deleteOldDatabases(YOUR_PATH_LOCATION, YOUR_DB_NAME_LIST);
+```
+if you do not specify an array of database names, all `.db` will be deleted
+
+### getmigratabledatabaselist
+
+Allow to get the database list for a given folder path
+
+```ts
+result = await this._sqlite.getMigratableDbList(YOUR_PATH_LOCATION);
+console.log(`list: ${result.values});
 ```

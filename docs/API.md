@@ -88,6 +88,7 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 * [`addUpgradeStatement(...)`](#addupgradestatement)
 * [`copyFromAssets()`](#copyfromassets)
 * [`getDatabaseList()`](#getdatabaselist)
+* [`getMigratableDbList(...)`](#getmigratabledblist)
 * [`addSQLiteSuffix(...)`](#addsqlitesuffix)
 * [`deleteOldDatabases(...)`](#deleteolddatabases)
 * [`checkConnectionsConsistency(...)`](#checkconnectionsconsistency)
@@ -618,6 +619,25 @@ Get the database list
 --------------------
 
 
+### getMigratableDbList(...)
+
+```typescript
+getMigratableDbList(options: capSQLitePathOptions) => Promise<capSQLiteValues>
+```
+
+Get the Migratable database list
+
+| Param         | Type                                                                  | Description                                                                                    |
+| ------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| **`options`** | <code><a href="#capsqlitepathoptions">capSQLitePathOptions</a></code> | : <a href="#capsqlitepathoptions">capSQLitePathOptions</a> // only iOS & Android since 3.2.4-2 |
+
+**Returns:** <code>Promise&lt;<a href="#capsqlitevalues">capSQLiteValues</a>&gt;</code>
+
+**Since:** 3.0.0-beta.5
+
+--------------------
+
+
 ### addSQLiteSuffix(...)
 
 ```typescript
@@ -928,10 +948,10 @@ return false : no consistency, connections are closed
 
 #### capSQLitePathOptions
 
-| Prop             | Type                  | Description                                                        |
-| ---------------- | --------------------- | ------------------------------------------------------------------ |
-| **`folderPath`** | <code>string</code>   | The folder path of existing databases                              |
-| **`dbNameList`** | <code>string[]</code> | The database name's list to be copied and/or deleted since 3.2.4-1 |
+| Prop             | Type                  | Description                                                                                                              |
+| ---------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **`folderPath`** | <code>string</code>   | The folder path of existing databases If not given folder path is "default"                                              |
+| **`dbNameList`** | <code>string[]</code> | The database name's list to be copied and/or deleted since 3.2.4-1 If not given all databases in the specify folder path |
 
 
 #### capAllConnectionsOptions

@@ -1,3 +1,14 @@
+## 3.2.4-2 (2021-10-11)
+
+### Added Features 
+
+ - add getMigratableDbList requested in issue#182
+
+### Bug Fixes
+
+ - fix MigratingCordovaDatabases.md
+
+
 ## 3.2.4-1 (2021-10-11)
 
 ### Chore
@@ -13,7 +24,7 @@
 ### Bug Fixes
 
  - fix issue#182
- 
+
 ## 3.2.3 (2021-10-09)
 
 ### Bug Fixes

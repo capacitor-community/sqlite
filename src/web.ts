@@ -494,6 +494,12 @@ export class CapacitorSQLiteWeb
       throw this.unimplemented('Not implemented on web.');
     }
   }
+  async getMigratableDbList(
+    options: capSQLitePathOptions,
+  ): Promise<capSQLiteValues> {
+    console.log('getMigratableDbList', options);
+    throw this.unimplemented('Not implemented on web.');
+  }
   async addSQLiteSuffix(options: capSQLitePathOptions): Promise<void> {
     console.log('addSQLiteSuffix', options);
     throw this.unimplemented('Not implemented on web.');

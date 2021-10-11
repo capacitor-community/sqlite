@@ -28,6 +28,7 @@ CAP_PLUGIN(CapacitorSQLitePlugin, "CapacitorSQLite",
            CAP_PLUGIN_METHOD(isDatabase, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(isTableExists, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(getDatabaseList, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(getMigratableDbList, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(addSQLiteSuffix, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(deleteOldDatabases, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(checkConnectionsConsistency, CAPPluginReturnPromise);

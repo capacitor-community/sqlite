@@ -27,6 +27,7 @@
 * [`copyFromAssets()`](#copyfromassets)
 * [`isDatabase(...)`](#isdatabase)
 * [`getDatabaseList()`](#getdatabaselist)
+* [`getMigratableDbList(...)`](#getmigratabledblist)
 * [`addSQLiteSuffix(...)`](#addsqlitesuffix)
 * [`deleteOldDatabases(...)`](#deleteolddatabases)
 * [Interfaces](#interfaces)
@@ -359,6 +360,25 @@ getDatabaseList() => Promise<capSQLiteValues>
 ```
 
 Get the database list
+
+**Returns:** <code>Promise&lt;<a href="#capsqlitevalues">capSQLiteValues</a>&gt;</code>
+
+**Since:** 3.0.0-beta.5
+
+--------------------
+
+
+### getMigratableDbList(...)
+
+```typescript
+getMigratableDbList(folderPath: string) => Promise<capSQLiteValues>
+```
+
+Get the Migratable database list
+
+| Param            | Type                | Description                                  |
+| ---------------- | ------------------- | -------------------------------------------- |
+| **`folderPath`** | <code>string</code> | : string // only iOS & Android since 3.2.4-2 |
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitevalues">capSQLiteValues</a>&gt;</code>
 

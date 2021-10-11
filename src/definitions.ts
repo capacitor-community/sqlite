@@ -218,6 +218,13 @@ export interface CapacitorSQLitePlugin {
    */
   getDatabaseList(): Promise<capSQLiteValues>;
   /**
+   * Get the Migratable database list
+   * @param options: capSQLitePathOptions // only iOS & Android since 3.2.4-2
+   * @returns Promise<capSQLiteValues>
+   * @since 3.0.0-beta.5
+   */
+  getMigratableDbList(options: capSQLitePathOptions): Promise<capSQLiteValues>;
+  /**
    * Add SQLIte Suffix to existing databases
    * @param options: capSQLitePathOptions
    * @returns Promise<void>
@@ -420,11 +427,13 @@ export interface capSQLiteUpgradeOptions {
 export interface capSQLitePathOptions {
   /**
    * The folder path of existing databases
+   * If not given folder path is "default"
    */
   folderPath?: string;
   /**
    * The database name's list to be copied and/or deleted
    * since 3.2.4-1
+   * If not given all databases in the specify folder path
    */
   dbNameList?: string[];
 }
@@ -775,6 +784,13 @@ export interface ISQLiteConnection {
    * @since 3.0.0-beta.5
    */
   getDatabaseList(): Promise<capSQLiteValues>;
+  /**
+   * Get the Migratable database list
+   * @param folderPath: string // only iOS & Android since 3.2.4-2
+   * @returns Promise<capSQLiteValues>
+   * @since 3.0.0-beta.5
+   */
+  getMigratableDbList(folderPath: string): Promise<capSQLiteValues>;
 
   /**
    * Add SQLIte Suffix to existing databases
@@ -995,6 +1011,19 @@ export class SQLiteConnection implements ISQLiteConnection {
   async getDatabaseList(): Promise<capSQLiteValues> {
     try {
       const res = await this.sqlite.getDatabaseList();
+      return Promise.resolve(res);
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async getMigratableDbList(folderPath: string): Promise<capSQLiteValues> {
+    if (!folderPath || folderPath.length === 0) {
+      return Promise.reject('You must provide a folder path');
+    }
+    try {
+      const res = await this.sqlite.getMigratableDbList({
+        folderPath: folderPath,
+      });
       return Promise.resolve(res);
     } catch (err) {
       return Promise.reject(err);
