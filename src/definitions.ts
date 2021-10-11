@@ -422,6 +422,11 @@ export interface capSQLitePathOptions {
    * The folder path of existing databases
    */
   folderPath?: string;
+  /**
+   * The database name's list to be copied and/or deleted
+   * since 3.2.4-1
+   */
+  dbNameList?: string[];
 }
 export interface capSQLiteTableOptions {
   /**
@@ -774,17 +779,19 @@ export interface ISQLiteConnection {
   /**
    * Add SQLIte Suffix to existing databases
    * @param folderPath
+   * @param dbNameList since 3.2.4-1
    * @returns Promise<void>
    * @since 3.0.0-beta.5
    */
-  addSQLiteSuffix(folderPath?: string): Promise<void>;
+  addSQLiteSuffix(folderPath?: string, dbNameList?: string[]): Promise<void>;
   /**
    * Delete Old Cordova databases
    * @param folderPath
+   * @param dbNameList since 3.2.4-1
    * @returns Promise<void>
    * @since 3.0.0-beta.5
    */
-  deleteOldDatabases(folderPath?: string): Promise<void>;
+  deleteOldDatabases(folderPath?: string, dbNameList?: string[]): Promise<void>;
 }
 /**
  * SQLiteConnection Class
@@ -993,19 +1000,33 @@ export class SQLiteConnection implements ISQLiteConnection {
       return Promise.reject(err);
     }
   }
-  async addSQLiteSuffix(folderPath?: string): Promise<void> {
+  async addSQLiteSuffix(
+    folderPath?: string,
+    dbNameList?: string[],
+  ): Promise<void> {
     const path: string = folderPath ? folderPath : 'default';
+    const dbList: string[] = dbNameList ? dbNameList : [];
     try {
-      const res = await this.sqlite.addSQLiteSuffix({ folderPath: path });
+      const res = await this.sqlite.addSQLiteSuffix({
+        folderPath: path,
+        dbNameList: dbList,
+      });
       return Promise.resolve(res);
     } catch (err) {
       return Promise.reject(err);
     }
   }
-  async deleteOldDatabases(folderPath?: string): Promise<void> {
+  async deleteOldDatabases(
+    folderPath?: string,
+    dbNameList?: string[],
+  ): Promise<void> {
     const path: string = folderPath ? folderPath : 'default';
+    const dbList: string[] = dbNameList ? dbNameList : [];
     try {
-      const res = await this.sqlite.deleteOldDatabases({ folderPath: path });
+      const res = await this.sqlite.deleteOldDatabases({
+        folderPath: path,
+        dbNameList: dbList,
+      });
       return Promise.resolve(res);
     } catch (err) {
       return Promise.reject(err);

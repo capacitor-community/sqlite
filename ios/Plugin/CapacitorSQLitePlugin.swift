@@ -369,8 +369,17 @@ public class CapacitorSQLitePlugin: CAPPlugin {
 
     @objc func addSQLiteSuffix(_ call: CAPPluginCall) {
         let folderPath: String = call.getString("folderPath") ?? "default"
+        let dbJsList: JSArray = call.getArray("dbNameList") ?? []
+        var dbList: [String] = []
+        if dbJsList.count > 0 {
+            for dbName in dbJsList {
+                if let name = dbName as? String {
+                    dbList.append(name)
+                }
+            }
+        }
         do {
-            try implementation.addSQLiteSuffix(folderPath)
+            try implementation.addSQLiteSuffix(folderPath, dbList: dbList)
             retHandler.rResult(call: call)
             return
         } catch CapacitorSQLiteError.failed(let message) {
@@ -389,9 +398,17 @@ public class CapacitorSQLitePlugin: CAPPlugin {
 
     @objc func deleteOldDatabases(_ call: CAPPluginCall) {
         let folderPath: String = call.getString("folderPath") ?? "default"
-
+        let dbJsList: JSArray = call.getArray("dbNameList") ?? []
+        var dbList: [String] = []
+        if dbJsList.count > 0 {
+            for dbName in dbJsList {
+                if let name = dbName as? String {
+                    dbList.append(name)
+                }
+            }
+        }
         do {
-            try implementation.deleteOldDatabases(folderPath)
+            try implementation.deleteOldDatabases(folderPath, dbList: dbList)
             retHandler.rResult(call: call)
             return
         } catch CapacitorSQLiteError.failed(let message) {

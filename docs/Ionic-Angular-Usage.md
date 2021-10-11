@@ -238,12 +238,15 @@ export class SQLiteService {
     /**
      * Add "SQLite" suffix to old database's names
      */    
-    async addSQLiteSuffix(folderPath?: string): Promise<void>{
+    async addSQLiteSuffix(folderPath?: string, dbNameList?: string[]): Promise<void>{
+        if(!this.native) {
+            return Promise.reject(new Error(`Not implemented for ${this.platform} platform`));
+        }
         if(this.sqlite != null) {
             try {
                 const path: string = folderPath ? folderPath : "default";
-                console.log(`in service path: ${path} `)
-                return Promise.resolve(await this.sqlite.addSQLiteSuffix(folderPath));
+                const dbList: string[] = dbNameList ? dbNameList : [];
+                return Promise.resolve(await this.sqlite.addSQLiteSuffix(path, dbList));
             } catch (err) {
                 return Promise.reject(new Error(err));
             }
@@ -254,12 +257,15 @@ export class SQLiteService {
     /**
      * Delete old databases
      */    
-    async deleteOldDatabases(folderPath?: string): Promise<void>{
+    async deleteOldDatabases(folderPath?: string, dbNameList?: string[]): Promise<void>{
+        if(!this.native) {
+            return Promise.reject(new Error(`Not implemented for ${this.platform} platform`));
+        }
         if(this.sqlite != null) {
             try {
                 const path: string = folderPath ? folderPath : "default";
-                console.log(`in service path: ${path} `)
-                return Promise.resolve(await this.sqlite.deleteOldDatabases(folderPath));
+                const dbList: string[] = dbNameList ? dbNameList : [];
+                return Promise.resolve(await this.sqlite.deleteOldDatabases(path, dbList));
             } catch (err) {
                 return Promise.reject(new Error(err));
             }
@@ -267,7 +273,6 @@ export class SQLiteService {
             return Promise.reject(new Error(`no connection open`));
         }
     }
-
     /**
      * Import from a Json Object
      * @param jsonstring 

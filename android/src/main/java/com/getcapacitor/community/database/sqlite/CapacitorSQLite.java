@@ -343,9 +343,10 @@ public class CapacitorSQLite {
      * @param folderPath
      * @throws Exception
      */
-    public void addSQLiteSuffix(String folderPath) throws Exception {
+    public void addSQLiteSuffix(String folderPath, JSArray dbList) throws Exception {
         try {
-            uMigrate.addSQLiteSuffix(context, folderPath);
+            ArrayList<String> mDbList = uSqlite.stringJSArrayToArrayList(dbList);
+            uMigrate.addSQLiteSuffix(context, folderPath, mDbList);
             return;
         } catch (Exception e) {
             throw new Exception(e.getMessage());
@@ -357,9 +358,10 @@ public class CapacitorSQLite {
      * @param folderPath
      * @throws Exception
      */
-    public void deleteOldDatabases(String folderPath) throws Exception {
+    public void deleteOldDatabases(String folderPath, JSArray dbList) throws Exception {
         try {
-            uMigrate.deleteOldDatabases(context, folderPath);
+            ArrayList<String> mDbList = uSqlite.stringJSArrayToArrayList(dbList);
+            uMigrate.deleteOldDatabases(context, folderPath, mDbList);
             return;
         } catch (Exception e) {
             throw new Exception(e.getMessage());

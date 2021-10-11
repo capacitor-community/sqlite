@@ -375,13 +375,19 @@ public class CapacitorSQLitePlugin extends Plugin {
     @PluginMethod
     public void addSQLiteSuffix(PluginCall call) {
         String folderPath;
+        JSArray dbList;
         if (!call.getData().has("folderPath")) {
             folderPath = "default";
         } else {
             folderPath = call.getString("folderPath");
         }
+        if (!call.getData().has("dbNameList")) {
+            dbList = new JSArray();
+        } else {
+            dbList = call.getArray("dbNameList");
+        }
         try {
-            implementation.addSQLiteSuffix(folderPath);
+            implementation.addSQLiteSuffix(folderPath, dbList);
             rHandler.retResult(call, null, null);
             return;
         } catch (Exception e) {
@@ -398,13 +404,19 @@ public class CapacitorSQLitePlugin extends Plugin {
     @PluginMethod
     public void deleteOldDatabases(PluginCall call) {
         String folderPath;
+        JSArray dbList;
         if (!call.getData().has("folderPath")) {
             folderPath = "default";
         } else {
             folderPath = call.getString("folderPath");
         }
+        if (!call.getData().has("dbNameList")) {
+            dbList = new JSArray();
+        } else {
+            dbList = call.getArray("dbNameList");
+        }
         try {
-            implementation.deleteOldDatabases(folderPath);
+            implementation.deleteOldDatabases(folderPath, dbList);
             rHandler.retResult(call, null, null);
             return;
         } catch (Exception e) {

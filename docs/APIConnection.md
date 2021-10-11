@@ -370,14 +370,15 @@ Get the database list
 ### addSQLiteSuffix(...)
 
 ```typescript
-addSQLiteSuffix(folderPath?: string | undefined) => Promise<void>
+addSQLiteSuffix(folderPath?: string | undefined, dbNameList?: string[] | undefined) => Promise<void>
 ```
 
 Add SQLIte Suffix to existing databases
 
-| Param            | Type                |
-| ---------------- | ------------------- |
-| **`folderPath`** | <code>string</code> |
+| Param            | Type                  | Description   |
+| ---------------- | --------------------- | ------------- |
+| **`folderPath`** | <code>string</code>   |               |
+| **`dbNameList`** | <code>string[]</code> | since 3.2.4-1 |
 
 **Since:** 3.0.0-beta.5
 
@@ -387,14 +388,15 @@ Add SQLIte Suffix to existing databases
 ### deleteOldDatabases(...)
 
 ```typescript
-deleteOldDatabases(folderPath?: string | undefined) => Promise<void>
+deleteOldDatabases(folderPath?: string | undefined, dbNameList?: string[] | undefined) => Promise<void>
 ```
 
 Delete Old Cordova databases
 
-| Param            | Type                |
-| ---------------- | ------------------- |
-| **`folderPath`** | <code>string</code> |
+| Param            | Type                  | Description   |
+| ---------------- | --------------------- | ------------- |
+| **`folderPath`** | <code>string</code>   |               |
+| **`dbNameList`** | <code>string[]</code> | since 3.2.4-1 |
 
 **Since:** 3.0.0-beta.5
 

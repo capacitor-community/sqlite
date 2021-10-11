@@ -928,9 +928,10 @@ return false : no consistency, connections are closed
 
 #### capSQLitePathOptions
 
-| Prop             | Type                | Description                           |
-| ---------------- | ------------------- | ------------------------------------- |
-| **`folderPath`** | <code>string</code> | The folder path of existing databases |
+| Prop             | Type                  | Description                                                        |
+| ---------------- | --------------------- | ------------------------------------------------------------------ |
+| **`folderPath`** | <code>string</code>   | The folder path of existing databases                              |
+| **`dbNameList`** | <code>string[]</code> | The database name's list to be copied and/or deleted since 3.2.4-1 |
 
 
 #### capAllConnectionsOptions

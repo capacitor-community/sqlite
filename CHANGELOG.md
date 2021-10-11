@@ -1,3 +1,19 @@
+## 3.2.4-1 (2021-10-11)
+
+### Chore
+
+ - Update to @capacitor/core 3.2.4
+ - Update to @capacitor/ios 3.2.4
+ - Update to @capacitor/android 3.2.4
+
+### Added Features 
+
+ - Extend addSQLiteSuffix and deleteOldDatabases by providing a database name's list
+
+### Bug Fixes
+
+ - fix issue#182
+ 
 ## 3.2.3 (2021-10-09)
 
 ### Bug Fixes

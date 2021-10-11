@@ -729,10 +729,10 @@ enum CapacitorSQLiteError: Error {
 
     // MARK: - addSQLiteSuffix
 
-    @objc func addSQLiteSuffix(_ folderPath: String) throws {
+    @objc func addSQLiteSuffix(_ folderPath: String, dbList: [String]) throws {
 
         do {
-            try UtilsMigrate.addSQLiteSuffix(folderPath: folderPath)
+            try UtilsMigrate.addSQLiteSuffix(folderPath: folderPath, dbList: dbList)
             return
         } catch UtilsMigrateError.addSQLiteSuffix(let message) {
             var msg: String = "addSQLiteSuffix:"
@@ -748,9 +748,9 @@ enum CapacitorSQLiteError: Error {
 
     // MARK: - deleteOldDatabases
 
-    @objc func deleteOldDatabases(_ folderPath: String) throws {
+    @objc func deleteOldDatabases(_ folderPath: String, dbList: [String]) throws {
         do {
-            try UtilsMigrate.deleteOldDatabases(folderPath: folderPath)
+            try UtilsMigrate.deleteOldDatabases(folderPath: folderPath, dbList: dbList)
             return
         } catch UtilsMigrateError.deleteOldDatabases(let message) {
             var msg: String = "deleteOldDatabases:"

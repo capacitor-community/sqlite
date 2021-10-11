@@ -3,13 +3,14 @@ package com.getcapacitor.community.database.sqlite.SQLite;
 import android.content.Context;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsFile;
 import java.io.File;
+import java.util.ArrayList;
 
 public class UtilsMigrate {
 
     private static final String TAG = UtilsMigrate.class.getName();
     private UtilsFile uFile = new UtilsFile();
 
-    public void addSQLiteSuffix(Context context, String folderPath) throws Exception {
+    public void addSQLiteSuffix(Context context, String folderPath, ArrayList<String> dbList) throws Exception {
         String pathDB = new File(context.getFilesDir().getParentFile(), "databases").getAbsolutePath();
         File dirDB = new File(pathDB);
         if (!dirDB.isDirectory()) {
@@ -28,12 +29,14 @@ public class UtilsMigrate {
         for (String file : listFiles) {
             if (uFile.getFileExtension((file)).equals("db")) {
                 if (!file.contains("SQLite.db")) {
-                    String fromFile = file;
-                    String toFile = file.replace(".db", "SQLite.db");
-                    boolean ret = uFile.copyFromNames(context, pathFiles, fromFile, pathDB, toFile);
-                    if (!ret) {
-                        String msg = "Failed in copy " + fromFile + " to " + file;
-                        throw new Exception(msg);
+                    if (dbList.contains(file)) {
+                        String fromFile = file;
+                        String toFile = file.replace(".db", "SQLite.db");
+                        boolean ret = uFile.copyFromNames(context, pathFiles, fromFile, pathDB, toFile);
+                        if (!ret) {
+                            String msg = "Failed in copy " + fromFile + " to " + file;
+                            throw new Exception(msg);
+                        }
                     }
                 }
             }
@@ -61,7 +64,7 @@ public class UtilsMigrate {
         return pathFiles;
     }
 
-    public void deleteOldDatabases(Context context, String folderPath) throws Exception {
+    public void deleteOldDatabases(Context context, String folderPath, ArrayList<String> dbList) throws Exception {
         String pathFiles = this.getFolder(context, folderPath);
         // check if the path exists
         File dir = new File(pathFiles);
@@ -72,10 +75,12 @@ public class UtilsMigrate {
         for (String file : listFiles) {
             if (uFile.getFileExtension((file)).equals("db")) {
                 if (!file.contains("SQLite.db")) {
-                    boolean ret = uFile.deleteFile(pathFiles, file);
-                    if (!ret) {
-                        String msg = "Failed in delete " + file;
-                        throw new Exception(msg);
+                    if (dbList.contains(file)) {
+                        boolean ret = uFile.deleteFile(pathFiles, file);
+                        if (!ret) {
+                            String msg = "Failed in delete " + file;
+                            throw new Exception(msg);
+                        }
                     }
                 }
             }
