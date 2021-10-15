@@ -209,9 +209,12 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     }
     const dbName: string = options.database;
     const statements: string = options.statements;
-    const transaction: boolean = options.transaction
-      ? options.transaction
-      : true;
+    let transaction: boolean 
+    if (!keys.includes('transaction')) {
+      transaction = true;
+    } else {
+      transaction = options.transaction;
+    }
     keys = Object.keys(this._dbDict);
     if (!keys.includes(dbName)) {
       return Promise.reject(`Execute: No available connection for ${dbName}`);
@@ -238,9 +241,12 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     }
     const dbName: string = options.database;
     const setOfStatements: any[] = options.set;
-    const transaction: boolean = options.transaction
-      ? options.transaction
-      : true;
+    let transaction: boolean 
+    if (!keys.includes('transaction')) {
+      transaction = true;
+    } else {
+      transaction = options.transaction;
+    }
     keys = Object.keys(this._dbDict);
     if (!keys.includes(dbName)) {
       return Promise.reject(
@@ -281,9 +287,12 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     const dbName: string = options.database;
     const statement: string = options.statement;
     const values: any[] = options.values.length > 0 ? options.values : [];
-    const transaction: boolean = options.transaction
-      ? options.transaction
-      : true;
+    let transaction: boolean 
+    if (!keys.includes('transaction')) {
+      transaction = true;
+    } else {
+      transaction = options.transaction;
+    }
     keys = Object.keys(this._dbDict);
     if (!keys.includes(dbName)) {
       return Promise.reject(`Run: No available connection for ${dbName}`);

@@ -1,3 +1,9 @@
+## 3.2.4 (2021-10-15)
+
+### Bug Fixes
+
+ - fix Electron + TypeORM - Transaction error issue#186
+
 ## 3.2.4-2 (2021-10-11)
 
 ### Added Features 
@@ -7,7 +13,6 @@
 ### Bug Fixes
 
  - fix MigratingCordovaDatabases.md
-
 
 ## 3.2.4-1 (2021-10-11)
 
