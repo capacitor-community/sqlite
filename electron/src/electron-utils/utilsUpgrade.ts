@@ -35,11 +35,11 @@ export class UtilsUpgrade {
     if (upgrade != null) {
       const keys: string[] = Object.keys(upgrade);
       if (!keys.includes('toVersion')) {
-        return Promise.reject(new Error('onUpgrade: toVersion not given'));
+        return Promise.reject('onUpgrade: toVersion not given');
       }
       const toVersion: number = upgrade.toVersion;
       if (!keys.includes('statement')) {
-        return Promise.reject(new Error('onUpgrade: statement not given'));
+        return Promise.reject('onUpgrade: statement not given');
       }
       const statement: string = upgrade.statement;
       let set: capSQLiteSet[] = [];
@@ -52,7 +52,7 @@ export class UtilsUpgrade {
         msg += `version ${toVersion} , but target version `;
         msg += `is ${targetVersion} for database ${dbName}`;
         msg += ` and version ${curVersion}`;
-        return Promise.reject(new Error(`onUpgrade: ${msg}`));
+        return Promise.reject(`onUpgrade: ${msg}`);
       }
       try {
         // set Foreign Keys Off
@@ -79,10 +79,10 @@ export class UtilsUpgrade {
         const changes = (await this._uSQLite.dbChanges(mDB)) - initChanges;
         return Promise.resolve(changes);
       } catch (err) {
-        return Promise.reject(new Error(`onUpgrade: ${err.message}`));
+        return Promise.reject(`onUpgrade: ${err}`);
       }
     } else {
-      return Promise.reject(new Error('onUpgrade: upgrade not found'));
+      return Promise.reject('onUpgrade: upgrade not found');
     }
   }
   /**
@@ -107,9 +107,7 @@ export class UtilsUpgrade {
       // -> Create new tables from upgrade.statement
       const changes: number = await this._uSQLite.execute(mDB, statement);
       if (changes < 0) {
-        return Promise.reject(
-          new Error('ExecuteStatementProcess: ' + 'changes < 0'),
-        );
+        return Promise.reject('ExecuteStatementProcess: ' + 'changes < 0');
       }
       // -> Create the list of table's common fields
       await this.findCommonColumns(mDB);
@@ -126,9 +124,7 @@ export class UtilsUpgrade {
       this._commonColumns = {};
       return Promise.resolve();
     } catch (err) {
-      return Promise.reject(
-        new Error(`ExecuteStatementProcess: ${err.message}`),
-      );
+      return Promise.reject(`ExecuteStatementProcess: ${err}`);
     }
   }
   /**
@@ -146,7 +142,7 @@ export class UtilsUpgrade {
       // -> load new data
       const lastId = await this._uSQLite.executeSet(mDB, set);
       if (lastId < 0) {
-        return Promise.reject(new Error('ExecuteSetProcess: lastId ' + '< 0'));
+        return Promise.reject('ExecuteSetProcess: lastId ' + '< 0');
       }
       // -> update database version
       await this._uSQLite.setVersion(mDB, toVersion);
@@ -158,14 +154,12 @@ export class UtilsUpgrade {
         stmt += `sync_date = ${sDate} WHERE id = 1;`;
         const changes: number = await this._uSQLite.execute(mDB, stmt);
         if (changes < 0) {
-          return Promise.reject(
-            new Error('ExecuteSetProcess: changes ' + '< 0'),
-          );
+          return Promise.reject('ExecuteSetProcess: changes ' + '< 0');
         }
       }
       return Promise.resolve();
     } catch (err) {
-      return Promise.reject(new Error(`ExecuteSetProcess: ${err.message}`));
+      return Promise.reject(`ExecuteSetProcess: ${err}`);
     }
   }
   /**
@@ -180,14 +174,12 @@ export class UtilsUpgrade {
         try {
           await this.backupTable(mDB, table);
         } catch (err) {
-          return Promise.reject(
-            new Error(`${msg}table ${table}: ` + `${err.message}`),
-          );
+          return Promise.reject(`${msg}table ${table}: ` + `${err}`);
         }
       }
       return Promise.resolve();
     } catch (err) {
-      return Promise.reject(new Error(`BackupTables: ${err.message}`));
+      return Promise.reject(`BackupTables: ${err}`);
     }
   }
   /**
@@ -211,19 +203,19 @@ export class UtilsUpgrade {
         try {
           await this._uSQLite.rollbackTransaction(mDB, true);
         } catch (err) {
-          msg += `: ${err.message}`;
+          msg += `: ${err}`;
         }
-        return Promise.reject(new Error(`${msg}`));
+        return Promise.reject(`${msg}`);
       } else {
         try {
           await this._uSQLite.commitTransaction(mDB, true);
         } catch (err) {
-          return Promise.reject(new Error('BackupTable: ' + `${err.message}`));
+          return Promise.reject('BackupTable: ' + `${err}`);
         }
       }
       return Promise.resolve();
     } catch (err) {
-      return Promise.reject(new Error(`BackupTable: ${err.message}`));
+      return Promise.reject(`BackupTable: ${err}`);
     }
   }
   /**
@@ -247,9 +239,7 @@ export class UtilsUpgrade {
       }
       return Promise.resolve(retNames);
     } catch (err) {
-      return Promise.reject(
-        new Error('GetTableColumnNames: ' + `${err.message}`),
-      );
+      return Promise.reject('GetTableColumnNames: ' + `${err}`);
     }
   }
   /**
@@ -262,7 +252,7 @@ export class UtilsUpgrade {
       const tables: any[] = await this._uDrop.getTablesNames(mDB);
       if (tables.length === 0) {
         return Promise.reject(
-          new Error('FindCommonColumns: get ' + "table's names failed"),
+          'FindCommonColumns: get ' + "table's names failed",
         );
       }
       for (const table of tables) {
@@ -279,7 +269,7 @@ export class UtilsUpgrade {
       }
       return Promise.resolve();
     } catch (err) {
-      return Promise.reject(new Error(`FindCommonColumns: ${err.message}`));
+      return Promise.reject(`FindCommonColumns: ${err}`);
     }
   }
   /**
@@ -323,23 +313,19 @@ export class UtilsUpgrade {
         try {
           await this._uSQLite.rollbackTransaction(mDB, true);
         } catch (err) {
-          msg += `: ${err.message}`;
+          msg += `: ${err}`;
         }
-        return Promise.reject(new Error(`${msg}`));
+        return Promise.reject(`${msg}`);
       } else {
         try {
           await this._uSQLite.commitTransaction(mDB, true);
           return Promise.resolve();
         } catch (err) {
-          return Promise.reject(
-            new Error('updateNewTablesData: ' + `${err.message}`),
-          );
+          return Promise.reject('updateNewTablesData: ' + `${err}`);
         }
       }
     } catch (err) {
-      return Promise.reject(
-        new Error('updateNewTablesData: ' + `${err.message}`),
-      );
+      return Promise.reject('updateNewTablesData: ' + `${err}`);
     }
   }
 }

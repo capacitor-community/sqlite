@@ -28,7 +28,7 @@ export class UtilsSQLite {
       try {
         await this.dbChanges(mDB);
       } catch (err) {
-        return Promise.reject(new Error(msg + `dbChanges ${err.message}`));
+        return Promise.reject(msg + `dbChanges ${err}`);
       }
 
       try {
@@ -46,11 +46,11 @@ export class UtilsSQLite {
           await this.setVersion(mDB, 1);
         }
       } catch (err) {
-        return Promise.reject(new Error(msg + `${err.message}`));
+        return Promise.reject(msg + `${err}`);
       }
       return Promise.resolve(mDB);
     } else {
-      return Promise.reject(new Error(msg + 'open database failed'));
+      return Promise.reject(msg + 'open database failed');
     }
   }
   /**
@@ -89,7 +89,7 @@ export class UtilsSQLite {
       }
       mDB.run(`PRAGMA foreign_keys = '${key}'`, (err: any) => {
         if (err) {
-          reject(new Error(`SetForeignKey: ${err.message}`));
+          reject(`SetForeignKey: ${err.message}`);
         }
         resolve();
       });
@@ -106,7 +106,7 @@ export class UtilsSQLite {
       mDB.get(SELECT_VERSION, [], (err: any, row: any) => {
         // process the row here
         if (err) {
-          reject(new Error('getVersion failed: ' + `${err.message}`));
+          reject('getVersion failed: ' + `${err.message}`);
         } else {
           if (row == null) {
             version = 0;
@@ -128,7 +128,7 @@ export class UtilsSQLite {
     return new Promise((resolve, reject) => {
       mDB.run(`PRAGMA user_version = ${version}`, (err: any) => {
         if (err) {
-          reject(new Error('setVersion failed: ' + `${err.message}`));
+          reject('setVersion failed: ' + `${err.message}`);
         }
         resolve();
       });
@@ -193,12 +193,12 @@ export class UtilsSQLite {
     return new Promise((resolve, reject) => {
       const msg = 'BeginTransaction: ';
       if (!isOpen) {
-        return Promise.reject(new Error(`${msg}database not opened`));
+        return Promise.reject(`${msg}database not opened`);
       }
       const sql = 'BEGIN TRANSACTION;';
-      db.run(sql, (err: Error) => {
+      db.run(sql, (err: any) => {
         if (err) {
-          reject(new Error(`${msg}${err.message}`));
+          reject(`${msg}${err.message}`);
         }
         resolve();
       });
@@ -213,12 +213,12 @@ export class UtilsSQLite {
     return new Promise((resolve, reject) => {
       const msg = 'RollbackTransaction: ';
       if (!isOpen) {
-        reject(new Error(`${msg}database not opened`));
+        reject(`${msg}database not opened`);
       }
       const sql = 'ROLLBACK TRANSACTION;';
       db.run(sql, (err: any) => {
         if (err) {
-          reject(new Error(`${msg}${err.message}`));
+          reject(`${msg}${err.message}`);
         }
         resolve();
       });
@@ -233,12 +233,12 @@ export class UtilsSQLite {
     return new Promise((resolve, reject) => {
       const msg = 'CommitTransaction: ';
       if (!isOpen) {
-        reject(new Error(`${msg}database not opened`));
+        reject(`${msg}database not opened`);
       }
       const sql = 'COMMIT TRANSACTION;';
       db.run(sql, (err: any) => {
         if (err) {
-          reject(new Error(`${msg}${err.message}`));
+          reject(`${msg}${err.message}`);
         }
         resolve();
       });
@@ -257,7 +257,7 @@ export class UtilsSQLite {
       db.get(SELECT_CHANGE, [], (err: any, row: any) => {
         // process the row here
         if (err) {
-          reject(new Error(`DbChanges failed: ${err.message}`));
+          reject(`DbChanges failed: ${err.message}`);
         } else {
           if (row == null) {
             changes = 0;
@@ -281,9 +281,7 @@ export class UtilsSQLite {
       db.get(SELECT_LAST_ID, [], (err: any, row: any) => {
         // process the row here
         if (err) {
-          let msg = 'GetLastId failed: ';
-          msg += `${err.message}`;
-          reject(new Error(msg));
+          reject(`GetLastId failed: ${err.message}`);
         } else {
           if (row == null) resolve(lastId);
           const key: any = Object.keys(row)[0];
@@ -307,7 +305,7 @@ export class UtilsSQLite {
       changes = (await this.dbChanges(mDB)) - initChanges;
       return Promise.resolve(changes);
     } catch (err) {
-      return Promise.reject(new Error(`Execute: ${err.message}`));
+      return Promise.reject(`Execute: ${err.message}`);
     }
   }
   /**
@@ -319,8 +317,7 @@ export class UtilsSQLite {
     return new Promise((resolve, reject) => {
       mDB.exec(sql, async (err: any) => {
         if (err) {
-          const msg: string = err.message;
-          reject(new Error(`Execute: ${msg}: `));
+          reject(`Execute: ${err.message}: `);
         }
         resolve();
       });
@@ -340,7 +337,7 @@ export class UtilsSQLite {
       if (statement == null) {
         let msg = 'ExecuteSet: Error Nostatement';
         msg += ` for index ${i}`;
-        return Promise.reject(new Error(msg));
+        return Promise.reject(msg);
       }
       try {
         if (Array.isArray(values[0])) {
@@ -351,7 +348,7 @@ export class UtilsSQLite {
           lastId = await this.prepareRun(db, statement, values);
         }
       } catch (err) {
-        return Promise.reject(new Error(`ExecuteSet: ${err.message}`));
+        return Promise.reject(`ExecuteSet: ${err}`);
       }
     }
     return Promise.resolve(lastId);
@@ -371,17 +368,13 @@ export class UtilsSQLite {
       let lastId = -1;
       db.run(statement, values, async (err: any) => {
         if (err) {
-          let msg = `PrepareRun: run `;
-          msg += `${err.message}`;
-          reject(new Error(msg));
+          reject(`PrepareRun: run ${err.message}`);
         } else {
           try {
             lastId = await this.getLastId(db);
             resolve(lastId);
           } catch (err) {
-            let msg = `PrepareRun: lastId `;
-            msg += `${err.message}`;
-            reject(new Error(msg));
+            reject(`PrepareRun: lastId ${err}`);
           }
         }
       });
@@ -398,7 +391,7 @@ export class UtilsSQLite {
       mDB.serialize(() => {
         mDB.all(sql, values, (err: any, rows: any[]) => {
           if (err) {
-            reject(new Error(`QueryAll: ${err.message}`));
+            reject(`QueryAll: ${err.message}`);
           } else {
             if (rows == null) {
               rows = [];

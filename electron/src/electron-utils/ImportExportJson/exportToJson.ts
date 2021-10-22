@@ -32,9 +32,7 @@ export class ExportToJson {
       // get Table's name
       const resTables: any[] = await this.getTablesNameSQL(mDB);
       if (resTables.length === 0) {
-        return Promise.reject(
-          new Error("createExportObject: table's names failed"),
-        );
+        return Promise.reject("createExportObject: table's names failed");
       } else {
         switch (sqlObj.mode) {
           case 'partial': {
@@ -52,7 +50,7 @@ export class ExportToJson {
           }
         }
         if (errmsg.length > 0) {
-          return Promise.reject(new Error(errmsg));
+          return Promise.reject(errmsg);
         }
         if (tables.length > 0) {
           retObj.database = sqlObj.database;
@@ -67,7 +65,7 @@ export class ExportToJson {
         return Promise.resolve(retObj);
       }
     } catch (err) {
-      return Promise.reject(new Error('createExportObject: ' + err.message));
+      return Promise.reject('createExportObject: ' + err);
     }
   }
   /**
@@ -84,7 +82,7 @@ export class ExportToJson {
       retQuery = await this._uSQLite.queryAll(mDb, sql, []);
       return Promise.resolve(retQuery);
     } catch (err) {
-      return Promise.reject(new Error(`getTablesNameSQL: ${err.message}`));
+      return Promise.reject(`getTablesNameSQL: ${err}`);
     }
   }
 
@@ -107,7 +105,7 @@ export class ExportToJson {
       }
       return Promise.resolve(views);
     } catch (err) {
-      return Promise.reject(new Error(`getViewsName: ${err.message}`));
+      return Promise.reject(`getViewsName: ${err}`);
     }
   }
   /**
@@ -122,14 +120,14 @@ export class ExportToJson {
       mDb.get(stmt, [], (err: Error, row: any) => {
         // process the row here
         if (err) {
-          reject(new Error(`GetSyncDate: ${err.message}`));
+          reject(`GetSyncDate: ${err.message}`);
         } else {
           if (row != null) {
             const key: any = Object.keys(row)[0];
             retDate = row[key];
             resolve(retDate);
           } else {
-            reject(new Error(`GetSyncDate: no syncDate`));
+            reject(`GetSyncDate: no syncDate`);
           }
         }
       });
@@ -213,11 +211,11 @@ export class ExportToJson {
         tables.push(table);
       }
       if (errmsg.length > 0) {
-        return Promise.reject(new Error(errmsg));
+        return Promise.reject(errmsg);
       }
       return Promise.resolve(tables);
     } catch (err) {
-      return Promise.reject(new Error(`GetTablesFull: ${err.message}`));
+      return Promise.reject(`GetTablesFull: ${err}`);
     }
   }
 
@@ -270,7 +268,7 @@ export class ExportToJson {
       }
       return Promise.resolve(schema);
     } catch (err) {
-      return Promise.reject(new Error(err.message));
+      return Promise.reject(err);
     }
   }
 
@@ -312,12 +310,12 @@ export class ExportToJson {
           }
         }
         if (errmsg.length > 0) {
-          return Promise.reject(new Error(errmsg));
+          return Promise.reject(errmsg);
         }
       }
       return Promise.resolve(indexes);
     } catch (err) {
-      return Promise.reject(new Error(`GetIndexes: ${err.message}`));
+      return Promise.reject(`GetIndexes: ${err}`);
     }
   }
   /**
@@ -347,25 +345,19 @@ export class ExportToJson {
               let sqlArr: string[] = sql.split(name);
               if (sqlArr.length != 2) {
                 return Promise.reject(
-                  new Error(
-                    `GetTriggers: sql split name does not return 2 values`,
-                  ),
+                  `GetTriggers: sql split name does not return 2 values`,
                 );
               }
               if (!sqlArr[1].includes(tableName)) {
                 return Promise.reject(
-                  new Error(
-                    `GetTriggers: sql split does not contains ${tableName}`,
-                  ),
+                  `GetTriggers: sql split does not contains ${tableName}`,
                 );
               }
               const timeEvent = sqlArr[1].split(tableName, 1)[0].trim();
               sqlArr = sqlArr[1].split(timeEvent + ' ' + tableName);
               if (sqlArr.length != 2) {
                 return Promise.reject(
-                  new Error(
-                    `GetTriggers: sql split tableName does not return 2 values`,
-                  ),
+                  `GetTriggers: sql split tableName does not return 2 values`,
                 );
               }
               let condition = '';
@@ -374,9 +366,7 @@ export class ExportToJson {
                 sqlArr = sqlArr[1].trim().split('BEGIN');
                 if (sqlArr.length != 2) {
                   return Promise.reject(
-                    new Error(
-                      `GetTriggers: sql split BEGIN does not return 2 values`,
-                    ),
+                    `GetTriggers: sql split BEGIN does not return 2 values`,
                   );
                 }
                 condition = sqlArr[0].trim();
@@ -393,19 +383,19 @@ export class ExportToJson {
               triggers.push(trigger);
             } else {
               return Promise.reject(
-                new Error(`GetTriggers: Table ${tableName} doesn't match`),
+                `GetTriggers: Table ${tableName} doesn't match`,
               );
             }
           } else {
             return Promise.reject(
-              new Error(`GetTriggers: Table ${tableName} creating indexes`),
+              `GetTriggers: Table ${tableName} creating indexes`,
             );
           }
         }
       }
       return Promise.resolve(triggers);
     } catch (err) {
-      return Promise.reject(new Error(`GetTriggers: ${err.message}`));
+      return Promise.reject(`GetTriggers: ${err}`);
     }
   }
   /**
@@ -430,9 +420,7 @@ export class ExportToJson {
       if (Object.keys(tableNamesTypes).includes('names')) {
         rowNames = tableNamesTypes.names;
       } else {
-        return Promise.reject(
-          new Error(`GetValues: Table ${tableName} no names`),
-        );
+        return Promise.reject(`GetValues: Table ${tableName} no names`);
       }
       const retValues = await this._uSQLite.queryAll(mDb, query, []);
       for (const rValue of retValues) {
@@ -448,7 +436,7 @@ export class ExportToJson {
       }
       return Promise.resolve(values);
     } catch (err) {
-      return Promise.reject(new Error(`GetValues: ${err.message}`));
+      return Promise.reject(`GetValues: ${err}`);
     }
   }
 
@@ -559,11 +547,11 @@ export class ExportToJson {
         tables.push(table);
       }
       if (errmsg.length > 0) {
-        return Promise.reject(new Error(errmsg));
+        return Promise.reject(errmsg);
       }
       return Promise.resolve(tables);
     } catch (err) {
-      return Promise.reject(new Error(`GetTablesPartial: ${err.message}`));
+      return Promise.reject(`GetTablesPartial: ${err}`);
     }
   }
   /**
@@ -577,7 +565,7 @@ export class ExportToJson {
       // get the synchronization date
       const syncDate: number = await this.getSyncDate(mDb);
       if (syncDate <= 0) {
-        return Promise.reject(new Error(`GetPartialModeData: no syncDate`));
+        return Promise.reject(`GetPartialModeData: no syncDate`);
       }
       // get the tables which have been updated
       // since last synchronization
@@ -587,13 +575,13 @@ export class ExportToJson {
         syncDate,
       );
       if (modTables.length <= 0) {
-        return Promise.reject(new Error(`GetPartialModeData: no modTables`));
+        return Promise.reject(`GetPartialModeData: no modTables`);
       }
       retData.syncDate = syncDate;
       retData.modTables = modTables;
       return Promise.resolve(retData);
     } catch (err) {
-      return Promise.reject(new Error(`GetPartialModeData: ${err.message}`));
+      return Promise.reject(`GetPartialModeData: ${err}`);
     }
   }
   private async getTablesModified(
@@ -634,11 +622,11 @@ export class ExportToJson {
         retModified[key] = mode;
       }
       if (errmsg.length > 0) {
-        return Promise.reject(new Error(errmsg));
+        return Promise.reject(errmsg);
       }
       return Promise.resolve(retModified);
     } catch (err) {
-      return Promise.reject(new Error(`GetTableModified: ${err.message}`));
+      return Promise.reject(`GetTableModified: ${err}`);
     }
   }
   private async modEmbeddedParentheses(sstr: string): Promise<string> {

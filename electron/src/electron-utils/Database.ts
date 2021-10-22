@@ -114,23 +114,21 @@ export class Database {
             try {
               await this._uFile.restoreFileName(this._dbName, 'backup');
             } catch (err) {
-              return Promise.reject(new Error(`Open: ${err.message}`));
+              return Promise.reject(`Open: ${err}`);
             }
           }
         } else {
           try {
             await this._uSQLite.setVersion(this._mDB, this._version);
           } catch (err) {
-            return Promise.reject(
-              new Error(`SetVersion: ${this._version} ${err.message}`),
-            );
+            return Promise.reject(`SetVersion: ${this._version} ${err}`);
           }
         }
       }
       return Promise.resolve();
     } catch (err) {
       if (this._isDBOpen) this.close();
-      return Promise.reject(new Error(`Open: ${err.message}`));
+      return Promise.reject(`Open: ${err}`);
     }
   }
   /**
@@ -143,8 +141,8 @@ export class Database {
       this._mDB.close((err: Error) => {
         if (err) {
           let msg = 'Close: Failed in closing: ';
-          msg += `${this._dbName}  ${err.message}`;
-          return Promise.reject(new Error(msg));
+          msg += `${this._dbName}  ${err}`;
+          return Promise.reject(msg);
         }
         this._isDBOpen = false;
         return Promise.resolve();
@@ -164,12 +162,12 @@ export class Database {
         return Promise.resolve(curVersion);
       } catch (err) {
         if (this._isDBOpen) this.close();
-        return Promise.reject(new Error(`getVersion: ${err.message}`));
+        return Promise.reject(`getVersion: ${err}`);
       }
     } else {
       let msg = `getVersion: Database ${this._dbName} `;
       msg += `not opened`;
-      return Promise.reject(new Error(msg));
+      return Promise.reject(msg);
     }
   }
   /**
@@ -186,14 +184,14 @@ export class Database {
       try {
         await this.open();
       } catch (err) {
-        return Promise.reject(new Error(`DeleteDB: ${err.message}`));
+        return Promise.reject(`DeleteDB: ${err}`);
       }
     }
     // close the database
     try {
       await this.close();
     } catch (err) {
-      return Promise.reject(new Error('DeleteDB: Close failed'));
+      return Promise.reject('DeleteDB: Close failed');
     }
     // delete the database
     if (isExists) {
@@ -201,8 +199,8 @@ export class Database {
         await this._uFile.deleteFileName(dbName);
       } catch (err) {
         let msg = `DeleteDB: deleteFile ${dbName}`;
-        msg += ` failed ${err.message}`;
-        return Promise.reject(new Error(msg));
+        msg += ` failed ${err}`;
+        return Promise.reject(msg);
       }
     }
     return Promise.resolve();
@@ -213,22 +211,22 @@ export class Database {
    * @returns
    */
   async isTableExists(tableName: string): Promise<boolean> {
-    if (!this._isDBOpen) {
+    if (this._mDB != null && this._isDBOpen) {
+      const isOpen: boolean = this._isDBOpen;
+      try {
+        const retB = await this._uJson.isTableExists(
+          this._mDB,
+          isOpen,
+          tableName,
+        );
+        return Promise.resolve(retB);
+      } catch (err) {
+        return Promise.reject(`IsTableExists: ${err}`);
+      }
+    } else {
       let msg = `isTableExists: Database ${this._dbName} `;
       msg += `not opened`;
-      return Promise.reject(new Error(msg));
-    }
-    const isOpen: boolean = this._isDBOpen;
-    try {
-      const retB = await this._uJson.isTableExists(
-        this._mDB,
-        isOpen,
-        tableName,
-      );
-      return Promise.resolve(retB);
-    } catch (err) {
-      const msg = `IsTableExists: ${err.message}`;
-      return Promise.reject(new Error(msg));
+      return Promise.reject(msg);
     }
   }
   /**
@@ -240,7 +238,7 @@ export class Database {
     if (!this._isDBOpen) {
       let msg = `CreateSyncTable: Database ${this._dbName} `;
       msg += `not opened`;
-      return Promise.reject(new Error(msg));
+      return Promise.reject(msg);
     }
     let changes = -1;
     const isOpen = this._isDBOpen;
@@ -262,14 +260,12 @@ export class Database {
                             "${date}");`;
         changes = await this._uSQLite.execute(this._mDB, stmts);
         if (changes < 0) {
-          return Promise.reject(
-            new Error(`CreateSyncTable: failed changes < 0`),
-          );
+          return Promise.reject(`CreateSyncTable: failed changes < 0`);
         }
       }
       return Promise.resolve(changes);
     } catch (err) {
-      return Promise.reject(new Error(`CreateSyncTable: ${err.message}`));
+      return Promise.reject(`CreateSyncTable: ${err}`);
     }
   }
   /**
@@ -295,7 +291,7 @@ export class Database {
         return { result: true };
       }
     } catch (err) {
-      return { result: false, message: `setSyncDate failed: ${err.message}` };
+      return { result: false, message: `setSyncDate failed: ${err}` };
     }
   }
   /**
@@ -317,7 +313,7 @@ export class Database {
         return { syncDate: 0, message: `setSyncDate failed` };
       }
     } catch (err) {
-      return { syncDate: 0, message: `setSyncDate failed: ${err.message}` };
+      return { syncDate: 0, message: `setSyncDate failed: ${err}` };
     }
   }
   /**
@@ -330,27 +326,27 @@ export class Database {
     if (!this._isDBOpen) {
       let msg = `ExecuteSQL: Database ${this._dbName} `;
       msg += `not opened`;
-      return Promise.reject(new Error(msg));
+      return Promise.reject(msg);
     }
     try {
       if (transaction)
         await this._uSQLite.beginTransaction(this._mDB, this._isDBOpen);
       const changes = await this._uSQLite.execute(this._mDB, sql);
       if (changes < 0) {
-        return Promise.reject(new Error('ExecuteSQL: changes < 0'));
+        return Promise.reject('ExecuteSQL: changes < 0');
       }
       if (transaction)
         await this._uSQLite.commitTransaction(this._mDB, this._isDBOpen);
       return Promise.resolve(changes);
     } catch (err) {
-      let msg = `ExecuteSQL: ${err.message}`;
+      let msg = `ExecuteSQL: ${err}`;
       try {
         if (transaction)
           await this._uSQLite.rollbackTransaction(this._mDB, this._isDBOpen);
       } catch (err) {
-        msg += ` : ${err.message}`;
+        msg += ` : ${err}`;
       }
-      return Promise.reject(new Error(`ExecuteSQL: ${msg}`));
+      return Promise.reject(`ExecuteSQL: ${msg}`);
     }
   }
   /**
@@ -364,13 +360,13 @@ export class Database {
     if (!this._isDBOpen) {
       let msg = `SelectSQL: Database ${this._dbName} `;
       msg += `not opened`;
-      return Promise.reject(new Error(msg));
+      return Promise.reject(msg);
     }
     try {
       const retArr = await this._uSQLite.queryAll(this._mDB, sql, values);
       return Promise.resolve(retArr);
     } catch (err) {
-      return Promise.reject(new Error(`SelectSQL: ${err.message}`));
+      return Promise.reject(`SelectSQL: ${err}`);
     }
   }
   /**
@@ -388,7 +384,7 @@ export class Database {
     if (!this._isDBOpen) {
       let msg = `RunSQL: Database ${this._dbName} `;
       msg += `not opened`;
-      return Promise.reject(new Error(msg));
+      return Promise.reject(msg);
     }
     const retRes: any = { changes: -1, lastId: -1 };
     let initChanges = -1;
@@ -398,7 +394,7 @@ export class Database {
       if (transaction)
         await this._uSQLite.beginTransaction(this._mDB, this._isDBOpen);
     } catch (err) {
-      return Promise.reject(new Error(`ExecSet: ${err.message}`));
+      return Promise.reject(`ExecSet: ${err}`);
     }
     try {
       const lastId = await this._uSQLite.prepareRun(
@@ -409,7 +405,7 @@ export class Database {
       if (lastId < 0) {
         if (transaction)
           await this._uSQLite.rollbackTransaction(this._mDB, this._isDBOpen);
-        return Promise.reject(new Error(`RunSQL: return LastId < 0`));
+        return Promise.reject(`RunSQL: return LastId < 0`);
       }
       if (transaction)
         await this._uSQLite.commitTransaction(this._mDB, this._isDBOpen);
@@ -419,7 +415,7 @@ export class Database {
     } catch (err) {
       if (transaction)
         await this._uSQLite.rollbackTransaction(this._mDB, this._isDBOpen);
-      return Promise.reject(new Error(`RunSQL: ${err.message}`));
+      return Promise.reject(`RunSQL: ${err}`);
     }
   }
   /**
@@ -432,7 +428,7 @@ export class Database {
     if (!this._isDBOpen) {
       let msg = `ExecSet: Database ${this._dbName} `;
       msg += `not opened`;
-      return Promise.reject(new Error(msg));
+      return Promise.reject(msg);
     }
     const retRes: any = { changes: -1, lastId: -1 };
     let initChanges = -1;
@@ -442,7 +438,7 @@ export class Database {
       if (transaction)
         await this._uSQLite.beginTransaction(this._mDB, this._isDBOpen);
     } catch (err) {
-      return Promise.reject(new Error(`ExecSet: ${err.message}`));
+      return Promise.reject(`ExecSet: ${err}`);
     }
     try {
       retRes.lastId = await this._uSQLite.executeSet(this._mDB, set);
@@ -456,9 +452,7 @@ export class Database {
         if (transaction)
           await this._uSQLite.rollbackTransaction(this._mDB, this._isDBOpen);
       } catch (err) {
-        return Promise.reject(
-          new Error(`ExecSet: ${msg}: ` + `${err.message}`),
-        );
+        return Promise.reject(`ExecSet: ${msg}: ` + `${err}`);
       }
     }
   }
@@ -483,10 +477,10 @@ export class Database {
         }
         return Promise.resolve(changes);
       } catch (err) {
-        return Promise.reject(new Error(`ImportJson: ${err.message}`));
+        return Promise.reject(`ImportJson: ${err}`);
       }
     } else {
-      return Promise.reject(new Error(`ImportJson: database is closed`));
+      return Promise.reject(`ImportJson: database is closed`);
     }
   }
   public async exportJson(mode: string): Promise<any> {
@@ -505,13 +499,13 @@ export class Database {
         if (isValid) {
           return Promise.resolve(retJson);
         } else {
-          return Promise.reject(new Error(`ExportJson: retJson not valid`));
+          return Promise.reject(`ExportJson: retJson not valid`);
         }
       } catch (err) {
-        return Promise.reject(new Error(`ExportJson: ${err.message}`));
+        return Promise.reject(`ExportJson: ${err}`);
       }
     } else {
-      return Promise.reject(new Error(`ExportJson: database is closed`));
+      return Promise.reject(`ExportJson: database is closed`);
     }
   }
 }

@@ -1,3 +1,16 @@
+## 3.2.5-1 (2021-10-22)
+
+### Chore
+
+ - Update to @capacitor/core 3.2.5
+ - Update to @capacitor/ios 3.2.5
+ - Update to @capacitor/android 3.2.5
+
+### Bug Fixes
+
+ - fix Electron isTable issue#188
+ - fix iOS closeAllConnections issue#190
+
 ## 3.2.4 (2021-10-15)
 
 ### Bug Fixes

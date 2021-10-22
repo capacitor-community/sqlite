@@ -21,7 +21,7 @@ export class UtilsDrop {
       }
       return Promise.resolve(retArr);
     } catch (err) {
-      return Promise.reject(new Error(`getTablesNames: ${err.message}`));
+      return Promise.reject(`getTablesNames: ${err}`);
     }
   }
   /**
@@ -40,7 +40,7 @@ export class UtilsDrop {
       }
       return Promise.resolve(retArr);
     } catch (err) {
-      return Promise.reject(new Error(`getViewsNames: ${err.message}`));
+      return Promise.reject(`getViewsNames: ${err}`);
     }
   }
   /**
@@ -64,9 +64,7 @@ export class UtilsDrop {
         msg = 'DropViews';
         break;
       default:
-        return Promise.reject(
-          new Error(`DropElements: ${type} ` + 'not found'),
-        );
+        return Promise.reject(`DropElements: ${type} ` + 'not found');
     }
     // get the element's names
     let stmt = 'SELECT name FROM sqlite_master WHERE ';
@@ -84,13 +82,13 @@ export class UtilsDrop {
         for (const stmt of statements) {
           const lastId: number = await this._uSQLite.prepareRun(db, stmt, []);
           if (lastId < 0) {
-            return Promise.reject(new Error(`${msg}: lastId < 0`));
+            return Promise.reject(`${msg}: lastId < 0`);
           }
         }
       }
       return Promise.resolve();
     } catch (err) {
-      return Promise.reject(new Error(`${msg}: ${err.message}`));
+      return Promise.reject(`${msg}: ${err}`);
     }
   }
   /**
@@ -112,7 +110,7 @@ export class UtilsDrop {
       await this._uSQLite.prepareRun(db, 'VACUUM;', []);
       return Promise.resolve();
     } catch (err) {
-      return Promise.reject(new Error(`DropAll: ${err.message}`));
+      return Promise.reject(`DropAll: ${err}`);
     }
   }
   /**
@@ -137,11 +135,11 @@ export class UtilsDrop {
         statements.join('\n'),
       );
       if (changes < 0) {
-        return Promise.reject(new Error('DropTempTables: changes < 0'));
+        return Promise.reject('DropTempTables: changes < 0');
       }
       return Promise.resolve();
     } catch (err) {
-      return Promise.reject(new Error(`DropTempTables: ${err.message}`));
+      return Promise.reject(`DropTempTables: ${err}`);
     }
   }
 }

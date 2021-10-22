@@ -180,12 +180,10 @@ export class UtilsFile {
         await this.copyFilePath(filePath, toFilePath);
         return Promise.resolve();
       } catch (err) {
-        return Promise.reject(new Error(`CopyFileName: ${err.message}`));
+        return Promise.reject(`CopyFileName: ${err}`);
       }
     } else {
-      return Promise.reject(
-        new Error('CopyFileName: cannot get the ' + 'filePath'),
-      );
+      return Promise.reject('CopyFileName: cannot get the ' + 'filePath');
     }
   }
   /**
@@ -207,17 +205,13 @@ export class UtilsFile {
           this.NodeFs.copyFileSync(filePath, toFilePath);
           return Promise.resolve();
         } catch (err) {
-          return Promise.reject(new Error(`CopyFilePath: ${err.message}`));
+          return Promise.reject(`CopyFilePath: ${err}`);
         }
       } else {
-        return Promise.reject(
-          new Error('CopyFilePath: filePath does not ' + 'exist'),
-        );
+        return Promise.reject('CopyFilePath: filePath does not ' + 'exist');
       }
     } else {
-      return Promise.reject(
-        new Error('CopyFilePath: cannot get the ' + 'filePath'),
-      );
+      return Promise.reject('CopyFilePath: cannot get the ' + 'filePath');
     }
   }
   public async copyFile(
@@ -232,7 +226,7 @@ export class UtilsFile {
       this.NodeFs.copyFileSync(fPath, tPath);
       return Promise.resolve();
     } catch (err) {
-      return Promise.reject(new Error(`CopyFile: ${err.message}`));
+      return Promise.reject(`CopyFile: ${err}`);
     }
   }
   /**
@@ -249,15 +243,11 @@ export class UtilsFile {
         return Promise.resolve();
       } catch (err) {
         return Promise.reject(
-          new Error(
-            'DeleteFileName: delete filePath ' + `failed ${err.message}`,
-          ),
+          'DeleteFileName: delete filePath ' + `failed ${err}`,
         );
       }
     } else {
-      return Promise.reject(
-        new Error('DeleteFileName: get filePath ' + 'failed'),
-      );
+      return Promise.reject('DeleteFileName: get filePath ' + 'failed');
     }
   }
   /**
@@ -274,17 +264,13 @@ export class UtilsFile {
           this.NodeFs.unlinkSync(filePath);
           return Promise.resolve();
         } catch (err) {
-          return Promise.reject(
-            new Error('DeleteFilePath: ' + `${err.message}`),
-          );
+          return Promise.reject('DeleteFilePath: ' + `${err}`);
         }
       } else {
         return Promise.resolve();
       }
     } else {
-      return Promise.reject(
-        new Error('DeleteFilePath: delete filePath' + 'failed'),
-      );
+      return Promise.reject('DeleteFilePath: delete filePath' + 'failed');
     }
   }
   /**
@@ -304,12 +290,10 @@ export class UtilsFile {
         await this.renameFilePath(filePath, toFilePath);
         return Promise.resolve();
       } catch (err) {
-        return Promise.reject(new Error(`RenameFileName: ${err.message}`));
+        return Promise.reject(`RenameFileName: ${err}`);
       }
     } else {
-      return Promise.reject(
-        new Error('RenameFileName: filePaths do not ' + 'exist'),
-      );
+      return Promise.reject('RenameFileName: filePaths do not ' + 'exist');
     }
   }
   /**
@@ -331,17 +315,13 @@ export class UtilsFile {
           this.NodeFs.renameSync(filePath, toFilePath);
           return Promise.resolve();
         } catch (err) {
-          return Promise.reject(
-            new Error('RenameFilePath: ' + `${err.message}`),
-          );
+          return Promise.reject('RenameFilePath: ' + `${err}`);
         }
       } else {
-        return Promise.reject(
-          new Error('RenameFilePath: filePath ' + 'does not exist'),
-        );
+        return Promise.reject('RenameFilePath: filePath ' + 'does not exist');
       }
     } else {
-      return Promise.reject(new Error('RenameFilePath: filePath not found'));
+      return Promise.reject('RenameFilePath: filePath not found');
     }
   }
   /**
@@ -364,18 +344,16 @@ export class UtilsFile {
           await this.renameFileName(mFileName, fileName);
           return Promise.resolve();
         } catch (err) {
-          return Promise.reject(
-            new Error('RestoreFileName: ' + `${err.message}`),
-          );
+          return Promise.reject('RestoreFileName: ' + `${err}`);
         }
       } else {
         return Promise.reject(
-          new Error(`RestoreFileName: ${fileName} ` + 'does not exist'),
+          `RestoreFileName: ${fileName} ` + 'does not exist',
         );
       }
     } else {
       return Promise.reject(
-        new Error(`RestoreFileName: ${mFileName} ` + 'does not exist'),
+        `RestoreFileName: ${mFileName} ` + 'does not exist',
       );
     }
   }

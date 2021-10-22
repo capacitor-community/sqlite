@@ -807,8 +807,8 @@ enum CapacitorSQLiteError: Error {
                 }
             }
             dbDict.removeValue(forKey: key)
-            return
         }
+        return
     }
 }
 // swiftlint:enable type_body_length

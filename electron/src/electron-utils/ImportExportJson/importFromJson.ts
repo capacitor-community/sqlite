@@ -32,9 +32,7 @@ export class ImportFromJson {
       changes = await this._uJson.createSchema(mDB, jsonData);
       return Promise.resolve(changes);
     } catch (err) {
-      return Promise.reject(
-        new Error('CreateDatabaseSchema: ' + `${err.message}`),
-      );
+      return Promise.reject('CreateDatabaseSchema: ' + `${err}`);
     }
   }
   public async createTablesData(
@@ -51,7 +49,7 @@ export class ImportFromJson {
       // start a transaction
       await this._uSQLite.beginTransaction(mDB, true);
     } catch (err) {
-      return Promise.reject(new Error(`createTablesData: ${err.message}`));
+      return Promise.reject(`createTablesData: ${err}`);
     }
     for (const jTable of jsonData.tables) {
       if (jTable.values != null && jTable.values.length >= 1) {
@@ -65,7 +63,7 @@ export class ImportFromJson {
           if (lastId < 0) break;
           isValue = true;
         } catch (err) {
-          msg = err.message;
+          msg = err;
           isValue = false;
           break;
         }
@@ -77,9 +75,7 @@ export class ImportFromJson {
         changes = (await this._uSQLite.dbChanges(mDB)) - initChanges;
         return Promise.resolve(changes);
       } catch (err) {
-        return Promise.reject(
-          new Error('createTablesData: ' + `${err.message}`),
-        );
+        return Promise.reject('createTablesData: ' + `${err}`);
       }
     } else {
       if (msg.length > 0) {
@@ -87,9 +83,7 @@ export class ImportFromJson {
           await this._uSQLite.rollbackTransaction(mDB, true);
           return Promise.reject(new Error(`createTablesData: ${msg}`));
         } catch (err) {
-          return Promise.reject(
-            new Error('createTablesData: ' + `${err.message}: ${msg}`),
-          );
+          return Promise.reject('createTablesData: ' + `${err}: ${msg}`);
         }
       } else {
         // case were no values given
@@ -112,7 +106,7 @@ export class ImportFromJson {
       // start a transaction
       await this._uSQLite.beginTransaction(mDB, true);
     } catch (err) {
-      return Promise.reject(new Error(`createViews: ${err.message}`));
+      return Promise.reject(`createViews: ${err}`);
     }
     for (const jView of jsonData.views) {
       if (jView.value != null) {
@@ -121,7 +115,7 @@ export class ImportFromJson {
           await this._uJson.createView(mDB, jView);
           isView = true;
         } catch (err) {
-          msg = err.message;
+          msg = err;
           isView = false;
           break;
         }
@@ -133,7 +127,7 @@ export class ImportFromJson {
         changes = (await this._uSQLite.dbChanges(mDB)) - initChanges;
         return Promise.resolve(changes);
       } catch (err) {
-        return Promise.reject(new Error('createViews: ' + `${err.message}`));
+        return Promise.reject('createViews: ' + `${err}`);
       }
     } else {
       if (msg.length > 0) {
@@ -141,9 +135,7 @@ export class ImportFromJson {
           await this._uSQLite.rollbackTransaction(mDB, true);
           return Promise.reject(new Error(`createViews: ${msg}`));
         } catch (err) {
-          return Promise.reject(
-            new Error('createViews: ' + `${err.message}: ${msg}`),
-          );
+          return Promise.reject('createViews: ' + `${err}: ${msg}`);
         }
       } else {
         // case were no views given

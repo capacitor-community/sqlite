@@ -123,7 +123,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
             'close ' +
             dbName +
             ' failed ' +
-            err.message,
+            err,
         );
       }
     }
@@ -209,7 +209,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     }
     const dbName: string = options.database;
     const statements: string = options.statements;
-    let transaction: boolean 
+    let transaction: boolean;
     if (!keys.includes('transaction')) {
       transaction = true;
     } else {
@@ -241,7 +241,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     }
     const dbName: string = options.database;
     const setOfStatements: any[] = options.set;
-    let transaction: boolean 
+    let transaction: boolean;
     if (!keys.includes('transaction')) {
       transaction = true;
     } else {
@@ -287,7 +287,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     const dbName: string = options.database;
     const statement: string = options.statement;
     const values: any[] = options.values.length > 0 ? options.values : [];
-    let transaction: boolean 
+    let transaction: boolean;
     if (!keys.includes('transaction')) {
       transaction = true;
     } else {
@@ -399,10 +399,10 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     }
     const mDB = this._dbDict[dbName];
     try {
-      const res: any = await mDB.isTableExists(tableName);
-      return Promise.resolve({ result: res.result });
+      const res: boolean = await mDB.isTableExists(tableName);
+      return Promise.resolve({ result: res });
     } catch (err) {
-      return Promise.reject(`isTableExists: ${err.message}`);
+      return Promise.reject(`isTableExists: ${err}`);
     }
   }
   async deleteDatabase(options: capSQLiteOptions): Promise<void> {
@@ -423,7 +423,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       await mDB.deleteDB(dbName + 'SQLite.db');
       return Promise.resolve();
     } catch (err) {
-      return Promise.reject(`Delete: ${err.message}`);
+      return Promise.reject(`Delete: ${err}`);
     }
   }
   async isJsonValid(options: capSQLiteImportOptions): Promise<capSQLiteResult> {
@@ -474,7 +474,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       await mDb.close();
       return Promise.resolve({ changes: { changes: changes } });
     } catch (err) {
-      return Promise.reject(`ImportFromJson: ${err.message}`);
+      return Promise.reject(`ImportFromJson: ${err}`);
     }
   }
   async exportToJson(options: capSQLiteExportOptions): Promise<capSQLiteJson> {
@@ -503,7 +503,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
         return Promise.resolve({ export: ret });
       }
     } catch (err) {
-      return Promise.reject(`exportToJson: ${err.message}`);
+      return Promise.reject(`exportToJson: ${err}`);
     }
   }
   async createSyncTable(options: capSQLiteOptions): Promise<capSQLiteChanges> {
@@ -524,7 +524,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       const ret: number = await mDB.createSyncTable();
       return Promise.resolve({ changes: { changes: ret } });
     } catch (err) {
-      return Promise.reject(`createSyncTable: ${err.message}`);
+      return Promise.reject(`createSyncTable: ${err}`);
     }
   }
   async setSyncDate(options: capSQLiteSyncDateOptions): Promise<void> {
@@ -549,7 +549,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       await mDB.setSyncDate(syncDate);
       return Promise.resolve();
     } catch (err) {
-      return Promise.reject(`SetSyncDate: ${err.message}`);
+      return Promise.reject(`SetSyncDate: ${err}`);
     }
   }
   async getSyncDate(options: capSQLiteOptions): Promise<capSQLiteSyncDate> {
@@ -570,7 +570,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       const ret: any = await mDB.getSyncDate();
       return Promise.resolve(ret);
     } catch (err) {
-      return Promise.reject(`GetSyncDate: ${err.message}`);
+      return Promise.reject(`GetSyncDate: ${err}`);
     }
   }
   async addUpgradeStatement(options: capSQLiteUpgradeOptions): Promise<void> {
@@ -699,7 +699,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
         return Promise.resolve(ret);
       }
     } catch (err) {
-      return Promise.reject(`CheckConnectionsConsistency: ${err.message}`);
+      return Promise.reject(`CheckConnectionsConsistency: ${err}`);
     }
   }
   private async resetDbDict(keys: string[]): Promise<void> {
@@ -710,7 +710,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
         await this.closeConnection(opt);
       }
     } catch (err) {
-      return Promise.reject(`ResetDbDict: ${err.message}`);
+      return Promise.reject(`ResetDbDict: ${err}`);
     }
   }
   private async symmetricDifference(

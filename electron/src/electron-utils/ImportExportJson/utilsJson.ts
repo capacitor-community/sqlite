@@ -82,7 +82,7 @@ export class UtilsJson {
       // start a transaction
       await this._uSQLite.beginTransaction(mDB, true);
     } catch (err) {
-      return Promise.reject(new Error(`CreateDatabaseSchema: ${err.message}`));
+      return Promise.reject(`CreateDatabaseSchema: ${err}`);
     }
 
     const stmts = await this.createSchemaStatement(jsonData);
@@ -94,19 +94,17 @@ export class UtilsJson {
           try {
             await this._uSQLite.rollbackTransaction(mDB, true);
           } catch (err) {
-            return Promise.reject(
-              new Error('CreateSchema: changes < 0 ' + `${err.message}`),
-            );
+            return Promise.reject('CreateSchema: changes < 0 ' + `${err}`);
           }
         }
       } catch (err) {
-        const msg = err.message;
+        const msg = err;
         try {
           await this._uSQLite.rollbackTransaction(mDB, true);
-          return Promise.reject(new Error(`CreateSchema: ${msg}`));
+          return Promise.reject(`CreateSchema: ${msg}`);
         } catch (err) {
           return Promise.reject(
-            new Error('CreateSchema: changes < 0 ' + `${err.message}: ${msg}`),
+            'CreateSchema: changes < 0 ' + `${err}: ${msg}`,
           );
         }
       }
@@ -115,9 +113,7 @@ export class UtilsJson {
       await this._uSQLite.commitTransaction(mDB, true);
       return Promise.resolve(changes);
     } catch (err) {
-      return Promise.reject(
-        new Error('CreateSchema: commit ' + `${err.message}`),
-      );
+      return Promise.reject('CreateSchema: commit ' + `${err}`);
     }
   }
 
@@ -229,7 +225,7 @@ export class UtilsJson {
       const tableExists = await this.isTableExists(mDB, true, table.name);
       if (!tableExists) {
         return Promise.reject(
-          new Error('CreateDataTable: Table ' + `${table.name} does not exist`),
+          'CreateDataTable: Table ' + `${table.name} does not exist`,
         );
       }
 
@@ -242,9 +238,7 @@ export class UtilsJson {
       const tableColumnNames: string[] = tableNamesTypes.names;
       if (tableColumnTypes.length === 0) {
         return Promise.reject(
-          new Error(
-            'CreateDataTable: Table ' + `${table.name} info does not exist`,
-          ),
+          'CreateDataTable: Table ' + `${table.name} info does not exist`,
         );
       }
       // Loop on Table Values
@@ -252,10 +246,8 @@ export class UtilsJson {
         // Check the row number of columns
         if (table.values[j].length != tableColumnTypes.length) {
           return Promise.reject(
-            new Error(
-              `CreateDataTable: Table ${table.name} ` +
-                `values row ${j} not correct length`,
-            ),
+            `CreateDataTable: Table ${table.name} ` +
+              `values row ${j} not correct length`,
           );
         }
         // Check the column's type before proceeding
@@ -295,10 +287,8 @@ export class UtilsJson {
           );
           if (setString.length === 0) {
             return Promise.reject(
-              new Error(
-                `CreateDataTable: Table ${table.name} ` +
-                  `values row ${j} not set to String`,
-              ),
+              `CreateDataTable: Table ${table.name} ` +
+                `values row ${j} not set to String`,
             );
           }
           stmt = `UPDATE ${table.name} SET ${setString} WHERE `;
@@ -310,12 +300,12 @@ export class UtilsJson {
         }
         lastId = await this._uSQLite.prepareRun(mDB, stmt, table.values[j]);
         if (lastId < 0) {
-          return Promise.reject(new Error('CreateDataTable: lastId < 0'));
+          return Promise.reject('CreateDataTable: lastId < 0');
         }
       }
       return Promise.resolve(lastId);
     } catch (err) {
-      return Promise.reject(new Error(`CreateDataTable: ${err.message}`));
+      return Promise.reject(`CreateDataTable: ${err}`);
     }
   }
 
@@ -342,9 +332,7 @@ export class UtilsJson {
       }
       return Promise.resolve({ names: retNames, types: retTypes });
     } catch (err) {
-      return Promise.reject(
-        new Error('GetTableColumnNamesTypes: ' + `${err.message}`),
-      );
+      return Promise.reject('GetTableColumnNamesTypes: ' + `${err}`);
     }
   }
 
@@ -416,7 +404,7 @@ export class UtilsJson {
       if (resQuery.length === 1) ret = true;
       return Promise.resolve(ret);
     } catch (err) {
-      return Promise.reject(new Error(`IsIdExists: ${err.message}`));
+      return Promise.reject(`IsIdExists: ${err}`);
     }
   }
 
@@ -434,7 +422,7 @@ export class UtilsJson {
         retString = retString.slice(0, -1);
         resolve(retString);
       } else {
-        reject(new Error('CreateQuestionMarkString: length = 0'));
+        reject('CreateQuestionMarkString: length = 0');
       }
     });
   }
@@ -452,7 +440,7 @@ export class UtilsJson {
       retString = retString.slice(0, -1);
       return Promise.resolve(retString);
     } else {
-      return Promise.reject(new Error('SetNameForUpdate: length = 0'));
+      return Promise.reject('SetNameForUpdate: length = 0');
     }
   }
 
@@ -679,9 +667,7 @@ export class UtilsJson {
       }
       const isValid: boolean = this.isSchema(sch);
       if (!isValid) {
-        return Promise.reject(
-          new Error(`CheckSchemaValidity: schema[${i}] not valid`),
-        );
+        return Promise.reject(`CheckSchemaValidity: schema[${i}] not valid`);
       }
     }
     return Promise.resolve();
@@ -706,9 +692,7 @@ export class UtilsJson {
 
       const isValid: boolean = this.isIndexes(index);
       if (!isValid) {
-        return Promise.reject(
-          new Error(`CheckIndexesValidity: indexes[${i}] not valid`),
-        );
+        return Promise.reject(`CheckIndexesValidity: indexes[${i}] not valid`);
       }
     }
     return Promise.resolve();
@@ -737,7 +721,7 @@ export class UtilsJson {
       const isValid: boolean = this.isTriggers(trigger);
       if (!isValid) {
         return Promise.reject(
-          new Error(`CheckTriggersValidity: triggers[${i}] not valid`),
+          `CheckTriggersValidity: triggers[${i}] not valid`,
         );
       }
     }
@@ -760,9 +744,7 @@ export class UtilsJson {
 
       const isValid: boolean = this.isView(view);
       if (!isValid) {
-        return Promise.reject(
-          new Error(`CheckViewsValidity: views[${i}] not valid`),
-        );
+        return Promise.reject(`CheckViewsValidity: views[${i}] not valid`);
       }
     }
     return Promise.resolve();
@@ -777,11 +759,11 @@ export class UtilsJson {
     try {
       const changes = await this._uSQLite.execute(mDB, stmt);
       if (changes < 0) {
-        return Promise.reject(new Error(`CreateView: ${view.name} failed`));
+        return Promise.reject(`CreateView: ${view.name} failed`);
       }
       return Promise.resolve();
     } catch (err) {
-      return Promise.reject(new Error(`CreateView: ${err.message}`));
+      return Promise.reject(`CreateView: ${err}`);
     }
   }
 }
