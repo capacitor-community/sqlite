@@ -12,6 +12,8 @@ import java.io.OutputStream;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 public class UtilsFile {
 
@@ -53,7 +55,7 @@ public class UtilsFile {
         return file.delete();
     }
 
-    public void copyFromAssetsToDatabase(Context context) throws Exception {
+    public void copyFromAssetsToDatabase(Context context, Boolean overwrite) throws Exception {
         AssetManager assetManager = context.getAssets();
         String assetsDatabasePath = "public/assets/databases";
         try {
@@ -73,22 +75,80 @@ public class UtilsFile {
                 for (int i = 0; i < filelist.length; i++) {
                     // Get filename of file or directory
                     String fileName = filelist[i];
-                    boolean isDB = isLast(fileName, ".db");
-                    if (!isDB) continue;
-                    String toFileName = fileName;
-                    boolean isSQLite = isLast(fileName, "SQLite.db");
-                    if (!isSQLite) {
-                        toFileName = fileName.substring(0, fileName.length() - 3) + "SQLite.db";
+                    if (isLast(fileName, ".db")) {
+                        String toFileName = addSQLiteSuffix(fileName);
+                        boolean isExist = isFileExists(context, toFileName);
+                        if (!isExist || overwrite) {
+                            if (overwrite && isExist) {
+                                deleteDatabase(context, toFileName);
+                            }
+                            String fromPathName = assetsDatabasePath + "/" + fileName;
+                            String toPathName = context.getDatabasePath(toFileName).getAbsolutePath();
+                            copyDatabaseFromAssets(assetManager, fromPathName, toPathName);
+                        }
                     }
-                    String fromPathName = assetsDatabasePath + "/" + fileName;
-                    String toPathName = context.getDatabasePath(toFileName).getAbsolutePath();
-                    copyDatabaseFromAssets(assetManager, fromPathName, toPathName);
+                    if (isLast(fileName, ".zip")) {
+                        // unzip file and extract databases
+                        String zipPathName = assetsDatabasePath + "/" + fileName;
+                        unzipCopyDatabase(context, assetManager, zipPathName, assetsDatabasePath, overwrite);
+                    }
                 }
                 return;
             }
         } catch (IOException e) {
-            throw new Exception("in isDirExists " + e.getLocalizedMessage());
+            throw new Exception("in copyFromAssetsToDatabase " + e.getLocalizedMessage());
         }
+    }
+
+    public void unzipCopyDatabase(Context context, AssetManager asm, String zipPath, String assetsDatabasePath, Boolean overwrite)
+        throws IOException {
+        InputStream is;
+        byte[] buffer = new byte[1024];
+        try {
+            is = asm.open(zipPath);
+            ZipInputStream zis = new ZipInputStream(is);
+
+            ZipEntry ze = zis.getNextEntry();
+            while (ze != null) {
+                String fileName = ze.getName();
+                if (isLast(fileName, ".db")) {
+                    String toFileName = addSQLiteSuffix(fileName);
+                    boolean isExist = isFileExists(context, toFileName);
+                    if (!isExist || overwrite) {
+                        if (overwrite && isExist) {
+                            deleteDatabase(context, toFileName);
+                        }
+                        String toPathName = context.getDatabasePath(toFileName).getAbsolutePath();
+                        File newFile = new File(toPathName);
+                        System.out.println("Unzipping to " + newFile.getAbsolutePath());
+                        FileOutputStream fos = new FileOutputStream(newFile);
+                        int len;
+                        while ((len = zis.read(buffer)) > 0) {
+                            fos.write(buffer, 0, len);
+                        }
+                        fos.close();
+                    }
+                    //close this ZipEntry
+                    zis.closeEntry();
+                    ze = zis.getNextEntry();
+                }
+            }
+            //close last ZipEntry
+            zis.closeEntry();
+            zis.close();
+            is.close();
+        } catch (IOException e) {
+            throw new IOException("in unzipCopyDatabase " + e.getLocalizedMessage());
+        }
+    }
+
+    public String addSQLiteSuffix(String fileName) {
+        String toFileName = fileName;
+        boolean isSQLite = isLast(fileName, "SQLite.db");
+        if (!isSQLite) {
+            toFileName = fileName.substring(0, fileName.length() - 3) + "SQLite.db";
+        }
+        return toFileName;
     }
 
     public void copyDatabaseFromAssets(AssetManager asm, String inPath, String outPath) throws IOException {

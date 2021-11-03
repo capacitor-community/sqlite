@@ -2,6 +2,7 @@ export class UtilsFile {
   pathDB = 'Databases';
   Path: any = null;
   NodeFs: any = null;
+  JSZip: any = null;
   Os: any = null;
   AppName = '';
   HomeDir = '';
@@ -13,6 +14,8 @@ export class UtilsFile {
     this.Path = require('path');
     this.NodeFs = require('fs');
     this.Os = require('os');
+    this.JSZip = require('jszip');
+
     this.HomeDir = this.Os.homedir();
     const dir: string = __dirname;
     const idx: number = dir.indexOf('\\');
@@ -125,13 +128,12 @@ export class UtilsFile {
    */
   public setPathSuffix(db: string): string {
     let toDb: string = db;
-    if (db.length > 9) {
-      const last9: string = db.slice(-9);
-      if (last9 != 'SQLite.db') {
-        toDb = this.Path.parse(db).name + 'SQLite.db';
+    const ext = '.db';
+    const sep = this.Path.sep;
+    if (db.substring(db.length - 3) === ext) {
+      if (!db.includes('SQLite.db')) {
+        toDb = db.slice(db.lastIndexOf(sep) + 1, -3) + 'SQLite.db';
       }
-    } else {
-      toDb = toDb + 'SQLite.db';
     }
     return toDb;
   }
@@ -144,23 +146,61 @@ export class UtilsFile {
     const filenames = this.NodeFs.readdirSync(path);
     const dbs: string[] = [];
     filenames.forEach((file: string) => {
-      if (this.Path.extname(file) == '.db') dbs.push(file);
+      if (this.Path.extname(file) == '.db' || this.Path.extname(file) == '.zip')
+        dbs.push(file);
     });
     return Promise.resolve(dbs);
   }
   /**
    * CopyFromAssetToDatabase
    * @param db
-   * @param toDb
+   * @param overwrite
    */
   public async copyFromAssetToDatabase(
     db: string,
-    toDb: string,
+    overwrite: boolean,
   ): Promise<void> {
     const pAsset: string = this.Path.join(this.getAssetsDatabasesPath(), db);
+    const toDb: string = this.setPathSuffix(db);
     const pDb: string = this.Path.join(this.getDatabasesPath(), toDb);
-    await this.copyFilePath(pAsset, pDb);
+    await this.copyFilePath(pAsset, pDb, overwrite);
     return Promise.resolve();
+  }
+  /**
+   * unzipDatabase
+   * @param db
+   * @param overwrite
+   */
+  public async unzipDatabase(db: string, overwrite: boolean): Promise<void> {
+    const pZip: string = this.Path.join(this.getAssetsDatabasesPath(), db);
+    // Read the Zip file
+    this.NodeFs.readFile(pZip, (err: any, data: any) => {
+      if (err) {
+        console.log(err);
+        return Promise.reject(`unzipDatabase ${JSON.stringify(err)}`);
+      }
+      const zip = new this.JSZip();
+      zip.loadAsync(data).then((contents: any) => {
+        Object.keys(contents.files).forEach(filename => {
+          zip
+            .file(filename)
+            .async('nodebuffer')
+            .then(async (content: any) => {
+              const toDb: string = this.setPathSuffix(filename);
+              const pDb: string = this.Path.join(this.getDatabasesPath(), toDb);
+              // check filePath exists
+              const isPath = this.isPathExists(pDb);
+              if (!isPath || overwrite) {
+                if (overwrite && isPath) {
+                  await this.deleteFilePath(pDb);
+                }
+                this.NodeFs.writeFileSync(pDb, content);
+              }
+              return Promise.resolve();
+            });
+        });
+      });
+    });
   }
   /**
    * CopyFileName
@@ -177,7 +217,7 @@ export class UtilsFile {
     const toFilePath = this.getFilePath(toFileName);
     if (filePath.length !== 0 && toFilePath.length !== 0) {
       try {
-        await this.copyFilePath(filePath, toFilePath);
+        await this.copyFilePath(filePath, toFilePath, true);
         return Promise.resolve();
       } catch (err) {
         return Promise.reject(`CopyFileName: ${err}`);
@@ -195,21 +235,22 @@ export class UtilsFile {
   public async copyFilePath(
     filePath: string,
     toFilePath: string,
+    overwrite: boolean,
   ): Promise<void> {
     if (filePath.length !== 0 && toFilePath.length !== 0) {
       // check filePath exists
-      const isPath = this.isPathExists(filePath);
-      if (isPath) {
+      const isPath = this.isPathExists(toFilePath);
+      if (!isPath || overwrite) {
         try {
-          await this.deleteFilePath(toFilePath);
+          if (overwrite && isPath) {
+            await this.deleteFilePath(toFilePath);
+          }
           this.NodeFs.copyFileSync(filePath, toFilePath);
-          return Promise.resolve();
         } catch (err) {
           return Promise.reject(`CopyFilePath: ${err}`);
         }
-      } else {
-        return Promise.reject('CopyFilePath: filePath does not ' + 'exist');
       }
+      return Promise.resolve();
     } else {
       return Promise.reject('CopyFilePath: cannot get the ' + 'filePath');
     }

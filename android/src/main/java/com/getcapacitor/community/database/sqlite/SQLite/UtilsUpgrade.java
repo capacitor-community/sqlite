@@ -333,7 +333,6 @@ public class UtilsUpgrade {
                 String stmt = "UPDATE sync_table SET ";
                 stmt += "sync_date = " + syncTime;
                 stmt += " WHERE id = 1;";
-                Log.v(TAG, "*** New SyncDate " + syncTime);
                 try {
                     db.runSQL(stmt, new ArrayList<>());
                 } catch (Exception e) {

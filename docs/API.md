@@ -86,7 +86,7 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 * [`setSyncDate(...)`](#setsyncdate)
 * [`getSyncDate(...)`](#getsyncdate)
 * [`addUpgradeStatement(...)`](#addupgradestatement)
-* [`copyFromAssets()`](#copyfromassets)
+* [`copyFromAssets(...)`](#copyfromassets)
 * [`getDatabaseList()`](#getdatabaselist)
 * [`getMigratableDbList(...)`](#getmigratabledblist)
 * [`addSQLiteSuffix(...)`](#addsqlitesuffix)
@@ -591,13 +591,17 @@ Add the upgrade Statement for database version upgrading
 --------------------
 
 
-### copyFromAssets()
+### copyFromAssets(...)
 
 ```typescript
-copyFromAssets() => Promise<void>
+copyFromAssets(options: capSQLiteFromAssetsOptions) => Promise<void>
 ```
 
 Copy databases from public/assets/databases folder to application databases folder
+
+| Param         | Type                                                                              | Description                         |
+| ------------- | --------------------------------------------------------------------------------- | ----------------------------------- |
+| **`options`** | <code><a href="#capsqlitefromassetsoptions">capSQLiteFromAssetsOptions</a></code> | : capSQLiteFromAssets since 3.2.5-2 |
 
 **Since:** 2.9.0 refactor
 
@@ -944,6 +948,13 @@ return false : no consistency, connections are closed
 | **`toVersion`**   | <code>number</code>         |
 | **`statement`**   | <code>string</code>         |
 | **`set`**         | <code>capSQLiteSet[]</code> |
+
+
+#### capSQLiteFromAssetsOptions
+
+| Prop            | Type                 | Description                                                                      |
+| --------------- | -------------------- | -------------------------------------------------------------------------------- |
+| **`overwrite`** | <code>boolean</code> | Set the overwrite mode for the copy from assets "true"/"false" default to "true" |
 
 
 #### capSQLitePathOptions

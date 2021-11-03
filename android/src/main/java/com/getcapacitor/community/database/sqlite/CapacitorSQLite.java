@@ -724,10 +724,10 @@ public class CapacitorSQLite {
         }
     }
 
-    public void copyFromAssets() throws Exception {
+    public void copyFromAssets(Boolean overwrite) throws Exception {
         String msg = "copy failed : ";
         try {
-            uFile.copyFromAssetsToDatabase(context);
+            uFile.copyFromAssetsToDatabase(context, overwrite);
             return;
         } catch (Exception e) {
             msg += e.getMessage();

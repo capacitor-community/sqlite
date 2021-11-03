@@ -12,6 +12,6 @@ export default {
       exports: 'named',
     },
   ],
-  external: ['@capacitor/core', 'sqlite3', 'path', 'fs', 'os'],
+  external: ['@capacitor/core', 'sqlite3', 'path', 'fs', 'os', 'jszip'],
   plugins: [nodeResolve(), commonjs()],
 };

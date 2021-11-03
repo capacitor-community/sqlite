@@ -562,7 +562,6 @@ public class CapacitorSQLitePlugin extends Plugin {
             return;
         }
         JSArray values = call.getArray("values");
-        Log.v(TAG, "CapacitorSQLitePlugin: " + values);
 
         Boolean transaction = call.getBoolean("transaction", true);
 
@@ -897,8 +896,10 @@ public class CapacitorSQLitePlugin extends Plugin {
      */
     @PluginMethod
     public void copyFromAssets(PluginCall call) {
+        Boolean overwrite = call.getData().has("overwrite") ? call.getBoolean("overwrite") : true;
+
         try {
-            implementation.copyFromAssets();
+            implementation.copyFromAssets(overwrite);
             rHandler.retResult(call, null, null);
             return;
         } catch (Exception e) {

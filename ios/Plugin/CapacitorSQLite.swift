@@ -676,7 +676,7 @@ enum CapacitorSQLiteError: Error {
 
     // MARK: - copyFromAssets
 
-    @objc func copyFromAssets() throws {
+    @objc func copyFromAssets(overwrite: Bool) throws {
 
         // check if the assets/database folder exists
         do {
@@ -687,7 +687,7 @@ enum CapacitorSQLiteError: Error {
             if bRes {
                 // get the database files
                 let dbList: [String] = try UtilsFile
-                    .getFileList(path: aPath)
+                    .getFileList(path: aPath, ext: ".db")
                 // loop through the database files
                 for mDb in dbList {
                     // for each check if the suffix SQLite.db is there
@@ -698,13 +698,27 @@ enum CapacitorSQLiteError: Error {
                     // database folder
                     _ = try UtilsFile
                         .copyFromAssetToDatabase(fromDb: mDb,
-                                                 toDb: toDb)
+                                                 toDb: toDb, overwrite: overwrite)
+                }
+                // get the zip files
+                let zipList: [String] = try UtilsFile
+                    .getFileList(path: aPath, ext: ".zip")
+                // loop through the database files
+                for zip in zipList {
+                    // for each zip uncompress the file to the Application
+                    // database folder
+                    _ = try UtilsFile
+                        .unzipFromAssetToDatabase(zip: zip, overwrite: overwrite)
                 }
                 return
             } else {
                 let msg: String = "assets database path does not exist"
                 throw CapacitorSQLiteError.failed(message: msg)
             }
+        } catch UtilsFileError.copyFromAssetToDatabaseFailed(let message) {
+            throw CapacitorSQLiteError.failed(message: message)
+        } catch UtilsFileError.unzipFromAssetToDatabaseFailed(let message) {
+            throw CapacitorSQLiteError.failed(message: message)
         } catch let error {
             let msg: String = "\(error)"
             throw CapacitorSQLiteError.failed(message: msg)
@@ -717,7 +731,7 @@ enum CapacitorSQLiteError: Error {
         do {
             let aPath: String = try UtilsFile.getDatabasesPath()
             // get the database files
-            let dbList: [String] = try UtilsFile.getFileList(path: aPath)
+            let dbList: [String] = try UtilsFile.getFileList(path: aPath, ext: ".db")
             return dbList
 
         } catch let error {
@@ -792,7 +806,7 @@ enum CapacitorSQLiteError: Error {
     }
 
     func closeAllConnections() throws {
-        var keys: [String] = Array(self.dbDict.keys)
+        let keys: [String] = Array(self.dbDict.keys)
 
         for key in keys {
             guard let mDb: Database = dbDict[key] else {

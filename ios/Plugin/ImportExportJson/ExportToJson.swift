@@ -706,7 +706,6 @@ class ExportToJson {
                                                 after: oPar)..<cPar]
                                 row[1] = rstr[rstr.index(
                                                 cPar, offsetBy: 2)..<rstr.endIndex]
-                                print("row[0] \(row[0]) row[1] \(row[1]) ")
                                 columns["foreignkey"] = String(row[0])
                             }
                             columns["value"] = String(row[1]).replacingOccurrences(of: "§", with: ",")

@@ -25,7 +25,7 @@ class UtilsMigrate {
             if FileManager.default.fileExists(atPath: dbPathURL.relativePath,
                                               isDirectory: &isDir) &&
                 isDir.boolValue {
-                mDbList = try UtilsFile.getFileList(path: dbPathURL.relativePath)
+                mDbList = try UtilsFile.getFileList(path: dbPathURL.relativePath, ext: ".db")
 
                 return mDbList
             } else {
@@ -60,7 +60,7 @@ class UtilsMigrate {
                                               isDirectory: &isDir) &&
                 isDir.boolValue {
                 let mDbList: [String] = try UtilsFile
-                    .getFileList(path: dbPathURL.relativePath)
+                    .getFileList(path: dbPathURL.relativePath, ext: ".db")
                 for file: String in mDbList {
                     if !file.contains("SQLite.db") {
                         fromFile = file
@@ -110,7 +110,7 @@ class UtilsMigrate {
                                               isDirectory: &isDir) &&
                 isDir.boolValue {
                 let mDbList: [String] = try UtilsFile
-                    .getFileList(path: dbPathURL.relativePath)
+                    .getFileList(path: dbPathURL.relativePath, ext: ".db")
                 for file: String in mDbList {
                     if !file.contains("SQLite.db") {
                         if dbList.contains(file) {

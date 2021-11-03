@@ -1,3 +1,13 @@
+## 3.2.5-1 (2021-11-03)
+
+### Added Features 
+
+ - add importing zipped files using copyFromAssets method
+
+### Bug Fixes
+
+ - fix issue#191
+
 ## 3.2.5-1 (2021-10-22)
 
 ### Chore

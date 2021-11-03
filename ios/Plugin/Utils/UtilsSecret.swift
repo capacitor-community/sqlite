@@ -100,11 +100,9 @@ class UtilsSecret {
             if FileManager.default.fileExists(atPath: databaseURL.relativePath,
                                               isDirectory: &isDir) && isDir.boolValue {
                 let dbList: [String] = try UtilsFile
-                    .getFileList(path: databaseURL.relativePath)
+                    .getFileList(path: databaseURL.relativePath, ext: ".db")
                 for file: String in dbList {
-                    print("file: \(file)")
                     let state: State = UtilsSQLCipher.getDatabaseState(databaseName: file)
-                    print("state: \(state)")
                     if state.rawValue == "ENCRYPTEDGLOBALSECRET" {
                         let globalData: GlobalSQLite = GlobalSQLite()
                         let password: String = globalData.secret
@@ -140,7 +138,6 @@ class UtilsSecret {
 
     // MARK: - ChangeEncryptionSecret
 
-    // swiftlint:disable function_body_length
     class func changeEncryptionSecret(passphrase: String, oldPassphrase: String) throws {
         do {
             if passphrase.isEmpty ||  oldPassphrase.isEmpty {
@@ -162,11 +159,9 @@ class UtilsSecret {
             if FileManager.default.fileExists(atPath: databaseURL.relativePath,
                                               isDirectory: &isDir) && isDir.boolValue {
                 let dbList: [String] = try UtilsFile
-                    .getFileList(path: databaseURL.relativePath)
+                    .getFileList(path: databaseURL.relativePath, ext: ".db")
                 for file: String in dbList {
-                    print("file: \(file)")
                     let state: State = UtilsSQLCipher.getDatabaseState(databaseName: file)
-                    print("state: \(state)")
                     if state.rawValue == "ENCRYPTEDSECRET" {
                         let dbPath: String  = try UtilsFile
                             .getFilePath(fileName: file)
@@ -198,6 +193,5 @@ class UtilsSecret {
         }
 
     }
-    // swiftlint:enable function_body_length
 
 }

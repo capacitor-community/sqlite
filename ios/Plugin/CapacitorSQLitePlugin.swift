@@ -949,8 +949,10 @@ public class CapacitorSQLitePlugin: CAPPlugin {
     // MARK: copyFromAssets
 
     @objc func copyFromAssets(_ call: CAPPluginCall) {
+        let overwrite: Bool = call.getBool("overwrite") ?? true
+
         do {
-            try implementation.copyFromAssets()
+            try implementation.copyFromAssets(overwrite: overwrite)
             retHandler.rResult(call: call)
             return
         } catch CapacitorSQLiteError.failed(let message) {

@@ -7,6 +7,8 @@
 //
 
 import Foundation
+import ZIPFoundation
+
 enum UtilsFileError: Error {
     case getFilePathFailed
     case copyFileFailed
@@ -20,9 +22,11 @@ enum UtilsFileError: Error {
     case getLibraryPathFailed
     case getLibraryURLFailed
     case getFileListFailed
-    case copyFromAssetToDatabaseFailed
+    case copyFromAssetToDatabaseFailed(message: String)
+    case unzipFromAssetToDatabaseFailed(message: String)
     case copyFromNamesFailed
 }
+// swiftlint:disable file_length
 // swiftlint:disable type_body_length
 class UtilsFile {
 
@@ -165,13 +169,10 @@ class UtilsFile {
 
     class func setPathSuffix(sDb: String ) -> String {
         var toDb: String = sDb
-        if sDb.count > 9 {
-            let last9: String = String(sDb.suffix(9))
-            let ext: String = ".db"
-            if last9 != "SQLite.db" {
-                if sDb.hasSuffix(ext) {
-                    toDb = sDb.prefix(sDb.count - ext.count) + "SQLite.db"
-                }
+        let ext: String = ".db"
+        if sDb.hasSuffix(ext) {
+            if !sDb.contains("SQLite.db") {
+                toDb = sDb.prefix(sDb.count - ext.count) + "SQLite.db"
             }
         }
         return toDb
@@ -179,12 +180,11 @@ class UtilsFile {
 
     // MARK: - GetFileList
 
-    class func getFileList(path: String) throws -> [String] {
+    class func getFileList(path: String, ext: String) throws -> [String] {
         do {
             var dbs: [String] = []
             let filenames = try FileManager.default
                 .contentsOfDirectory(atPath: path)
-            let ext: String = ".db"
             for file in filenames {
                 if file.hasSuffix(ext) {
                     dbs.append(file)
@@ -206,7 +206,8 @@ class UtilsFile {
             let uTo: URL = databaseURL.appendingPathComponent(toFile)
             let pFrom: String = uFrom.path
             let pTo: String = uTo.path
-            let bRet: Bool = try copyFile(pathName: pFrom, toPathName: pTo)
+            let bRet: Bool = try copyFile(pathName: pFrom, toPathName: pTo,
+                                          overwrite: true)
             if bRet {
                 return
             } else {
@@ -222,7 +223,8 @@ class UtilsFile {
 
     // MARK: - CopyFromAssetToDatabase
 
-    class func copyFromAssetToDatabase(fromDb: String, toDb: String) throws {
+    class func copyFromAssetToDatabase(fromDb: String, toDb: String,
+                                       overwrite: Bool) throws {
         do {
             let uAsset: URL = try getAssetsDatabasesPath()
                 .appendingPathComponent(fromDb)
@@ -230,42 +232,96 @@ class UtilsFile {
             let uDb: URL = try getDatabasesUrl()
                 .appendingPathComponent(toDb)
             let pDb: String = uDb.path
-            let bRet: Bool = try copyFile(pathName: pAsset, toPathName: pDb)
+            let bRet: Bool = try copyFile(pathName: pAsset, toPathName: pDb,
+                                          overwrite: overwrite)
             if bRet {
                 return
             } else {
-                print("Error: copyFile return false")
-                throw UtilsFileError.copyFromAssetToDatabaseFailed
+                let msg = "Error: copyFile return false"
+                print("\(msg)")
+                throw UtilsFileError.copyFromAssetToDatabaseFailed(message: msg)
             }
         } catch UtilsFileError.getAssetsDatabasesPathFailed {
-            print("Error: getAssetsDatabasesPath Failed")
-            throw UtilsFileError.copyFromAssetToDatabaseFailed
+            let msg = "Error: getAssetsDatabasesPath Failed"
+            print("\(msg)")
+            throw UtilsFileError.copyFromAssetToDatabaseFailed(message: msg)
         } catch UtilsFileError.getDatabasesURLFailed {
-            print("Error: getDatabasesUrl Failed")
-            throw UtilsFileError.copyFromAssetToDatabaseFailed
+            let msg = "Error: getDatabasesUrl Failed"
+            print("\(msg)")
+
+            throw UtilsFileError.copyFromAssetToDatabaseFailed(message: msg)
         } catch UtilsFileError.copyFileFailed {
-            print("Error: copyFile Failed")
-            throw UtilsFileError.copyFromAssetToDatabaseFailed
+            let msg = "Error: copyFile Failed"
+            print("\(msg)")
+
+            throw UtilsFileError.copyFromAssetToDatabaseFailed(message: msg)
         } catch let error {
-            print("Error: \(error)")
-            throw UtilsFileError.copyFromAssetToDatabaseFailed
+            let msg = "Error: \(error)"
+            print("\(msg)")
+            throw UtilsFileError.copyFromAssetToDatabaseFailed(message: msg)
         }
 
     }
 
+    class func unzipFromAssetToDatabase(zip: String, overwrite: Bool) throws {
+        do {
+            let zipAsset: URL = try getAssetsDatabasesPath()
+                .appendingPathComponent(zip)
+            guard let archive = Archive(url: zipAsset, accessMode: .read) else {
+                let msg = "Error: Read Archive: \(zipAsset) failed"
+                print("\(msg)")
+                throw UtilsFileError.unzipFromAssetToDatabaseFailed(message: msg)
+            }
+            for entry in archive {
+                let dbEntry = setPathSuffix(sDb: entry.path)
+                let zipCopy: URL = try getDatabasesUrl()
+                    .appendingPathComponent(dbEntry)
+                do {
+                    let isExist: Bool = isFileExist(filePath: zipCopy.path)
+                    if !isExist || overwrite {
+                        if overwrite && isExist {
+                            _ = try deleteFile(filePath: zipCopy.path)
+                        }
+                        _ = try archive.extract(entry, to: zipCopy)
+                    }
+
+                } catch {
+                    let msg = "Error: Extracting \(entry.path) from archive failed \(error.localizedDescription)"
+                    print("\(msg)")
+                    throw UtilsFileError.unzipFromAssetToDatabaseFailed(message: msg)
+                }
+            }
+        } catch UtilsFileError.getAssetsDatabasesPathFailed {
+            let msg = "Error: getAssetsDatabasesPath Failed"
+            print("\(msg)")
+            throw UtilsFileError.unzipFromAssetToDatabaseFailed(message: msg)
+        } catch UtilsFileError.getDatabasesURLFailed {
+            let msg = "Error: getDatabasesUrl Failed"
+            print("\(msg)")
+            throw UtilsFileError.unzipFromAssetToDatabaseFailed(message: msg)
+        } catch let error {
+            let msg = "Error: \(error)"
+            print("\(msg)")
+            throw UtilsFileError.unzipFromAssetToDatabaseFailed(message: msg)
+        }
+    }
+
     // MARK: - CopyFile
 
-    class func copyFile(pathName: String, toPathName: String) throws -> Bool {
+    class func copyFile(pathName: String, toPathName: String, overwrite: Bool) throws -> Bool {
         if pathName.count > 0 && toPathName.count > 0 {
             let isPath = isFileExist(filePath: pathName)
             if isPath {
                 do {
-                    if isFileExist(filePath: toPathName) {
-                        _ = try deleteFile(filePath: toPathName)
+                    let isExist: Bool = isFileExist(filePath: toPathName)
+                    if !isExist || overwrite {
+                        if overwrite && isExist {
+                            _ = try deleteFile(filePath: toPathName)
+                        }
+                        let fileManager = FileManager.default
+                        try fileManager.copyItem(atPath: pathName,
+                                                 toPath: toPathName)
                     }
-                    let fileManager = FileManager.default
-                    try fileManager.copyItem(atPath: pathName,
-                                             toPath: toPathName)
                     return true
                 } catch let error {
                     print("Error: \(error)")
@@ -289,7 +345,7 @@ class UtilsFile {
         do {
             let fromPath: String = try getFilePath(fileName: fileName)
             let toPath: String = try getFilePath(fileName: toFileName)
-            ret = try copyFile(pathName: fromPath, toPathName: toPath)
+            ret = try copyFile(pathName: fromPath, toPathName: toPath, overwrite: true)
             return ret
         } catch UtilsFileError.getFilePathFailed {
             print("Error: getFilePath Failed")
@@ -373,3 +429,4 @@ class UtilsFile {
     }
 }
 // swiftlint:enable type_body_length
+// swiftlint:enable file_length

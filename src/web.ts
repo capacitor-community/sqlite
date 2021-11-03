@@ -24,6 +24,7 @@ import type {
   capAllConnectionsOptions,
   capSetSecretOptions,
   capChangeSecretOptions,
+  capSQLiteFromAssetsOptions,
 } from './definitions';
 
 export class CapacitorSQLiteWeb
@@ -460,11 +461,11 @@ export class CapacitorSQLiteWeb
       throw this.unimplemented('Not implemented on web.');
     }
   }
-  async copyFromAssets(): Promise<void> {
+  async copyFromAssets(options: capSQLiteFromAssetsOptions): Promise<void> {
     if (this.sqliteEl != null) {
       if (this.isStoreOpen) {
         try {
-          await this.sqliteEl.copyFromAssets();
+          await this.sqliteEl.copyFromAssets(options);
           return Promise.resolve();
         } catch (err) {
           return Promise.reject(`${err}`);

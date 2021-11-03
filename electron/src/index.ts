@@ -25,6 +25,7 @@ import type {
   capAllConnectionsOptions,
   capSetSecretOptions,
   capChangeSecretOptions,
+  capSQLiteFromAssetsOptions,
 } from '../../src/definitions';
 
 import { Database } from './electron-utils/Database';
@@ -601,7 +602,10 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     this._versionUpgrades[dbName] = upgVDict;
     return Promise.resolve();
   }
-  async copyFromAssets(): Promise<void> {
+  async copyFromAssets(options: capSQLiteFromAssetsOptions): Promise<void> {
+    const keys = Object.keys(options);
+    const mOverwrite = keys.includes('overwrite') ? options.overwrite : true;
+
     // check if the assets/database folder exists
     const assetsDbPath = this._uFile.getAssetsDatabasesPath();
     const res: boolean = this._uFile.isPathExists(assetsDbPath);
@@ -609,13 +613,14 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       // get the database files
       const dbList: string[] = await this._uFile.getFileList(assetsDbPath);
       // loop through the database files
-      const toDbList: string[] = [];
       dbList.forEach(async (db: string) => {
-        // for each check if the suffix SQLite.db is there or add it
-        const toDb: string = this._uFile.setPathSuffix(db);
-        toDbList.push(toDb);
-        // for each copy the file to the Application database folder
-        await this._uFile.copyFromAssetToDatabase(db, toDb);
+        if (db.substring(db.length - 3) === '.db') {
+          // for each copy the file to the Application database folder
+          await this._uFile.copyFromAssetToDatabase(db, mOverwrite);
+        }
+        if (db.substring(db.length - 4) === '.zip') {
+          await this._uFile.unzipDatabase(db, mOverwrite);
+        }
       });
       return Promise.resolve();
     } else {

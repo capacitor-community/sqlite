@@ -206,11 +206,11 @@ export interface CapacitorSQLitePlugin {
   addUpgradeStatement(options: capSQLiteUpgradeOptions): Promise<void>;
   /**
    * Copy databases from public/assets/databases folder to application databases folder
-   *
+   * @param options: capSQLiteFromAssets  since 3.2.5-2
    * @returns Promise<void>
    * @since 2.9.0 refactor
    */
-  copyFromAssets(): Promise<void>;
+  copyFromAssets(options: capSQLiteFromAssetsOptions): Promise<void>;
   /**
    * Get the database list
    * @returns Promise<capSQLiteValues>
@@ -391,6 +391,14 @@ export interface capSQLiteExportOptions {
    *
    */
   jsonexportmode?: string;
+}
+export interface capSQLiteFromAssetsOptions {
+  /**
+   * Set the overwrite mode for the copy from assets
+   * "true"/"false"  default to "true"
+   *
+   */
+  overwrite?: boolean;
 }
 export interface capSQLiteSyncDateOptions {
   /**
@@ -767,10 +775,11 @@ export interface ISQLiteConnection {
   isJsonValid(jsonstring: string): Promise<capSQLiteResult>;
   /**
    * Copy databases from public/assets/databases folder to application databases folder
+   * @param overwrite  since 3.2.5-2
    * @returns Promise<void>
    * @since 2.9.0 refactor
    */
-  copyFromAssets(): Promise<void>;
+  copyFromAssets(overwrite?: boolean): Promise<void>;
   /**
    * Check if a database exists
    * @param database
@@ -991,9 +1000,11 @@ export class SQLiteConnection implements ISQLiteConnection {
       return Promise.reject(err);
     }
   }
-  async copyFromAssets(): Promise<void> {
+  async copyFromAssets(overwrite?: boolean): Promise<void> {
+    const mOverwrite: boolean = overwrite != null ? overwrite : true;
+
     try {
-      await this.sqlite.copyFromAssets();
+      await this.sqlite.copyFromAssets({ overwrite: mOverwrite });
       return Promise.resolve();
     } catch (err) {
       return Promise.reject(err);

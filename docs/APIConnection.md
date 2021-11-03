@@ -24,7 +24,7 @@
 * [`checkConnectionsConsistency()`](#checkconnectionsconsistency)
 * [`importFromJson(...)`](#importfromjson)
 * [`isJsonValid(...)`](#isjsonvalid)
-* [`copyFromAssets()`](#copyfromassets)
+* [`copyFromAssets(...)`](#copyfromassets)
 * [`isDatabase(...)`](#isdatabase)
 * [`getDatabaseList()`](#getdatabaselist)
 * [`getMigratableDbList(...)`](#getmigratabledblist)
@@ -321,13 +321,17 @@ Check the validity of a JSON Object
 --------------------
 
 
-### copyFromAssets()
+### copyFromAssets(...)
 
 ```typescript
-copyFromAssets() => Promise<void>
+copyFromAssets(overwrite?: boolean | undefined) => Promise<void>
 ```
 
 Copy databases from public/assets/databases folder to application databases folder
+
+| Param           | Type                 | Description   |
+| --------------- | -------------------- | ------------- |
+| **`overwrite`** | <code>boolean</code> | since 3.2.5-2 |
 
 **Since:** 2.9.0 refactor
 

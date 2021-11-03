@@ -95,7 +95,6 @@ public class Database {
      * Initialize the SQLCipher Libraries
      */
     private void InitializeSQLCipher() {
-        Log.d(TAG, " in InitializeSQLCipher: ");
         SQLiteDatabase.loadLibs(_context);
     }
 
@@ -286,7 +285,6 @@ public class Database {
                 if (transaction) _db.beginTransaction();
                 for (String cmd : statements) {
                     if (!cmd.endsWith(";")) cmd += ";";
-                    Log.v(TAG, " cmd " + cmd);
                     _db.execSQL(cmd);
                 }
                 changes = _uSqlite.dbChanges(_db) - initChanges;
@@ -319,7 +317,6 @@ public class Database {
         try {
             if (_db != null && _db.isOpen()) {
                 Integer initChanges = _uSqlite.dbChanges(_db);
-                Log.v(TAG, "ExecuteSet InitChanges " + initChanges);
                 if (transaction) _db.beginTransaction();
                 for (int i = 0; i < set.length(); i++) {
                     JSONObject row = set.getJSONObject(i);
@@ -348,7 +345,6 @@ public class Database {
                 if (lastId != -1) {
                     if (transaction) _db.setTransactionSuccessful();
                     changes = _uSqlite.dbChanges(_db) - initChanges;
-                    Log.v(TAG, "Execute Changes " + changes);
                     retObj.put("changes", changes);
                     retObj.put("lastId", lastId);
                     return retObj;
@@ -388,12 +384,10 @@ public class Database {
         try {
             if (_db != null && _db.isOpen() && statement.length() > 0) {
                 Integer initChanges = _uSqlite.dbChanges(_db);
-                Log.v(TAG, "runSQL InitChanges " + initChanges);
                 if (transaction) _db.beginTransaction();
                 lastId = prepareSQL(statement, values);
                 if (lastId != -1 && transaction) _db.setTransactionSuccessful();
                 changes = _uSqlite.dbChanges(_db) - initChanges;
-                Log.v(TAG, "runSQL Changes " + changes);
                 retObj.put("changes", changes);
                 retObj.put("lastId", lastId);
                 return retObj;
@@ -601,7 +595,6 @@ public class Database {
      * @return
      */
     public JSObject importFromJson(JsonSQLite jsonSQL) throws Exception {
-        Log.d(TAG, "importFromJson:  ");
         JSObject retObj = new JSObject();
         int changes = Integer.valueOf(0);
         try {
