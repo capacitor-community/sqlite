@@ -255,6 +255,11 @@ No configuration required for this plugin
 
 - [react-sqlite-app-starter](https://github.com/jepiqueau/react-sqlite-app-starter)
 
+### React+Vite
+
+- [react-vite-sqlite-app](https://github.com/jepiqueau/react-vite-sqlite-app)
+
+
 ### Ionic/Vue
 
 - [vue-sqlite-app-starter](https://github.com/jepiqueau/vue-sqlite-app-starter)
@@ -262,6 +267,10 @@ No configuration required for this plugin
 ### Vue
 
 - [vue-sqlite-app](https://github.com/jepiqueau/vue-sqlite-app)
+
+### Vue+Vite
+
+- [vue-vite-sqlite-app](https://github.com/jepiqueau/vuevite-app)
 
 ## Usage
 

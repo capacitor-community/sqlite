@@ -1,9 +1,9 @@
 <p align="center"><br><img src="https://user-images.githubusercontent.com/236501/85893648-1c92e880-b7a8-11ea-926d-95355b8175c7.png" width="128" height="128" /></p>
 <h2 align="center">IONIC/Vue USAGE DOCUMENTATION</h2>
-<p align="center"><strong><code>@capacitor-community/sqlite@next</code></strong></p>
-<p align="center" style="font-size:50px;color:red"><strong>CAPACITOR 3 🚧</strong></p><br>
+<p align="center"><strong><code>@capacitor-community/sqlite@latest</code></strong></p>
+<p align="center" style="font-size:50px;color:red"><strong>CAPACITOR 3</strong></p><br>
 <p align="center">
-  In Ionic/Vue Applications, the <code>@capacitor-community/sqlite@next</code> can be accessed through a Singleton Vue Hook initialized in the <code>main.ts</code> file</p>
+  In Ionic/Vue Applications, the <code>@capacitor-community/sqlite@latest</code> can be accessed through a Singleton Vue Hook initialized in the <code>main.ts</code> file</p>
 <br>
 
 ## Vue SQLite Hook
@@ -22,8 +22,8 @@ A Vue hook specific to `@capacitor-community/sqlite` plugin has been developed t
 To install it in your Ionic/Vue App
 
 ```bash
-    npm i --save-dev @capacitor-community/sqlite@next
-    npm i --save-dev vue-sqlite-hook@next
+    npm i --save-dev @capacitor-community/sqlite@latest
+    npm i --save-dev vue-sqlite-hook@latest
 ```
 
 ### Vue SQLite Hook Declaration for platforms other than Web
@@ -32,7 +32,7 @@ To use the `vue-sqlite-hook`as a singleton hook, the declaration must be done in
 
 ```ts
 ...
-import { useSQLite } from 'vue-sqlite-hook/dist';
+import { useSQLite } from 'vue-sqlite-hook';
 import { useState } from '@/composables/state';
 
 ...
@@ -101,32 +101,88 @@ the declaration of the SQLite Hook has to be moved to the App.vue
 So the `main.ts`file 
 ```js
 ...
-/* SQLite imports */
 import { defineCustomElements as jeepSqlite, applyPolyfills } from "jeep-sqlite/loader";
+import { Capacitor } from '@capacitor/core';
+import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite';
 import { useState } from '@/composables/state';
+import { schemaToImport179 } from '@/utils/utils-import-from-json';
 
 applyPolyfills().then(() => {
     jeepSqlite(window);
 });
+window.addEventListener('DOMContentLoaded', async () => {
+  const platform = Capacitor.getPlatform();
+  const sqlite: SQLiteConnection = new SQLiteConnection(CapacitorSQLite)
 
-const app = createApp(App)
-  .use(IonicVue)
-  .use(router);
+  const app = createApp(App)
+    .use(IonicVue)
+    .use(router);
 
-/* SQLite Global Variables required if you use onProgressImport/Export Listeners*/
-const [jsonListeners, setJsonListeners] = useState(false);
-const [isModal, setIsModal] = useState(false);
-const [message, setMessage] = useState("");
-app.config.globalProperties.$isModalOpen = {isModal: isModal, setIsModal: setIsModal};
-app.config.globalProperties.$isJsonListeners = {jsonListeners: jsonListeners, setJsonListeners: setJsonListeners};
-app.config.globalProperties.$messageContent = {message: message, setMessage: setMessage};
+  /* SQLite Global Variables*/
 
-//  Existing Connections Store
-const [existConn, setExistConn] = useState(false);
-app.config.globalProperties.$existingConn = {existConn: existConn, setExistConn: setExistConn};
-    
-router.isReady().then(() => {
-  app.mount('#app');
+  // Only if you want to use the onProgressImport/Export events
+  const [jsonListeners, setJsonListeners] = useState(false);
+  const [isModal, setIsModal] = useState(false);
+  const [message, setMessage] = useState("");
+  app.config.globalProperties.$isModalOpen = {isModal: isModal, setIsModal: setIsModal};
+  app.config.globalProperties.$isJsonListeners = {jsonListeners: jsonListeners, setJsonListeners: setJsonListeners};
+  app.config.globalProperties.$messageContent = {message: message, setMessage: setMessage};
+
+  //  Existing Connections Store
+  const [existConn, setExistConn] = useState(false);
+  app.config.globalProperties.$existingConn = {existConn: existConn, setExistConn: setExistConn};
+
+  try {
+    if(platform === "web") {
+      // Create the 'jeep-sqlite' Stencil component
+      const jeepSqlite = document.createElement('jeep-sqlite');
+      document.body.appendChild(jeepSqlite);
+      await customElements.whenDefined('jeep-sqlite');
+      // Initialize the Web store
+      await sqlite.initWebStore();
+    }
+    // here you can initialize some database schema if required
+
+    // example: database creation with standard SQLite statements 
+    const ret = await sqlite.checkConnectionsConsistency();
+    const isConn = (await sqlite.isConnection("db_tab3")).result;
+    let db: SQLiteDBConnection
+    if (ret.result && isConn) {
+      db = await sqlite.retrieveConnection("db_tab3");
+    } else {
+      db = await sqlite.createConnection("db_tab3", false, "no-encryption", 1);
+    }
+    await db.open();
+    const query = `
+    CREATE TABLE IF NOT EXISTS test (
+      id INTEGER PRIMARY KEY NOT NULL,
+      name TEXT NOT NULL
+    );
+    `
+    const res = await db.execute(query);
+    if(res.changes && res.changes.changes && res.changes.changes < 0) {
+      throw new Error(`Error: execute failed`);
+    }
+    await sqlite.closeConnection("db_tab3");
+
+    // example: database creation from importFromJson 
+    const result = await sqlite.isJsonValid(JSON.stringify(schemaToImport179));
+    if(!result.result) {
+      throw new Error(`isJsonValid: "schemaToImport179" is not valid`);
+    }
+    // full import
+    const resJson = await sqlite.importFromJson(JSON.stringify(schemaToImport179));    
+    if(resJson.changes && resJson.changes.changes && resJson.changes.changes < 0) {
+      throw new Error(`importFromJson: "full" failed`);
+    }
+
+    router.isReady().then(() => {
+      app.mount('#app');
+    });
+  } catch (err) {
+    console.log(`Error: ${err}`);
+    throw new Error(`Error: ${err}`)
+  }
 });
 
 ```
@@ -135,18 +191,14 @@ and the `App.vue`file
 ```js
 <template>
   <ion-app>
-    <template v-if="platform === 'web'">
-      <jeep-sqlite />
-    </template>
     <ion-router-outlet />
   </ion-app>
 </template>
 
 <script lang="ts">
 import { IonApp, IonRouterOutlet } from '@ionic/vue';
-import { defineComponent, getCurrentInstance, onMounted} from 'vue';
-import { useSQLite} from 'vue-sqlite-hook/dist';
-import { Capacitor } from '@capacitor/core';
+import { defineComponent, getCurrentInstance} from 'vue';
+import { useSQLite} from 'vue-sqlite-hook';
 
 export default defineComponent({
   name: 'App',
@@ -155,21 +207,10 @@ export default defineComponent({
     IonRouterOutlet,
   },
   setup() {
-    const platform = Capacitor.getPlatform();
     const app = getCurrentInstance();
     const isModalOpen = app?.appContext.config.globalProperties.$isModalOpen;
     const contentMessage = app?.appContext.config.globalProperties.$messageContent;
     const jsonListeners = app?.appContext.config.globalProperties.$isJsonListeners;
-
-    onMounted(async () => {
-      console.log(' in App on Mounted')
-
-      const ionAppEl = document.querySelector('ion-app');
-      if(ionAppEl != null) {
-        console.log(`ionAppEl ${JSON.stringify(ionAppEl)}`);
-      } else {
-        console.log(' ionAppEl is null');
-      }
       const onProgressImport = async (progress: string) => {
         if(jsonListeners.jsonListeners.value) {
           if(!isModalOpen.isModal.value) isModalOpen.setIsModal(true);
@@ -195,21 +236,8 @@ export default defineComponent({
           onProgressImport,
           onProgressExport
         });
-        if(platform === "web") {
-          await customElements.whenDefined('jeep-sqlite');
-          const jeepSqliteEl = document.querySelector('jeep-sqlite');
-          if(jeepSqliteEl != null) {
-            // Initialize the Web Store since @capacitor-community/sqlite@3.2.3-1
-            await app.appContext.config.globalProperties.$sqlite.initWebStore()
-            console.log(`$$ jeepSqliteEl ${JSON.stringify(jeepSqliteEl)}`);
-          } else {
-            console.log('$$ jeepSqliteEl is null');
-          }
-        }
-          console.log('after useSQLite')
       }
-    });
-    return {platform}
+    return;
   }
 });
 </script>
@@ -234,7 +262,7 @@ Now the Singleton SQLite Hook `$sqlite`and Existing Connections Store `$existing
         </div>
         <div v-else id="log">
             <pre>
-            <p>{{log}}</p>
+                <p>{{log}}</p>
             </pre>
             <div v-if="errMess.length > 0">
                 <p>{{errMess}}</p>}
@@ -249,7 +277,7 @@ import { createTablesNoEncryption, importTwoUsers,
   dropTablesTablesNoEncryption } from '@/utils/utils-db-no-encryption';
 import { useState } from '@/composables/state';
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
-import { SQLiteDBConnection } from 'vue-sqlite-hook/dist';
+import { SQLiteDBConnection, SQLiteHook } from 'vue-sqlite-hook/dist';
 import { deleteDatabase } from '@/utils/utils-delete-db';
 import { Dialog } from '@capacitor/dialog';
 
@@ -258,11 +286,13 @@ export default defineComponent({
     components: {
         LoadingSpinner
     },
-    async setup() {
+
+    setup() {
+        console.log('$$$ Start NoEncryptionTest setup $$$')
         const [showSpinner, setShowSpinner] = useState(true);
         const [log, setLog] = useState("");
         const app = getCurrentInstance()
-        const sqlite = app?.appContext.config.globalProperties.$sqlite;
+        const sqlite: SQLiteHook = app?.appContext.config.globalProperties.$sqlite;
         let errMess = "";
         const showAlert = async (message: string) => {
             await Dialog.alert({
@@ -272,6 +302,7 @@ export default defineComponent({
         };
         const noEncryptionTest = async (): Promise<boolean>  => {
             try {
+                console.log(' Starting testDatabaseNoEncryption')
                 setLog(log.value
                     .concat("* Starting testDatabaseNoEncryption *\n"));
                 // test the plugin with echo
@@ -280,11 +311,13 @@ export default defineComponent({
                     errMess = `Echo not returning "Hello from echo"`;
                     return false;
                 }
+                console.log(`after echo ${JSON.stringify(res)}`);
                 setLog(log.value.concat("> Echo successful\n"));
                 // create a connection for NoEncryption
-                let db: SQLiteDBConnection = await sqlite.createConnection("NoEncryption");
+                const db: SQLiteDBConnection = await sqlite.createConnection("NoEncryption");
                 setLog(log.value.concat("> createConnection " +
                                             " 'NoEncryption' successful\n"));
+                console.log("after createConnection")
                 // check if the databases exist 
                 // and delete it for multiple successive tests
                 await deleteDatabase(db);         
@@ -370,10 +403,13 @@ export default defineComponent({
                 errMess = `${err.message}`;
                 return false;
             }
-        }
+        };
+        
         onMounted(async () => {
             // Running the test
+            console.log('$$$ Start NoEncryptionTest on Mounted $$$')
             const retNoEncryption: boolean = await noEncryptionTest();
+            console.log(`retNoEncryption ${retNoEncryption}`);
             setShowSpinner(false);
             if(!retNoEncryption) {
                 setLog(log.value
@@ -385,7 +421,11 @@ export default defineComponent({
                 setLog(log.value
                     .concat("\n* The set of tests was successful *\n"));
             }
+            console.log('$$$ End NoEncryptionTest on Mounted $$$')
+
         });
+        console.log('$$$ End NoEncryptionTest setup $$$')
+
         return { log, showSpinner, errMess };
     },
 });
@@ -557,6 +597,21 @@ export async function deleteDatabase(db: SQLiteDBConnection): Promise<void> {
   } catch (err) {
     return Promise.reject(err);
   }
+}
+```
+
+- `composables/state.ts`
+```ts
+import { readonly, ref } from 'vue';
+
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export function useState(initialState: any): any {
+  const state = ref(initialState);
+  const setState = (newState: any) => {
+    state.value = newState;
+  };
+  
+  return [readonly(state), setState];
 }
 ```
 

@@ -1,3 +1,12 @@
+### Added Features
+
+- add link to React-Vite and Vue-Vite application
+
+### Bug Fixes
+
+- fix Ionic-React-Usage.md
+- fix Ionic-Vue-Usage.md
+
 ## 3.2.5 (2021-11-07)
 
 - stable release
