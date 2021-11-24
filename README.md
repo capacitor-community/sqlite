@@ -115,6 +115,7 @@ npx cap sync @capacitor-community/electron
 ```bash
 cd electron
 npm install --save sqlite3
+npm install --save jszip
 npm install --save-dev @types/sqlite3
 npm run build
 ```
