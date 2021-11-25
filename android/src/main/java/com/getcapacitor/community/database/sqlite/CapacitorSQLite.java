@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.security.crypto.EncryptedSharedPreferences;
+import androidx.security.crypto.MasterKey;
 import androidx.security.crypto.MasterKeys;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
@@ -46,14 +47,13 @@ public class CapacitorSQLite {
         try {
             // create or retrieve masterkey from Android keystore
             // it will be used to encrypt the passphrase for a database
-            String masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC);
-
+            MasterKey masterKeyAlias = new MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build();
             // get instance of the EncryptedSharedPreferences class
             this.sharedPreferences =
                 EncryptedSharedPreferences.create(
+                    context,
                     "sqlite_encrypted_shared_prefs",
                     masterKeyAlias,
-                    context,
                     EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
                     EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
                 );

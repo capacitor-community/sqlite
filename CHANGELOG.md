@@ -1,11 +1,21 @@
+## 3.3.1 (2021-11-25)
+
+### Chore
+
+ - Update to @capacitor/core 3.3.1
+ - Update to @capacitor/ios 3.3.1
+ - Update to @capacitor/android 3.3.1
+
 ### Added Features
 
 - add link to React-Vite and Vue-Vite application
 
 ### Bug Fixes
 
+- fix Plugin failed to register in Android 11 physical device issue#196
 - fix Ionic-React-Usage.md
 - fix Ionic-Vue-Usage.md
+- fix Electron `npm install --save jszip`in README issue#197
 
 ## 3.2.5 (2021-11-07)
 
