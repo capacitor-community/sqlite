@@ -180,17 +180,24 @@ class UtilsFile {
 
     // MARK: - GetFileList
 
-    class func getFileList(path: String, ext: String) throws -> [String] {
+    class func getFileList(path: String, ext: String? = nil) throws -> [String] {
+
         do {
-            var dbs: [String] = []
+            var files: [String] = []
             let filenames = try FileManager.default
                 .contentsOfDirectory(atPath: path)
             for file in filenames {
-                if file.hasSuffix(ext) {
-                    dbs.append(file)
+                if let mExtension = ext {
+                    if file.hasSuffix(mExtension) {
+                        files.append(file)
+                    }
+                } else {
+                    if file.prefix(1) != "." {
+                        files.append(file)
+                    }
                 }
             }
-            return dbs
+            return files
         } catch let error {
             print("Error: \(error)")
             throw UtilsFileError.getFileListFailed

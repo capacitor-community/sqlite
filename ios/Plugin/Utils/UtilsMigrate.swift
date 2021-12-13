@@ -14,7 +14,7 @@ enum UtilsMigrateError: Error {
 
 class UtilsMigrate {
 
-    // MARK: - addSQLiteSuffix
+    // MARK: - getMigratableList
 
     class func getMigratableList(folderPath: String) throws -> [String] {
         var mDbList: [String] = []
@@ -25,7 +25,7 @@ class UtilsMigrate {
             if FileManager.default.fileExists(atPath: dbPathURL.relativePath,
                                               isDirectory: &isDir) &&
                 isDir.boolValue {
-                mDbList = try UtilsFile.getFileList(path: dbPathURL.relativePath, ext: ".db")
+                mDbList = try UtilsFile.getFileList(path: dbPathURL.relativePath, ext: nil)
 
                 return mDbList
             } else {
@@ -47,7 +47,9 @@ class UtilsMigrate {
     }
 
     // MARK: - addSQLiteSuffix
+
     // swiftlint:disable function_body_length
+    // swiftlint:disable cyclomatic_complexity
     class func addSQLiteSuffix(folderPath: String, dbList: [String]) throws {
         var fromFile: String = ""
         var toFile: String = ""
@@ -59,12 +61,32 @@ class UtilsMigrate {
             if FileManager.default.fileExists(atPath: dbPathURL.relativePath,
                                               isDirectory: &isDir) &&
                 isDir.boolValue {
-                let mDbList: [String] = try UtilsFile
-                    .getFileList(path: dbPathURL.relativePath, ext: ".db")
+                var mDbList: [String]
+                if dbList.count > 0 {
+                    mDbList = try UtilsFile
+                        .getFileList(path: dbPathURL.relativePath, ext: nil)
+                } else {
+                    mDbList = try UtilsFile
+                        .getFileList(path: dbPathURL.relativePath, ext: "db")
+                }
                 for file: String in mDbList {
                     if !file.contains("SQLite.db") {
                         fromFile = file
-                        if dbList.contains(fromFile) {
+                        if dbList.count > 0 {
+                            if dbList.contains(fromFile) {
+                                if String(file.suffix(3)) == ".db" {
+                                    toFile = file
+                                        .replacingOccurrences(of: ".db", with: "SQLite.db")
+                                } else {
+                                    toFile = file + "SQLite.db"
+                                }
+                                try UtilsFile
+                                    .copyFromNames(dbPathURL: dbPathURL,
+                                                   fromFile: fromFile,
+                                                   databaseURL: databaseURL,
+                                                   toFile: toFile)
+                            }
+                        } else {
                             toFile = file
                                 .replacingOccurrences(of: ".db", with: "SQLite.db")
                             try UtilsFile
@@ -98,9 +120,13 @@ class UtilsMigrate {
             throw UtilsMigrateError.addSQLiteSuffix(message: msg)
         }
     }
+    // swiftlint:enable cyclomatic_complexity
     // swiftlint:enable function_body_length
 
     // MARK: - deleteOldDatabase
+
+    // swiftlint:disable function_body_length
+    // swiftlint:disable cyclomatic_complexity
     class func deleteOldDatabases(folderPath: String, dbList: [String]) throws {
         do {
             let dbPathURL: URL = try UtilsMigrate
@@ -109,17 +135,35 @@ class UtilsMigrate {
             if FileManager.default.fileExists(atPath: dbPathURL.relativePath,
                                               isDirectory: &isDir) &&
                 isDir.boolValue {
-                let mDbList: [String] = try UtilsFile
-                    .getFileList(path: dbPathURL.relativePath, ext: ".db")
+                var mDbList: [String]
+                if dbList.count > 0 {
+                    mDbList = try UtilsFile
+                        .getFileList(path: dbPathURL.relativePath, ext: nil)
+                } else {
+                    mDbList = try UtilsFile
+                        .getFileList(path: dbPathURL.relativePath, ext: "db")
+                }
                 for file: String in mDbList {
                     if !file.contains("SQLite.db") {
-                        if dbList.contains(file) {
-                            let ret: Bool = try UtilsFile
-                                .deleteFile(dbPathURL: dbPathURL, fileName: file)
-                            if !ret {
-                                throw UtilsMigrateError
-                                .deleteOldDatabases(message: "deleteFileFailed")
+                        if dbList.count > 0 {
+                            if dbList.contains(file) {
+                                let ret: Bool = try UtilsFile
+                                    .deleteFile(dbPathURL: dbPathURL, fileName: file)
+                                if !ret {
+                                    throw UtilsMigrateError
+                                    .deleteOldDatabases(message: "deleteFileFailed")
+                                }
                             }
+                        } else {
+                            if file.contains(".db") {
+                                let ret: Bool = try UtilsFile
+                                    .deleteFile(dbPathURL: dbPathURL, fileName: file)
+                                if !ret {
+                                    throw UtilsMigrateError
+                                    .deleteOldDatabases(message: "deleteFileFailed")
+                                }
+                            }
+
                         }
                     }
                 }
@@ -144,6 +188,8 @@ class UtilsMigrate {
             throw UtilsMigrateError.addSQLiteSuffix(message: msg)
         }
     }
+    // swiftlint:enable cyclomatic_complexity
+    // swiftlint:enable function_body_length
 
     // MARK: - getFolderURL
     class func getFolderURL(folderPath: String) throws -> URL {

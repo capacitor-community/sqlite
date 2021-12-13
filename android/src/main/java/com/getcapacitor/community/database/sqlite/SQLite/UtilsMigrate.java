@@ -43,16 +43,27 @@ public class UtilsMigrate {
             throw new Exception("Folder " + dir + " no database files");
         }
         for (String file : listFiles) {
-            if (uFile.getFileExtension((file)).equals("db")) {
-                if (!file.contains("SQLite.db")) {
+            if (!file.contains("SQLite.db")) {
+                String fromFile = file;
+                String toFile = "";
+                if (dbList.size() > 0) {
                     if (dbList.contains(file)) {
-                        String fromFile = file;
-                        String toFile = file.replace(".db", "SQLite.db");
-                        boolean ret = uFile.copyFromNames(context, pathFiles, fromFile, pathDB, toFile);
-                        if (!ret) {
-                            String msg = "Failed in copy " + fromFile + " to " + file;
-                            throw new Exception(msg);
+                        if (uFile.getFileExtension((file)).equals("db")) {
+                            toFile = file.replace(".db", "SQLite.db");
+                        } else {
+                            toFile = file.concat("SQLite.db");
                         }
+                    }
+                } else {
+                    if (uFile.getFileExtension((file)).equals("db")) {
+                        toFile = file.replace(".db", "SQLite.db");
+                    }
+                }
+                if (toFile.length() > 0) {
+                    boolean ret = uFile.copyFromNames(context, pathFiles, fromFile, pathDB, toFile);
+                    if (!ret) {
+                        String msg = "Failed in copy " + fromFile + " to " + file;
+                        throw new Exception(msg);
                     }
                 }
             }
@@ -89,14 +100,22 @@ public class UtilsMigrate {
         }
         String[] listFiles = dir.list();
         for (String file : listFiles) {
-            if (uFile.getFileExtension((file)).equals("db")) {
-                if (!file.contains("SQLite.db")) {
+            String delFile = "";
+            if (!file.contains("SQLite.db")) {
+                if (dbList.size() > 0) {
                     if (dbList.contains(file)) {
-                        boolean ret = uFile.deleteFile(pathFiles, file);
-                        if (!ret) {
-                            String msg = "Failed in delete " + file;
-                            throw new Exception(msg);
-                        }
+                        delFile = file;
+                    }
+                } else {
+                    if (uFile.getFileExtension((file)).equals("db")) {
+                        delFile = file;
+                    }
+                }
+                if (delFile.length() > 0) {
+                    boolean ret = uFile.deleteFile(pathFiles, delFile);
+                    if (!ret) {
+                        String msg = "Failed in delete " + delFile;
+                        throw new Exception(msg);
                     }
                 }
             }

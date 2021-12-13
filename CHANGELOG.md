@@ -1,3 +1,15 @@
+## 3.3.2 (2021-12-13)
+
+### Chore
+
+ - Update to @capacitor/core 3.3.2
+ - Update to @capacitor/ios 3.3.2
+ - Update to @capacitor/android 3.3.2
+
+### Bug Fixes
+
+ - fix addSQLiteSuffix skips databases without .db extension issue#200
+
 ## 3.3.1 (2021-11-25)
 
 ### Chore
