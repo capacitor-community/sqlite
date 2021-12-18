@@ -107,6 +107,14 @@ npx cap sync @capacitor-community/electron
 
 - On Android, no further steps needed.
 
+This plugin will use the following project variables (defined in your app’s `variables.gradle` file):
+
+- `$androidxCoordinatorLayoutVersion` version of `androidx.coordinatorlayout:coordinatorlayout` (default: `1.1.0`)
+- `$androidDatabaseSqlcipherVersion` version of `net.zetetic:android-database-sqlcipher` (default: `4.4.3`)
+- `$androidxSqliteVersion` version of `androidx.sqlite:sqlite` (default: `2.1.0`)
+- `$androidxSecurityCryptoVersion` version of `androidx.security:security-crypto` (default: `1.1.0-alpha03`)
+- `$androidxRoomCompilerVersion` version of `androidx.room:room-compiler` (default: `2.2.5`)
+
 
 ### Electron
 
