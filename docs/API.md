@@ -92,6 +92,10 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 * [`addSQLiteSuffix(...)`](#addsqlitesuffix)
 * [`deleteOldDatabases(...)`](#deleteolddatabases)
 * [`checkConnectionsConsistency(...)`](#checkconnectionsconsistency)
+* [`getNCDatabasePath(...)`](#getncdatabasepath)
+* [`createNCConnection(...)`](#createncconnection)
+* [`closeNCConnection(...)`](#closencconnection)
+* [`isNCDatabase(...)`](#isncdatabase)
 * [Interfaces](#interfaces)
 
 </docgen-index>
@@ -697,6 +701,78 @@ return false : no consistency, connections are closed
 --------------------
 
 
+### getNCDatabasePath(...)
+
+```typescript
+getNCDatabasePath(options: capNCDatabasePathOptions) => Promise<capNCDatabasePathResult>
+```
+
+get a non conformed database path
+
+| Param         | Type                                                                          | Description                                                      |
+| ------------- | ----------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| **`options`** | <code><a href="#capncdatabasepathoptions">capNCDatabasePathOptions</a></code> | <a href="#capncdatabasepathoptions">capNCDatabasePathOptions</a> |
+
+**Returns:** <code>Promise&lt;<a href="#capncdatabasepathresult">capNCDatabasePathResult</a>&gt;</code>
+
+**Since:** 3.3.3-1
+
+--------------------
+
+
+### createNCConnection(...)
+
+```typescript
+createNCConnection(options: capNCConnectionOptions) => Promise<void>
+```
+
+create a non conformed database connection
+
+| Param         | Type                                                                      | Description                                                  |
+| ------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| **`options`** | <code><a href="#capncconnectionoptions">capNCConnectionOptions</a></code> | <a href="#capncconnectionoptions">capNCConnectionOptions</a> |
+
+**Since:** 3.3.3-1
+
+--------------------
+
+
+### closeNCConnection(...)
+
+```typescript
+closeNCConnection(options: capNCOptions) => Promise<void>
+```
+
+close a non conformed database connection
+
+| Param         | Type                                                  | Description                              |
+| ------------- | ----------------------------------------------------- | ---------------------------------------- |
+| **`options`** | <code><a href="#capncoptions">capNCOptions</a></code> | <a href="#capncoptions">capNCOptions</a> |
+
+**Since:** 3.3.3-1
+
+--------------------
+
+
+### isNCDatabase(...)
+
+```typescript
+isNCDatabase(options: capNCOptions) => Promise<capSQLiteResult>
+```
+
+Check if a non conformed database exists without connection
+
+| Param         | Type                                                  | Description                                |
+| ------------- | ----------------------------------------------------- | ------------------------------------------ |
+| **`options`** | <code><a href="#capncoptions">capNCOptions</a></code> | : <a href="#capncoptions">capNCOptions</a> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 3.3.3-1
+
+--------------------
+
+
 ### Interfaces
 
 
@@ -970,6 +1046,36 @@ return false : no consistency, connections are closed
 | Prop          | Type                  | Description                   | Since         |
 | ------------- | --------------------- | ----------------------------- | ------------- |
 | **`dbNames`** | <code>string[]</code> | the dbName of all connections | 3.0.0-beta.10 |
+
+
+#### capNCDatabasePathResult
+
+| Prop       | Type                | Description     |
+| ---------- | ------------------- | --------------- |
+| **`path`** | <code>string</code> | String returned |
+
+
+#### capNCDatabasePathOptions
+
+| Prop           | Type                | Description       |
+| -------------- | ------------------- | ----------------- |
+| **`path`**     | <code>string</code> | the database path |
+| **`database`** | <code>string</code> | The database name |
+
+
+#### capNCConnectionOptions
+
+| Prop               | Type                | Description          |
+| ------------------ | ------------------- | -------------------- |
+| **`databasePath`** | <code>string</code> | The database path    |
+| **`version`**      | <code>number</code> | The database version |
+
+
+#### capNCOptions
+
+| Prop               | Type                | Description       |
+| ------------------ | ------------------- | ----------------- |
+| **`databasePath`** | <code>string</code> | The database path |
 
 </docgen-api>
 

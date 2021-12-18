@@ -7,6 +7,9 @@ CAP_PLUGIN(CapacitorSQLitePlugin, "CapacitorSQLite",
            CAP_PLUGIN_METHOD(echo, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(createConnection, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(closeConnection, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(createNCConnection, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(closeNCConnection, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(getNCDatabasePath, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(open, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(close, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(getVersion, CAPPluginReturnPromise);
@@ -26,6 +29,7 @@ CAP_PLUGIN(CapacitorSQLitePlugin, "CapacitorSQLite",
            CAP_PLUGIN_METHOD(addUpgradeStatement, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(copyFromAssets, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(isDatabase, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(isNCDatabase, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(isTableExists, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(getDatabaseList, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(getMigratableDbList, CAPPluginReturnPromise);

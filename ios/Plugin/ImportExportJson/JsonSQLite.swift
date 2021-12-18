@@ -108,7 +108,7 @@ public struct JsonIndex: Codable {
         print("value: \(value) ")
         if let mMode = mode {
             if mMode.count > 0 {
-                print("mode: \(mMode) ")
+                print("mode: \(mMode.uppercased()) ")
             }
         }
     }

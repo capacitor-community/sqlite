@@ -21,8 +21,8 @@ import { Injectable } from '@angular/core';
 
 import { Capacitor } from '@capacitor/core';
 import { CapacitorSQLite, SQLiteDBConnection, SQLiteConnection, capSQLiteSet,
-         capSQLiteChanges, capSQLiteValues, capEchoResult, capSQLiteResult 
-        } from '@capacitor-community/sqlite';
+         capSQLiteChanges, capSQLiteValues, capEchoResult, capSQLiteResult,
+         capNCDatabasePathResult } from '@capacitor-community/sqlite';
 
 @Injectable()
 
@@ -125,7 +125,7 @@ export class SQLiteService {
         if(this.sqlite != null) {
             try {
                 await this.sqlite.addUpgradeStatement(database, fromVersion, toVersion,
-                 statement, set ? set : []);
+                                                      statement, set ? set : []);
                 return Promise.resolve();
             } catch (err) {
                 return Promise.reject(new Error(err));
@@ -133,6 +133,122 @@ export class SQLiteService {
         } else {
             return Promise.reject(new Error(`no connection open for ${database}`));
         }                             
+    }
+    /**
+     * get a non-conformed database path
+     * @param path
+     * @param database
+     * @returns Promise<capNCDatabasePathResult>
+     * @since 3.3.3-1
+     */
+    async getNCDatabasePath(folderPath: string, database: string): Promise<capNCDatabasePathResult> {
+        if(this.sqlite != null) {
+            try {
+                const res: capNCDatabasePathResult = await this.sqlite.getNCDatabasePath(
+                                                        folderPath, database);
+                return Promise.resolve(res);
+            } catch (err) {
+                return Promise.reject(new Error(err));
+            }
+        } else {
+            return Promise.reject(new Error(`no connection open for ${database}`));
+        }
+
+    }
+    /**
+     * Create a non-conformed database connection
+     * @param databasePath
+     * @param version
+     * @returns Promise<SQLiteDBConnection>
+     * @since 3.3.3-1
+     */
+    async createNCConnection(databasePath: string, version: number): Promise<SQLiteDBConnection> {
+        if(this.sqlite != null) {
+            try {
+                const db: SQLiteDBConnection = await this.sqlite.createNCConnection(
+                                databasePath, version);
+                if (db != null) {
+                    return Promise.resolve(db);
+                } else {
+                    return Promise.reject(new Error(`no db returned is null`));
+                }
+            } catch (err) {
+                return Promise.reject(new Error(err));
+            }
+        } else {
+            return Promise.reject(new Error(`no connection open for ${databasePath}`));
+        }
+        
+    }
+    /**
+     * Close a non-conformed database connection
+     * @param databasePath
+     * @returns Promise<void>
+     * @since 3.3.3-1
+     */
+    async closeNCConnection(databasePath: string): Promise<void> {
+        if(this.sqlite != null) {
+            try {
+                await this.sqlite.closeNCConnection(databasePath);
+                return Promise.resolve();
+            } catch (err) {
+                return Promise.reject(new Error(err));
+            }
+        } else {
+            return Promise.reject(new Error(`no connection open for ${databasePath}`));
+        }
+    }
+    /**
+     * Check if a non-conformed databaseconnection exists
+     * @param databasePath
+     * @returns Promise<capSQLiteResult>
+     * @since 3.3.3-1
+     */
+    async isNCConnection(databasePath: string): Promise<capSQLiteResult> {
+        if(this.sqlite != null) {
+            try {
+                return Promise.resolve(await this.sqlite.isNCConnection(databasePath));
+            } catch (err) {
+                return Promise.reject(new Error(err));
+            }
+        } else {
+            return Promise.reject(new Error(`no connection open`));
+        }
+            
+    }
+    /**
+     * Retrieve a non-conformed database connection
+     * @param databasePath
+     * @returns Promise<SQLiteDBConnection>
+     * @since 3.3.3-1
+     */
+     async retrieveNCConnection(databasePath: string): Promise<SQLiteDBConnection> {
+        if(this.sqlite != null) {
+            try {
+                return Promise.resolve(await this.sqlite.retrieveNCConnection(databasePath));
+            } catch (err) {
+                return Promise.reject(new Error(err));
+            }
+        } else {
+            return Promise.reject(new Error(`no connection open for ${databasePath}`));
+        }
+    }
+    /**
+     * Check if a non conformed database exists
+     * @param databasePath
+     * @returns Promise<capSQLiteResult>
+     * @since 3.3.3-1
+     */
+    async isNCDatabase(databasePath: string): Promise<capSQLiteResult> {
+        if(this.sqlite != null) {
+            try {
+                return Promise.resolve(await this.sqlite.isNCDatabase(databasePath));
+            } catch (err) {
+                return Promise.reject(new Error(err));
+            }
+        } else {
+            return Promise.reject(new Error(`no connection open`));
+        }
     }
     /**
      * Create a connection to a database
@@ -200,6 +316,11 @@ export class SQLiteService {
         if(this.sqlite != null) {
             try {
                 const myConns =  await this.sqlite.retrieveAllConnections();
+/*                let keys = [...myConns.keys()];
+                keys.forEach( (value) => {
+                    console.log("Connection: " + value);
+                }); 
+*/
                 return Promise.resolve(myConns);
             } catch (err) {
                 return Promise.reject(new Error(err));
@@ -283,7 +404,7 @@ export class SQLiteService {
         }
     }
     /**
-     * Delete old databases
+     * Get Migratable databases List
      */    
     async getMigratableDbList(folderPath?: string): Promise<capSQLiteValues>{
         if(!this.native) {

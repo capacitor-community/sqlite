@@ -1,3 +1,17 @@
+## 3.3.3-1 (2021-12-18)
+
+### Added Features
+
+ - Open in Read-Only Mode databases without SQLite suffix 
+ - getNCDatabasePath, createNCConnection, closeNCConnection, isNCDatabase
+ - add NonConformedDatabase.md documentation
+
+### Bug Fixes
+
+ - fix mode "UNIQUE" not case sensitive in importToJson index issue#203
+ - fix support non-conformed database in read-only mode issue#201
+
+
 ## 3.3.2 (2021-12-13)
 
 ### Chore

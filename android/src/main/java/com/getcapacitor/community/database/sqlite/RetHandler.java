@@ -140,4 +140,28 @@ public class RetHandler {
             return;
         }
     }
+
+    /**
+     * RetPath Method
+     * Create and return the capSQLiteResult object
+     * @param call
+     * @param res
+     * @param message
+     */
+    public void retPath(PluginCall call, String res, String message) {
+        JSObject ret = new JSObject();
+        if (message != null) {
+            ret.put("message", message);
+            Log.v(TAG, "*** ERROR " + message);
+            call.reject(message);
+            return;
+        }
+        if (res != null) {
+            ret.put("path", res);
+            call.resolve(ret);
+            return;
+        } else {
+            call.resolve();
+        }
+    }
 }

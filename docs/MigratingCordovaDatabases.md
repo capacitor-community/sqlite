@@ -13,7 +13,7 @@
 
 ## Methods
 
-The two methods below give you all the bits and pieces to migrate your Cordova plugin databases to be compliant with the @capacitor-community/sqlite plugin.
+The three methods below give you all the bits and pieces to migrate your Cordova plugin databases to be compliant with the @capacitor-community/sqlite plugin.
 
 ### addSQLiteSuffix
 
@@ -86,10 +86,6 @@ result = await this._sqlite.addSQLiteSuffix("files/databases")
 result = await this._sqlite.addSQLiteSuffix("files/.../.../...");
 ...
 ```
-
-#### Electron
-
-- Any folders under the Home directory
 
 ### deleteOldDatabases
 

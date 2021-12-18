@@ -55,10 +55,10 @@
     "prepublishOnly": "npm run build && npm run build-electron && npm run docgen"
   },
   "devDependencies": {
-    "@capacitor/android": "^3.3.2",
-    "@capacitor/core": "3.3.2",
+    "@capacitor/android": "^3.3.3",
+    "@capacitor/core": "3.3.3",
     "@capacitor/docgen": "^0.0.17",
-    "@capacitor/ios": "^3.3.2",
+    "@capacitor/ios": "^3.3.3",
     "@ionic/eslint-config": "^0.3.0",
     "@ionic/prettier-config": "^1.0.1",
     "@ionic/swiftlint-config": "^1.1.2",
@@ -74,7 +74,7 @@
     "typescript": "~4.0.5"
   },
   "peerDependencies": {
-    "@capacitor/core": "^3.3.2"
+    "@capacitor/core": "^3.3.3"
   },
   "prettier": "@ionic/prettier-config",
   "swiftlint": "@ionic/swiftlint-config",

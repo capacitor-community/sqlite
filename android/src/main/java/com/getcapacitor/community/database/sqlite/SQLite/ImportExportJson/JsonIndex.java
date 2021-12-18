@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -40,8 +41,8 @@ public class JsonIndex {
     }
 
     public void setMode(String newMode) {
-        if (newMode.equals("UNIQUE")) {
-            this.mode = newMode;
+        if (newMode.equalsIgnoreCase("UNIQUE")) {
+            this.mode = newMode.toUpperCase();
         }
     }
 
@@ -49,7 +50,7 @@ public class JsonIndex {
         ArrayList<String> retArray = new ArrayList<String>();
         if (getName().length() > 0) retArray.add("name");
         if (getValue().length() > 0) retArray.add("value");
-        if (getMode().length() > 0 && getMode().equals("UNIQUE")) retArray.add("mode");
+        if (getMode().length() > 0 && getMode().equalsIgnoreCase("UNIQUE")) retArray.add("mode");
         return retArray;
     }
 
@@ -76,7 +77,7 @@ public class JsonIndex {
                     }
                 }
                 if (key.equals("mode")) {
-                    if (!(objValue instanceof String) || !(objValue.equals("UNIQUE"))) {
+                    if (!(objValue instanceof String) || !(((String) objValue).equalsIgnoreCase("UNIQUE"))) {
                         return false;
                     } else {
                         mode = (String) objValue;

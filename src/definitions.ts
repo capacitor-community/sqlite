@@ -249,6 +249,36 @@ export interface CapacitorSQLitePlugin {
   checkConnectionsConsistency(
     options: capAllConnectionsOptions,
   ): Promise<capSQLiteResult>;
+  /**
+   * get a non conformed database path
+   * @param options capNCDatabasePathOptions
+   * @return Promise<capNCDatabasePathResult>
+   * @since 3.3.3-1
+   */
+  getNCDatabasePath(
+    options: capNCDatabasePathOptions,
+  ): Promise<capNCDatabasePathResult>;
+  /**
+   * create a non conformed database connection
+   * @param options capNCConnectionOptions
+   * @return Promise<void>
+   * @since 3.3.3-1
+   */
+  createNCConnection(options: capNCConnectionOptions): Promise<void>;
+  /**
+   * close a non conformed database connection
+   * @param options capNCOptions
+   * @return Promise<void>
+   * @since 3.3.3-1
+   */
+  closeNCConnection(options: capNCOptions): Promise<void>;
+  /**
+   * Check if a non conformed database exists without connection
+   * @param options: capNCOptions
+   * @returns Promise<capSQLiteResult>
+   * @since 3.3.3-1
+   */
+  isNCDatabase(options: capNCOptions): Promise<capSQLiteResult>;
 }
 
 export interface capSetSecretOptions {
@@ -304,6 +334,33 @@ export interface capSQLiteOptions {
    * The database name
    */
   database?: string;
+}
+export interface capNCDatabasePathOptions {
+  /**
+   * the database path
+   */
+  path?: string;
+  /**
+   * The database name
+   */
+  database?: string;
+}
+export interface capNCConnectionOptions {
+  /**
+   * The database path
+   */
+  databasePath?: string;
+  /**
+   * The database  version
+   */
+  version?: number;
+}
+
+export interface capNCOptions {
+  /**
+   * The database path
+   */
+  databasePath?: string;
 }
 export interface capSQLiteExecuteOptions {
   /**
@@ -460,6 +517,12 @@ export interface capEchoResult {
    * String returned
    */
   value?: string;
+}
+export interface capNCDatabasePathResult {
+  /**
+   * String returned
+   */
+  path?: string;
 }
 export interface capVersionResult {
   /**
@@ -760,6 +823,50 @@ export interface ISQLiteConnection {
    */
   checkConnectionsConsistency(): Promise<capSQLiteResult>;
   /**
+   * get a non-conformed database path
+   * @param path
+   * @param database
+   * @returns Promise<capNCDatabasePathResult>
+   * @since 3.3.3-1
+   */
+  getNCDatabasePath(
+    path: string,
+    database: string,
+  ): Promise<capNCDatabasePathResult>;
+  /**
+   * Create a non-conformed database connection
+   * @param databasePath
+   * @param version
+   * @returns Promise<SQLiteDBConnection>
+   * @since 3.3.3-1
+   */
+  createNCConnection(
+    databasePath: string,
+    version: number,
+  ): Promise<SQLiteDBConnection>;
+  /**
+   * Close a non-conformed database connection
+   * @param databasePath
+   * @returns Promise<void>
+   * @since 3.3.3-1
+   */
+  closeNCConnection(databasePath: string): Promise<void>;
+  /**
+   * Check if a non-conformed databaseconnection exists
+   * @param databasePath
+   * @returns Promise<capSQLiteResult>
+   * @since 3.3.3-1
+   */
+  isNCConnection(databasePath: string): Promise<capSQLiteResult>;
+  /**
+   * Retrieve an existing non-conformed database connection
+   * @param databasePath
+   * @returns Promise<SQLiteDBConnection>
+   * @since 3.3.3-1
+   */
+  retrieveNCConnection(databasePath: string): Promise<SQLiteDBConnection>;
+
+  /**
    * Import a database From a JSON
    * @param jsonstring string
    * @returns Promise<capSQLiteChanges>
@@ -787,6 +894,13 @@ export interface ISQLiteConnection {
    * @since 3.0.0-beta.5
    */
   isDatabase(database: string): Promise<capSQLiteResult>;
+  /**
+   * Check if a non conformed database exists
+   * @param databasePath
+   * @returns Promise<capSQLiteResult>
+   * @since 3.3.3-1
+   */
+  isNCDatabase(databasePath: string): Promise<capSQLiteResult>;
   /**
    * Get the database list
    * @returns Promise<capSQLiteValues>
@@ -953,6 +1067,74 @@ export class SQLiteConnection implements ISQLiteConnection {
       return Promise.reject(`Connection ${database} does not exist`);
     }
   }
+  async getNCDatabasePath(
+    path: string,
+    database: string,
+  ): Promise<capNCDatabasePathResult> {
+    try {
+      const databasePath: capNCDatabasePathResult = await this.sqlite.getNCDatabasePath(
+        {
+          path,
+          database,
+        },
+      );
+      return Promise.resolve(databasePath);
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async createNCConnection(
+    databasePath: string,
+    version: number,
+  ): Promise<SQLiteDBConnection> {
+    try {
+      await this.sqlite.createNCConnection({
+        databasePath,
+        version,
+      });
+      const conn = new SQLiteDBConnection(databasePath, this.sqlite);
+      this._connectionDict.set(databasePath, conn);
+      return Promise.resolve(conn);
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async closeNCConnection(databasePath: string): Promise<void> {
+    try {
+      await this.sqlite.closeNCConnection({ databasePath });
+      this._connectionDict.delete(databasePath);
+      return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async isNCConnection(databasePath: string): Promise<capSQLiteResult> {
+    const res: capSQLiteResult = {} as capSQLiteResult;
+    res.result = this._connectionDict.has(databasePath);
+    return Promise.resolve(res);
+  }
+  async retrieveNCConnection(
+    databasePath: string,
+  ): Promise<SQLiteDBConnection> {
+    if (this._connectionDict.has(databasePath)) {
+      const conn = this._connectionDict.get(databasePath);
+      if (typeof conn != 'undefined') return Promise.resolve(conn);
+      else {
+        return Promise.reject(`Connection ${databasePath} is undefined`);
+      }
+    } else {
+      return Promise.reject(`Connection ${databasePath} does not exist`);
+    }
+  }
+  async isNCDatabase(databasePath: string): Promise<capSQLiteResult> {
+    try {
+      const res = await this.sqlite.isNCDatabase({ databasePath });
+      return Promise.resolve(res);
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+
   async retrieveAllConnections(): Promise<Map<string, SQLiteDBConnection>> {
     return this._connectionDict;
   }
@@ -1147,11 +1329,10 @@ export interface ISQLiteDBConnection {
   isExists(): Promise<capSQLiteResult>;
   /**
    * Check if a SQLite database is opened
-   * @param options: capSQLiteOptions
    * @returns Promise<capSQLiteResult>
    * @since 3.0.0-beta.5
    */
-  isDBOpen(options: capSQLiteOptions): Promise<capSQLiteResult>;
+  isDBOpen(): Promise<capSQLiteResult>;
   /**
    * Check if a table exists
    * @returns Promise<capSQLiteResult>

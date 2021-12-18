@@ -212,6 +212,10 @@ No configuration required for this plugin
 | changeEncryptionSecret      | ✅      | ✅  | ❌        | ❌  |
 | initWebStore                | ❌      | ❌  | ❌        | ✅  |
 | saveToStore                 | ❌      | ❌  | ❌        | ✅  |
+| getNCDatabasePath           | ✅      | ✅  | ❌        | ❌  |
+| createNCConnection          | ✅      | ✅  | ❌        | ❌  |
+| closeNCConnection           | ✅      | ✅  | ❌        | ❌  |
+| isNCDatabase                | ✅      | ✅  | ❌        | ❌  |
 
 ## Supported SQLite Types
 
@@ -236,6 +240,8 @@ No configuration required for this plugin
 - [TypeORM_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/TypeORM-Usage.md)
 
 - [Web_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Web-Usage.md)
+
+- [Non_Conformed_Databases_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/NonConformedDatabases.md)
 
 ### Framework's Usage 
 

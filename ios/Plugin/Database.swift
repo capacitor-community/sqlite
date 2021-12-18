@@ -37,6 +37,8 @@ class Database {
     var mDb: OpaquePointer?
     let globalData: GlobalSQLite = GlobalSQLite()
     let uUpg: UtilsUpgrade = UtilsUpgrade()
+    var readOnly: Bool = false
+    var ncDB: Bool = false
 
     // MARK: - Init
     init(databaseName: String, encrypted: Bool,
@@ -48,12 +50,19 @@ class Database {
         self.dbName = databaseName
         self.mode = mode
         self.vUpgDict = vUpgDict
-        do {
-            self.path = try UtilsFile.getFilePath(
-                fileName: databaseName)
-        } catch UtilsFileError.getFilePathFailed {
-            throw DatabaseError.filePath(
-                message: "Could not generate the file path")
+        if databaseName.contains("/")  &&
+            databaseName.suffix(9) != "SQLite.db" {
+            self.readOnly = true
+            self.path = databaseName
+            self.ncDB = true
+        } else {
+            do {
+                self.path = try UtilsFile.getFilePath(
+                    fileName: databaseName)
+            } catch UtilsFileError.getFilePathFailed {
+                throw DatabaseError.filePath(
+                    message: "Could not generate the file path")
+            }
         }
         print("database path \(self.path)")
     }
@@ -62,6 +71,12 @@ class Database {
 
     func isDBOpen () -> Bool {
         return isOpen
+    }
+
+    // MARK: - isNCDB
+
+    func isNCDB () -> Bool {
+        return ncDB
     }
 
     // MARK: - Open
@@ -92,27 +107,29 @@ class Database {
             mDb = try UtilsSQLCipher
                 .openOrCreateDatabase(filename: path,
                                       password: password,
-                                      readonly: false)
+                                      readonly: self.readOnly)
             isOpen = true
             // PRAGMA foreign_keys = ON;
             try UtilsSQLCipher
                 .setForeignKeyConstraintsEnabled(mDB: self,
                                                  toggle: true)
-            var curVersion: Int = try UtilsSQLCipher
-                .getVersion(mDB: self)
-            if curVersion == 0 {
-                try UtilsSQLCipher.setVersion(mDB: self, version: 1)
-                curVersion = try UtilsSQLCipher.getVersion(mDB: self)
-            }
-            if dbVersion > curVersion {
-                if vUpgDict.count > 0 {
-                    _ = try uUpg.onUpgrade(mDB: self, upgDict: vUpgDict,
-                                           dbName: dbName,
-                                           currentVersion: curVersion,
-                                           targetVersion: dbVersion)
-                    try UtilsSQLCipher.deleteBackupDB(databaseName: dbName)
-                } else {
-                    try UtilsSQLCipher.setVersion(mDB: self, version: dbVersion)
+            if !ncDB {
+                var curVersion: Int = try UtilsSQLCipher
+                    .getVersion(mDB: self)
+                if curVersion == 0 {
+                    try UtilsSQLCipher.setVersion(mDB: self, version: 1)
+                    curVersion = try UtilsSQLCipher.getVersion(mDB: self)
+                }
+                if dbVersion > curVersion {
+                    if vUpgDict.count > 0 {
+                        _ = try uUpg.onUpgrade(mDB: self, upgDict: vUpgDict,
+                                               dbName: dbName,
+                                               currentVersion: curVersion,
+                                               targetVersion: dbVersion)
+                        try UtilsSQLCipher.deleteBackupDB(databaseName: dbName)
+                    } else {
+                        try UtilsSQLCipher.setVersion(mDB: self, version: dbVersion)
+                    }
                 }
             }
         } catch UtilsSQLCipherError.openOrCreateDatabase(let message) {

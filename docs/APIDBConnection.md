@@ -17,7 +17,7 @@
 * [`run(...)`](#run)
 * [`executeSet(...)`](#executeset)
 * [`isExists()`](#isexists)
-* [`isDBOpen(...)`](#isdbopen)
+* [`isDBOpen()`](#isdbopen)
 * [`isTable(...)`](#istable)
 * [`delete()`](#delete)
 * [`createSyncTable()`](#createsynctable)
@@ -187,17 +187,13 @@ Check if a SQLite DB Connection exists
 --------------------
 
 
-### isDBOpen(...)
+### isDBOpen()
 
 ```typescript
-isDBOpen(options: capSQLiteOptions) => Promise<capSQLiteResult>
+isDBOpen() => Promise<capSQLiteResult>
 ```
 
 Check if a SQLite database is opened
-
-| Param         | Type                                                          | Description                                        |
-| ------------- | ------------------------------------------------------------- | -------------------------------------------------- |
-| **`options`** | <code><a href="#capsqliteoptions">capSQLiteOptions</a></code> | : <a href="#capsqliteoptions">capSQLiteOptions</a> |
 
 **Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
 
@@ -349,13 +345,6 @@ Export the given database to a JSON Object
 | Prop         | Type                 | Description                                   |
 | ------------ | -------------------- | --------------------------------------------- |
 | **`result`** | <code>boolean</code> | result set to true when successful else false |
-
-
-#### capSQLiteOptions
-
-| Prop           | Type                | Description       |
-| -------------- | ------------------- | ----------------- |
-| **`database`** | <code>string</code> | The database name |
 
 
 #### capSQLiteJson

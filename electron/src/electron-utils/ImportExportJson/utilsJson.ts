@@ -594,7 +594,7 @@ export class UtilsJson {
       if (key === 'value' && typeof obj[key] != 'string') return false;
       if (
         key === 'mode' &&
-        (typeof obj[key] != 'string' || obj[key] != 'UNIQUE')
+        (typeof obj[key] != 'string' || obj[key].toUpperCase() != 'UNIQUE')
       )
         return false;
     }

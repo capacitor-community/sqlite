@@ -26,6 +26,10 @@ import type {
   capSetSecretOptions,
   capChangeSecretOptions,
   capSQLiteFromAssetsOptions,
+  capNCDatabasePathOptions,
+  capNCConnectionOptions,
+  capNCOptions,
+  capNCDatabasePathResult,
 } from '../../src/definitions';
 
 import { Database } from './electron-utils/Database';
@@ -59,6 +63,25 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     console.log(`${JSON.stringify(options)}`);
     return Promise.reject('Method not implemented.');
   }
+  async getNCDatabasePath(
+    options: capNCDatabasePathOptions,
+  ): Promise<capNCDatabasePathResult> {
+    console.log('getNCDatabasePath', options);
+    return Promise.reject('Method not implemented.');
+  }
+  async createNCConnection(options: capNCConnectionOptions): Promise<void> {
+    console.log('createNCConnection', options);
+    return Promise.reject('Method not implemented.');
+  }
+  async closeNCConnection(options: capNCOptions): Promise<void> {
+    console.log('closeNCConnection', options);
+    return Promise.reject('Method not implemented.');
+  }
+  async isNCDatabase(options: capNCOptions): Promise<capSQLiteResult> {
+    console.log('isNCDatabase', options);
+    return Promise.reject('Method not implemented.');
+  }
+
   async createConnection(options: capConnectionOptions): Promise<void> {
     const keys = Object.keys(options);
     if (!keys.includes('database')) {

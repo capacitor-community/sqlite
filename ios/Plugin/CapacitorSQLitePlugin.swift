@@ -966,6 +966,117 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         }
     }
 
+    // MARK: - getNCDatabasePath
+
+    @objc func getNCDatabasePath(_ call: CAPPluginCall) {
+        guard let folderPath = call.options["path"] as? String else {
+            retHandler.rPath(call: call, ret: "",
+                             message: "getNCDatabasePath: Must provide a folder path")
+            return
+        }
+        guard let dbName = call.options["database"] as? String else {
+            retHandler.rPath(call: call, ret: "",
+                             message: "getNCDatabasePath: Must provide a database name")
+            return
+        }
+        do {
+
+            let path: String = try implementation.getNCDatabasePath(folderPath,
+                                                                    dbName: dbName)
+            retHandler.rPath(call: call, ret: path)
+            return
+        } catch CapacitorSQLiteError.failed(let message) {
+            let msg = "getNCDatabasePath: \(message)"
+            retHandler.rPath(call: call, ret: "", message: msg)
+            return
+        } catch let error {
+            retHandler.rPath(call: call, ret: "",
+                             message: "getNCDatabasePath: \(error)")
+            return
+        }
+    }
+
+    // MARK: - CreateNCConnection
+
+    @objc func createNCConnection(_ call: CAPPluginCall) {
+        guard let dbPath = call.options["databasePath"] as? String else {
+            retHandler.rResult(
+                call: call,
+                message: "CreateNCConnection: Must provide a database path")
+            return
+        }
+        let version: Int = call.getInt("version") ?? 1
+        do {
+            try implementation.createNCConnection(dbPath,
+                                                  version: version)
+            retHandler.rResult(call: call)
+            return
+        } catch CapacitorSQLiteError.failed(let message) {
+            let msg = "CreateNCConnection: \(message)"
+            retHandler.rResult(call: call, message: msg)
+            return
+        } catch let error {
+            retHandler.rResult(
+                call: call,
+                message: "CreateNCConnection: \(error)")
+            return
+        }
+    }
+
+    // MARK: - CloseNCConnection
+
+    @objc func closeNCConnection(_ call: CAPPluginCall) {
+        guard let dbPath = call.options["databasePath"] as? String else {
+            retHandler.rResult(
+                call: call,
+                message: "CloseNCConnection: Must provide a database path")
+            return
+        }
+        do {
+            try implementation.closeNCConnection(dbPath)
+            retHandler.rResult(call: call)
+            return
+        } catch CapacitorSQLiteError.failed(let message) {
+            let msg = "CloseNCConnection: \(message)"
+            retHandler.rResult(call: call, message: msg)
+            return
+        } catch let error {
+            retHandler.rResult(
+                call: call,
+                message: "CloseNCConnection: \(error)")
+            return
+        }
+    }
+
+    // MARK: - IsNCDatabase
+
+    @objc func isNCDatabase(_ call: CAPPluginCall) {
+        guard let dbPath = call.options["databasePath"] as? String else {
+            retHandler.rResult(
+                call: call, ret: false,
+                message: "isNCDatabase: Must provide a database path")
+            return
+        }
+        do {
+            let res = try implementation.isNCDatabase(dbPath)
+            var bRes: Bool = false
+            if res == 1 {
+                bRes = true
+            }
+            retHandler.rResult(call: call, ret: bRes)
+        } catch CapacitorSQLiteError.failed(let message) {
+            let msg = "isNCDatabase: \(message)"
+            retHandler.rResult(call: call, message: msg)
+            return
+        } catch let error {
+            retHandler.rResult(
+                call: call,
+                message: "isNCDatabase: \(error)")
+            return
+        }
+
+    }
+
     // MARK: - Add Observers
 
     @objc func addObserversToNotificationCenter() {

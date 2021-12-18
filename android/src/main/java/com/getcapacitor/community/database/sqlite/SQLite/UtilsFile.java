@@ -24,6 +24,15 @@ public class UtilsFile {
         return file.exists();
     }
 
+    public Boolean isPathExists(String filePath) {
+        File file = new File(filePath);
+        if (file.exists()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public String[] getListOfFiles(Context context) {
         String[] files = context.databaseList();
         List<String> dbs = new ArrayList<>();

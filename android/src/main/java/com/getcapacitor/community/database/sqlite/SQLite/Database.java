@@ -58,6 +58,7 @@ public class Database {
     private Dictionary<Integer, JSONObject> _vUpgObject = new Hashtable<>();
     private ImportFromJson fromJson = new ImportFromJson();
     private ExportToJson toJson = new ExportToJson();
+    private Boolean ncDB = false;
 
     public Database(
         Context context,
@@ -75,7 +76,12 @@ public class Database {
         this._version = version;
         this._vUpgObject = vUpgObject;
         this._sharedPreferences = sharedPreferences;
-        this._file = this._context.getDatabasePath(dbName);
+        if (dbName.contains("/") && dbName.endsWith("SQLite.db")) {
+            this.ncDB = true;
+            this._file = new File(dbName);
+        } else {
+            this._file = this._context.getDatabasePath(dbName);
+        }
         this._globVar = new GlobalSQLite();
         this._uSqlite = new UtilsSQLite();
         this._uCipher = new UtilsSQLCipher();
@@ -104,10 +110,18 @@ public class Database {
 
     /**
      * isOpen Method
-     * @return database open status
+     * @return database status
      */
     public Boolean isOpen() {
         return _isOpen;
+    }
+
+    /**
+     * isNCDB Method
+     * @return non-conformed database status
+     */
+    public Boolean isNCDB() {
+        return ncDB;
     }
 
     /**
@@ -128,7 +142,11 @@ public class Database {
             }
         }
         try {
-            _db = SQLiteDatabase.openOrCreateDatabase(_file, password, null);
+            if (!isNCDB()) {
+                _db = SQLiteDatabase.openOrCreateDatabase(_file, password, null);
+            } else {
+                _db = SQLiteDatabase.openDatabase(String.valueOf(_file), "", null, SQLiteDatabase.OPEN_READONLY);
+            }
             if (_db != null) {
                 if (_db.isOpen()) {
                     // set the Foreign Key Pragma ON
@@ -141,60 +159,62 @@ public class Database {
                         _db = null;
                         throw new Exception(msg);
                     }
-                    try {
-                        curVersion = _db.getVersion();
-                        if (curVersion == 0) {
-                            _db.setVersion(1);
+                    if (!isNCDB()) {
+                        try {
                             curVersion = _db.getVersion();
+                            if (curVersion == 0) {
+                                _db.setVersion(1);
+                                curVersion = _db.getVersion();
+                            }
+                        } catch (IllegalStateException e) {
+                            String msg = "Failed in get/setVersion " + e.getMessage();
+                            Log.v(TAG, msg);
+                            close();
+                            _db = null;
+                            throw new Exception(msg);
+                        } catch (SQLiteException e) {
+                            String msg = "Failed in setVersion " + e.getMessage();
+                            Log.v(TAG, msg);
+                            close();
+                            _db = null;
+                            throw new Exception(msg);
                         }
-                    } catch (IllegalStateException e) {
-                        String msg = "Failed in get/setVersion " + e.getMessage();
-                        Log.v(TAG, msg);
-                        close();
-                        _db = null;
-                        throw new Exception(msg);
-                    } catch (SQLiteException e) {
-                        String msg = "Failed in setVersion " + e.getMessage();
-                        Log.v(TAG, msg);
-                        close();
-                        _db = null;
-                        throw new Exception(msg);
-                    }
-                    if (_version > curVersion) {
-                        if (_vUpgObject.size() > 0) {
-                            try {
-                                _uUpg.onUpgrade(this, _context, _dbName, _vUpgObject, curVersion, _version);
-                                boolean ret = _uFile.deleteBackupDB(_context, _dbName);
-                                if (!ret) {
-                                    String msg = "Failed in deleteBackupDB backup-\" + _dbName";
+                        if (_version > curVersion) {
+                            if (_vUpgObject.size() > 0) {
+                                try {
+                                    _uUpg.onUpgrade(this, _context, _dbName, _vUpgObject, curVersion, _version);
+                                    boolean ret = _uFile.deleteBackupDB(_context, _dbName);
+                                    if (!ret) {
+                                        String msg = "Failed in deleteBackupDB backup-\" + _dbName";
+                                        Log.v(TAG, msg);
+                                        close();
+                                        _db = null;
+                                        throw new Exception(msg);
+                                    }
+                                } catch (Exception e) {
+                                    // restore DB
+                                    boolean ret = _uFile.restoreDatabase(_context, _dbName);
+                                    String msg = e.getMessage();
+                                    if (!ret) msg += "Failed in restoreDatabase " + _dbName;
                                     Log.v(TAG, msg);
                                     close();
                                     _db = null;
                                     throw new Exception(msg);
                                 }
-                            } catch (Exception e) {
-                                // restore DB
-                                boolean ret = _uFile.restoreDatabase(_context, _dbName);
-                                String msg = e.getMessage();
-                                if (!ret) msg += "Failed in restoreDatabase " + _dbName;
-                                Log.v(TAG, msg);
-                                close();
-                                _db = null;
-                                throw new Exception(msg);
-                            }
-                        } else {
-                            try {
-                                _db.setVersion(_version);
-                            } catch (Exception e) {
-                                String msg = e.getMessage() + "Failed in setting version " + _version;
-                                close();
-                                _db = null;
-                                throw new Exception(msg);
+                            } else {
+                                try {
+                                    _db.setVersion(_version);
+                                } catch (Exception e) {
+                                    String msg = e.getMessage() + "Failed in setting version " + _version;
+                                    close();
+                                    _db = null;
+                                    throw new Exception(msg);
+                                }
                             }
                         }
+                        _isOpen = true;
+                        return;
                     }
-                    _isOpen = true;
-                    return;
                 } else {
                     _isOpen = false;
                     _db = null;

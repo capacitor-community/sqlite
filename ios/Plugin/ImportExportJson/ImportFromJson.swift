@@ -245,7 +245,8 @@ class ImportFromJson {
         var statements: [String] = []
         for jpos in 0..<mIndexes.count {
             var mUnique: String = ""
-            if let mMode = mIndexes[jpos].mode {
+            if var mMode = mIndexes[jpos].mode {
+                mMode = mMode.uppercased()
                 if mMode == "UNIQUE" {
                     mUnique = mMode + " "
                 }

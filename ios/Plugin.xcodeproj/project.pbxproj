@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		03FC29A292ACC40490383A1F /* Pods_Plugin.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3B2A61DA5A1F2DD4F959604D /* Pods_Plugin.framework */; };
 		20C0B05DCFC8E3958A738AF2 /* Pods_PluginTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F6753A823D3815DB436415E3 /* Pods_PluginTests.framework */; };
+		2C2352C4276C8195003978B4 /* UtilsNCDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C2352C3276C8195003978B4 /* UtilsNCDatabase.swift */; };
 		2C3AF2EC25B58C3400C5EF2F /* ReturnHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C3AF2EB25B58C3400C5EF2F /* ReturnHandler.swift */; };
 		2C3AF2F025B58E8500C5EF2F /* GlobalSQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C3AF2EF25B58E8500C5EF2F /* GlobalSQLite.swift */; };
 		2C3AF2F425B58EC400C5EF2F /* Database.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C3AF2F325B58EC400C5EF2F /* Database.swift */; };
@@ -48,6 +49,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		2C2352C3276C8195003978B4 /* UtilsNCDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilsNCDatabase.swift; sourceTree = "<group>"; };
 		2C3AF2EB25B58C3400C5EF2F /* ReturnHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReturnHandler.swift; sourceTree = "<group>"; };
 		2C3AF2EF25B58E8500C5EF2F /* GlobalSQLite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalSQLite.swift; sourceTree = "<group>"; };
 		2C3AF2F325B58EC400C5EF2F /* Database.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Database.swift; sourceTree = "<group>"; };
@@ -120,6 +122,7 @@
 				2C3AF31525B593B600C5EF2F /* UtilsSQLCipher.swift */,
 				2C3AF31925B593E500C5EF2F /* UtilsUpgrade.swift */,
 				2CC9CBC126413B9F002028BF /* UtilsSecret.swift */,
+				2C2352C3276C8195003978B4 /* UtilsNCDatabase.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -421,6 +424,7 @@
 				2C3AF31A25B593E500C5EF2F /* UtilsUpgrade.swift in Sources */,
 				2C3AF31225B5938500C5EF2F /* UtilsJson.swift in Sources */,
 				2CB9B9362601EEE500743730 /* ExportToJson.swift in Sources */,
+				2C2352C4276C8195003978B4 /* UtilsNCDatabase.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -132,6 +132,60 @@ public class CapacitorSQLitePlugin extends Plugin {
         }
     }
 
+    @PluginMethod
+    public void getNCDatabasePath(PluginCall call) {
+        String folderPath = null;
+        String dbName = null;
+        if (!call.getData().has("path")) {
+            String msg = "getNCDatabasePath: Must provide a folder path";
+            rHandler.retPath(call, null, msg);
+            return;
+        }
+        folderPath = call.getString("path");
+        if (!call.getData().has("database")) {
+            String msg = "getNCDatabasePath: Must provide a database name";
+            rHandler.retPath(call, null, msg);
+            return;
+        }
+        dbName = call.getString("database");
+        try {
+            String databasePath = implementation.getNCDatabasePath(folderPath, dbName);
+            rHandler.retPath(call, databasePath, null);
+            return;
+        } catch (Exception e) {
+            String msg = "getNCDatabasePath: " + e.getMessage();
+            rHandler.retResult(call, null, msg);
+            return;
+        }
+    }
+
+    /**
+     * CreateNCConnection Method
+     * Create a non-conformed connection to a database
+     * @param call
+     */
+    @PluginMethod
+    public void createNCConnection(PluginCall call) {
+        String dbPath = null;
+        int dbVersion = Integer.valueOf(-1);
+        if (!call.getData().has("databasePath")) {
+            String msg = "CreateNCConnection: Must provide a database path";
+            rHandler.retResult(call, null, msg);
+            return;
+        }
+        dbPath = call.getString("databasePath");
+        dbVersion = call.getInt("version", 1);
+        try {
+            implementation.createNCConnection(dbPath, dbVersion);
+            rHandler.retResult(call, null, null);
+            return;
+        } catch (Exception e) {
+            String msg = "CreateNCConnection: " + e.getMessage();
+            rHandler.retResult(call, null, msg);
+            return;
+        }
+    }
+
     /**
      * CreateConnection Method
      * Create a connection to a database
@@ -141,8 +195,6 @@ public class CapacitorSQLitePlugin extends Plugin {
     public void createConnection(PluginCall call) {
         String dbName = null;
         int dbVersion = Integer.valueOf(-1);
-        String secret = null;
-        String newsecret = null;
         String inMode = null;
         JSObject ret = new JSObject();
         if (!call.getData().has("database")) {
@@ -166,7 +218,6 @@ public class CapacitorSQLitePlugin extends Plugin {
             }
         } else {
             inMode = "no-encryption";
-            secret = "";
         }
         Dictionary<Integer, JSONObject> upgDict = versionUpgrades.get(dbName);
         try {
@@ -253,6 +304,30 @@ public class CapacitorSQLitePlugin extends Plugin {
     }
 
     /**
+     * CloseNCConnection Method
+     * Close a non-conformed database connection
+     * @param call
+     */
+    @PluginMethod
+    public void closeNCConnection(PluginCall call) {
+        if (!call.getData().has("databasePath")) {
+            String msg = "CloseNCConnection: Must provide a database path";
+            rHandler.retResult(call, null, msg);
+            return;
+        }
+        String dbPath = call.getString("databasePath");
+        try {
+            implementation.closeNCConnection(dbPath);
+            rHandler.retResult(call, null, null);
+            return;
+        } catch (Exception e) {
+            String msg = "CloseNCConnection: " + e.getMessage();
+            rHandler.retResult(call, null, msg);
+            return;
+        }
+    }
+
+    /**
      * CloseConnection Method
      * Close the connection to a database
      * @param call
@@ -318,6 +393,29 @@ public class CapacitorSQLitePlugin extends Plugin {
             return;
         } catch (Exception e) {
             String msg = "isDatabase: " + e.getMessage();
+            rHandler.retResult(call, null, msg);
+            return;
+        }
+    }
+
+    /**
+     * IsDatabase Method
+     * Check if the database file exists
+     * @param call
+     */
+    @PluginMethod
+    public void isNCDatabase(PluginCall call) {
+        if (!call.getData().has("databasePath")) {
+            rHandler.retResult(call, null, "Must provide a database path");
+            return;
+        }
+        String dbPath = call.getString("databasePath");
+        try {
+            Boolean res = implementation.isNCDatabase(dbPath);
+            rHandler.retResult(call, res, null);
+            return;
+        } catch (Exception e) {
+            String msg = "isNCDatabase: " + e.getMessage();
             rHandler.retResult(call, null, msg);
             return;
         }

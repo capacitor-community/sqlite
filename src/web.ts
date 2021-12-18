@@ -25,6 +25,10 @@ import type {
   capSetSecretOptions,
   capChangeSecretOptions,
   capSQLiteFromAssetsOptions,
+  capNCDatabasePathOptions,
+  capNCConnectionOptions,
+  capNCOptions,
+  capNCDatabasePathResult,
 } from './definitions';
 
 export class CapacitorSQLiteWeb
@@ -90,6 +94,24 @@ export class CapacitorSQLiteWeb
   }
   async changeEncryptionSecret(options: capChangeSecretOptions): Promise<void> {
     console.log('changeEncryptionSecret', options);
+    throw this.unimplemented('Not implemented on web.');
+  }
+  async getNCDatabasePath(
+    options: capNCDatabasePathOptions,
+  ): Promise<capNCDatabasePathResult> {
+    console.log('getNCDatabasePath', options);
+    throw this.unimplemented('Not implemented on web.');
+  }
+  async createNCConnection(options: capNCConnectionOptions): Promise<void> {
+    console.log('createNCConnection', options);
+    throw this.unimplemented('Not implemented on web.');
+  }
+  async closeNCConnection(options: capNCOptions): Promise<void> {
+    console.log('closeNCConnection', options);
+    throw this.unimplemented('Not implemented on web.');
+  }
+  async isNCDatabase(options: capNCOptions): Promise<capSQLiteResult> {
+    console.log('isNCDatabase', options);
     throw this.unimplemented('Not implemented on web.');
   }
   async createConnection(options: capSQLiteOptions): Promise<void> {

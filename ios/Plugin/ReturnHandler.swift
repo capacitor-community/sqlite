@@ -93,4 +93,17 @@ class ReturnHandler {
             return
         }
     }
+
+    // MARK: - rPath
+
+    func rPath(call: CAPPluginCall, ret: String,
+               message: String? = nil) {
+        if let intMessage = message {
+            call.reject(intMessage)
+            return
+        } else {
+            call.resolve(["path": ret])
+            return
+        }
+    }
 }

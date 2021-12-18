@@ -22,10 +22,16 @@
 * [`closeConnection(...)`](#closeconnection)
 * [`closeAllConnections()`](#closeallconnections)
 * [`checkConnectionsConsistency()`](#checkconnectionsconsistency)
+* [`getNCDatabasePath(...)`](#getncdatabasepath)
+* [`createNCConnection(...)`](#createncconnection)
+* [`closeNCConnection(...)`](#closencconnection)
+* [`isNCConnection(...)`](#isncconnection)
+* [`retrieveNCConnection(...)`](#retrievencconnection)
 * [`importFromJson(...)`](#importfromjson)
 * [`isJsonValid(...)`](#isjsonvalid)
 * [`copyFromAssets(...)`](#copyfromassets)
 * [`isDatabase(...)`](#isdatabase)
+* [`isNCDatabase(...)`](#isncdatabase)
 * [`getDatabaseList()`](#getdatabaselist)
 * [`getMigratableDbList(...)`](#getmigratabledblist)
 * [`addSQLiteSuffix(...)`](#addsqlitesuffix)
@@ -283,6 +289,101 @@ if inconsistency all connections are removed
 --------------------
 
 
+### getNCDatabasePath(...)
+
+```typescript
+getNCDatabasePath(path: string, database: string) => Promise<capNCDatabasePathResult>
+```
+
+get a non-conformed database path
+
+| Param          | Type                |
+| -------------- | ------------------- |
+| **`path`**     | <code>string</code> |
+| **`database`** | <code>string</code> |
+
+**Returns:** <code>Promise&lt;<a href="#capncdatabasepathresult">capNCDatabasePathResult</a>&gt;</code>
+
+**Since:** 3.3.3-1
+
+--------------------
+
+
+### createNCConnection(...)
+
+```typescript
+createNCConnection(databasePath: string, version: number) => Promise<SQLiteDBConnection>
+```
+
+Create a non-conformed database connection
+
+| Param              | Type                |
+| ------------------ | ------------------- |
+| **`databasePath`** | <code>string</code> |
+| **`version`**      | <code>number</code> |
+
+**Returns:** <code>Promise&lt;SQLiteDBConnection&gt;</code>
+
+**Since:** 3.3.3-1
+
+--------------------
+
+
+### closeNCConnection(...)
+
+```typescript
+closeNCConnection(databasePath: string) => Promise<void>
+```
+
+Close a non-conformed database connection
+
+| Param              | Type                |
+| ------------------ | ------------------- |
+| **`databasePath`** | <code>string</code> |
+
+**Since:** 3.3.3-1
+
+--------------------
+
+
+### isNCConnection(...)
+
+```typescript
+isNCConnection(databasePath: string) => Promise<capSQLiteResult>
+```
+
+Check if a non-conformed databaseconnection exists
+
+| Param              | Type                |
+| ------------------ | ------------------- |
+| **`databasePath`** | <code>string</code> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 3.3.3-1
+
+--------------------
+
+
+### retrieveNCConnection(...)
+
+```typescript
+retrieveNCConnection(databasePath: string) => Promise<SQLiteDBConnection>
+```
+
+Retrieve an existing non-conformed database connection
+
+| Param              | Type                |
+| ------------------ | ------------------- |
+| **`databasePath`** | <code>string</code> |
+
+**Returns:** <code>Promise&lt;SQLiteDBConnection&gt;</code>
+
+**Since:** 3.3.3-1
+
+--------------------
+
+
 ### importFromJson(...)
 
 ```typescript
@@ -353,6 +454,25 @@ Check if a database exists
 **Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
 
 **Since:** 3.0.0-beta.5
+
+--------------------
+
+
+### isNCDatabase(...)
+
+```typescript
+isNCDatabase(databasePath: string) => Promise<capSQLiteResult>
+```
+
+Check if a non conformed database exists
+
+| Param              | Type                |
+| ------------------ | ------------------- |
+| **`databasePath`** | <code>string</code> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 3.3.3-1
 
 --------------------
 
@@ -466,6 +586,13 @@ Delete Old Cordova databases
 | **get**     | (key: K) =&gt; V \| undefined                                                                                  |
 | **has**     | (key: K) =&gt; boolean                                                                                         |
 | **set**     | (key: K, value: V) =&gt; this                                                                                  |
+
+
+#### capNCDatabasePathResult
+
+| Prop       | Type                | Description     |
+| ---------- | ------------------- | --------------- |
+| **`path`** | <code>string</code> | String returned |
 
 
 #### capSQLiteChanges
