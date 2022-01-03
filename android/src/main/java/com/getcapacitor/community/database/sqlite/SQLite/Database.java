@@ -180,7 +180,7 @@ public class Database {
                             throw new Exception(msg);
                         }
                         if (_version > curVersion) {
-                            if (_vUpgObject.size() > 0) {
+                            if (_vUpgObject != null && _vUpgObject.size() > 0) {
                                 try {
                                     _uUpg.onUpgrade(this, _context, _dbName, _vUpgObject, curVersion, _version);
                                     boolean ret = _uFile.deleteBackupDB(_context, _dbName);
