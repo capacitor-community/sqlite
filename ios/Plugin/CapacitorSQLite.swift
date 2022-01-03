@@ -5,7 +5,19 @@ enum CapacitorSQLiteError: Error {
 // swiftlint:disable file_length
 // swiftlint:disable type_body_length
 @objc public class CapacitorSQLite: NSObject {
+    private var config: SqliteConfig
     private var dbDict: [String: Database] = [:]
+    private var databaseLocation: String
+
+    init(config: SqliteConfig) {
+        self.config = config
+        if let isLocation = config.iosDatabaseLocation {
+            self.databaseLocation = isLocation
+        } else {
+            self.databaseLocation = "Documents"
+        }
+        super.init()
+    }
 
     // MARK: - Echo
 
@@ -31,7 +43,9 @@ enum CapacitorSQLiteError: Error {
             // close all connections
             try closeAllConnections()
             // set encryption secret
-            try UtilsSecret.setEncryptionSecret(passphrase: passphrase)
+            try UtilsSecret
+                .setEncryptionSecret(passphrase: passphrase,
+                                     databaseLocation: databaseLocation)
             return
         } catch UtilsSecretError.setEncryptionSecret(let message) {
             throw CapacitorSQLiteError.failed(message: message)
@@ -48,7 +62,10 @@ enum CapacitorSQLiteError: Error {
             // close all connections
             try closeAllConnections()
             // set encryption secret
-            try UtilsSecret.changeEncryptionSecret(passphrase: passphrase, oldPassphrase: oldPassphrase)
+            try UtilsSecret
+                .changeEncryptionSecret(passphrase: passphrase,
+                                        oldPassphrase: oldPassphrase,
+                                        databaseLocation: databaseLocation)
             return
         } catch UtilsSecretError.changeEncryptionSecret(let message) {
             throw CapacitorSQLiteError.failed(message: message)
@@ -91,6 +108,7 @@ enum CapacitorSQLiteError: Error {
                 throw CapacitorSQLiteError.failed(message: "database \(databasePath) does not exist")
             }
             let mDb: Database = try Database(
+                databaseLocation: databaseLocation,
                 databaseName: databasePath,
                 encrypted: false, mode: "no-encryption", version: version,
                 vUpgDict: [:])
@@ -136,6 +154,7 @@ enum CapacitorSQLiteError: Error {
 
         do {
             let mDb: Database = try Database(
+                databaseLocation: databaseLocation,
                 databaseName: "\(mDbName)SQLite.db",
                 encrypted: encrypted, mode: mode, version: version,
                 vUpgDict: vUpgDict)
@@ -261,7 +280,8 @@ enum CapacitorSQLiteError: Error {
     @objc public func isDatabase(_ dbName: String) throws -> NSNumber {
         let mDbName = CapacitorSQLite.getDatabaseName(dbName: dbName)
         let isFileExists: Bool = UtilsFile
-            .isFileExist(fileName: mDbName + "SQLite.db")
+            .isFileExist(databaseLocation: databaseLocation,
+                         fileName: mDbName + "SQLite.db")
         if isFileExists {
             return 1
         } else {
@@ -459,7 +479,8 @@ enum CapacitorSQLiteError: Error {
             throw CapacitorSQLiteError.failed(message: msg)
         }
         let res: Bool = UtilsFile
-            .isFileExist(fileName: "\(mDbName)SQLite.db")
+            .isFileExist(databaseLocation: databaseLocation,
+                         fileName: "\(mDbName)SQLite.db")
         if res {
             return 1
         } else {
@@ -496,8 +517,7 @@ enum CapacitorSQLiteError: Error {
             if !mDb.isDBOpen() {
                 try mDb.open()
             }
-            let res: Bool = try mDb.deleteDB(
-                databaseName: "\(mDbName)SQLite.db")
+            let res: Bool = try mDb.deleteDB(databaseName: "\(mDbName)SQLite.db")
             if res {
                 return
             } else {
@@ -558,6 +578,7 @@ enum CapacitorSQLiteError: Error {
             // open the database
             do {
                 mDb = try Database(
+                    databaseLocation: databaseLocation,
                     databaseName: dbName, encrypted: encrypted,
                     mode: inMode, version: version, vUpgDict: [:])
                 try mDb.open()
@@ -760,7 +781,7 @@ enum CapacitorSQLiteError: Error {
             let aPath: String = assetsDbPath.path
             let bRes: Bool = UtilsFile.isDirExist(dirPath: aPath)
             if bRes {
-                // get the database files
+                // get the database files from assets
                 let dbList: [String] = try UtilsFile
                     .getFileList(path: aPath, ext: ".db")
                 // loop through the database files
@@ -772,7 +793,8 @@ enum CapacitorSQLiteError: Error {
                     // for each copy the file to the Application
                     // database folder
                     _ = try UtilsFile
-                        .copyFromAssetToDatabase(fromDb: mDb,
+                        .copyFromAssetToDatabase(databaseLocation: databaseLocation,
+                                                 fromDb: mDb,
                                                  toDb: toDb, overwrite: overwrite)
                 }
                 // get the zip files
@@ -783,7 +805,8 @@ enum CapacitorSQLiteError: Error {
                     // for each zip uncompress the file to the Application
                     // database folder
                     _ = try UtilsFile
-                        .unzipFromAssetToDatabase(zip: zip, overwrite: overwrite)
+                        .unzipFromAssetToDatabase(databaseLocation: databaseLocation,
+                                                  zip: zip, overwrite: overwrite)
                 }
                 return
             } else {
@@ -840,7 +863,9 @@ enum CapacitorSQLiteError: Error {
     @objc func addSQLiteSuffix(_ folderPath: String, dbList: [String]) throws {
 
         do {
-            try UtilsMigrate.addSQLiteSuffix(folderPath: folderPath, dbList: dbList)
+            try UtilsMigrate.addSQLiteSuffix(databaseLocation: databaseLocation,
+                                             folderPath: folderPath,
+                                             dbList: dbList)
             return
         } catch UtilsMigrateError.addSQLiteSuffix(let message) {
             var msg: String = "addSQLiteSuffix:"
@@ -858,7 +883,8 @@ enum CapacitorSQLiteError: Error {
 
     @objc func deleteOldDatabases(_ folderPath: String, dbList: [String]) throws {
         do {
-            try UtilsMigrate.deleteOldDatabases(folderPath: folderPath, dbList: dbList)
+            try UtilsMigrate
+                .deleteOldDatabases(folderPath: folderPath, dbList: dbList)
             return
         } catch UtilsMigrateError.deleteOldDatabases(let message) {
             var msg: String = "deleteOldDatabases:"

@@ -29,6 +29,7 @@
 		2CBB5E0426333DD2000FA0A6 /* Notification.Name.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CBB5E0326333DD2000FA0A6 /* Notification.Name.swift */; };
 		2CC9CBC226413B9F002028BF /* UtilsSecret.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CC9CBC126413B9F002028BF /* UtilsSecret.swift */; };
 		2CC9CBD8264142FF002028BF /* KeychainServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CC9CBD7264142FF002028BF /* KeychainServices.swift */; };
+		2CDB5FF227822D7B0040BBA3 /* SqliteConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CDB5FF127822D7B0040BBA3 /* SqliteConfig.swift */; };
 		2F98D68224C9AAE500613A4C /* CapacitorSQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F98D68124C9AAE400613A4C /* CapacitorSQLite.swift */; };
 		50ADFF92201F53D600D50D53 /* Plugin.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50ADFF88201F53D600D50D53 /* Plugin.framework */; };
 		50ADFF97201F53D600D50D53 /* CapacitorSQLitePluginTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50ADFF96201F53D600D50D53 /* CapacitorSQLitePluginTests.swift */; };
@@ -69,6 +70,7 @@
 		2CBB5E0326333DD2000FA0A6 /* Notification.Name.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Notification.Name.swift; sourceTree = "<group>"; };
 		2CC9CBC126413B9F002028BF /* UtilsSecret.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilsSecret.swift; sourceTree = "<group>"; };
 		2CC9CBD7264142FF002028BF /* KeychainServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainServices.swift; sourceTree = "<group>"; };
+		2CDB5FF127822D7B0040BBA3 /* SqliteConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SqliteConfig.swift; sourceTree = "<group>"; };
 		2F98D68124C9AAE400613A4C /* CapacitorSQLite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CapacitorSQLite.swift; sourceTree = "<group>"; };
 		3B2A61DA5A1F2DD4F959604D /* Pods_Plugin.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Plugin.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		50ADFF88201F53D600D50D53 /* Plugin.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Plugin.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -189,6 +191,7 @@
 				2C3AF2EB25B58C3400C5EF2F /* ReturnHandler.swift */,
 				2C3AF2EF25B58E8500C5EF2F /* GlobalSQLite.swift */,
 				2C3AF2F325B58EC400C5EF2F /* Database.swift */,
+				2CDB5FF127822D7B0040BBA3 /* SqliteConfig.swift */,
 			);
 			path = Plugin;
 			sourceTree = "<group>";
@@ -409,6 +412,7 @@
 				2C3AF2F425B58EC400C5EF2F /* Database.swift in Sources */,
 				2CB9B9352601EEE500743730 /* ImportFromJson.swift in Sources */,
 				2C3AF2EC25B58C3400C5EF2F /* ReturnHandler.swift in Sources */,
+				2CDB5FF227822D7B0040BBA3 /* SqliteConfig.swift in Sources */,
 				50E1A94820377CB70090CE1A /* CapacitorSQLitePlugin.swift in Sources */,
 				2C3AF2F025B58E8500C5EF2F /* GlobalSQLite.swift in Sources */,
 				2C3AF30E25B5935B00C5EF2F /* UtilsFile.swift in Sources */,

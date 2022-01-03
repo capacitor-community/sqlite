@@ -12,6 +12,7 @@ import ZIPFoundation
 enum UtilsFileError: Error {
     case getFilePathFailed
     case copyFileFailed
+    case moveFileFailed
     case renameFileFailed
     case deleteFileFailed
     case getAssetsDatabasesPathFailed
@@ -25,6 +26,9 @@ enum UtilsFileError: Error {
     case copyFromAssetToDatabaseFailed(message: String)
     case unzipFromAssetToDatabaseFailed(message: String)
     case copyFromNamesFailed
+    case getFolderURLFailed(message: String)
+    case createDirFailed(message: String)
+    case moveAllDBSQLiteFailed(message: String)
 }
 // swiftlint:disable file_length
 // swiftlint:disable type_body_length
@@ -39,6 +43,70 @@ class UtilsFile {
         return exists && isDir.boolValue
     }
 
+    class func createDirCopyDB(url: URL) throws {
+        do {
+            var dirUrl = url
+            let dirPath: String = url.path
+            if !UtilsFile.isDirExist(dirPath: dirPath) {
+                // create the directory
+                try FileManager.default
+                    .createDirectory(at: dirUrl, withIntermediateDirectories: true)
+                // exclude the directory from iCloud Backup
+                try UtilsFile.setExcludeFromiCloudBackup(&dirUrl,
+                                                         isExcluded: true)
+                // move all SQLite database from Documents folder
+                // to this new directory
+                try UtilsFile.moveAllDBSQLite(dirUrl: dirUrl)
+            }
+        } catch UtilsFileError.getFolderURLFailed(let message) {
+            throw UtilsFileError.createDirFailed(message: message)
+        } catch UtilsFileError.moveAllDBSQLiteFailed(let message) {
+            throw UtilsFileError.createDirFailed(message: message)
+        } catch let error {
+            var msg: String = "createDir command failed :"
+            msg.append(" \(error.localizedDescription)")
+            throw UtilsFileError.createDirFailed(message: msg)
+        }
+
+    }
+
+    // MARK: - moveAllDBSQLite
+
+    class func moveAllDBSQLite(dirUrl: URL) throws {
+        // get the db list from Documents folder
+        do {
+            let databaseURL: URL = try UtilsFile
+                .getDatabasesUrl().absoluteURL
+            let fileList: [String] = try UtilsFile
+                .getFileList(path: databaseURL.path,
+                             ext: "SQLite.db")
+            for file in fileList {
+                let fromFileURL: URL = databaseURL
+                    .appendingPathComponent(file).absoluteURL
+                let toFileURL = dirUrl
+                    .appendingPathComponent(file).absoluteURL
+                let retB: Bool = try UtilsFile
+                    .moveFile(pathName: fromFileURL.path,
+                              toPathName: toFileURL.path, overwrite: true)
+                if !retB {
+                    let msg: String = "moveFile command failed :"
+                    throw UtilsFileError.moveAllDBSQLiteFailed(message: msg)
+                }
+            }
+
+        } catch UtilsFileError.getFileListFailed {
+            let msg: String = "getFileList command failed :"
+            throw UtilsFileError.moveAllDBSQLiteFailed(message: msg)
+        } catch UtilsFileError.moveFileFailed {
+            let msg: String = "moveFile command failed :"
+            throw UtilsFileError.moveAllDBSQLiteFailed(message: msg)
+        } catch let error {
+            var msg: String = "moveAllDBSQLite command failed :"
+            msg.append(" \(error.localizedDescription)")
+            throw UtilsFileError.moveAllDBSQLiteFailed(message: msg)
+        }
+
+    }
     // MARK: - IsFileExist
 
     class func isFileExist(filePath: String) -> Bool {
@@ -49,11 +117,12 @@ class UtilsFile {
         }
         return ret
     }
-    class func isFileExist(fileName: String) -> Bool {
+    class func isFileExist(databaseLocation: String, fileName: String) -> Bool {
         var ret: Bool = false
         do {
             let filePath: String =
                 try UtilsFile.getFilePath(
+                    databaseLocation: databaseLocation,
                     fileName: fileName)
             ret = UtilsFile.isFileExist(filePath: filePath)
             return ret
@@ -64,14 +133,58 @@ class UtilsFile {
         }
     }
 
+    // MARK: - getFolderURL
+
+    class func getFolderURL(folderPath: String) throws -> URL {
+        do {
+            let databaseURL = try UtilsFile.getDatabasesUrl().absoluteURL
+            var dbPathURL: URL
+            let first = folderPath.split(separator: "/", maxSplits: 1)
+            if first[0] == "Applications" {
+                dbPathURL = try UtilsFile.getApplicationURL().absoluteURL
+            } else if first[0] == "Library" {
+                dbPathURL = try UtilsFile.getLibraryURL().absoluteURL
+            } else if first[0] == "Documents" || first[0] == "default" {
+                dbPathURL = databaseURL
+            } else {
+                var msg: String = "getFolderURL command failed :"
+                msg.append(" Folder '\(first[0])' not allowed")
+                throw UtilsFileError.getFolderURLFailed(message: msg)
+            }
+            if first.count > 1 {
+                dbPathURL = dbPathURL
+                    .appendingPathComponent(String(first[1])).absoluteURL
+            }
+            return dbPathURL
+        } catch UtilsFileError.getDatabasesURLFailed {
+            throw UtilsFileError.getFolderURLFailed(message: "getDatabasesURLFailed")
+        } catch UtilsFileError.getApplicationURLFailed {
+            throw UtilsFileError
+            .getFolderURLFailed(message: "getApplicationURLFailed")
+        } catch let error {
+            var msg: String = "getFolderURL command failed :"
+            msg.append(" \(error.localizedDescription)")
+            throw UtilsFileError.getFolderURLFailed(message: msg)
+        }
+    }
+
     // MARK: - GetFilePath
 
-    class func getFilePath(fileName: String) throws -> String {
+    class func getFilePath(databaseLocation: String,
+                           fileName: String) throws -> String {
         do {
-            let url = try getDatabasesUrl()
-            return url.appendingPathComponent("\(fileName)").path
-        } catch UtilsFileError.getDatabasesURLFailed {
-            print("Error: getDatabasesUrl Failed")
+            let url: URL = try UtilsFile
+                .getFolderURL(folderPath: databaseLocation)
+            if databaseLocation.prefix(9) != "Documents" &&
+                databaseLocation.prefix(7) != "default" {
+                // create the directories if they do not exists
+                try UtilsFile.createDirCopyDB(url: url)
+            }
+            let dbPath: String = url
+                .appendingPathComponent("\(fileName)").path
+            return dbPath
+        } catch UtilsFileError.getFolderURLFailed(let message) {
+            print("Error: getFilePath Failed \(message)")
             throw UtilsFileError.getFilePathFailed
         }
     }
@@ -157,7 +270,6 @@ class UtilsFile {
 
     class func getAssetsDatabasesPath() throws -> URL {
         if let appFolder = Bundle.main.resourceURL {
-            print("getAssetsDatabasesPath appFolder \(appFolder)")
             return appFolder.appendingPathComponent("public/assets/databases")
         } else {
             print("Error: getAssetsDatabasePath did not find app folder")
@@ -230,16 +342,16 @@ class UtilsFile {
 
     // MARK: - CopyFromAssetToDatabase
 
-    class func copyFromAssetToDatabase(fromDb: String, toDb: String,
-                                       overwrite: Bool) throws {
+    class func copyFromAssetToDatabase(databaseLocation: String, fromDb: String,
+                                       toDb: String, overwrite: Bool) throws {
         do {
             let uAsset: URL = try getAssetsDatabasesPath()
                 .appendingPathComponent(fromDb)
-            let pAsset: String = uAsset.path
-            let uDb: URL = try getDatabasesUrl()
+
+            let uDb: URL = try getFolderURL(folderPath: databaseLocation)
                 .appendingPathComponent(toDb)
-            let pDb: String = uDb.path
-            let bRet: Bool = try copyFile(pathName: pAsset, toPathName: pDb,
+            let bRet: Bool = try copyFile(pathName: uAsset.path,
+                                          toPathName: uDb.path,
                                           overwrite: overwrite)
             if bRet {
                 return
@@ -252,11 +364,9 @@ class UtilsFile {
             let msg = "Error: getAssetsDatabasesPath Failed"
             print("\(msg)")
             throw UtilsFileError.copyFromAssetToDatabaseFailed(message: msg)
-        } catch UtilsFileError.getDatabasesURLFailed {
-            let msg = "Error: getDatabasesUrl Failed"
-            print("\(msg)")
-
-            throw UtilsFileError.copyFromAssetToDatabaseFailed(message: msg)
+        } catch UtilsFileError.getFolderURLFailed(let message) {
+            print("Error: getFolderUrl Failed \(message)")
+            throw UtilsFileError.copyFromAssetToDatabaseFailed(message: message)
         } catch UtilsFileError.copyFileFailed {
             let msg = "Error: copyFile Failed"
             print("\(msg)")
@@ -270,7 +380,8 @@ class UtilsFile {
 
     }
 
-    class func unzipFromAssetToDatabase(zip: String, overwrite: Bool) throws {
+    class func unzipFromAssetToDatabase(databaseLocation: String, zip: String,
+                                        overwrite: Bool) throws {
         do {
             let zipAsset: URL = try getAssetsDatabasesPath()
                 .appendingPathComponent(zip)
@@ -279,10 +390,10 @@ class UtilsFile {
                 print("\(msg)")
                 throw UtilsFileError.unzipFromAssetToDatabaseFailed(message: msg)
             }
+            let uDb: URL = try getFolderURL(folderPath: databaseLocation)
             for entry in archive {
                 let dbEntry = setPathSuffix(sDb: entry.path)
-                let zipCopy: URL = try getDatabasesUrl()
-                    .appendingPathComponent(dbEntry)
+                let zipCopy: URL = uDb.appendingPathComponent(dbEntry)
                 do {
                     let isExist: Bool = isFileExist(filePath: zipCopy.path)
                     if !isExist || overwrite {
@@ -302,10 +413,9 @@ class UtilsFile {
             let msg = "Error: getAssetsDatabasesPath Failed"
             print("\(msg)")
             throw UtilsFileError.unzipFromAssetToDatabaseFailed(message: msg)
-        } catch UtilsFileError.getDatabasesURLFailed {
-            let msg = "Error: getDatabasesUrl Failed"
-            print("\(msg)")
-            throw UtilsFileError.unzipFromAssetToDatabaseFailed(message: msg)
+        } catch UtilsFileError.getFolderURLFailed(let message) {
+            print("Error: getFolderUrl Failed \(message)")
+            throw UtilsFileError.unzipFromAssetToDatabaseFailed(message: message)
         } catch let error {
             let msg = "Error: \(error)"
             print("\(msg)")
@@ -313,6 +423,36 @@ class UtilsFile {
         }
     }
 
+    // MARK: - MoveFile
+
+    class func moveFile(pathName: String, toPathName: String, overwrite: Bool) throws -> Bool {
+        if pathName.count > 0 && toPathName.count > 0 {
+            let isPath = isFileExist(filePath: pathName)
+            if isPath {
+                do {
+                    let isExist: Bool = isFileExist(filePath: toPathName)
+                    if !isExist || overwrite {
+                        if overwrite && isExist {
+                            _ = try deleteFile(filePath: toPathName)
+                        }
+                        let fileManager = FileManager.default
+                        try fileManager.moveItem(atPath: pathName,
+                                                 toPath: toPathName)
+                    }
+                    return true
+                } catch let error {
+                    print("Error: \(error)")
+                    throw UtilsFileError.moveFileFailed
+                }
+            } else {
+                print("Error: MoveFile Failed pathName does not exist")
+                throw UtilsFileError.moveFileFailed
+            }
+        } else {
+            print("Error: MoveFile Failed paths count = 0")
+            throw UtilsFileError.moveFileFailed
+        }
+    }
     // MARK: - CopyFile
 
     class func copyFile(pathName: String, toPathName: String, overwrite: Bool) throws -> Bool {
@@ -346,12 +486,17 @@ class UtilsFile {
 
     // MARK: - CopyFile
 
-    class func copyFile(fileName: String, toFileName: String)
+    class func copyFile(fileName: String, toFileName: String,
+                        databaseLocation: String)
     throws -> Bool {
         var ret: Bool = false
         do {
-            let fromPath: String = try getFilePath(fileName: fileName)
-            let toPath: String = try getFilePath(fileName: toFileName)
+            let fromPath: String = try
+                getFilePath(databaseLocation: databaseLocation,
+                            fileName: fileName)
+            let toPath: String = try
+                getFilePath(databaseLocation: databaseLocation,
+                            fileName: toFileName)
             ret = try copyFile(pathName: fromPath, toPathName: toPath, overwrite: true)
             return ret
         } catch UtilsFileError.getFilePathFailed {
@@ -387,10 +532,13 @@ class UtilsFile {
 
     // MARK: - DeleteFile
 
-    class func deleteFile(fileName: String) throws -> Bool {
+    class func deleteFile(fileName: String,
+                          databaseLocation: String) throws -> Bool {
         var ret: Bool = false
         do {
-            let filePath: String = try getFilePath(fileName: fileName)
+            let filePath: String = try
+                getFilePath(databaseLocation: databaseLocation,
+                            fileName: fileName)
             ret = try deleteFile(filePath: filePath)
         } catch let error {
             print("Error: \(error)")
@@ -418,14 +566,15 @@ class UtilsFile {
 
     // MARK: - RenameFile
 
-    class func renameFile (filePath: String, toFilePath: String)
-    throws {
+    class func renameFile (filePath: String, toFilePath: String,
+                           databaseLocation: String) throws {
         let fileManager = FileManager.default
         do {
             if isFileExist(filePath: toFilePath) {
                 let fileName = URL(
                     fileURLWithPath: toFilePath).lastPathComponent
-                try  _ = deleteFile(fileName: fileName)
+                try  _ = deleteFile(fileName: fileName,
+                                    databaseLocation: databaseLocation)
             }
             try fileManager.moveItem(atPath: filePath,
                                      toPath: toFilePath)
@@ -433,6 +582,19 @@ class UtilsFile {
             print("Error: \(error)")
             throw UtilsFileError.renameFileFailed
         }
+    }
+
+    class func setExcludeFromiCloudBackup(_ fileOrDirectoryURL: inout URL, isExcluded: Bool) throws {
+        var values = URLResourceValues()
+        values.isExcludedFromBackup = isExcluded
+        try fileOrDirectoryURL.setResourceValues(values)
+    }
+
+    class func getExcludeFromiCloudBackup(_ fileOrDirectoryURL: URL) throws -> Bool {
+        let keySet: Set<URLResourceKey> = [.isExcludedFromBackupKey]
+
+        return try
+            fileOrDirectoryURL.resourceValues(forKeys: keySet).isExcludedFromBackup ?? false
     }
 }
 // swiftlint:enable type_body_length

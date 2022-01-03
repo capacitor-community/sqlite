@@ -1,4 +1,21 @@
+## 3.3.3-2 (2022-01-03)
+
+### Added Features
+
+ - iOS Support for databases that are not visible to iTunes and are not backed up by iCloud issue#207
+
+### Bug Fixes
+
+ - fix README.md
+ - fix API.md
+
 ## 3.3.3-1 (2021-12-18)
+
+### Chore
+
+ - Update to @capacitor/core 3.3.3
+ - Update to @capacitor/ios 3.3.3
+ - Update to @capacitor/android 3.3.3
 
 ### Added Features
 

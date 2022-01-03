@@ -33,10 +33,12 @@ class UtilsUpgrade {
 
     // swiftlint:disable cyclomatic_complexity
     // swiftlint:disable function_body_length
+    // swiftlint:disable function_parameter_count
     func onUpgrade(mDB: Database,
                    upgDict: [Int: [String: Any]],
                    dbName: String, currentVersion: Int,
-                   targetVersion: Int) throws -> Int {
+                   targetVersion: Int,
+                   databaseLocation: String) throws -> Int {
 
         var changes: Int = -1
         guard let upgrade: [String: Any] = upgDict[currentVersion]
@@ -76,7 +78,8 @@ class UtilsUpgrade {
                                                  toggle: false)
             // backup the database
             _ = try UtilsFile.copyFile(fileName: dbName,
-                                       toFileName: "backup-\(dbName)")
+                                       toFileName: "backup-\(dbName)",
+                                       databaseLocation: databaseLocation)
 
             let initChanges = UtilsSQLCipher.dbChanges(mDB: mDB.mDb)
 
@@ -121,6 +124,7 @@ class UtilsUpgrade {
                 message: message)
         }
     }
+    // swiftlint:enable function_parameter_count
     // swiftlint:enable function_body_length
     // swiftlint:enable cyclomatic_complexity
 

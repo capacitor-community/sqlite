@@ -85,7 +85,9 @@ class UtilsSecret {
 
     // MARK: - SetEncryptionSecret
 
-    class func setEncryptionSecret(passphrase: String) throws {
+    // swiftlint:disable function_body_length
+    class func setEncryptionSecret(passphrase: String,
+                                   databaseLocation: String) throws {
         do {
             if passphrase.isEmpty {
                 let msg: String = "passphrase must not be empty"
@@ -102,13 +104,16 @@ class UtilsSecret {
                 let dbList: [String] = try UtilsFile
                     .getFileList(path: databaseURL.relativePath, ext: ".db")
                 for file: String in dbList {
-                    let state: State = UtilsSQLCipher.getDatabaseState(databaseName: file)
+                    let state: State = UtilsSQLCipher
+                        .getDatabaseState(databaseLocation: databaseLocation,
+                                          databaseName: file)
                     if state.rawValue == "ENCRYPTEDGLOBALSECRET" {
                         let globalData: GlobalSQLite = GlobalSQLite()
                         let password: String = globalData.secret
 
                         let dbPath: String  = try UtilsFile
-                            .getFilePath(fileName: file)
+                            .getFilePath(databaseLocation: databaseLocation,
+                                         fileName: file)
                         try UtilsSQLCipher.changePassword(filename: dbPath,
                                                           password: password,
                                                           newpassword: passphrase)
@@ -135,10 +140,14 @@ class UtilsSecret {
         }
 
     }
+    // swiftlint:enable function_body_length
 
     // MARK: - ChangeEncryptionSecret
 
-    class func changeEncryptionSecret(passphrase: String, oldPassphrase: String) throws {
+    // swiftlint:disable function_body_length
+    class func changeEncryptionSecret(passphrase: String,
+                                      oldPassphrase: String,
+                                      databaseLocation: String) throws {
         do {
             if passphrase.isEmpty ||  oldPassphrase.isEmpty {
                 let msg: String = "Passphrase and/or oldpassphrase must not " +
@@ -153,18 +162,22 @@ class UtilsSecret {
                 let msg: String = "Given oldpassphrase is wrong"
                 throw UtilsSecretError.changeEncryptionSecret(message: msg)
             }
-            // get the list of databases
-            let databaseURL: URL = try UtilsFile.getDatabasesUrl().absoluteURL
+            // get the list of databases from the database folder
+            let databaseURL: URL = try UtilsFile
+                .getFolderURL(folderPath: databaseLocation).absoluteURL
             var isDir = ObjCBool(true)
             if FileManager.default.fileExists(atPath: databaseURL.relativePath,
                                               isDirectory: &isDir) && isDir.boolValue {
                 let dbList: [String] = try UtilsFile
                     .getFileList(path: databaseURL.relativePath, ext: ".db")
                 for file: String in dbList {
-                    let state: State = UtilsSQLCipher.getDatabaseState(databaseName: file)
+                    let state: State = UtilsSQLCipher
+                        .getDatabaseState(databaseLocation: databaseLocation,
+                                          databaseName: file)
                     if state.rawValue == "ENCRYPTEDSECRET" {
                         let dbPath: String  = try UtilsFile
-                            .getFilePath(fileName: file)
+                            .getFilePath(databaseLocation: databaseLocation,
+                                         fileName: file)
                         try UtilsSQLCipher.changePassword(filename: dbPath,
                                                           password: oldPassphrase,
                                                           newpassword: passphrase)
@@ -193,5 +206,6 @@ class UtilsSecret {
         }
 
     }
+    // swiftlint:enable function_body_length
 
 }

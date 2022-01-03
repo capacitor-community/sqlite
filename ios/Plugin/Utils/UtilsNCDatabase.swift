@@ -16,10 +16,10 @@ class UtilsNCDatabase {
 
     class func getNCDatabasePath(folderPath: String, database: String) throws -> String {
         do {
-            let dbPathURL: URL = try UtilsMigrate
+            let dbPathURL: URL = try UtilsFile
                 .getFolderURL(folderPath: folderPath)
             return dbPathURL.appendingPathComponent("\(database)").path
-        } catch UtilsMigrateError.getFolderURL(let message) {
+        } catch UtilsFileError.getFolderURLFailed(let message) {
             throw UtilsNCDatabaseError.getNCDatabasePath(message: message)
         } catch let error {
             var msg: String = "getNCDatabasePath command failed :"

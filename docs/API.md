@@ -22,7 +22,22 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 
 ### IOS
 
-- **in the Document folder of YOUR_APPLICATION**
+- **in the Documents folder of YOUR_APPLICATION**
+- **or in the folder specified by the capacitor.config.ts file of YOUR_APPLICATION since 3.3.3-2**
+  In that case the databases will not be not visible to iTunes and not backed up to iCloud.
+  ```ts
+  const config: CapacitorConfig = {
+    appId: 'io.ionic.starter',
+    appName: 'testreact',
+    webDir: 'build',
+    bundledWebRuntime: false,
+    plugins: {
+      CapacitorSQLite: {
+        "iosDatabaseLocation": "Library/CapacitorDatabase"
+      }
+    }
+  };
+  ```
 
 ### Electron
 

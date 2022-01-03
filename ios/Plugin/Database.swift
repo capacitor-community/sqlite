@@ -33,6 +33,7 @@ class Database {
     var encrypted: Bool
     var mode: String
     var vUpgDict: [Int: [String: Any]]
+    var databaseLocation: String
     var path: String = ""
     var mDb: OpaquePointer?
     let globalData: GlobalSQLite = GlobalSQLite()
@@ -41,15 +42,15 @@ class Database {
     var ncDB: Bool = false
 
     // MARK: - Init
-    init(databaseName: String, encrypted: Bool,
+    init(databaseLocation: String, databaseName: String, encrypted: Bool,
          mode: String, version: Int,
          vUpgDict: [Int: [String: Any]] = [:]) throws {
-        print("databaseName: \(databaseName) ")
         self.dbVersion = version
         self.encrypted = encrypted
         self.dbName = databaseName
         self.mode = mode
         self.vUpgDict = vUpgDict
+        self.databaseLocation = databaseLocation
         if databaseName.contains("/")  &&
             databaseName.suffix(9) != "SQLite.db" {
             self.readOnly = true
@@ -58,6 +59,7 @@ class Database {
         } else {
             do {
                 self.path = try UtilsFile.getFilePath(
+                    databaseLocation: databaseLocation,
                     fileName: databaseName)
             } catch UtilsFileError.getFilePathFailed {
                 throw DatabaseError.filePath(
@@ -91,7 +93,8 @@ class Database {
         if mode == "encryption" {
             do {
                 let ret: Bool = try UtilsEncryption
-                    .encryptDatabase(filePath: path, password: password)
+                    .encryptDatabase(databaseLocation: databaseLocation,
+                                     filePath: path, password: password)
                 if !ret {
                     let msg: String = "Failed in encryption"
                     throw DatabaseError.open(message: msg)
@@ -122,11 +125,15 @@ class Database {
                 }
                 if dbVersion > curVersion {
                     if vUpgDict.count > 0 {
-                        _ = try uUpg.onUpgrade(mDB: self, upgDict: vUpgDict,
-                                               dbName: dbName,
-                                               currentVersion: curVersion,
-                                               targetVersion: dbVersion)
-                        try UtilsSQLCipher.deleteBackupDB(databaseName: dbName)
+                        _ = try uUpg
+                            .onUpgrade(mDB: self, upgDict: vUpgDict,
+                                       dbName: dbName,
+                                       currentVersion: curVersion,
+                                       targetVersion: dbVersion,
+                                       databaseLocation: databaseLocation)
+                        try UtilsSQLCipher
+                            .deleteBackupDB(databaseLocation: databaseLocation,
+                                            databaseName: dbName)
                     } else {
                         try UtilsSQLCipher.setVersion(mDB: self, version: dbVersion)
                     }
@@ -157,7 +164,9 @@ class Database {
         } catch UtilsUpgradeError.onUpgradeFailed(let message) {
             //restore the database
             do {
-                try UtilsSQLCipher.restoreDB(databaseName: dbName)
+                try UtilsSQLCipher
+                    .restoreDB(databaseLocation: databaseLocation,
+                               databaseName: dbName)
                 let msg: String = "Failed OnUpgrade \(message)"
                 try close()
                 throw DatabaseError.open(message: msg)
@@ -227,6 +236,7 @@ class Database {
         do {
             try UtilsSQLCipher.execute(mDB: self, sql: sql)
             changes = UtilsSQLCipher.dbChanges(mDB: mDb) - initChanges
+
         } catch UtilsSQLCipherError.execute(let message) {
             if transaction {
                 do {
@@ -378,7 +388,8 @@ class Database {
 
     func deleteDB(databaseName: String) throws -> Bool {
         let isFileExists: Bool = UtilsFile
-            .isFileExist(fileName: databaseName)
+            .isFileExist(databaseLocation: databaseLocation,
+                         fileName: databaseName)
         if isFileExists && !isOpen {
             // open the database
             do {
@@ -396,7 +407,8 @@ class Database {
         // delete the database
         if isFileExists {
             do {
-                try UtilsSQLCipher.deleteDB(databaseName: databaseName)
+                try UtilsSQLCipher.deleteDB(databaseLocation: databaseLocation,
+                                            databaseName: databaseName)
             } catch UtilsSQLCipherError.deleteDB(let message ) {
                 throw DatabaseError.deleteDB(message: message)
             }

@@ -43,9 +43,12 @@ enum State: String {
 // swiftlint:disable type_body_length
 class UtilsSQLCipher {
 
-    class func getDatabaseState(databaseName: String) -> State {
+    class func getDatabaseState(databaseLocation: String,
+                                databaseName: String) -> State {
         do {
-            let path: String  = try UtilsFile.getFilePath(fileName: databaseName)
+            let path: String  = try UtilsFile
+                .getFilePath(databaseLocation: databaseLocation,
+                             fileName: databaseName)
             if UtilsFile.isFileExist(filePath: path) {
                 do {
                     try openDBNoPassword(dBPath: path)
@@ -586,17 +589,17 @@ class UtilsSQLCipher {
 
     // MARK: - DeleteDB
 
-    class func deleteDB(databaseName: String) throws {
-        if let dir = FileManager.default.urls(
-            for: .documentDirectory,
-            in: .userDomainMask).first {
+    class func deleteDB(databaseLocation: String, databaseName: String) throws {
+        do {
+            let dir: URL = try UtilsFile
+                .getFolderURL(folderPath: databaseLocation)
+
             let fileURL = dir.appendingPathComponent(databaseName)
             let isFileExists = FileManager.default.fileExists(
                 atPath: fileURL.path)
             if isFileExists {
                 do {
                     try FileManager.default.removeItem(at: fileURL)
-                    print("Database \(databaseName) deleted")
                 } catch let error {
                     var msg: String = "Error: deleteDB: "
                     msg.append(" \(error.localizedDescription)")
@@ -604,6 +607,9 @@ class UtilsSQLCipher {
                         message: msg)
                 }
             }
+        } catch UtilsFileError.getFolderURLFailed(let message) {
+            let msg = "Error: deleteDB: \(message)"
+            throw UtilsSQLCipherError.deleteDB(message: msg)
         }
     }
 
@@ -663,10 +669,11 @@ class UtilsSQLCipher {
 
     // MARK: - RestoreDB
 
-    class func restoreDB(databaseName: String) throws {
-        if let dir = FileManager.default.urls(
-            for: .documentDirectory,
-            in: .userDomainMask).first {
+    class func restoreDB(databaseLocation: String, databaseName: String) throws {
+        do {
+            let dir: URL = try UtilsFile
+                .getFolderURL(folderPath: databaseLocation)
+
             let fileURL = dir.appendingPathComponent(databaseName)
             let backupURL = dir
                 .appendingPathComponent("backup-\(databaseName)")
@@ -678,13 +685,11 @@ class UtilsSQLCipher {
                 if isFileExists {
                     do {
                         try FileManager.default.removeItem(at: fileURL)
-                        print("Database \(databaseName) deleted")
                         try FileManager
                             .default.copyItem(atPath: backupURL.path,
                                               toPath: fileURL.path)
                         try FileManager.default
                             .removeItem(at: backupURL)
-                        print("Database backup-\(databaseName) deleted")
                     } catch {
                         var msg = "Error: restoreDB : \(databaseName)"
                         msg += " \(error)"
@@ -704,19 +709,20 @@ class UtilsSQLCipher {
                 throw UtilsSQLCipherError.restoreDB(
                     message: msg)
             }
-        } else {
-            let msg = "Error: restoreDB: FileManager.default.urls"
-            throw UtilsSQLCipherError.restoreDB(
-                message: msg)
+        } catch UtilsFileError.getFolderURLFailed(let message) {
+            let msg = "Error: restoreDB: \(message)"
+            throw UtilsSQLCipherError.restoreDB(message: msg)
         }
     }
 
     // MARK: - deleteBackupDB
 
-    class func deleteBackupDB(databaseName: String) throws {
-        if let dir = FileManager.default.urls(
-            for: .documentDirectory,
-            in: .userDomainMask).first {
+    class func deleteBackupDB(databaseLocation: String,
+                              databaseName: String) throws {
+
+        do {
+            let dir: URL = try UtilsFile
+                .getFolderURL(folderPath: databaseLocation)
             let backupURL = dir
                 .appendingPathComponent("backup-\(databaseName)")
             let isBackupExists = FileManager.default.fileExists(
@@ -725,7 +731,6 @@ class UtilsSQLCipher {
                 do {
                     try FileManager.default
                         .removeItem(at: backupURL)
-                    print("Database backup-\(databaseName) deleted")
                 } catch {
                     var msg = "Error: deleteBackupDB : \(databaseName)"
                     msg += " \(error)"
@@ -737,8 +742,8 @@ class UtilsSQLCipher {
                 msg.append("backup-\(databaseName) does not exist")
                 throw UtilsSQLCipherError.deleteBackupDB(message: msg)
             }
-        } else {
-            let msg = "Error: deleteBackupDB: FileManager.default.urls"
+        } catch UtilsFileError.getFolderURLFailed(let message) {
+            let msg = "Error: deleteBackupDB: \(message)"
             throw UtilsSQLCipherError.deleteBackupDB(
                 message: msg)
         }

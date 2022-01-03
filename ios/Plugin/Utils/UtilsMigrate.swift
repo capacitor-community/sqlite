@@ -9,7 +9,6 @@ enum UtilsMigrateError: Error {
     case addSQLiteSuffix(message: String)
     case getMigratableList(message: String)
     case deleteOldDatabases(message: String)
-    case getFolderURL(message: String)
 }
 
 class UtilsMigrate {
@@ -19,7 +18,7 @@ class UtilsMigrate {
     class func getMigratableList(folderPath: String) throws -> [String] {
         var mDbList: [String] = []
         do {
-            let dbPathURL: URL = try UtilsMigrate
+            let dbPathURL: URL = try UtilsFile
                 .getFolderURL(folderPath: folderPath)
             var isDir = ObjCBool(true)
             if FileManager.default.fileExists(atPath: dbPathURL.relativePath,
@@ -34,9 +33,9 @@ class UtilsMigrate {
                 throw UtilsMigrateError.getMigratableList(message: msg)
             }
 
-        } catch UtilsFileError.getDatabasesURLFailed {
+        } catch UtilsFileError.getFolderURLFailed {
             throw UtilsMigrateError
-            .getMigratableList(message: "getDatabasesURLFailed")
+            .getMigratableList(message: "getFolderURLFailed")
         } catch UtilsFileError.getFileListFailed {
             throw UtilsMigrateError.getMigratableList(message: "getFileListFailed")
         } catch let error {
@@ -50,12 +49,14 @@ class UtilsMigrate {
 
     // swiftlint:disable function_body_length
     // swiftlint:disable cyclomatic_complexity
-    class func addSQLiteSuffix(folderPath: String, dbList: [String]) throws {
+    class func addSQLiteSuffix(databaseLocation: String, folderPath: String,
+                               dbList: [String]) throws {
         var fromFile: String = ""
         var toFile: String = ""
         do {
-            let databaseURL = try UtilsFile.getDatabasesUrl().absoluteURL
-            let dbPathURL: URL = try UtilsMigrate
+            let databaseURL: URL = try UtilsFile
+                .getFolderURL(folderPath: databaseLocation)
+            let dbPathURL: URL = try UtilsFile
                 .getFolderURL(folderPath: folderPath)
             var isDir = ObjCBool(true)
             if FileManager.default.fileExists(atPath: dbPathURL.relativePath,
@@ -106,7 +107,7 @@ class UtilsMigrate {
         } catch UtilsFileError.getDatabasesURLFailed {
             throw UtilsMigrateError
             .addSQLiteSuffix(message: "getDatabasesURLFailed")
-        } catch UtilsMigrateError.getFolderURL(let message) {
+        } catch UtilsFileError.getFolderURLFailed(let message) {
             throw UtilsMigrateError.addSQLiteSuffix(message: message)
         } catch UtilsFileError.getFileListFailed {
             throw UtilsMigrateError.addSQLiteSuffix(message: "getFileListFailed")
@@ -129,7 +130,7 @@ class UtilsMigrate {
     // swiftlint:disable cyclomatic_complexity
     class func deleteOldDatabases(folderPath: String, dbList: [String]) throws {
         do {
-            let dbPathURL: URL = try UtilsMigrate
+            let dbPathURL: URL = try UtilsFile
                 .getFolderURL(folderPath: folderPath)
             var isDir = ObjCBool(true)
             if FileManager.default.fileExists(atPath: dbPathURL.relativePath,
@@ -176,7 +177,7 @@ class UtilsMigrate {
         } catch UtilsFileError.getDatabasesURLFailed {
             throw UtilsMigrateError
             .addSQLiteSuffix(message: "getDatabasesURLFailed")
-        } catch UtilsMigrateError.getFolderURL(let message) {
+        } catch UtilsFileError.getFolderURLFailed(let message) {
             throw UtilsMigrateError.addSQLiteSuffix(message: message)
         } catch UtilsFileError.getFileListFailed {
             throw UtilsMigrateError.addSQLiteSuffix(message: "getFileListFailed")
@@ -190,39 +191,5 @@ class UtilsMigrate {
     }
     // swiftlint:enable cyclomatic_complexity
     // swiftlint:enable function_body_length
-
-    // MARK: - getFolderURL
-    class func getFolderURL(folderPath: String) throws -> URL {
-        do {
-            let databaseURL = try UtilsFile.getDatabasesUrl().absoluteURL
-            var dbPathURL: URL
-            let first = folderPath.split(separator: "/", maxSplits: 1)
-            if first[0] == "Applications" {
-                dbPathURL = try UtilsFile.getApplicationURL().absoluteURL
-            } else if first[0] == "Library" {
-                dbPathURL = try UtilsFile.getLibraryURL().absoluteURL
-            } else if first[0] == "Documents" || first[0] == "default" {
-                dbPathURL = databaseURL
-            } else {
-                var msg: String = "addSQLiteSuffix command failed :"
-                msg.append(" Folder '\(first[0])' not allowed")
-                throw UtilsMigrateError.getFolderURL(message: msg)
-            }
-            if first.count > 1 {
-                dbPathURL = dbPathURL
-                    .appendingPathComponent(String(first[1])).absoluteURL
-            }
-            return dbPathURL
-        } catch UtilsFileError.getDatabasesURLFailed {
-            throw UtilsMigrateError.getFolderURL(message: "getDatabasesURLFailed")
-        } catch UtilsFileError.getApplicationURLFailed {
-            throw UtilsMigrateError
-            .getFolderURL(message: "getApplicationURLFailed")
-        } catch let error {
-            var msg: String = "getFolderURL command failed :"
-            msg.append(" \(error.localizedDescription)")
-            throw UtilsMigrateError.getFolderURL(message: msg)
-        }
-    }
 
 }

@@ -5,7 +5,7 @@ import Capacitor
 // swiftlint:disable file_length
 // swiftlint:disable type_body_length
 public class CapacitorSQLitePlugin: CAPPlugin {
-    private let implementation = CapacitorSQLite()
+    private var implementation: CapacitorSQLite?
     private let modeList: [String] = ["no-encryption", "encryption", "secret", "newsecret", "wrongsecret"]
     private let retHandler: ReturnHandler = ReturnHandler()
     private var versionUpgrades: [String: [Int: [String: Any]]] = [:]
@@ -13,6 +13,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
     var exportObserver: Any?
 
     override public func load() {
+        self.implementation = CapacitorSQLite(config: sqliteConfig())
         self.addObserversToNotificationCenter()
     }
     deinit {
@@ -24,16 +25,18 @@ public class CapacitorSQLitePlugin: CAPPlugin {
 
     @objc func echo(_ call: CAPPluginCall) {
         let value = call.getString("value") ?? ""
-        call.resolve([
-            "value": implementation.echo(value)
-        ])
+        if let retValue: String = implementation?.echo(value) {
+            call.resolve([
+                "value": retValue
+            ])
+        }
     }
 
     // MARK: - IsSecretStored
 
     @objc func isSecretStored(_ call: CAPPluginCall) {
         do {
-            let res = try implementation.isSecretStored()
+            let res = try implementation?.isSecretStored()
             var bRes: Bool = false
             if res == 1 {
                 bRes = true
@@ -64,7 +67,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
         do {
-            try implementation.setEncryptionSecret(passphrase: passphrase)
+            try implementation?.setEncryptionSecret(passphrase: passphrase)
             retHandler.rResult(call: call)
             return
         } catch CapacitorSQLiteError.failed(let message) {
@@ -96,7 +99,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
         do {
-            try implementation.changeEncryptionSecret(passphrase: passphrase, oldPassphrase: oldPassphrase)
+            try implementation?.changeEncryptionSecret(passphrase: passphrase, oldPassphrase: oldPassphrase)
             retHandler.rResult(call: call)
             return
         } catch CapacitorSQLiteError.failed(let message) {
@@ -135,11 +138,11 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             upgDict = cUpgDict
         }
         do {
-            try implementation.createConnection(dbName,
-                                                encrypted: encrypted,
-                                                mode: inMode,
-                                                version: version,
-                                                vUpgDict: upgDict)
+            try implementation?.createConnection(dbName,
+                                                 encrypted: encrypted,
+                                                 mode: inMode,
+                                                 version: version,
+                                                 vUpgDict: upgDict)
             retHandler.rResult(call: call)
             return
         } catch CapacitorSQLiteError.failed(let message) {
@@ -164,7 +167,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
         do {
-            try implementation.open(dbName)
+            try implementation?.open(dbName)
             retHandler.rResult(call: call)
             return
         } catch CapacitorSQLiteError.failed(let message) {
@@ -189,7 +192,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
         do {
-            try implementation.close(dbName)
+            try implementation?.close(dbName)
             retHandler.rResult(call: call)
             return
         } catch CapacitorSQLiteError.failed(let message) {
@@ -214,9 +217,15 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
         do {
-            let version: NSNumber = try implementation.getVersion(dbName)
-            retHandler.rVersion(call: call, ret: version)
-            return
+            if let version: NSNumber = try implementation?
+                .getVersion(dbName) {
+                retHandler.rVersion(call: call, ret: version)
+                return
+            } else {
+                let msg = "GetVersion: Does not return a valid version"
+                retHandler.rVersion(call: call, message: msg)
+                return
+            }
         } catch CapacitorSQLiteError.failed(let message) {
             let msg = "GetVersion: \(message)"
             retHandler.rVersion(call: call, message: msg)
@@ -239,7 +248,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
         do {
-            try implementation.closeConnection(dbName)
+            try implementation?.closeConnection(dbName)
             retHandler.rResult(call: call)
             return
         } catch CapacitorSQLiteError.failed(let message) {
@@ -266,7 +275,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
         do {
-            let res = try implementation.checkConnectionsConsistency(dbNames)
+            let res = try implementation?.checkConnectionsConsistency(dbNames)
             var bRes: Bool = false
             if res == 1 {
                 bRes = true
@@ -291,7 +300,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
         do {
-            let res = try implementation.isDatabase(dbName)
+            let res = try implementation?.isDatabase(dbName)
             var bRes: Bool = false
             if res == 1 {
                 bRes = true
@@ -326,7 +335,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
         do {
-            let res = try implementation.isTableExists(dbName, tableName: tableName)
+            let res = try implementation?.isTableExists(dbName, tableName: tableName)
             var bRes: Bool = false
             if res == 1 {
                 bRes = true
@@ -349,7 +358,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
     @objc func getDatabaseList(_ call: CAPPluginCall) {
 
         do {
-            let res = try implementation.getDatabaseList()
+            let res = try implementation?.getDatabaseList() ?? []
             retHandler.rValues(call: call, ret: res)
             return
         } catch CapacitorSQLiteError.failed(let message) {
@@ -376,7 +385,8 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         }
 
         do {
-            let res = try implementation.getMigratableDbList(dbFolder)
+            let res = try implementation?
+                .getMigratableDbList(dbFolder) ?? []
             retHandler.rValues(call: call, ret: res)
             return
         } catch CapacitorSQLiteError.failed(let message) {
@@ -406,7 +416,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             }
         }
         do {
-            try implementation.addSQLiteSuffix(folderPath, dbList: dbList)
+            try implementation?.addSQLiteSuffix(folderPath, dbList: dbList)
             retHandler.rResult(call: call)
             return
         } catch CapacitorSQLiteError.failed(let message) {
@@ -435,7 +445,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             }
         }
         do {
-            try implementation.deleteOldDatabases(folderPath, dbList: dbList)
+            try implementation?.deleteOldDatabases(folderPath, dbList: dbList)
             retHandler.rResult(call: call)
             return
         } catch CapacitorSQLiteError.failed(let message) {
@@ -470,10 +480,17 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
         do {
-            let res = try implementation.execute(dbName, statements: statements,
-                                                 transaction: transaction)
-            retHandler.rChanges(call: call, ret: res)
-            return
+            if let res = try implementation?
+                .execute(dbName, statements: statements,
+                         transaction: transaction) {
+                retHandler.rChanges(call: call, ret: res)
+                return
+            } else {
+                retHandler.rChanges(
+                    call: call, ret: ["changes": -1],
+                    message: "Execute: Does not return a valid execute")
+                return
+            }
         } catch CapacitorSQLiteError.failed(let message) {
             retHandler.rChanges(
                 call: call, ret: ["changes": -1],
@@ -526,10 +543,17 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         }
         let transaction: Bool = call.getBool("transaction") ?? true
         do {
-            let res = try implementation.executeSet(dbName, set: set,
-                                                    transaction: transaction)
-            retHandler.rChanges(call: call, ret: res)
-            return
+            if let res = try implementation?.executeSet(dbName, set: set,
+                                                        transaction: transaction) {
+                retHandler.rChanges(call: call, ret: res)
+                return
+            } else {
+                retHandler.rChanges(
+                    call: call, ret: ["changes": -1],
+                    message: "ExecuteSet: Does not return a valid executeSet")
+                return
+
+            }
         } catch CapacitorSQLiteError.failed(let message) {
             retHandler.rChanges(
                 call: call, ret: ["changes": -1],
@@ -547,6 +571,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
 
     // MARK: - Run
 
+    // swiftlint:disable function_body_length
     @objc func run(_ call: CAPPluginCall) {
         guard let dbName = call.options["database"] as? String else {
             retHandler.rChanges(
@@ -572,13 +597,19 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         }
         let transaction: Bool = call.getBool("transaction") ?? true
         do {
-            let res = try
-                implementation.run(dbName,
-                                   statement: statement,
-                                   values: values,
-                                   transaction: transaction)
-            retHandler.rChanges(call: call, ret: res)
-            return
+            if let res = try
+                implementation?.run(dbName,
+                                    statement: statement,
+                                    values: values,
+                                    transaction: transaction) {
+                retHandler.rChanges(call: call, ret: res)
+                return
+            } else {
+                retHandler.rChanges(
+                    call: call, ret: ["changes": -1],
+                    message: "Run: Does not return a valid run")
+                return
+            }
         } catch CapacitorSQLiteError.failed(let message) {
             retHandler.rChanges(
                 call: call, ret: ["changes": -1],
@@ -592,9 +623,11 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         }
 
     }
+    // swiftlint:enable function_body_length
 
     // MARK: - Query
 
+    // swiftlint:disable function_body_length
     @objc func query(_ call: CAPPluginCall) {
         guard let dbName = call.options["database"]
                 as? String else {
@@ -622,12 +655,19 @@ public class CapacitorSQLitePlugin: CAPPlugin {
 
         }
         do {
-            let res = try
-                implementation.query(dbName,
-                                     statement: statement,
-                                     values: values)
-            retHandler.rValues(call: call, ret: res)
-            return
+            if let res = try
+                implementation?.query(dbName,
+                                      statement: statement,
+                                      values: values) {
+                retHandler.rValues(call: call, ret: res)
+                return
+            } else {
+                retHandler.rValues(
+                    call: call, ret: [],
+                    message: "Query: Does not return a valid query")
+                return
+
+            }
         } catch CapacitorSQLiteError.failed(let message) {
             retHandler.rValues(
                 call: call, ret: [],
@@ -641,6 +681,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         }
 
     }
+    // swiftlint:enable function_body_length
 
     // MARK: - isDBExists
 
@@ -653,7 +694,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
         do {
-            let res = try implementation.isDBExists(dbName)
+            let res = try implementation?.isDBExists(dbName)
             var bRes: Bool = false
             if res == 1 {
                 bRes = true
@@ -683,7 +724,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
         do {
-            let res = try implementation.isDBOpen(dbName)
+            let res = try implementation?.isDBOpen(dbName)
             var bRes: Bool = false
             if res == 1 {
                 bRes = true
@@ -712,7 +753,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
         do {
-            try implementation.deleteDatabase(dbName)
+            try implementation?.deleteDatabase(dbName)
             retHandler.rResult(call: call)
             return
         } catch CapacitorSQLiteError.failed(let message) {
@@ -737,7 +778,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
         do {
-            try implementation.isJsonValid(parsingData)
+            try implementation?.isJsonValid(parsingData)
             retHandler.rResult(call: call, ret: true)
             return
         } catch CapacitorSQLiteError.failed(let message) {
@@ -762,7 +803,8 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
         do {
-            let res: [String: Int]  = try implementation.importFromJson(parsingData)
+            let res: [String: Int]  = try implementation?
+                .importFromJson(parsingData) ?? ["changes": -1]
             retHandler.rChanges(call: call, ret: res)
             return
         } catch CapacitorSQLiteError.failed(let message) {
@@ -808,8 +850,8 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         }
 
         do {
-            let res: [String: Any] = try implementation
-                .exportToJson(dbName, expMode: expMode)
+            let res: [String: Any] = try implementation?
+                .exportToJson(dbName, expMode: expMode) ?? [:]
             retHandler.rJsonSQLite(call: call, ret: res)
             return
         } catch CapacitorSQLiteError.failed(let message) {
@@ -837,8 +879,8 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
         do {
-            let res: NSNumber = try implementation
-                .createSyncTable(dbName)
+            let res: NSNumber = try implementation?
+                .createSyncTable(dbName) ?? -1
             retHandler.rChanges(call: call,
                                 ret: ["changes": Int(truncating: res)])
             return
@@ -872,7 +914,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
         do {
-            try implementation.setSyncDate( dbName, syncDate: syncDate)
+            try implementation?.setSyncDate( dbName, syncDate: syncDate)
             retHandler.rResult(call: call)
             return
         } catch CapacitorSQLiteError.failed(let message) {
@@ -896,7 +938,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
         do {
-            let res: NSNumber = try implementation.getSyncDate( dbName)
+            let res: NSNumber = try implementation?.getSyncDate( dbName) ?? 0
             retHandler.rSyncDate(call: call,
                                  ret: Int64(truncating: res))
             return
@@ -928,12 +970,17 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
         do {
-            let upgVersionDict: [Int: [String: Any]] = try
-                implementation.addUpgradeStatement(dbName,
-                                                   upgrade: upgrade)
-            versionUpgrades = ["\(dbName)": upgVersionDict]
-            retHandler.rResult(call: call)
-            return
+            if let upgVersionDict: [Int: [String: Any]] = try
+                implementation?.addUpgradeStatement(dbName,
+                                                    upgrade: upgrade) {
+                versionUpgrades = ["\(dbName)": upgVersionDict]
+                retHandler.rResult(call: call)
+                return
+            } else {
+                let msg = "addUpgradeStatement: Error in returned upgVersionDict"
+                retHandler.rResult(call: call, message: msg)
+                return
+            }
         } catch CapacitorSQLiteError.failed(let message) {
             let msg = "addUpgradeStatement: \(message)"
             retHandler.rResult(call: call, message: msg)
@@ -952,7 +999,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         let overwrite: Bool = call.getBool("overwrite") ?? true
 
         do {
-            try implementation.copyFromAssets(overwrite: overwrite)
+            try implementation?.copyFromAssets(overwrite: overwrite)
             retHandler.rResult(call: call)
             return
         } catch CapacitorSQLiteError.failed(let message) {
@@ -981,10 +1028,16 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         }
         do {
 
-            let path: String = try implementation.getNCDatabasePath(folderPath,
-                                                                    dbName: dbName)
-            retHandler.rPath(call: call, ret: path)
-            return
+            if let path: String = try implementation?
+                .getNCDatabasePath(folderPath, dbName: dbName) {
+                retHandler.rPath(call: call, ret: path)
+                return
+            } else {
+                let msg = "getNCDatabasePath: Does not return a NC path"
+                retHandler.rPath(call: call, ret: "", message: msg)
+                return
+
+            }
         } catch CapacitorSQLiteError.failed(let message) {
             let msg = "getNCDatabasePath: \(message)"
             retHandler.rPath(call: call, ret: "", message: msg)
@@ -1007,8 +1060,8 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         }
         let version: Int = call.getInt("version") ?? 1
         do {
-            try implementation.createNCConnection(dbPath,
-                                                  version: version)
+            try implementation?.createNCConnection(dbPath,
+                                                   version: version)
             retHandler.rResult(call: call)
             return
         } catch CapacitorSQLiteError.failed(let message) {
@@ -1033,7 +1086,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
         do {
-            try implementation.closeNCConnection(dbPath)
+            try implementation?.closeNCConnection(dbPath)
             retHandler.rResult(call: call)
             return
         } catch CapacitorSQLiteError.failed(let message) {
@@ -1058,7 +1111,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
         do {
-            let res = try implementation.isNCDatabase(dbPath)
+            let res = try implementation?.isNCDatabase(dbPath)
             var bRes: Bool = false
             if res == 1 {
                 bRes = true
@@ -1102,6 +1155,14 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             self.notifyListeners("sqliteExportProgressEvent", data: info, retainUntilConsumed: true)
             return
         }
+    }
+    private func sqliteConfig() -> SqliteConfig {
+        var config = SqliteConfig()
+
+        if let iosDatabaseLocation = getConfigValue("iosDatabaseLocation") as? String {
+            config.iosDatabaseLocation = iosDatabaseLocation
+        }
+        return config
     }
 
 }
