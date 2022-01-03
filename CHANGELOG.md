@@ -1,3 +1,9 @@
+## 3.3.3-3 (2022-01-03)
+
+### Bug Fixes
+
+ - fix Android Error during database version upgrade issue#209
+
 ## 3.3.3-2 (2022-01-03)
 
 ### Added Features

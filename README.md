@@ -16,7 +16,7 @@
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/dw/@capacitor-community/sqlite?style=flat-square" /></a>
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/v/@capacitor-community/sqlite?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-<a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-10-orange?style=flat-square" /></a>
+<a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-11-orange?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 </p>
 
@@ -327,6 +327,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/peakcool"><img src="https://avatars.githubusercontent.com/u/14804014?v=4" width="100px;" alt=""/><br /><sub><b>Peakcool</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=jepiqueau" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/gion-andri"><img src="https://avatars.githubusercontent.com/u/540998?v=4" width="100px;" alt=""/><br /><sub><b>Gion-Andri Cantieni</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=jepiqueau" title="Documentation">📖</a></td>
     <td align="center"><a href="https://github.com/robingenz"><img src="https://avatars.githubusercontent.com/u/13857929?v=4" width="100px;" alt=""/><br /><sub><b>Robin Genz</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=jepiqueau" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/dewald-els"><img src="https://avatars.githubusercontent.com/u/10051247?v=4" width="100px;" alt=""/><br /><sub><b>Dewald Els</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=jepiqueau" title="Code">💻</a></td>
   </tr>
 </table>
 
