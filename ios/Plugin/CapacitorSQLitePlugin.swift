@@ -207,6 +207,39 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         }
     }
 
+    // MARK: - GetUrl
+
+    @objc func getUrl(_ call: CAPPluginCall) {
+        guard let dbName = call.options["database"] as? String else {
+            retHandler.rResult(
+                call: call,
+                message: "GetUrl: Must provide a database name")
+            return
+        }
+        do {
+            let res: String = try implementation?.getUrl(dbName) ?? ""
+            if res.count > 0 {
+                retHandler.rUrl(call: call, ret: res)
+                return
+            } else {
+                retHandler.rUrl(
+                    call: call, ret: "",
+                    message: "getUrl: No path returned")
+                return
+            }
+        } catch CapacitorSQLiteError.failed(let message) {
+            retHandler.rUrl(
+                call: call, ret: "",
+                message: "getUrl: \(message)")
+            return
+        } catch let error {
+            retHandler.rUrl(
+                call: call, ret: "",
+                message: "getUrl: \(error)")
+            return
+        }
+    }
+
     // MARK: - getVersion
 
     @objc func getVersion(_ call: CAPPluginCall) {

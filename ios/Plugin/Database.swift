@@ -81,6 +81,12 @@ class Database {
         return ncDB
     }
 
+    // MARK: - getUrl
+
+    func getUrl () -> String {
+        return path
+    }
+
     // MARK: - Open
 
     // swiftlint:disable cyclomatic_complexity

@@ -1,3 +1,13 @@
+## 3.3.3-4 (2022-01-06)
+
+### Added Features
+
+ - add getUrl method Get DB Path iOS & Android 
+
+### Bug Fixes
+
+ - fix Get DB Path or file URI issue#208
+
 ## 3.3.3-3 (2022-01-03)
 
 ### Bug Fixes

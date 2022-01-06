@@ -280,6 +280,30 @@ public class CapacitorSQLitePlugin extends Plugin {
     }
 
     /**
+     * GetUrl Method
+     * Get a database Url
+     * @param call
+     */
+    @PluginMethod
+    public void getUrl(PluginCall call) {
+        if (!call.getData().has("database")) {
+            String msg = "GetUrl: Must provide a database name";
+            rHandler.retUrl(call, null, msg);
+            return;
+        }
+        String dbName = call.getString("database");
+        try {
+            String res = implementation.getUrl(dbName);
+            rHandler.retUrl(call, res, null);
+            return;
+        } catch (Exception e) {
+            String msg = "GetUrl: " + e.getMessage();
+            rHandler.retUrl(call, null, msg);
+            return;
+        }
+    }
+
+    /**
      * GetVersion Method
      * Get a database Version
      * @param call
@@ -297,7 +321,7 @@ public class CapacitorSQLitePlugin extends Plugin {
             rHandler.retVersion(call, res, null);
             return;
         } catch (Exception e) {
-            String msg = "Open: " + e.getMessage();
+            String msg = "GetVersion: " + e.getMessage();
             rHandler.retVersion(call, null, msg);
             return;
         }

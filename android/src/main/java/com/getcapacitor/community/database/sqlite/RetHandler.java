@@ -143,7 +143,7 @@ public class RetHandler {
 
     /**
      * RetPath Method
-     * Create and return the capSQLiteResult object
+     * Create and return the capNCDatabasePathResult object
      * @param call
      * @param res
      * @param message
@@ -158,6 +158,30 @@ public class RetHandler {
         }
         if (res != null) {
             ret.put("path", res);
+            call.resolve(ret);
+            return;
+        } else {
+            call.resolve();
+        }
+    }
+
+    /**
+     * RetUrl Method
+     * Create and return the capSQLiteUrl object
+     * @param call
+     * @param res
+     * @param message
+     */
+    public void retUrl(PluginCall call, String res, String message) {
+        JSObject ret = new JSObject();
+        if (message != null) {
+            ret.put("message", message);
+            Log.v(TAG, "*** ERROR " + message);
+            call.reject(message);
+            return;
+        }
+        if (res != null) {
+            ret.put("url", res);
             call.resolve(ret);
             return;
         } else {

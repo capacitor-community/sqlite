@@ -201,6 +201,7 @@ No configuration required for this plugin
 | open (non-encrypted DB)     | ✅      | ✅  | ✅        | ✅  |
 | open (encrypted DB)         | ✅      | ✅  | ❌        | ❌  |
 | close                       | ✅      | ✅  | ✅        | ✅  |
+| getUrl                      | ✅      | ✅  | ❌        | ❌  |
 | getVersion                  | ✅      | ✅  | ✅        | ✅  |
 | execute                     | ✅      | ✅  | ✅        | ✅  |
 | executeSet                  | ✅      | ✅  | ✅        | ✅  |

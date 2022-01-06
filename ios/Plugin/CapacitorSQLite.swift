@@ -197,6 +197,22 @@ enum CapacitorSQLiteError: Error {
         }
     }
 
+    // MARK: - getUrl
+
+    @objc public func getUrl(_ dbName: String) throws -> String {
+        let mDbName = CapacitorSQLite.getDatabaseName(dbName: dbName)
+        guard let mDb: Database = dbDict[mDbName] else {
+            let msg = "Connection to \(mDbName) not available"
+            throw CapacitorSQLiteError.failed(message: msg)
+        }
+        do {
+            let res: String = try mDb.getUrl()
+            return res
+        } catch DatabaseError.close(let message) {
+            throw CapacitorSQLiteError.failed(message: message)
+        }
+    }
+
     // MARK: - GetVersion
 
     @objc public func getVersion(_ dbName: String) throws ->  NSNumber {
@@ -827,7 +843,7 @@ enum CapacitorSQLiteError: Error {
 
     @objc func getDatabaseList() throws -> [String] {
         do {
-            let aPath: String = try UtilsFile.getDatabasesPath()
+            let aPath: String = try (UtilsFile.getFolderURL(folderPath: databaseLocation)).path
             // get the database files
             let dbList: [String] = try UtilsFile.getFileList(path: aPath, ext: ".db")
             return dbList

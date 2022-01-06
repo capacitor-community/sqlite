@@ -84,6 +84,7 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 * [`echo(...)`](#echo)
 * [`open(...)`](#open)
 * [`close(...)`](#close)
+* [`getUrl(...)`](#geturl)
 * [`getVersion(...)`](#getversion)
 * [`execute(...)`](#execute)
 * [`executeSet(...)`](#executeset)
@@ -289,6 +290,25 @@ Close a SQLite database
 | **`options`** | <code><a href="#capsqliteoptions">capSQLiteOptions</a></code> | : <a href="#capsqliteoptions">capSQLiteOptions</a> |
 
 **Since:** 0.0.1
+
+--------------------
+
+
+### getUrl(...)
+
+```typescript
+getUrl(options: capSQLiteOptions) => Promise<capSQLiteUrl>
+```
+
+GetUrl get the database Url
+
+| Param         | Type                                                          | Description                                        |
+| ------------- | ------------------------------------------------------------- | -------------------------------------------------- |
+| **`options`** | <code><a href="#capsqliteoptions">capSQLiteOptions</a></code> | : <a href="#capsqliteoptions">capSQLiteOptions</a> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteurl">capSQLiteUrl</a>&gt;</code>
+
+**Since:** 3.3.3-4
 
 --------------------
 
@@ -842,6 +862,13 @@ Check if a non conformed database exists without connection
 | Prop        | Type                | Description         |
 | ----------- | ------------------- | ------------------- |
 | **`value`** | <code>string</code> | String to be echoed |
+
+
+#### capSQLiteUrl
+
+| Prop      | Type                | Description    |
+| --------- | ------------------- | -------------- |
+| **`url`** | <code>string</code> | a returned url |
 
 
 #### capVersionResult

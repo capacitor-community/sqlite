@@ -86,6 +86,13 @@ export interface CapacitorSQLitePlugin {
    */
   close(options: capSQLiteOptions): Promise<void>;
   /**
+   * GetUrl get the database Url
+   * @param options: capSQLiteOptions
+   * @returns Promise<capSQLiteUrl>
+   * @since 3.3.3-4
+   */
+  getUrl(options: capSQLiteOptions): Promise<capSQLiteUrl>;
+  /**
    * Get a SQLite database version
    * @param options: capSQLiteOptions
    * @returns Promise<void>
@@ -535,6 +542,12 @@ export interface capSQLiteResult {
    * result set to true when successful else false
    */
   result?: boolean;
+}
+export interface capSQLiteUrl {
+  /**
+   * a returned url
+   */
+  url?: string;
 }
 export interface capSQLiteChanges {
   /**
@@ -1279,6 +1292,12 @@ export interface ISQLiteDBConnection {
    */
   close(): Promise<void>;
   /**
+   * Get Database Url
+   * @returns Promise<capSQLiteUrl>
+   * @since 3.3.3-4
+   */
+  getUrl(): Promise<capSQLiteUrl>;
+  /**
    * Get the a SQLite DB Version
    * @returns Promise<capVersionResult>
    * @since 3.2.0
@@ -1392,6 +1411,16 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
     try {
       await this.sqlite.close({ database: this.dbName });
       return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async getUrl(): Promise<capSQLiteUrl> {
+    try {
+      const res: capSQLiteUrl = await this.sqlite.getUrl({
+        database: this.dbName,
+      });
+      return Promise.resolve(res);
     } catch (err) {
       return Promise.reject(err);
     }

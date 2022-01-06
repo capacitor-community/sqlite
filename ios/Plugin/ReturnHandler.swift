@@ -106,4 +106,16 @@ class ReturnHandler {
             return
         }
     }
+    // MARK: - rUrl
+
+    func rUrl(call: CAPPluginCall, ret: String,
+              message: String? = nil) {
+        if let intMessage = message {
+            call.reject(intMessage)
+            return
+        } else {
+            call.resolve(["url": ret])
+            return
+        }
+    }
 }

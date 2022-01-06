@@ -125,6 +125,14 @@ public class Database {
     }
 
     /**
+     * GetUrl method
+     * @return database url
+     */
+    public String getUrl() {
+        return this._file.getAbsolutePath();
+    }
+
+    /**
      * Open method
      * @return open status
      */

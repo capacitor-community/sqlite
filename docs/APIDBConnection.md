@@ -11,6 +11,7 @@
 * [`getConnectionDBName()`](#getconnectiondbname)
 * [`open()`](#open)
 * [`close()`](#close)
+* [`getUrl()`](#geturl)
 * [`getVersion()`](#getversion)
 * [`execute(...)`](#execute)
 * [`query(...)`](#query)
@@ -72,6 +73,21 @@ close() => Promise<void>
 Close a SQLite DB Connection
 
 **Since:** 2.9.0 refactor
+
+--------------------
+
+
+### getUrl()
+
+```typescript
+getUrl() => Promise<capSQLiteUrl>
+```
+
+Get Database Url
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteurl">capSQLiteUrl</a>&gt;</code>
+
+**Since:** 3.3.3-4
 
 --------------------
 
@@ -301,6 +317,13 @@ Export the given database to a JSON Object
 
 
 ### Interfaces
+
+
+#### capSQLiteUrl
+
+| Prop      | Type                | Description    |
+| --------- | ------------------- | -------------- |
+| **`url`** | <code>string</code> | a returned url |
 
 
 #### capVersionResult

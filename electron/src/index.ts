@@ -30,6 +30,7 @@ import type {
   capNCConnectionOptions,
   capNCOptions,
   capNCDatabasePathResult,
+  capSQLiteUrl,
 } from '../../src/definitions';
 
 import { Database } from './electron-utils/Database';
@@ -202,6 +203,10 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       return Promise.reject(`Close: ${err}`);
     }
   }
+  async getUrl(): Promise<capSQLiteUrl> {
+    return Promise.reject('Method not implemented.');
+  }
+
   async getVersion(options: capSQLiteOptions): Promise<capVersionResult> {
     let keys = Object.keys(options);
     if (!keys.includes('database')) {

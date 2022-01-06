@@ -29,6 +29,7 @@ import type {
   capNCConnectionOptions,
   capNCOptions,
   capNCDatabasePathResult,
+  capSQLiteUrl,
 } from './definitions';
 
 export class CapacitorSQLiteWeb
@@ -161,6 +162,9 @@ export class CapacitorSQLiteWeb
     } else {
       throw this.unimplemented('Not implemented on web.');
     }
+  }
+  async getUrl(): Promise<capSQLiteUrl> {
+    throw this.unimplemented('Not implemented on web.');
   }
   async getVersion(options: capSQLiteOptions): Promise<capVersionResult> {
     if (this.sqliteEl != null) {
