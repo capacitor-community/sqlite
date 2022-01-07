@@ -1,3 +1,10 @@
+## 3.3.3-5 (2022-01-07)
+
+### Bug Fixes
+
+ - fix getUrl integrate "file://" in the returned url
+ - fix create databaselocation in iOS
+
 ## 3.3.3-4 (2022-01-06)
 
 ### Added Features

@@ -129,7 +129,8 @@ public class Database {
      * @return database url
      */
     public String getUrl() {
-        return this._file.getAbsolutePath();
+        String url = "file://";
+        return url + this._file.getAbsolutePath();
     }
 
     /**

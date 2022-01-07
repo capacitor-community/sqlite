@@ -29,10 +29,41 @@ enum UtilsFileError: Error {
     case getFolderURLFailed(message: String)
     case createDirFailed(message: String)
     case moveAllDBSQLiteFailed(message: String)
+    case createDatabaseLocationFailed(message: String)
 }
 // swiftlint:disable file_length
 // swiftlint:disable type_body_length
 class UtilsFile {
+
+    class func createDatabaseLocation(location: String) throws {
+        do {
+            var dirUrl: URL = try UtilsFile
+                .getFolderURL(folderPath: location)
+            let dirPath: String = dirUrl.path
+            if !UtilsFile.isDirExist(dirPath: dirPath) {
+                // create the directory
+                try FileManager.default
+                    .createDirectory(at: dirUrl, withIntermediateDirectories: true)
+                // exclude the directory from iCloud Backup
+                try UtilsFile.setExcludeFromiCloudBackup(&dirUrl,
+                                                         isExcluded: true)
+                // move all existing dbs from "Documents" to location folder
+                if location.prefix(9) != "Documents" &&
+                    location.prefix(7) != "default" {
+
+                    try UtilsFile.moveAllDBSQLite(dirUrl: dirUrl)
+                }
+            }
+        } catch UtilsFileError.getFolderURLFailed(let message) {
+            throw UtilsFileError.createDatabaseLocationFailed(message: message)
+        } catch UtilsFileError.moveAllDBSQLiteFailed(let message) {
+            throw UtilsFileError.createDatabaseLocationFailed(message: message)
+        } catch let error {
+            var msg: String = "CreateDatabaseLocation command failed :"
+            msg.append(" \(error.localizedDescription)")
+            throw UtilsFileError.createDatabaseLocationFailed(message: msg)
+        }
+    }
 
     // MARK: - IsFileExist
 
@@ -41,33 +72,6 @@ class UtilsFile {
         let fileManager = FileManager.default
         let exists = fileManager.fileExists(atPath: dirPath, isDirectory: &isDir)
         return exists && isDir.boolValue
-    }
-
-    class func createDirCopyDB(url: URL) throws {
-        do {
-            var dirUrl = url
-            let dirPath: String = url.path
-            if !UtilsFile.isDirExist(dirPath: dirPath) {
-                // create the directory
-                try FileManager.default
-                    .createDirectory(at: dirUrl, withIntermediateDirectories: true)
-                // exclude the directory from iCloud Backup
-                try UtilsFile.setExcludeFromiCloudBackup(&dirUrl,
-                                                         isExcluded: true)
-                // move all SQLite database from Documents folder
-                // to this new directory
-                try UtilsFile.moveAllDBSQLite(dirUrl: dirUrl)
-            }
-        } catch UtilsFileError.getFolderURLFailed(let message) {
-            throw UtilsFileError.createDirFailed(message: message)
-        } catch UtilsFileError.moveAllDBSQLiteFailed(let message) {
-            throw UtilsFileError.createDirFailed(message: message)
-        } catch let error {
-            var msg: String = "createDir command failed :"
-            msg.append(" \(error.localizedDescription)")
-            throw UtilsFileError.createDirFailed(message: msg)
-        }
-
     }
 
     // MARK: - moveAllDBSQLite
@@ -175,11 +179,6 @@ class UtilsFile {
         do {
             let url: URL = try UtilsFile
                 .getFolderURL(folderPath: databaseLocation)
-            if databaseLocation.prefix(9) != "Documents" &&
-                databaseLocation.prefix(7) != "default" {
-                // create the directories if they do not exists
-                try UtilsFile.createDirCopyDB(url: url)
-            }
             let dbPath: String = url
                 .appendingPathComponent("\(fileName)").path
             return dbPath

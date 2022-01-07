@@ -84,7 +84,7 @@ class Database {
     // MARK: - getUrl
 
     func getUrl () -> String {
-        return path
+        return "file://\(path)"
     }
 
     // MARK: - Open
