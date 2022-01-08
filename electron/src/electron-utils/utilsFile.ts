@@ -1,5 +1,5 @@
 export class UtilsFile {
-  pathDB = 'Databases';
+  pathDB = './CapacitorDatabases';
   Path: any = null;
   NodeFs: any = null;
   JSZip: any = null;
@@ -86,7 +86,7 @@ export class UtilsFile {
    * get the database folder path
    */
   public getDatabasesPath(): string {
-    let retPath = '';
+/*    let retPath = '';
     const dbFolder: string = this.pathDB;
     retPath = this.Path.join(this.HomeDir, dbFolder, this.AppName);
     let retB: boolean = this._createFolderIfNotExists(
@@ -100,8 +100,11 @@ export class UtilsFile {
     } else {
       retPath = '';
     }
-
-    return retPath;
+*/
+    let dbFolder: string = this.pathDB;
+    const retB: boolean = this._createFolderIfNotExists(dbFolder);
+    if (!retB) dbFolder = '';
+    return dbFolder;
   }
   /**
    * GetAssetsDatabasesPath
