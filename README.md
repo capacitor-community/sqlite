@@ -26,11 +26,11 @@
 | ----------------- | ----------------------------------------- | ------ |
 | Quéau Jean Pierre | [jepiqueau](https://github.com/jepiqueau) |        |
 
-## CAPACITOR 3 (Master)
+## CAPACITOR 3 (Issue#211)
 
 🚨 FOR THE DEVELOPERS ->> 🚨
 
-the release 3.3.3-test211 is not part of the main line it is just rying to solve the Electron issue#211 by storing back the databases under 
+the release 3.3.3-test211 is not part of the main line it is just trying to solve the Electron issue#211 by storing back the databases under 
 YOUR_APPLICATION/electron/CapacitorDatabases
 
 As my windows platform is out of order due to an upgrade to Nodejs@16.13.0 which does not work with the ol node-gyp and not been able yet to restore it after a lot of trials.
