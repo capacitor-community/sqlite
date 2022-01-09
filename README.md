@@ -28,6 +28,36 @@
 
 ## CAPACITOR 3 (Master)
 
+🚨 FOR THE DEVELOPERS ->> 🚨
+
+the release 3.3.3-test211 is not part of the main line it is just rying to solve the Electron issue#211 by storing back the databases under 
+YOUR_APPLICATION/electron/CapacitorDatabases
+
+As my windows platform is out of order due to an upgrade to Nodejs@16.13.0 which does not work with the ol node-gyp and not been able yet to restore it after a lot of trials.
+So basically i am waiting that some developers test the following and revert to me
+```bash
+npm install @capacitor-community@3.3.3-test211
+npx cap sync @capacitor-community/electron
+npm run build
+npx cap copy @capacitor-community/electron
+npx cap open @capacitor-community/electron
+```
+then when you check that everything work and the database are now under YOUR_APPLICATION/electron/CapacitorDatabases
+run the following
+```bash
+cd electron
+npm run electron:make
+````
+deploy the .exe created under the folder electron/dist
+test it first on your PC under windows
+deploy it on a second PC and test if it still working
+
+If you run everything succesfully revert to me through the @capacitor-community/sqlite issue channel issue#211
+Thanks in advance for your collaboration
+
+🚨 FOR THE DEVELOPERS <<-🚨
+
+
 🚨 Since release 3.3.3-2 ->> 🚨
 
   - iOS only
