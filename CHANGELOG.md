@@ -1,3 +1,10 @@
+## 3.3.3 (2022-01-18)
+
+### Bug Fixes
+
+ - fix TypeORM-Usage.md
+ - update README.md
+
 ## 3.3.3-5 (2022-01-07)
 
 ### Bug Fixes
