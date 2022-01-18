@@ -1,7 +1,5 @@
 # Using capacitor-sqlite with TypeORM
 
-*Currently a [PR with a fix for the capacitor driver is still open on the TypeORM repo](https://github.com/typeorm/typeorm/pull/7728) which solves an error on Android when using certain `PRAGMA` requests*
-
 ```typescript
 import { CapacitorSQLite, SQLiteConnection } from '@capacitor-community/sqlite';
 import { createConnection } from 'typeorm';
