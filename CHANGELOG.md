@@ -1,3 +1,15 @@
+## 3.4.0-1 (2022-02-08)
+
+### Chore
+
+ - Update to @capacitor/core 3.4.0
+ - Update to @capacitor/ios 3.4.0
+ - Update to @capacitor/android 3.4.0
+
+### Bug Fixes
+
+ - Fix iOS issue#220
+
 ## 3.3.3 (2022-01-18)
 
 ### Bug Fixes

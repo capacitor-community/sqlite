@@ -940,7 +940,7 @@ public class CapacitorSQLitePlugin extends Plugin {
             rHandler.retResult(call, res, null);
             return;
         } catch (Exception e) {
-            String msg = "isDBExists: " + e.getMessage();
+            String msg = "IsJsonValid: " + e.getMessage();
             rHandler.retResult(call, false, msg);
             return;
         }

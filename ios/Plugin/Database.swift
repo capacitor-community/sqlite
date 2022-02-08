@@ -264,12 +264,23 @@ class Database {
                 throw DatabaseError.executeSQL(
                     message: "Failed in executeSQL : \(msg)" )
             }
+        } else {
+            if transaction {
+                do {
+                    try UtilsSQLCipher
+                        .rollbackTransaction(mDB: self)
+                } catch UtilsSQLCipherError
+                            .rollbackTransaction(let message) {
+                    msg.append(" rollback: \(message)")
+                }
+            }
         }
         return changes
     }
 
     // MARK: - ExecSet
 
+    // swiftlint:disable function_body_length
     func execSet(set: [[String: Any]], transaction: Bool = true) throws -> [String: Int64] {
         var msg: String = "Failed in execSet : "
         let initChanges = UtilsSQLCipher.dbChanges(mDB: mDb)
@@ -310,7 +321,7 @@ class Database {
             msg.append(" \(message)")
             throw DatabaseError.execSet(message: msg )
         }
-        if changes > 0 && transaction {
+        if changes >= 0 && transaction {
             // commit the transaction
             do {
                 try UtilsSQLCipher.commitTransaction(mDB: self)
@@ -318,12 +329,24 @@ class Database {
                 throw DatabaseError.execSet(
                     message: msg )
             }
+        } else {
+            if transaction {
+                do {
+                    try UtilsSQLCipher
+                        .rollbackTransaction(mDB: self)
+                } catch UtilsSQLCipherError
+                            .rollbackTransaction(let message) {
+                    msg.append(" rollback: \(message)")
+                }
+            }
         }
         return changesDict
     }
+    // swiftlint:enable function_body_length
 
     // MARK: - RunSQL
 
+    // swiftlint:disable function_body_length
     func runSQL(sql: String, values: [Any], transaction: Bool = true) throws -> [String: Int64] {
         var msg: String = "Failed in runSQL : "
         var changes: Int = -1
@@ -369,11 +392,22 @@ class Database {
                 }
             }
             changes = UtilsSQLCipher.dbChanges(mDB: mDb) - initChanges
+        } else {
+            if transaction {
+                do {
+                    try UtilsSQLCipher
+                        .rollbackTransaction(mDB: self)
+                } catch UtilsSQLCipherError
+                            .rollbackTransaction(let message) {
+                    msg.append(" rollback: \(message)")
+                }
+            }
         }
         let result: [String: Int64] = ["changes": Int64(changes),
                                        "lastId": lastId]
         return result
     }
+    // swiftlint:enable function_body_length
 
     // MARK: - SelectSQL
 
