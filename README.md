@@ -116,11 +116,11 @@ npx cap sync @capacitor-community/electron
 
 #### For Angular framework
 
-- copy manually the file `sql-wasm.wasm` from `nodes_modules/sql.js/dist/sql-wasm.wasm` to the `src/assets` folder of YOUR_APP 
+- copy manually the file `sql-wasm.wasm` from `node_modules/sql.js/dist/sql-wasm.wasm` to the `src/assets` folder of YOUR_APP 
 
 #### For Vue & React frameworks
 
-- copy manually the file `sql-wasm.wasm` from `nodes_modules/sql.js/dist/sql-wasm.wasm` to the `public/assets` folder of YOUR_APP 
+- copy manually the file `sql-wasm.wasm` from `node_modules/sql.js/dist/sql-wasm.wasm` to the `public/assets` folder of YOUR_APP 
 
 ### IOS
 
