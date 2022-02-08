@@ -9,6 +9,7 @@
 ### Bug Fixes
 
  - Fix iOS issue#220
+ - Fix Android issue#221
 
 ## 3.3.3 (2022-01-18)
 

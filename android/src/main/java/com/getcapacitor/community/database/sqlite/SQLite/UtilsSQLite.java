@@ -33,6 +33,25 @@ public class UtilsSQLite {
         }
     }
 
+    public long dbLastId(SupportSQLiteDatabase db) {
+        String SELECT_CHANGE = "SELECT last_insert_rowid()";
+        Boolean success = true;
+        long ret = Long.valueOf(-1);
+        try {
+            Cursor cursor = (Cursor) db.query(SELECT_CHANGE, null);
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    ret = Long.parseLong(cursor.getString(0));
+                }
+            }
+            cursor.close();
+        } catch (Exception e) {
+            Log.d(TAG, "Error: dbLastId failed: ", e);
+        } finally {
+            return ret;
+        }
+    }
+
     public String[] getStatementsArray(String statements) {
         statements.replace("end;", "END;");
         // split for each statement

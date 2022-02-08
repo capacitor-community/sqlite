@@ -371,7 +371,8 @@ public class Database {
                     }
                     if (lastId == -1) break;
                 }
-                if (lastId != -1) {
+                changes = _uSqlite.dbChanges(_db) - initChanges;
+                if (changes >= 0) {
                     if (transaction) _db.setTransactionSuccessful();
                     changes = _uSqlite.dbChanges(_db) - initChanges;
                     retObj.put("changes", changes);
@@ -457,10 +458,11 @@ public class Database {
                 SimpleSQLiteQuery.bind(stmt, valObj);
             }
             if (stmtType.equals("INSERT")) {
-                return stmt.executeInsert();
+                stmt.executeInsert();
             } else {
-                return Long.valueOf(stmt.executeUpdateDelete());
+                stmt.executeUpdateDelete();
             }
+            return _uSqlite.dbLastId(_db);
         } catch (IllegalStateException e) {
             throw new Exception(e.getMessage());
         } catch (IllegalArgumentException e) {
