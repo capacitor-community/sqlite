@@ -52,7 +52,6 @@ class KeychainWrapper {
             print("Error converting value to data.")
             throw KeychainWrapperError(type: .badData)
         }
-
         // 1
         let query: [String: Any] = [
             // 2
@@ -91,6 +90,7 @@ class KeychainWrapper {
             // 2
             kSecMatchLimit as String: kSecMatchLimitOne,
             kSecReturnAttributes as String: true,
+
             // 3
             kSecReturnData as String: true
         ]

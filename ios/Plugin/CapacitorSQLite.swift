@@ -1,4 +1,6 @@
 import Foundation
+import Capacitor
+
 enum CapacitorSQLiteError: Error {
     case failed(message: String)
 }
@@ -7,17 +9,72 @@ enum CapacitorSQLiteError: Error {
 @objc public class CapacitorSQLite: NSObject {
     private var config: SqliteConfig
     private var dbDict: [String: Database] = [:]
-    private var databaseLocation: String
+    private var databaseLocation: String = "Documents"
     private var initMessage: String = ""
     private var isInit: Bool = false
+    private var isBiometricAuth: Bool = false
+    private var biometricTitle: String = ""
+    private var bioIdAuth: BiometricIDAuthentication =
+        BiometricIDAuthentication()
+    private var authMessage: String = ""
+    private var internalBiometricObserver: Any?
+    private var intBioMessage: String = ""
+    private var call: CAPPluginCall?
+    private var account: String = oldAccount
+    private var prefixKeychain: String = ""
 
+    // swiftlint:disable function_body_length
+    // swiftlint:disable cyclomatic_complexity
     init(config: SqliteConfig) {
         self.config = config
-        if let isLocation = config.iosDatabaseLocation {
-            self.databaseLocation = isLocation
+        super.init()
+        if let kcPrefix: String = config.iosKeychainPrefix {
+            account = "\(kcPrefix)_\(oldAccount)"
+            prefixKeychain = kcPrefix
+        }
+        if let isBioAuth = config.biometricAuth {
+            if isBioAuth == 1 {
+                if let bTitle = config.biometricTitle {
+                    biometricTitle = bTitle
+                    bioIdAuth.biometricTitle = bTitle
+                }
+                do {
+                    let bioType: BiometricType = try
+                        bioIdAuth.biometricType()
+                    if bioType == BiometricType.faceID ||
+                        bioType == BiometricType.touchID {
+                        isBiometricAuth = true
+                        isInit = true
+                        bioIdAuth.authenticateUser { [weak self] message in
+                            if let message = message {
+                                self?.notifyBiometricEvents(name: .biometricEvent,
+                                                            result: false,
+                                                            msg: message)
+                            } else {
+                                self?.notifyBiometricEvents(name: .biometricEvent,
+                                                            result: true,
+                                                            msg: "")
+                            }
+                        }
+                    } else {
+                        self.notifyBiometricEvents(name: .biometricEvent,
+                                                   result: false,
+                                                   msg: "Biometric not set-up")
+                    }
+                } catch BiometricIDAuthenticationError
+                            .biometricType(let message) {
+                    initMessage =  message
+                } catch let error {
+                    initMessage = "Init Plugin failed :"
+                    initMessage.append(" \(error.localizedDescription)")
+                }
+            }
+        }
+        if let dbLocation = config.iosDatabaseLocation {
+            self.databaseLocation = dbLocation
             // create the databaseLocation directory
             do {
-                try UtilsFile.createDatabaseLocation(location: isLocation)
+                try UtilsFile.createDatabaseLocation(location: dbLocation)
                 isInit = true
             } catch UtilsFileError.createDatabaseLocationFailed(let message) {
                 initMessage =  message
@@ -30,8 +87,9 @@ enum CapacitorSQLiteError: Error {
             self.databaseLocation = "Documents"
             isInit = true
         }
-        super.init()
     }
+    // swiftlint:enable cyclomatic_complexity
+    // swiftlint:enable function_body_length
 
     // MARK: - Echo
 
@@ -43,12 +101,18 @@ enum CapacitorSQLiteError: Error {
 
     @objc public func isSecretStored()  throws -> NSNumber {
         if isInit {
-            let isSecretExists: Bool = UtilsSecret.isPassphrase()
-            if isSecretExists {
-                return 1
-            } else {
-                return 0
+            do {
+                let isSecretExists: Bool = try UtilsSecret.isPassphrase(
+                    account: account)
+                if isSecretExists {
+                    return 1
+                } else {
+                    return 0
+                }
+            } catch UtilsSecretError.prefixPassphrase(let message) {
+                throw CapacitorSQLiteError.failed(message: message)
             }
+
         } else {
             throw CapacitorSQLiteError.failed(message: initMessage)
         }
@@ -63,7 +127,8 @@ enum CapacitorSQLiteError: Error {
                 try closeAllConnections()
                 // set encryption secret
                 try UtilsSecret
-                    .setEncryptionSecret(passphrase: passphrase,
+                    .setEncryptionSecret(prefix: prefixKeychain,
+                                         passphrase: passphrase,
                                          databaseLocation: databaseLocation)
                 return
             } catch UtilsSecretError.setEncryptionSecret(let message) {
@@ -78,28 +143,70 @@ enum CapacitorSQLiteError: Error {
 
     // MARK: - ChangeEncryptionSecret
 
-    @objc public func changeEncryptionSecret(passphrase: String,
+    // swiftlint:disable function_body_length
+    @objc public func changeEncryptionSecret(call: CAPPluginCall, passphrase: String,
                                              oldPassphrase: String) throws {
         if isInit {
+            self.call = call
+            let retHandler: ReturnHandler = ReturnHandler()
             do {
                 // close all connections
                 try closeAllConnections()
-                // set encryption secret
-                try UtilsSecret
-                    .changeEncryptionSecret(passphrase: passphrase,
-                                            oldPassphrase: oldPassphrase,
-                                            databaseLocation: databaseLocation)
-                return
+                if isBiometricAuth {
+                    let dbLocation = databaseLocation
+                    let mPrefixKeychain = prefixKeychain
+                    bioIdAuth.authenticateUser { [weak self] message in
+                        if let message = message {
+                            self?.intBioMessage = message
+                            return
+                        } else {
+                            do {
+                                try UtilsSecret.changeEncryptionSecret(
+                                    prefix: mPrefixKeychain,
+                                    passphrase: passphrase,
+                                    oldPassphrase: oldPassphrase,
+                                    databaseLocation: dbLocation)
+                                retHandler.rResult(call: call)
+                                return
+                            } catch UtilsSecretError.changeEncryptionSecret(let message) {
+                                let msg = "ChangeEncryptionSecret: \(message)"
+                                retHandler.rResult(call: call, message: msg)
+                                return
+                            } catch let error {
+                                retHandler.rResult(
+                                    call: call,
+                                    message: "ChangeEncryptionSecret: \(error.localizedDescription)")
+                                return
+                            }
+                        }
+                    }
+                } else {
+                    // set encryption secret
+                    try UtilsSecret
+                        .changeEncryptionSecret(prefix: prefixKeychain,
+                                                passphrase: passphrase,
+                                                oldPassphrase: oldPassphrase,
+                                                databaseLocation: databaseLocation)
+                    retHandler.rResult(call: call)
+                    return
+                }
             } catch UtilsSecretError.changeEncryptionSecret(let message) {
-                throw CapacitorSQLiteError.failed(message: message)
+                let msg = "ChangeEncryptionSecret: \(message)"
+                retHandler.rResult(call: call, message: msg)
+                return
             } catch let error {
-                throw CapacitorSQLiteError.failed(message: "\(error)")
+                retHandler.rResult(
+                    call: call,
+                    message: "ChangeEncryptionSecret: \(error.localizedDescription)")
+                return
             }
         } else {
             throw CapacitorSQLiteError.failed(message: initMessage)
         }
 
     }
+    // swiftlint:enable function_body_length
+
     // MARK: - getNCDatabasePath
 
     @objc public func getNCDatabasePath(_ folderPath: String, dbName: String ) throws -> String {
@@ -140,7 +247,8 @@ enum CapacitorSQLiteError: Error {
                 let mDb: Database = try Database(
                     databaseLocation: databaseLocation,
                     databaseName: databasePath,
-                    encrypted: false, mode: "no-encryption", version: version,
+                    encrypted: false, account: account,
+                    mode: "no-encryption", version: version,
                     vUpgDict: [:])
                 dbDict[databasePath] = mDb
                 return
@@ -194,7 +302,8 @@ enum CapacitorSQLiteError: Error {
                 let mDb: Database = try Database(
                     databaseLocation: databaseLocation,
                     databaseName: "\(mDbName)SQLite.db",
-                    encrypted: encrypted, mode: mode, version: version,
+                    encrypted: encrypted, account: account,
+                    mode: mode, version: version,
                     vUpgDict: vUpgDict)
                 dbDict[mDbName] = mDb
                 return
@@ -699,8 +808,8 @@ enum CapacitorSQLiteError: Error {
                 // open the database
                 do {
                     mDb = try Database(
-                        databaseLocation: databaseLocation,
-                        databaseName: dbName, encrypted: encrypted,
+                        databaseLocation: databaseLocation, databaseName: dbName,
+                        encrypted: encrypted, account: account,
                         mode: inMode, version: version, vUpgDict: [:])
                     try mDb.open()
                 } catch DatabaseError.open(let message) {
@@ -1087,6 +1196,17 @@ enum CapacitorSQLiteError: Error {
         }
         return
     }
+
+    func notifyBiometricEvents(name: Notification.Name, result: Bool, msg: String) {
+        var vId: [String: Any] = [:]
+        vId["result"] = result
+        if msg.count > 0 {
+            vId["message"] = msg
+        }
+        NotificationCenter.default.post(name: name, object: nil,
+                                        userInfo: vId)
+    }
+
 }
 // swiftlint:enable type_body_length
 // swiftlint:enable file_length

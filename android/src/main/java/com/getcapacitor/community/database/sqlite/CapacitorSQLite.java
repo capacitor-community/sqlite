@@ -4,14 +4,21 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.Toast;
+import androidx.biometric.BiometricManager;
+import androidx.biometric.BiometricPrompt;
 import androidx.security.crypto.EncryptedSharedPreferences;
 import androidx.security.crypto.MasterKey;
 import androidx.security.crypto.MasterKeys;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
+import com.getcapacitor.PluginCall;
+import com.getcapacitor.community.database.sqlite.SQLite.BiometricListener;
 import com.getcapacitor.community.database.sqlite.SQLite.Database;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.JsonSQLite;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.UtilsJson;
+import com.getcapacitor.community.database.sqlite.SQLite.SqliteConfig;
+import com.getcapacitor.community.database.sqlite.SQLite.UtilsBiometric;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsFile;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsMigrate;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsNCDatabase;
@@ -19,15 +26,21 @@ import com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLite;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsSecret;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Dictionary;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Set;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -43,13 +56,86 @@ public class CapacitorSQLite {
     private UtilsNCDatabase uNCDatabase = new UtilsNCDatabase();
     private UtilsSecret uSecret;
     private SharedPreferences sharedPreferences;
+    private MasterKey masterKeyAlias;
+    private BiometricManager biometricManager;
+    private SqliteConfig config;
+    private Boolean biometricAuth = false;
+    private String biometricTitle;
+    private String biometricSubTitle;
+    private int VALIDITY_DURATION = 1;
+    private RetHandler rHandler = new RetHandler();
+    private PluginCall call;
 
-    public CapacitorSQLite(Context context) throws Exception {
+    public CapacitorSQLite(Context context, SqliteConfig config) throws Exception {
         this.context = context;
+        this.call = call;
+        this.config = config;
+        this.biometricAuth = this.config.getBiometricAuth();
+        this.biometricTitle = this.config.getBiometricTitle();
+        this.biometricSubTitle = this.config.getBiometricSubTitle();
         try {
             // create or retrieve masterkey from Android keystore
             // it will be used to encrypt the passphrase for a database
-            MasterKey masterKeyAlias = new MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build();
+
+            if (biometricAuth) {
+                biometricManager = BiometricManager.from(this.context);
+                BiometricListener listener = new BiometricListener() {
+                    @Override
+                    public void onSuccess(BiometricPrompt.AuthenticationResult result) {
+                        try {
+                            masterKeyAlias =
+                                new MasterKey.Builder(context)
+                                    .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                                    .setUserAuthenticationRequired(true, VALIDITY_DURATION)
+                                    .build();
+                            setSharedPreferences();
+                            notifyBiometricEvent(true, null);
+                            return;
+                        } catch (Exception e) {
+                            String input = e.getMessage();
+                            Log.e("MY_APP_TAG", input);
+                            //                            Toast.makeText(context, input, Toast.LENGTH_LONG).show();
+                            notifyBiometricEvent(false, input);
+                        }
+                    }
+
+                    @Override
+                    public void onFailed() {
+                        String input = "Error in authenticating biometric";
+                        Log.e("MY_APP_TAG", input);
+                        //                        Toast.makeText(context, input, Toast.LENGTH_LONG).show();
+                        notifyBiometricEvent(false, input);
+                    }
+                };
+                UtilsBiometric uBiom = new UtilsBiometric(context, biometricManager, listener);
+                if (uBiom.checkBiometricIsAvailable()) {
+                    uBiom.showBiometricDialog(this.biometricTitle, this.biometricSubTitle);
+                } else {
+                    masterKeyAlias = new MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build();
+                    setSharedPreferences();
+                }
+            } else {
+                masterKeyAlias = new MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build();
+                setSharedPreferences();
+            }
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
+        }
+    }
+
+    private void notifyBiometricEvent(Boolean ret, String msg) {
+        Map<String, Object> info = new HashMap<String, Object>() {
+            {
+                put("result", ret);
+                put("message", msg);
+            }
+        };
+        Log.v(TAG, "$$$$$ in notifyBiometricEvent " + info);
+        NotificationCenter.defaultCenter().postNotification("biometricResults", info);
+    }
+
+    private void setSharedPreferences() throws Exception {
+        try {
             // get instance of the EncryptedSharedPreferences class
             this.sharedPreferences =
                 EncryptedSharedPreferences.create(
@@ -107,12 +193,47 @@ public class CapacitorSQLite {
      * @param oldPassphrase
      * @throws Exception
      */
-    public void changeEncryptionSecret(String passphrase, String oldPassphrase) throws Exception {
+    public void changeEncryptionSecret(PluginCall call, String passphrase, String oldPassphrase) throws Exception {
+        this.call = call;
         try {
             // close all connections
             closeAllConnections();
-            // change encryption secret
-            uSecret.changeEncryptionSecret(passphrase, oldPassphrase);
+            if (biometricAuth) {
+                BiometricListener listener = new BiometricListener() {
+                    @Override
+                    public void onSuccess(BiometricPrompt.AuthenticationResult result) {
+                        try {
+                            // change encryption secret
+                            uSecret.changeEncryptionSecret(passphrase, oldPassphrase);
+                            rHandler.retResult(call, null, null);
+                            return;
+                        } catch (Exception e) {
+                            String input = e.getMessage();
+                            Log.e("MY_APP_TAG", input);
+                            Toast.makeText(context, input, Toast.LENGTH_LONG).show();
+                            rHandler.retResult(call, null, e.getMessage());
+                        }
+                    }
+
+                    @Override
+                    public void onFailed() {
+                        String input = "Error in authenticating biometric";
+                        Log.e("MY_APP_TAG", input);
+                        Toast.makeText(context, input, Toast.LENGTH_LONG).show();
+                        rHandler.retResult(call, null, input);
+                    }
+                };
+
+                UtilsBiometric uBiom = new UtilsBiometric(context, biometricManager, listener);
+                if (uBiom.checkBiometricIsAvailable()) {
+                    uBiom.showBiometricDialog(biometricTitle, biometricSubTitle);
+                } else {
+                    throw new Exception("Biometric features are currently unavailable.");
+                }
+            } else {
+                // change encryption secret
+                uSecret.changeEncryptionSecret(passphrase, oldPassphrase);
+            }
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         }

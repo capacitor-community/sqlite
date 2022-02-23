@@ -34,6 +34,7 @@ class Database {
     var mode: String
     var vUpgDict: [Int: [String: Any]]
     var databaseLocation: String
+    var account: String
     var path: String = ""
     var mDb: OpaquePointer?
     let globalData: GlobalSQLite = GlobalSQLite()
@@ -43,10 +44,11 @@ class Database {
 
     // MARK: - Init
     init(databaseLocation: String, databaseName: String, encrypted: Bool,
-         mode: String, version: Int,
+         account: String, mode: String, version: Int,
          vUpgDict: [Int: [String: Any]] = [:]) throws {
         self.dbVersion = version
         self.encrypted = encrypted
+        self.account = account
         self.dbName = databaseName
         self.mode = mode
         self.vUpgDict = vUpgDict
@@ -94,7 +96,7 @@ class Database {
     func open () throws {
         var password: String = ""
         if encrypted && (mode == "secret" || mode == "encryption") {
-            password = UtilsSecret.getPassphrase()
+            password = UtilsSecret.getPassphrase(account: account)
         }
         if mode == "encryption" {
             do {

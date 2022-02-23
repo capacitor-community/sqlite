@@ -1,3 +1,15 @@
+## 3.4.0-2 (2022-02-23)
+
+### Added Features
+
+ - add biometric authentication to MasterKey (Android)
+ - add biometric authentication to Keychain (iOS)
+ - add Biometric Authentication documentation
+
+### Bug Fixes
+
+ - fix variable keychain account for multiple applications using the plugin
+
 ## 3.4.0-1 (2022-02-08)
 
 ### Chore

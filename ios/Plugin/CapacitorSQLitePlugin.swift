@@ -11,14 +11,23 @@ public class CapacitorSQLitePlugin: CAPPlugin {
     private var versionUpgrades: [String: [Int: [String: Any]]] = [:]
     var importObserver: Any?
     var exportObserver: Any?
+    var biometricObserver: Any?
+    var config: SqliteConfig?
 
     override public func load() {
-        self.implementation = CapacitorSQLite(config: sqliteConfig())
+        let mConfig = sqliteConfig()
+        self.config = mConfig
         self.addObserversToNotificationCenter()
+        self.implementation = CapacitorSQLite(config: mConfig)
     }
     deinit {
         NotificationCenter.default.removeObserver(importObserver as Any)
         NotificationCenter.default.removeObserver(exportObserver as Any)
+        if let biometricAuth = config?.biometricAuth {
+            if biometricAuth == 1 {
+                NotificationCenter.default.removeObserver(biometricObserver as Any)
+            }
+        }
     }
 
     // MARK: - Echo
@@ -99,8 +108,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
         do {
-            try implementation?.changeEncryptionSecret(passphrase: passphrase, oldPassphrase: oldPassphrase)
-            retHandler.rResult(call: call)
+            try implementation?.changeEncryptionSecret(call: call, passphrase: passphrase, oldPassphrase: oldPassphrase)
             return
         } catch CapacitorSQLiteError.failed(let message) {
             let msg = "ChangeEncryptionSecret: \(message)"
@@ -1167,10 +1175,19 @@ public class CapacitorSQLitePlugin: CAPPlugin {
 
     @objc func addObserversToNotificationCenter() {
         // add Observers
-        importObserver = NotificationCenter.default.addObserver(forName: .importJsonProgress, object: nil, queue: nil,
-                                                                using: importJsonProgress)
-        exportObserver = NotificationCenter.default.addObserver(forName: .exportJsonProgress, object: nil, queue: nil,
-                                                                using: exportJsonProgress)
+        importObserver = NotificationCenter.default.addObserver(
+            forName: .importJsonProgress, object: nil, queue: nil,
+            using: importJsonProgress)
+        exportObserver = NotificationCenter.default.addObserver(
+            forName: .exportJsonProgress, object: nil, queue: nil,
+            using: exportJsonProgress)
+        if let biometricAuth = config?.biometricAuth {
+            if biometricAuth == 1 {
+                biometricObserver = NotificationCenter.default.addObserver(
+                    forName: .biometricEvent, object: nil, queue: nil,
+                    using: biometricEvent)
+            }
+        }
     }
 
     // MARK: - Handle Notifications
@@ -1189,11 +1206,37 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
     }
+    @objc func biometricEvent(notification: Notification) {
+        guard let info = notification.userInfo as? [String: Any] else { return }
+        DispatchQueue.main.async {
+            self.notifyListeners("sqliteBiometricEvent", data: info, retainUntilConsumed: true)
+            return
+        }
+    }
     private func sqliteConfig() -> SqliteConfig {
         var config = SqliteConfig()
-
-        if let iosDatabaseLocation = getConfigValue("iosDatabaseLocation") as? String {
+        config.biometricAuth = 0
+        config.iosKeychainPrefix = ""
+        if let keychainPrefix = getConfigValue("iosKeychainPrefix") as? String {
+            config.iosKeychainPrefix = keychainPrefix
+        }
+        if let iosDatabaseLocation = getConfigValue("iosDatabaseLocation")
+            as? String {
             config.iosDatabaseLocation = iosDatabaseLocation
+        }
+
+        if let iosBiometric = getConfigValue("iosBiometric") as? [String: Any] {
+            if let bioAuth = iosBiometric["biometricAuth"] as? Bool {
+                if bioAuth {
+                    config.biometricAuth = 1
+                    if let bioTitle = iosBiometric["biometricTitle"] as? String {
+                        config.biometricTitle = bioTitle.count > 0
+                            ? bioTitle
+                            : "Biometric login for capacitor sqlite"
+                    }
+                }
+            }
+
         }
         return config
     }

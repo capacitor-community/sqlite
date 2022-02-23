@@ -10,9 +10,11 @@ import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.community.database.sqlite.SQLite.Database;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.JsonSQLite;
+import com.getcapacitor.community.database.sqlite.SQLite.SqliteConfig;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 @CapacitorPlugin(name = "CapacitorSQLite")
@@ -20,9 +22,12 @@ public class CapacitorSQLitePlugin extends Plugin {
 
     private static final String TAG = CapacitorSQLitePlugin.class.getName();
     private Context context;
+    private SqliteConfig config;
     private CapacitorSQLite implementation;
     private Dictionary<String, Dictionary<Integer, JSONObject>> versionUpgrades = new Hashtable<>();
     private RetHandler rHandler = new RetHandler();
+    private String passphrase = null;
+    private String oldpassphrase = null;
 
     /**
      * Load Method
@@ -31,8 +36,12 @@ public class CapacitorSQLitePlugin extends Plugin {
     public void load() {
         context = getContext();
         try {
-            implementation = new CapacitorSQLite(context);
+            config = getSqliteConfig();
             AddObserversToNotificationCenter();
+            implementation = new CapacitorSQLite(context, config);
+        } catch (JSONException e) {
+            implementation = null;
+            Log.e(TAG, "CapacitorSQLitePlugin: " + e.getMessage());
         } catch (Exception e) {
             implementation = null;
             Log.e(TAG, "CapacitorSQLitePlugin: " + e.getMessage());
@@ -42,6 +51,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     /**
      * Echo Method
      * test the plugin
+     *
      * @param call
      */
     @PluginMethod
@@ -59,6 +69,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     /**
      * IsSecretStored
      * Check if a secret has been stored
+     *
      * @param call
      */
     @PluginMethod
@@ -77,6 +88,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     /**
      * SetEncryptionSecret
      * set a passphrase secret for a database
+     *
      * @param call
      */
     @PluginMethod
@@ -103,33 +115,40 @@ public class CapacitorSQLitePlugin extends Plugin {
      * ChangeEncryptionSecret
      * change a passphrase secret for a database
      * with a new passphrase
+     *
      * @param call
      */
     @PluginMethod
     public void changeEncryptionSecret(PluginCall call) {
-        String passphrase = null;
         if (!call.getData().has("passphrase")) {
             String msg = "SetEncryptionSecret: Must provide a passphrase";
             rHandler.retResult(call, null, msg);
             return;
         }
         passphrase = call.getString("passphrase");
-        String oldpassphrase = null;
+
         if (!call.getData().has("oldpassphrase")) {
             String msg = "SetEncryptionSecret: Must provide a oldpassphrase";
             rHandler.retResult(call, null, msg);
             return;
         }
         oldpassphrase = call.getString("oldpassphrase");
-        try {
-            implementation.changeEncryptionSecret(passphrase, oldpassphrase);
-            rHandler.retResult(call, null, null);
-            return;
-        } catch (Exception e) {
-            String msg = "ChangeEncryptionSecret: " + e.getMessage();
-            rHandler.retResult(call, null, msg);
-            return;
-        }
+        getActivity()
+            .runOnUiThread(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            implementation.changeEncryptionSecret(call, passphrase, oldpassphrase);
+                            return;
+                        } catch (Exception e) {
+                            String msg = "ChangeEncryptionSecret: " + e.getMessage();
+                            rHandler.retResult(call, null, msg);
+                            return;
+                        }
+                    }
+                }
+            );
     }
 
     @PluginMethod
@@ -162,6 +181,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     /**
      * CreateNCConnection Method
      * Create a non-conformed connection to a database
+     *
      * @param call
      */
     @PluginMethod
@@ -189,6 +209,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     /**
      * CreateConnection Method
      * Create a connection to a database
+     *
      * @param call
      */
     @PluginMethod
@@ -204,6 +225,7 @@ public class CapacitorSQLitePlugin extends Plugin {
         }
         dbName = call.getString("database");
         dbVersion = call.getInt("version", 1);
+
         boolean encrypted = call.getBoolean("encrypted", false);
         if (encrypted) {
             inMode = call.getString("mode", "no-encryption");
@@ -234,6 +256,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     /**
      * Open Method
      * Open a database
+     *
      * @param call
      */
     @PluginMethod
@@ -258,6 +281,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     /**
      * Close Method
      * Close a Database
+     *
      * @param call
      */
     @PluginMethod
@@ -282,6 +306,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     /**
      * GetUrl Method
      * Get a database Url
+     *
      * @param call
      */
     @PluginMethod
@@ -306,6 +331,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     /**
      * GetVersion Method
      * Get a database Version
+     *
      * @param call
      */
     @PluginMethod
@@ -330,6 +356,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     /**
      * CloseNCConnection Method
      * Close a non-conformed database connection
+     *
      * @param call
      */
     @PluginMethod
@@ -354,6 +381,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     /**
      * CloseConnection Method
      * Close the connection to a database
+     *
      * @param call
      */
     @PluginMethod
@@ -378,6 +406,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     /**
      * CheckConnectionsConsistency Method
      * Check the connections consistency JS <=> Native
+     *
      * @param call
      */
     @PluginMethod
@@ -402,6 +431,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     /**
      * IsDatabase Method
      * Check if the database file exists
+     *
      * @param call
      */
     @PluginMethod
@@ -425,6 +455,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     /**
      * IsDatabase Method
      * Check if the database file exists
+     *
      * @param call
      */
     @PluginMethod
@@ -448,6 +479,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     /**
      * IsTableExists Method
      * Check if a table exists in a database
+     *
      * @param call
      */
     @PluginMethod
@@ -575,6 +607,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     /**
      * Execute Method
      * Execute SQL statements provided in a String
+     *
      * @param call
      */
     @PluginMethod
@@ -609,6 +642,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     /**
      * ExecuteSet Method
      * Execute a Set of raw sql statement
+     *
      * @param call
      * @throws Exception
      */
@@ -660,6 +694,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     /**
      * Run method
      * Execute a raw sql statement
+     *
      * @param call
      */
     @PluginMethod
@@ -701,6 +736,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     /**
      * Query Method
      * Execute an sql query
+     *
      * @param call
      */
     @PluginMethod
@@ -737,6 +773,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     /**
      * IsDBExists Method
      * check if the database exists on the database folder
+     *
      * @param call
      */
     @PluginMethod
@@ -762,6 +799,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     /**
      * IsDBOpen Method
      * check if the database is opened
+     *
      * @param call
      */
     @PluginMethod
@@ -786,6 +824,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     /**
      * DeleteDatabase Method
      * delete a database from the database folder
+     *
      * @param call
      */
     @PluginMethod
@@ -810,6 +849,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     /**
      * CreateSyncTable Method
      * Create the synchronization table
+     *
      * @param call
      */
     @PluginMethod
@@ -836,6 +876,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     /**
      * SetSyncDate Method
      * set the synchronization date
+     *
      * @param call
      */
     @PluginMethod
@@ -867,6 +908,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     /**
      * GetSyncDate Method
      * Get the synchronization date
+     *
      * @param call
      */
     @PluginMethod
@@ -893,6 +935,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     /**
      * AddUpgradeStatement Method
      * Define an upgrade object when updating to a new version
+     *
      * @param call
      */
     @PluginMethod
@@ -925,6 +968,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     /**
      * IsJsonValid
      * Check the validity of a given Json object
+     *
      * @param call
      */
     @PluginMethod
@@ -949,6 +993,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     /**
      * ImportFromJson Method
      * Import from a given Json object
+     *
      * @param call
      */
     @PluginMethod
@@ -975,6 +1020,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     /**
      * ExportToJson Method
      * Export the database to Json Object
+     *
      * @param call
      */
     @PluginMethod
@@ -1014,6 +1060,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     /**
      * CopyFromAssets
      * copy all databases from public/assets/databases to application folder
+     *
      * @param call
      */
     @PluginMethod
@@ -1060,5 +1107,40 @@ public class CapacitorSQLitePlugin extends Plugin {
                     }
                 }
             );
+        NotificationCenter
+            .defaultCenter()
+            .addMethodForNotification(
+                "biometricResults",
+                new MyRunnable() {
+                    @Override
+                    public void run() {
+                        JSObject data = new JSObject();
+                        data.put("result", this.getInfo().get("result"));
+                        data.put("message", this.getInfo().get("message"));
+                        notifyListeners("sqliteBiometricEvent", data);
+                        return;
+                    }
+                }
+            );
+    }
+
+    private SqliteConfig getSqliteConfig() throws JSONException {
+        SqliteConfig config = new SqliteConfig();
+        JSONObject androidBiometric = getConfig().getObject("androidBiometric");
+        if (androidBiometric != null) {
+            Boolean biometricAuth = androidBiometric.has("biometricAuth")
+                ? androidBiometric.getBoolean("biometricAuth")
+                : config.getBiometricAuth();
+            config.setBiometricAuth(biometricAuth);
+            String biometricTitle = androidBiometric.has("biometricTitle")
+                ? androidBiometric.getString("biometricTitle")
+                : config.getBiometricTitle();
+            config.setBiometricTitle(biometricTitle);
+            String biometricSubTitle = androidBiometric.has("biometricSubTitle")
+                ? androidBiometric.getString("biometricSubTitle")
+                : config.getBiometricSubTitle();
+            config.setBiometricSubTitle(biometricSubTitle);
+        }
+        return config;
     }
 }

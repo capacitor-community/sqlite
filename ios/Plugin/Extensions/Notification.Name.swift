@@ -7,6 +7,10 @@
 //
 import Foundation
 extension NSNotification.Name {
-    static var importJsonProgress: Notification.Name {return .init(rawValue: "importJsonProgress")}
-    static var exportJsonProgress: Notification.Name {return .init(rawValue: "exportJsonProgress")}
+    static var importJsonProgress: Notification.Name {
+        return .init(rawValue: "importJsonProgress")}
+    static var exportJsonProgress: Notification.Name {
+        return .init(rawValue: "exportJsonProgress")}
+    static var biometricEvent: Notification.Name {
+        return .init(rawValue: "biometricEvent")}
 }

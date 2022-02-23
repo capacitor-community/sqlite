@@ -9,30 +9,42 @@
 import Foundation
 
 enum UtilsSecretError: Error {
+    case prefixPassphrase(message: String)
     case setPassphrase(message: String)
     case changePassphrase(message: String)
     case setEncryptionSecret(message: String)
     case  changeEncryptionSecret(message: String)
 }
 
+let oldAccount: String = "CapacitorSQLitePlugin"
+
 class UtilsSecret {
 
     // MARK: - IsPassphrase
 
-    class func isPassphrase() -> Bool {
-        var ret: Bool = false
-        if getPassphrase() != "" {
-            ret = true
+    class func isPassphrase(account: String) throws -> Bool {
+
+        if !getPassphrase(account: account).isEmpty {
+            return true
         }
-        return ret
+        if !getPassphrase(account: oldAccount).isEmpty {
+            let passphrase = getPassphrase(account: oldAccount)
+            do {
+                try setPassphrase(account: account, passphrase: passphrase)
+                return true
+            } catch UtilsSecretError.prefixPassphrase(let message) {
+                throw UtilsSecretError.changePassphrase(message: message)
+            }
+        }
+        return false
     }
 
     // MARK: - GetPassphrase
 
-    class func getPassphrase() -> String {
+    class func getPassphrase(account: String) -> String {
         let kcw = KeychainWrapper()
         if let password = try? kcw.getGenericPasswordFor(
-            account: "CapacitorSQLitePlugin",
+            account: account,
             service: "unlockSecret") {
             return password
         }
@@ -41,11 +53,11 @@ class UtilsSecret {
 
     // MARK: - SetPassphrase
 
-    class func setPassphrase(passphrase: String) throws {
+    class func setPassphrase(account: String, passphrase: String) throws {
         let kcw = KeychainWrapper()
         do {
             try kcw.storeGenericPasswordFor(
-                account: "CapacitorSQLitePlugin",
+                account: account,
                 service: "unlockSecret",
                 password: passphrase)
         } catch let error as KeychainWrapperError {
@@ -62,9 +74,9 @@ class UtilsSecret {
 
     // MARK: - ValidatePassphrase
 
-    class func validatePassphrase(_ passphrase: String) -> Bool {
+    class func validatePassphrase(account: String, passphrase: String) -> Bool {
         var ret: Bool = false
-        let currentPassphrase = getPassphrase()
+        let currentPassphrase = getPassphrase(account: account)
         if passphrase == currentPassphrase {
             ret = true
         }
@@ -73,10 +85,12 @@ class UtilsSecret {
 
     // MARK: - ChangePassphrase
 
-    class func changePassphrase(oldPassphrase: String, passphrase: String) throws -> Bool {
-        guard validatePassphrase(oldPassphrase) == true else { return false }
+    class func changePassphrase(account: String, oldPassphrase: String,
+                                passphrase: String) throws -> Bool {
+        guard validatePassphrase(account: account,
+                                 passphrase: oldPassphrase) == true else { return false }
         do {
-            try setPassphrase(passphrase: passphrase)
+            try setPassphrase(account: account, passphrase: passphrase)
             return true
         } catch UtilsSecretError.setPassphrase(let message) {
             throw UtilsSecretError.changePassphrase(message: message)
@@ -86,15 +100,25 @@ class UtilsSecret {
     // MARK: - SetEncryptionSecret
 
     // swiftlint:disable function_body_length
-    class func setEncryptionSecret(passphrase: String,
+    // swiftlint:disable cyclomatic_complexity
+    class func setEncryptionSecret(prefix: String, passphrase: String,
                                    databaseLocation: String) throws {
         do {
+            if prefix.isEmpty {
+                let msg: String = "keychain prefix must not be empty"
+                throw UtilsSecretError.setEncryptionSecret(message: msg)
+            }
             if passphrase.isEmpty {
                 let msg: String = "passphrase must not be empty"
                 throw UtilsSecretError.setEncryptionSecret(message: msg)
             }
             // store encrypted passphrase
-            try setPassphrase(passphrase: passphrase)
+            let account = "\(prefix)_\(oldAccount)"
+            if !getPassphrase(account: account).isEmpty {
+                let msg: String = "passphrase already stored in keychain"
+                throw UtilsSecretError.setEncryptionSecret(message: msg)
+            }
+            try setPassphrase(account: account, passphrase: passphrase)
 
             // get the list of databases
             let databaseURL: URL = try UtilsFile.getDatabasesUrl().absoluteURL
@@ -106,7 +130,7 @@ class UtilsSecret {
                 for file: String in dbList {
                     let state: State = UtilsSQLCipher
                         .getDatabaseState(databaseLocation: databaseLocation,
-                                          databaseName: file)
+                                          databaseName: file, account: account)
                     if state.rawValue == "ENCRYPTEDGLOBALSECRET" {
                         let globalData: GlobalSQLite = GlobalSQLite()
                         let password: String = globalData.secret
@@ -140,25 +164,33 @@ class UtilsSecret {
         }
 
     }
+    // swiftlint:enable cyclomatic_complexity
     // swiftlint:enable function_body_length
 
     // MARK: - ChangeEncryptionSecret
 
     // swiftlint:disable function_body_length
-    class func changeEncryptionSecret(passphrase: String,
+    class func changeEncryptionSecret(prefix: String, passphrase: String,
                                       oldPassphrase: String,
                                       databaseLocation: String) throws {
         do {
+            if prefix.isEmpty {
+                let msg: String = "Keychain prefix must not " +
+                    "be empty"
+                throw UtilsSecretError.changeEncryptionSecret(message: msg)
+            }
             if passphrase.isEmpty ||  oldPassphrase.isEmpty {
                 let msg: String = "Passphrase and/or oldpassphrase must not " +
                     "be empty"
                 throw UtilsSecretError.changeEncryptionSecret(message: msg)
             }
-            guard isPassphrase() == true else {
+            let account = "\(prefix)_\(oldAccount)"
+            guard try isPassphrase(account: account) == true else {
                 let msg: String = "Encryption secret has not been set"
                 throw UtilsSecretError.changeEncryptionSecret(message: msg)
             }
-            guard validatePassphrase(oldPassphrase) == true else {
+            guard validatePassphrase(account: account,
+                                     passphrase: oldPassphrase) == true else {
                 let msg: String = "Given oldpassphrase is wrong"
                 throw UtilsSecretError.changeEncryptionSecret(message: msg)
             }
@@ -173,7 +205,7 @@ class UtilsSecret {
                 for file: String in dbList {
                     let state: State = UtilsSQLCipher
                         .getDatabaseState(databaseLocation: databaseLocation,
-                                          databaseName: file)
+                                          databaseName: file, account: account)
                     if state.rawValue == "ENCRYPTEDSECRET" {
                         let dbPath: String  = try UtilsFile
                             .getFilePath(databaseLocation: databaseLocation,
@@ -199,7 +231,7 @@ class UtilsSecret {
             }
 
             // store encrypted passphrase
-            try setPassphrase(passphrase: passphrase)
+            try setPassphrase(account: account, passphrase: passphrase)
 
         } catch UtilsSecretError.setPassphrase(let message) {
             throw UtilsSecretError.setEncryptionSecret(message: message)

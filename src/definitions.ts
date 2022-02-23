@@ -701,6 +701,13 @@ export interface JsonView {
    */
   value: string;
 }
+export interface capBiometricListener {
+  /**
+   * Biometric ready
+   */
+  result: boolean;
+  message: string;
+}
 export interface capJsonProgressListener {
   /**
    * Progress message

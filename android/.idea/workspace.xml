@@ -8,9 +8,22 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="44fbe1ce-ecee-45f0-9074-7afa8867b86b" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/SQLite/BiometricListener.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/SQLite/SqliteConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/SQLite/UtilsBiometric.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.classpath" beforeDir="false" afterPath="$PROJECT_DIR$/.classpath" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.settings/org.eclipse.buildship.core.prefs" beforeDir="false" afterPath="$PROJECT_DIR$/.settings/org.eclipse.buildship.core.prefs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/CapacitorSQLite.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/CapacitorSQLite.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/CapacitorSQLitePlugin.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/CapacitorSQLitePlugin.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/SQLite/Database.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/SQLite/Database.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/SQLite/UtilsSecret.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/SQLite/UtilsSecret.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ios/Plugin/CapacitorSQLitePlugin.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/CapacitorSQLitePlugin.swift" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ios/Plugin/SqliteConfig.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/SqliteConfig.swift" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/definitions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../src/definitions.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -26,6 +39,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Class" />
+        <option value="Interface" />
       </list>
     </option>
   </component>

@@ -37,6 +37,11 @@ public class UtilsSecret {
                 String msg = "passphrase must not be empty";
                 throw new Exception(msg);
             }
+            // test if Encryption secret is already set
+            String savedPassPhrase = getPassphrase();
+            if (savedPassPhrase != null && savedPassPhrase.length() > 0) {
+                throw new Exception("a passphrase has already been set ");
+            }
             // Store encrypted passphrase in sharedPreferences
             setPassphrase(passphrase);
 
@@ -75,11 +80,11 @@ public class UtilsSecret {
             }
             // check the oldPassphrase
             String secret = getPassphrase();
-            if (secret.length() == 0) {
+            if (secret == null || secret.length() == 0) {
                 String msg = "Encryption secret has not been set";
                 throw new Exception(msg);
             } else if (!secret.equals(oldPassphrase)) {
-                String msg = "Oldpassphrase is wrong";
+                String msg = "Oldpassphrase is wrong secret";
                 throw new Exception(msg);
             } else {
                 // Get the list of databases

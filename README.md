@@ -28,6 +28,20 @@
 
 ## CAPACITOR 3 (Master)
 
+🚨 Since release 3.4.0-2 ->> 🚨 
+
+- iOS & Android only
+  Adding biometric FaceID/TouchID to secure the pass phrase in the Keychain/SharedPreferences stores. see:
+   [Biometric_Authentication](https://github.com/capacitor-community/sqlite/blob/master/docs/Biometric-Authentication.md)
+
+- iOS only
+  Fix identical pass phrase stored in the Keychain for differents applications using the plugin by adding an application prefix to the Keychain account.
+  Before the account `"CapacitorSQLitePlugin"` was used and was the same for all applications.
+  Now by adding `iosKeychainPrefix: 'YOUR_APP_NAME'`in the `capacitor.config.ts` of your application,
+  the account will be `"YOUR_APP_NAME_CapacitorSQLitePlugin"`
+  If you were having a pass phrase stored, first modify the `capacitor.config.ts` and then run the command `isSecretStored` which will manage the upgrade of the Keychain account. 
+🚨 Since release 3.4.0-2 <<- 🚨
+
 🚨 Since release 3.3.3-2 ->> 🚨
 
   - iOS only
@@ -266,6 +280,8 @@ No configuration required for this plugin
 - [Web_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Web-Usage.md)
 
 - [Non_Conformed_Databases_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/NonConformedDatabases.md)
+
+- [Biometric_Authentication](https://github.com/capacitor-community/sqlite/blob/master/docs/Biometric-Authentication.md)
 
 ### Framework's Usage 
 

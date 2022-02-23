@@ -44,7 +44,8 @@ enum State: String {
 class UtilsSQLCipher {
 
     class func getDatabaseState(databaseLocation: String,
-                                databaseName: String) -> State {
+                                databaseName: String,
+                                account: String) -> State {
         do {
             let path: String  = try UtilsFile
                 .getFilePath(databaseLocation: databaseLocation,
@@ -56,7 +57,7 @@ class UtilsSQLCipher {
                 } catch UtilsSQLCipherError.openDBNoPassword(let message) {
                     if message == "Open" {
                         do {
-                            try openDBStoredPassword(dBPath: path)
+                            try openDBStoredPassword(dBPath: path, account: account)
                             return State.ENCRYPTEDSECRET
                         } catch UtilsSQLCipherError.openDBStoredPassword(let message) {
                             if message == "Open" {
@@ -100,9 +101,9 @@ class UtilsSQLCipher {
         }
 
     }
-    class func openDBStoredPassword(dBPath: String) throws {
+    class func openDBStoredPassword(dBPath: String, account: String) throws {
         do {
-            let password: String = UtilsSecret.getPassphrase()
+            let password: String = UtilsSecret.getPassphrase(account: account)
             let oDb: OpaquePointer? = try openOrCreateDatabase(
                 filename: dBPath, password: password, readonly: true)
             try close(oDB: oDb)
