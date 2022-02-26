@@ -114,8 +114,13 @@ public class UtilsSQLCipher {
             st.bindString(1, originalFile.getAbsolutePath());
             st.execute();
 
-            db.rawExecSQL("SELECT sqlcipher_export('main', 'plaintext')");
-            db.rawExecSQL("DETACH DATABASE plaintext");
+            StringBuilder sql1 = new StringBuilder();
+            sql1.append("SELECT sqlcipher_export('main', 'plaintext');");
+            db.rawExecSQL(sql1.toString());
+            StringBuilder sql2 = new StringBuilder();
+            sql2.append("DETACH DATABASE plaintext;");
+            db.rawExecSQL(sql2.toString());
+
             db.setVersion(version);
             st.close();
             db.close();

@@ -1,3 +1,9 @@
+## 3.4.0-3 (2022-02-26)
+
+### Bug Fixes
+
+ - fix Android Sqlite Encryption DB Failed when tested with Immuniweb issue#229
+
 ## 3.4.0-2 (2022-02-23)
 
 ### Added Features
