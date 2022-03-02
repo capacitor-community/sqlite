@@ -1286,6 +1286,7 @@ export interface ISQLiteDBConnection {
    * @since 2.9.0 refactor
    */
   getConnectionDBName(): string;
+
   /**
    * Open a SQLite DB Connection
    * @returns Promise<void>
@@ -1397,6 +1398,15 @@ export interface ISQLiteDBConnection {
    * @since 2.9.0 refactor
    */
   exportToJson(mode: string): Promise<capSQLiteJson>;
+  /**
+   *
+   * @param txn
+   * @returns Promise<void>
+   * @since 3.4.0
+   */
+  executeTransaction(
+    txn: [{ statement: string; values?: any[] }],
+  ): Promise<void>;
 }
 /**
  * SQLiteDBConnection Class
@@ -1406,6 +1416,7 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
   getConnectionDBName(): string {
     return this.dbName;
   }
+
   async open(): Promise<void> {
     try {
       await this.sqlite.open({ database: this.dbName });
@@ -1603,6 +1614,62 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
       });
       return Promise.resolve(res);
     } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async executeTransaction(
+    txn: [{ statement: string; values?: any[] }],
+  ): Promise<void> {
+    try {
+  
+      const ret = await this.sqlite.execute({
+        database: this.dbName,
+        statements: 'BEGIN TRANSACTION;',
+        transaction: false,
+      });
+      if (ret.changes.changes < 0) {
+        return Promise.reject("Error in BEGIN TRANSACTION");
+      }
+      for (const task of txn) {
+        if (task.values && task.values.length > 0) {
+          const ret = await this.sqlite.run({
+            database: this.dbName,
+            statement: task.statement,
+            values: task.values,
+            transaction: false,
+          });
+          if (ret.changes.lastId === -1) {
+            await this.execute('ROLLBACK;', false);
+            return Promise.reject('Error in transaction run ');
+          }
+        } else {
+          const ret = await this.sqlite.execute({
+            database: this.dbName,
+            statements: task.statement,
+            transaction: false,
+          });
+          if (ret.changes.changes < 0) {
+            await this.sqlite.execute({
+              database: this.dbName,
+              statements: 'ROLLBACK;',
+              transaction: false,
+            });
+            return Promise.reject('Error in transaction execute ');
+          }
+        }
+      }
+      await this.sqlite.execute({
+        database: this.dbName,
+        statements: 'COMMIT;',
+        transaction: false,
+      });
+      return Promise.resolve();
+    } catch (err: any) {
+      await this.sqlite.execute({
+        database: this.dbName,
+        statements: 'ROLLBACK;',
+        transaction: false,
+      });
       return Promise.reject(err);
     }
   }

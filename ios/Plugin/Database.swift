@@ -369,6 +369,7 @@ class Database {
             }
             msg.append(" \(message)")
             lastId = -1
+            throw DatabaseError.runSQL(message: msg )
         }
 
         if lastId != -1 {

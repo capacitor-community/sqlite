@@ -254,6 +254,7 @@ No configuration required for this plugin
 | createNCConnection          | ✅      | ✅  | ❌        | ❌  |
 | closeNCConnection           | ✅      | ✅  | ❌        | ❌  |
 | isNCDatabase                | ✅      | ✅  | ❌        | ❌  |
+| transaction                 | ✅      | ✅  | ✅        | ✅  |
 
 ## Supported SQLite Types
 

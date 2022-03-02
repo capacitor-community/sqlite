@@ -1,3 +1,13 @@
+## 3.4.0 (2022-03-02)
+
+### Added Features
+
+ - add transaction method to group several sql statements in one transaction
+
+### Bug Fixes
+
+ - fix How to handle Transactions with this plugin issue#230
+
 ## 3.4.0-3 (2022-02-26)
 
 ### Bug Fixes
