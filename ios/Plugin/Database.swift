@@ -31,6 +31,7 @@ class Database {
     var dbName: String
     var dbVersion: Int
     var encrypted: Bool
+    var isEncryption: Bool
     var mode: String
     var vUpgDict: [Int: [String: Any]]
     var databaseLocation: String
@@ -44,10 +45,11 @@ class Database {
 
     // MARK: - Init
     init(databaseLocation: String, databaseName: String, encrypted: Bool,
-         account: String, mode: String, version: Int,
+         isEncryption: Bool, account: String, mode: String, version: Int,
          vUpgDict: [Int: [String: Any]] = [:]) throws {
         self.dbVersion = version
         self.encrypted = encrypted
+        self.isEncryption = isEncryption
         self.account = account
         self.dbName = databaseName
         self.mode = mode
@@ -95,23 +97,28 @@ class Database {
     // swiftlint:disable function_body_length
     func open () throws {
         var password: String = ""
-        if encrypted && (mode == "secret" || mode == "encryption") {
+        if isEncryption && encrypted && (mode == "secret" || mode == "encryption") {
             password = UtilsSecret.getPassphrase(account: account)
         }
         if mode == "encryption" {
-            do {
-                let ret: Bool = try UtilsEncryption
-                    .encryptDatabase(databaseLocation: databaseLocation,
-                                     filePath: path, password: password)
-                if !ret {
-                    let msg: String = "Failed in encryption"
+            if isEncryption {
+                do {
+                    let ret: Bool = try UtilsEncryption
+                        .encryptDatabase(databaseLocation: databaseLocation,
+                                         filePath: path, password: password)
+                    if !ret {
+                        let msg: String = "Failed in encryption"
+                        throw DatabaseError.open(message: msg)
+                    }
+                } catch UtilsEncryptionError.encryptionFailed(let message) {
+                    let msg: String = "Failed in encryption \(message)"
                     throw DatabaseError.open(message: msg)
                 }
-            } catch UtilsEncryptionError.encryptionFailed(let message) {
-                let msg: String = "Failed in encryption \(message)"
+            } else {
+                let msg: String = "No Encryption set in capacitor.config"
                 throw DatabaseError.open(message: msg)
-
             }
+
         }
 
         do {

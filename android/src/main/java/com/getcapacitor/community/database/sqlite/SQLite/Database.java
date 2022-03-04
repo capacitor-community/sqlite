@@ -44,6 +44,7 @@ public class Database {
     private String _mode;
     private String _secret;
     private Boolean _encrypted;
+    private Boolean _isEncryption;
     private SharedPreferences _sharedPreferences;
     private File _file;
     private int _version;
@@ -66,6 +67,7 @@ public class Database {
         Boolean encrypted,
         String mode,
         int version,
+        Boolean isEncryption,
         Dictionary<Integer, JSONObject> vUpgObject,
         SharedPreferences sharedPreferences
     ) {
@@ -73,6 +75,7 @@ public class Database {
         this._dbName = dbName;
         this._mode = mode;
         this._encrypted = encrypted;
+        this._isEncryption = isEncryption;
         this._version = version;
         this._vUpgObject = vUpgObject;
         this._sharedPreferences = sharedPreferences;
@@ -88,7 +91,7 @@ public class Database {
         this._uFile = new UtilsFile();
         this._uJson = new UtilsJson();
         this._uUpg = new UtilsUpgrade();
-        this._uSecret = new UtilsSecret(context, sharedPreferences);
+        this._uSecret = isEncryption ? new UtilsSecret(context, sharedPreferences) : null;
         InitializeSQLCipher();
         if (!this._file.getParentFile().exists()) {
             this._file.getParentFile().mkdirs();
@@ -140,14 +143,20 @@ public class Database {
     public void open() throws Exception {
         int curVersion;
 
-        String password = _encrypted && (_mode.equals("secret") || _mode.equals("encryption")) ? _uSecret.getPassphrase() : "";
+        String password = _uSecret != null && _encrypted && (_mode.equals("secret") || _mode.equals("encryption"))
+            ? _uSecret.getPassphrase()
+            : "";
         if (_mode.equals("encryption")) {
-            try {
-                _uCipher.encrypt(_context, _file, SQLiteDatabase.getBytes(password.toCharArray()));
-            } catch (Exception e) {
-                String msg = "Failed in encryption " + e.getMessage();
-                Log.v(TAG, msg);
-                throw new Exception(msg);
+            if (_isEncryption) {
+                try {
+                    _uCipher.encrypt(_context, _file, SQLiteDatabase.getBytes(password.toCharArray()));
+                } catch (Exception e) {
+                    String msg = "Failed in encryption " + e.getMessage();
+                    Log.v(TAG, msg);
+                    throw new Exception(msg);
+                }
+            } else {
+                throw new Exception("No Encryption set in capacitor.config");
             }
         }
         try {
@@ -278,14 +287,6 @@ public class Database {
         }
     }
 
-    /**
-     * GetDBState Method
-     * @return the detected state of the database
-     */
-    /*    public UtilsSQLCipher.State getDBState() {
-        return _uCipher.getDatabaseState(_file, _globVar);
-    }
-*/
     /**
      * IsDBExists Method
      * @return the existence of the database on folder

@@ -1621,14 +1621,13 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
     txn: [{ statement: string; values?: any[] }],
   ): Promise<void> {
     try {
-  
       const ret = await this.sqlite.execute({
         database: this.dbName,
         statements: 'BEGIN TRANSACTION;',
         transaction: false,
       });
       if (ret.changes.changes < 0) {
-        return Promise.reject("Error in BEGIN TRANSACTION");
+        return Promise.reject('Error in BEGIN TRANSACTION');
       }
       for (const task of txn) {
         if (task.values && task.values.length > 0) {

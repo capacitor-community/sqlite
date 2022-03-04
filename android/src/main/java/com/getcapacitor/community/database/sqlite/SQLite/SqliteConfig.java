@@ -5,6 +5,15 @@ public class SqliteConfig {
     private boolean biometricAuth = false;
     private String biometricTitle = "Biometric login for capacitor sqlite";
     private String biometricSubTitle = "Log in using your biometric";
+    private boolean isEncryption = true;
+
+    public boolean getIsEncryption() {
+        return isEncryption;
+    }
+
+    public void setIsEncryption(boolean isEncryption) {
+        this.isEncryption = isEncryption;
+    }
 
     public boolean getBiometricAuth() {
         return biometricAuth;

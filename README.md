@@ -28,6 +28,13 @@
 
 ## CAPACITOR 3 (Master)
 
+🚨 Since release 3.4.1-1 ->> 🚨
+
+  - add iosIsEncryption, androidIsEncryption in capacitor.config.ts
+    When your application use only `non-encrypted dzatabases` set those parameter to false then iOS KeyChain & Android MasterKey are not defined.
+    
+🚨 Since release 3.4.1-1 <<- 🚨
+
 🚨 Since release 3.4.0-2 ->> 🚨 
 
 - iOS & Android only

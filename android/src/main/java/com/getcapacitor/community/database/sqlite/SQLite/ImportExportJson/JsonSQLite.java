@@ -86,7 +86,7 @@ public class JsonSQLite {
         return retArray;
     }
 
-    public boolean isJsonSQLite(JSObject jsObj) {
+    public boolean isJsonSQLite(JSObject jsObj, Boolean isEncryption) {
         if (jsObj == null || jsObj.length() == 0) return false;
         Iterator<String> keys = jsObj.keys();
         while (keys.hasNext()) {
@@ -114,6 +114,9 @@ public class JsonSQLite {
                         return false;
                     } else {
                         encrypted = jsObj.getBool(key);
+                        if (encrypted && !isEncryption) {
+                            return false;
+                        }
                     }
                 }
                 if (key.equals("mode")) {

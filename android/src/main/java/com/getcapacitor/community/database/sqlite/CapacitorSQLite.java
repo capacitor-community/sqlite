@@ -55,10 +55,11 @@ public class CapacitorSQLite {
     private UtilsMigrate uMigrate = new UtilsMigrate();
     private UtilsNCDatabase uNCDatabase = new UtilsNCDatabase();
     private UtilsSecret uSecret;
-    private SharedPreferences sharedPreferences;
+    private SharedPreferences sharedPreferences = null;
     private MasterKey masterKeyAlias;
     private BiometricManager biometricManager;
     private SqliteConfig config;
+    private Boolean isEncryption = true;
     private Boolean biometricAuth = false;
     private String biometricTitle;
     private String biometricSubTitle;
@@ -70,53 +71,56 @@ public class CapacitorSQLite {
         this.context = context;
         this.call = call;
         this.config = config;
+        this.isEncryption = this.config.getIsEncryption();
         this.biometricAuth = this.config.getBiometricAuth();
         this.biometricTitle = this.config.getBiometricTitle();
         this.biometricSubTitle = this.config.getBiometricSubTitle();
         try {
-            // create or retrieve masterkey from Android keystore
-            // it will be used to encrypt the passphrase for a database
+            if (isEncryption) {
+                // create or retrieve masterkey from Android keystore
+                // it will be used to encrypt the passphrase for a database
 
-            if (biometricAuth) {
-                biometricManager = BiometricManager.from(this.context);
-                BiometricListener listener = new BiometricListener() {
-                    @Override
-                    public void onSuccess(BiometricPrompt.AuthenticationResult result) {
-                        try {
-                            masterKeyAlias =
-                                new MasterKey.Builder(context)
-                                    .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                                    .setUserAuthenticationRequired(true, VALIDITY_DURATION)
-                                    .build();
-                            setSharedPreferences();
-                            notifyBiometricEvent(true, null);
-                            return;
-                        } catch (Exception e) {
-                            String input = e.getMessage();
+                if (biometricAuth) {
+                    biometricManager = BiometricManager.from(this.context);
+                    BiometricListener listener = new BiometricListener() {
+                        @Override
+                        public void onSuccess(BiometricPrompt.AuthenticationResult result) {
+                            try {
+                                masterKeyAlias =
+                                    new MasterKey.Builder(context)
+                                        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                                        .setUserAuthenticationRequired(true, VALIDITY_DURATION)
+                                        .build();
+                                setSharedPreferences();
+                                notifyBiometricEvent(true, null);
+                                return;
+                            } catch (Exception e) {
+                                String input = e.getMessage();
+                                Log.e("MY_APP_TAG", input);
+                                //                            Toast.makeText(context, input, Toast.LENGTH_LONG).show();
+                                notifyBiometricEvent(false, input);
+                            }
+                        }
+
+                        @Override
+                        public void onFailed() {
+                            String input = "Error in authenticating biometric";
                             Log.e("MY_APP_TAG", input);
-                            //                            Toast.makeText(context, input, Toast.LENGTH_LONG).show();
+                            //                        Toast.makeText(context, input, Toast.LENGTH_LONG).show();
                             notifyBiometricEvent(false, input);
                         }
+                    };
+                    UtilsBiometric uBiom = new UtilsBiometric(context, biometricManager, listener);
+                    if (uBiom.checkBiometricIsAvailable()) {
+                        uBiom.showBiometricDialog(this.biometricTitle, this.biometricSubTitle);
+                    } else {
+                        masterKeyAlias = new MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build();
+                        setSharedPreferences();
                     }
-
-                    @Override
-                    public void onFailed() {
-                        String input = "Error in authenticating biometric";
-                        Log.e("MY_APP_TAG", input);
-                        //                        Toast.makeText(context, input, Toast.LENGTH_LONG).show();
-                        notifyBiometricEvent(false, input);
-                    }
-                };
-                UtilsBiometric uBiom = new UtilsBiometric(context, biometricManager, listener);
-                if (uBiom.checkBiometricIsAvailable()) {
-                    uBiom.showBiometricDialog(this.biometricTitle, this.biometricSubTitle);
                 } else {
                     masterKeyAlias = new MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build();
                     setSharedPreferences();
                 }
-            } else {
-                masterKeyAlias = new MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build();
-                setSharedPreferences();
             }
         } catch (Exception e) {
             throw new Exception(e.getMessage());
@@ -162,12 +166,16 @@ public class CapacitorSQLite {
 
     public Boolean isSecretStored() throws Exception {
         Boolean ret = false;
-        try {
-            String secret = uSecret.getPassphrase();
-            if (secret.length() > 0) ret = true;
-            return ret;
-        } catch (Exception e) {
-            throw new Exception(e.getMessage());
+        if (isEncryption) {
+            try {
+                String secret = uSecret.getPassphrase();
+                if (secret.length() > 0) ret = true;
+                return ret;
+            } catch (Exception e) {
+                throw new Exception(e.getMessage());
+            }
+        } else {
+            throw new Exception("No Encryption set in capacitor.config");
         }
     }
 
@@ -177,13 +185,17 @@ public class CapacitorSQLite {
      * @throws Exception
      */
     public void setEncryptionSecret(String passphrase) throws Exception {
-        try {
-            // close all connections
-            closeAllConnections();
-            // set encryption secret
-            uSecret.setEncryptionSecret(passphrase);
-        } catch (Exception e) {
-            throw new Exception(e.getMessage());
+        if (isEncryption) {
+            try {
+                // close all connections
+                closeAllConnections();
+                // set encryption secret
+                uSecret.setEncryptionSecret(passphrase);
+            } catch (Exception e) {
+                throw new Exception(e.getMessage());
+            }
+        } else {
+            throw new Exception("No Encryption set in capacitor.config");
         }
     }
 
@@ -195,47 +207,51 @@ public class CapacitorSQLite {
      */
     public void changeEncryptionSecret(PluginCall call, String passphrase, String oldPassphrase) throws Exception {
         this.call = call;
-        try {
-            // close all connections
-            closeAllConnections();
-            if (biometricAuth) {
-                BiometricListener listener = new BiometricListener() {
-                    @Override
-                    public void onSuccess(BiometricPrompt.AuthenticationResult result) {
-                        try {
-                            // change encryption secret
-                            uSecret.changeEncryptionSecret(passphrase, oldPassphrase);
-                            rHandler.retResult(call, null, null);
-                            return;
-                        } catch (Exception e) {
-                            String input = e.getMessage();
+        if (isEncryption) {
+            try {
+                // close all connections
+                closeAllConnections();
+                if (biometricAuth) {
+                    BiometricListener listener = new BiometricListener() {
+                        @Override
+                        public void onSuccess(BiometricPrompt.AuthenticationResult result) {
+                            try {
+                                // change encryption secret
+                                uSecret.changeEncryptionSecret(passphrase, oldPassphrase);
+                                rHandler.retResult(call, null, null);
+                                return;
+                            } catch (Exception e) {
+                                String input = e.getMessage();
+                                Log.e("MY_APP_TAG", input);
+                                Toast.makeText(context, input, Toast.LENGTH_LONG).show();
+                                rHandler.retResult(call, null, e.getMessage());
+                            }
+                        }
+
+                        @Override
+                        public void onFailed() {
+                            String input = "Error in authenticating biometric";
                             Log.e("MY_APP_TAG", input);
                             Toast.makeText(context, input, Toast.LENGTH_LONG).show();
-                            rHandler.retResult(call, null, e.getMessage());
+                            rHandler.retResult(call, null, input);
                         }
-                    }
+                    };
 
-                    @Override
-                    public void onFailed() {
-                        String input = "Error in authenticating biometric";
-                        Log.e("MY_APP_TAG", input);
-                        Toast.makeText(context, input, Toast.LENGTH_LONG).show();
-                        rHandler.retResult(call, null, input);
+                    UtilsBiometric uBiom = new UtilsBiometric(context, biometricManager, listener);
+                    if (uBiom.checkBiometricIsAvailable()) {
+                        uBiom.showBiometricDialog(biometricTitle, biometricSubTitle);
+                    } else {
+                        throw new Exception("Biometric features are currently unavailable.");
                     }
-                };
-
-                UtilsBiometric uBiom = new UtilsBiometric(context, biometricManager, listener);
-                if (uBiom.checkBiometricIsAvailable()) {
-                    uBiom.showBiometricDialog(biometricTitle, biometricSubTitle);
                 } else {
-                    throw new Exception("Biometric features are currently unavailable.");
+                    // change encryption secret
+                    uSecret.changeEncryptionSecret(passphrase, oldPassphrase);
                 }
-            } else {
-                // change encryption secret
-                uSecret.changeEncryptionSecret(passphrase, oldPassphrase);
+            } catch (Exception e) {
+                throw new Exception(e.getMessage());
             }
-        } catch (Exception e) {
-            throw new Exception(e.getMessage());
+        } else {
+            throw new Exception("No Encryption set in capacitor.config");
         }
     }
 
@@ -266,8 +282,20 @@ public class CapacitorSQLite {
             String msg = "Connection " + dbName + " already exists";
             throw new Exception(msg);
         }
+        if (encrypted && !isEncryption) {
+            throw new Exception("Database cannot be encrypted as 'No Encryption' set in capacitor.config");
+        }
         try {
-            Database db = new Database(context, dbName + "SQLite.db", encrypted, mode, version, vUpgObject, sharedPreferences);
+            Database db = new Database(
+                context,
+                dbName + "SQLite.db",
+                encrypted,
+                mode,
+                version,
+                isEncryption,
+                vUpgObject,
+                sharedPreferences
+            );
             if (db != null) {
                 dbDict.put(dbName, db);
                 return;
@@ -281,7 +309,7 @@ public class CapacitorSQLite {
     }
 
     /**
-     * CreateConnection
+     * CreateNCConnection
      * @param dbPath
      * @param version
      * @throws Exception
@@ -299,7 +327,16 @@ public class CapacitorSQLite {
                 String msg = "Database " + dbPath + " does not exist";
                 throw new Exception(msg);
             }
-            Database db = new Database(context, dbPath, false, "no-encryption", version, new Hashtable<>(), sharedPreferences);
+            Database db = new Database(
+                context,
+                dbPath,
+                false,
+                "no-encryption",
+                version,
+                isEncryption,
+                new Hashtable<>(),
+                sharedPreferences
+            );
             if (db != null) {
                 dbDict.put(dbPath, db);
                 return;
@@ -874,7 +911,7 @@ public class CapacitorSQLite {
         try {
             JSObject jsonObject = new JSObject(parsingData);
             JsonSQLite jsonSQL = new JsonSQLite();
-            Boolean isValid = jsonSQL.isJsonSQLite(jsonObject);
+            Boolean isValid = jsonSQL.isJsonSQLite(jsonObject, isEncryption);
             return isValid;
         } catch (Exception e) {
             throw new Exception(e.getMessage());
@@ -885,7 +922,7 @@ public class CapacitorSQLite {
         try {
             JSObject jsonObject = new JSObject(parsingData);
             JsonSQLite jsonSQL = new JsonSQLite();
-            Boolean isValid = jsonSQL.isJsonSQLite(jsonObject);
+            Boolean isValid = jsonSQL.isJsonSQLite(jsonObject, isEncryption);
             if (!isValid) {
                 String msg = "Stringify Json Object not Valid";
                 throw new Exception(msg);
@@ -899,7 +936,7 @@ public class CapacitorSQLite {
             if (encrypted) {
                 inMode = "secret";
             }
-            Database db = new Database(context, dbName, encrypted, inMode, dbVersion, new Hashtable<>(), sharedPreferences);
+            Database db = new Database(context, dbName, encrypted, inMode, dbVersion, isEncryption, new Hashtable<>(), sharedPreferences);
             db.open();
             if (!db.isOpen()) {
                 String msg = dbName + "SQLite.db not opened";

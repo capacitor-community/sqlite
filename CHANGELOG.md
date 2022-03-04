@@ -1,3 +1,20 @@
+## 3.4.1-1 (2022-03-04)
+
+### Chore
+
+ - Update to @capacitor/core 3.4.1
+ - Update to @capacitor/ios 3.4.1
+ - Update to @capacitor/android 3.4.1
+
+### Added Features
+
+ - add iosIsEncryption, androidIsEncryption in capacitor.config.ts
+   iOS KeyChain & Android MasterKey are not defined when these parameters are set to false meaning that databases could not be encrypted
+
+### Bug Fixes
+
+ - Fix Android issue#224
+
 ## 3.4.0 (2022-03-02)
 
 ### Added Features

@@ -12,6 +12,7 @@ enum CapacitorSQLiteError: Error {
     private var databaseLocation: String = "Documents"
     private var initMessage: String = ""
     private var isInit: Bool = false
+    private var isEncryption: Bool = true
     private var isBiometricAuth: Bool = false
     private var biometricTitle: String = ""
     private var bioIdAuth: BiometricIDAuthentication =
@@ -28,45 +29,53 @@ enum CapacitorSQLiteError: Error {
     init(config: SqliteConfig) {
         self.config = config
         super.init()
-        if let kcPrefix: String = config.iosKeychainPrefix {
-            account = "\(kcPrefix)_\(oldAccount)"
-            prefixKeychain = kcPrefix
+
+        if let isEncrypt = config.iosIsEncryption {
+            if isEncrypt == 0 {
+                isEncryption = false
+            }
         }
-        if let isBioAuth = config.biometricAuth {
-            if isBioAuth == 1 {
-                if let bTitle = config.biometricTitle {
-                    biometricTitle = bTitle
-                    bioIdAuth.biometricTitle = bTitle
-                }
-                do {
-                    let bioType: BiometricType = try
-                        bioIdAuth.biometricType()
-                    if bioType == BiometricType.faceID ||
-                        bioType == BiometricType.touchID {
-                        isBiometricAuth = true
-                        isInit = true
-                        bioIdAuth.authenticateUser { [weak self] message in
-                            if let message = message {
-                                self?.notifyBiometricEvents(name: .biometricEvent,
-                                                            result: false,
-                                                            msg: message)
-                            } else {
-                                self?.notifyBiometricEvents(name: .biometricEvent,
-                                                            result: true,
-                                                            msg: "")
-                            }
-                        }
-                    } else {
-                        self.notifyBiometricEvents(name: .biometricEvent,
-                                                   result: false,
-                                                   msg: "Biometric not set-up")
+        if isEncryption {
+            if let kcPrefix: String = config.iosKeychainPrefix {
+                account = "\(kcPrefix)_\(oldAccount)"
+                prefixKeychain = kcPrefix
+            }
+            if let isBioAuth = config.biometricAuth {
+                if isBioAuth == 1 {
+                    if let bTitle = config.biometricTitle {
+                        biometricTitle = bTitle
+                        bioIdAuth.biometricTitle = bTitle
                     }
-                } catch BiometricIDAuthenticationError
-                            .biometricType(let message) {
-                    initMessage =  message
-                } catch let error {
-                    initMessage = "Init Plugin failed :"
-                    initMessage.append(" \(error.localizedDescription)")
+                    do {
+                        let bioType: BiometricType = try
+                            bioIdAuth.biometricType()
+                        if bioType == BiometricType.faceID ||
+                            bioType == BiometricType.touchID {
+                            isBiometricAuth = true
+                            isInit = true
+                            bioIdAuth.authenticateUser { [weak self] message in
+                                if let message = message {
+                                    self?.notifyBiometricEvents(name: .biometricEvent,
+                                                                result: false,
+                                                                msg: message)
+                                } else {
+                                    self?.notifyBiometricEvents(name: .biometricEvent,
+                                                                result: true,
+                                                                msg: "")
+                                }
+                            }
+                        } else {
+                            self.notifyBiometricEvents(name: .biometricEvent,
+                                                       result: false,
+                                                       msg: "Biometric not set-up")
+                        }
+                    } catch BiometricIDAuthenticationError
+                                .biometricType(let message) {
+                        initMessage =  message
+                    } catch let error {
+                        initMessage = "Init Plugin failed :"
+                        initMessage.append(" \(error.localizedDescription)")
+                    }
                 }
             }
         }
@@ -101,18 +110,21 @@ enum CapacitorSQLiteError: Error {
 
     @objc public func isSecretStored()  throws -> NSNumber {
         if isInit {
-            do {
-                let isSecretExists: Bool = try UtilsSecret.isPassphrase(
-                    account: account)
-                if isSecretExists {
-                    return 1
-                } else {
-                    return 0
+            if isEncryption {
+                do {
+                    let isSecretExists: Bool = try UtilsSecret.isPassphrase(
+                        account: account)
+                    if isSecretExists {
+                        return 1
+                    } else {
+                        return 0
+                    }
+                } catch UtilsSecretError.prefixPassphrase(let message) {
+                    throw CapacitorSQLiteError.failed(message: message)
                 }
-            } catch UtilsSecretError.prefixPassphrase(let message) {
-                throw CapacitorSQLiteError.failed(message: message)
+            } else {
+                throw CapacitorSQLiteError.failed(message: "No Encryption set in capacitor.config")
             }
-
         } else {
             throw CapacitorSQLiteError.failed(message: initMessage)
         }
@@ -122,19 +134,23 @@ enum CapacitorSQLiteError: Error {
 
     @objc public func setEncryptionSecret(passphrase: String) throws {
         if isInit {
-            do {
-                // close all connections
-                try closeAllConnections()
-                // set encryption secret
-                try UtilsSecret
-                    .setEncryptionSecret(prefix: prefixKeychain,
-                                         passphrase: passphrase,
-                                         databaseLocation: databaseLocation)
-                return
-            } catch UtilsSecretError.setEncryptionSecret(let message) {
-                throw CapacitorSQLiteError.failed(message: message)
-            } catch let error {
-                throw CapacitorSQLiteError.failed(message: "\(error)")
+            if isEncryption {
+                do {
+                    // close all connections
+                    try closeAllConnections()
+                    // set encryption secret
+                    try UtilsSecret
+                        .setEncryptionSecret(prefix: prefixKeychain,
+                                             passphrase: passphrase,
+                                             databaseLocation: databaseLocation)
+                    return
+                } catch UtilsSecretError.setEncryptionSecret(let message) {
+                    throw CapacitorSQLiteError.failed(message: message)
+                } catch let error {
+                    throw CapacitorSQLiteError.failed(message: "\(error)")
+                }
+            } else {
+                throw CapacitorSQLiteError.failed(message: "No Encryption set in capacitor.config")
             }
         } else {
             throw CapacitorSQLiteError.failed(message: initMessage)
@@ -147,58 +163,62 @@ enum CapacitorSQLiteError: Error {
     @objc public func changeEncryptionSecret(call: CAPPluginCall, passphrase: String,
                                              oldPassphrase: String) throws {
         if isInit {
-            self.call = call
-            let retHandler: ReturnHandler = ReturnHandler()
-            do {
-                // close all connections
-                try closeAllConnections()
-                if isBiometricAuth {
-                    let dbLocation = databaseLocation
-                    let mPrefixKeychain = prefixKeychain
-                    bioIdAuth.authenticateUser { [weak self] message in
-                        if let message = message {
-                            self?.intBioMessage = message
-                            return
-                        } else {
-                            do {
-                                try UtilsSecret.changeEncryptionSecret(
-                                    prefix: mPrefixKeychain,
-                                    passphrase: passphrase,
-                                    oldPassphrase: oldPassphrase,
-                                    databaseLocation: dbLocation)
-                                retHandler.rResult(call: call)
+            if isEncryption {
+                self.call = call
+                let retHandler: ReturnHandler = ReturnHandler()
+                do {
+                    // close all connections
+                    try closeAllConnections()
+                    if isBiometricAuth {
+                        let dbLocation = databaseLocation
+                        let mPrefixKeychain = prefixKeychain
+                        bioIdAuth.authenticateUser { [weak self] message in
+                            if let message = message {
+                                self?.intBioMessage = message
                                 return
-                            } catch UtilsSecretError.changeEncryptionSecret(let message) {
-                                let msg = "ChangeEncryptionSecret: \(message)"
-                                retHandler.rResult(call: call, message: msg)
-                                return
-                            } catch let error {
-                                retHandler.rResult(
-                                    call: call,
-                                    message: "ChangeEncryptionSecret: \(error.localizedDescription)")
-                                return
+                            } else {
+                                do {
+                                    try UtilsSecret.changeEncryptionSecret(
+                                        prefix: mPrefixKeychain,
+                                        passphrase: passphrase,
+                                        oldPassphrase: oldPassphrase,
+                                        databaseLocation: dbLocation)
+                                    retHandler.rResult(call: call)
+                                    return
+                                } catch UtilsSecretError.changeEncryptionSecret(let message) {
+                                    let msg = "ChangeEncryptionSecret: \(message)"
+                                    retHandler.rResult(call: call, message: msg)
+                                    return
+                                } catch let error {
+                                    retHandler.rResult(
+                                        call: call,
+                                        message: "ChangeEncryptionSecret: \(error.localizedDescription)")
+                                    return
+                                }
                             }
                         }
+                    } else {
+                        // set encryption secret
+                        try UtilsSecret
+                            .changeEncryptionSecret(prefix: prefixKeychain,
+                                                    passphrase: passphrase,
+                                                    oldPassphrase: oldPassphrase,
+                                                    databaseLocation: databaseLocation)
+                        retHandler.rResult(call: call)
+                        return
                     }
-                } else {
-                    // set encryption secret
-                    try UtilsSecret
-                        .changeEncryptionSecret(prefix: prefixKeychain,
-                                                passphrase: passphrase,
-                                                oldPassphrase: oldPassphrase,
-                                                databaseLocation: databaseLocation)
-                    retHandler.rResult(call: call)
+                } catch UtilsSecretError.changeEncryptionSecret(let message) {
+                    let msg = "ChangeEncryptionSecret: \(message)"
+                    retHandler.rResult(call: call, message: msg)
+                    return
+                } catch let error {
+                    retHandler.rResult(
+                        call: call,
+                        message: "ChangeEncryptionSecret: \(error.localizedDescription)")
                     return
                 }
-            } catch UtilsSecretError.changeEncryptionSecret(let message) {
-                let msg = "ChangeEncryptionSecret: \(message)"
-                retHandler.rResult(call: call, message: msg)
-                return
-            } catch let error {
-                retHandler.rResult(
-                    call: call,
-                    message: "ChangeEncryptionSecret: \(error.localizedDescription)")
-                return
+            } else {
+                throw CapacitorSQLiteError.failed(message: "No Encryption set in capacitor.config")
             }
         } else {
             throw CapacitorSQLiteError.failed(message: initMessage)
@@ -247,7 +267,7 @@ enum CapacitorSQLiteError: Error {
                 let mDb: Database = try Database(
                     databaseLocation: databaseLocation,
                     databaseName: databasePath,
-                    encrypted: false, account: account,
+                    encrypted: false, isEncryption: isEncryption, account: account,
                     mode: "no-encryption", version: version,
                     vUpgDict: [:])
                 dbDict[databasePath] = mDb
@@ -297,12 +317,15 @@ enum CapacitorSQLiteError: Error {
                 let msg = "Connection \(mDbName) already exists"
                 throw CapacitorSQLiteError.failed(message: msg)
             }
-
+            if encrypted && !isEncryption {
+                let msg = "Database cannot be encrypted as 'No Encryption' set in capacitor.config"
+                throw CapacitorSQLiteError.failed(message: msg)
+            }
             do {
                 let mDb: Database = try Database(
                     databaseLocation: databaseLocation,
                     databaseName: "\(mDbName)SQLite.db",
-                    encrypted: encrypted, account: account,
+                    encrypted: encrypted, isEncryption: isEncryption, account: account,
                     mode: mode, version: version,
                     vUpgDict: vUpgDict)
                 dbDict[mDbName] = mDb
@@ -738,7 +761,25 @@ enum CapacitorSQLiteError: Error {
 
             do {
                 if !mDb.isDBOpen() {
-                    try mDb.open()
+                    // check the state of the DB
+                    let state: State = UtilsSQLCipher.getDatabaseState(databaseLocation: databaseLocation, databaseName: "\(mDbName)SQLite.db", account: account)
+                    if !isEncryption &&  (state.rawValue == "ENCRYPTEDGLOBALSECRET" ||
+                                            state.rawValue == "ENCRYPTEDSECRET") {
+                        var msg = "Cannot delete an Encrypted database with "
+                        msg += "No Encryption set in capacitor.config"
+                        throw CapacitorSQLiteError.failed(message: msg)
+                    } else if state.rawValue == "UNENCRYPTED" {
+                        do {
+                            try UtilsSQLCipher.deleteDB(databaseLocation: databaseLocation,
+                                                        databaseName: "\(mDbName)SQLite.db")
+                            return
+                        } catch UtilsSQLCipherError.deleteDB(let message ) {
+                            throw CapacitorSQLiteError.failed(message: message)
+                        }
+
+                    } else {
+                        try mDb.open()
+                    }
                 }
                 let res: Bool = try mDb.deleteDB(databaseName: "\(mDbName)SQLite.db")
                 if res {
@@ -809,7 +850,7 @@ enum CapacitorSQLiteError: Error {
                 do {
                     mDb = try Database(
                         databaseLocation: databaseLocation, databaseName: dbName,
-                        encrypted: encrypted, account: account,
+                        encrypted: encrypted, isEncryption: isEncryption, account: account,
                         mode: inMode, version: version, vUpgDict: [:])
                     try mDb.open()
                 } catch DatabaseError.open(let message) {

@@ -1215,6 +1215,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
     }
     private func sqliteConfig() -> SqliteConfig {
         var config = SqliteConfig()
+        config.iosIsEncryption = 1
         config.biometricAuth = 0
         config.iosKeychainPrefix = ""
         if let keychainPrefix = getConfigValue("iosKeychainPrefix") as? String {
@@ -1224,19 +1225,25 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             as? String {
             config.iosDatabaseLocation = iosDatabaseLocation
         }
-
-        if let iosBiometric = getConfigValue("iosBiometric") as? [String: Any] {
-            if let bioAuth = iosBiometric["biometricAuth"] as? Bool {
-                if bioAuth {
-                    config.biometricAuth = 1
-                    if let bioTitle = iosBiometric["biometricTitle"] as? String {
-                        config.biometricTitle = bioTitle.count > 0
-                            ? bioTitle
-                            : "Biometric login for capacitor sqlite"
+        if let isEncryption = getConfigValue("iosIsEncryption") as? Bool {
+            if !isEncryption {
+                config.iosIsEncryption = 0
+            }
+        }
+        if config.iosIsEncryption == 1 {
+            if let iosBiometric = getConfigValue("iosBiometric") as? [String: Any] {
+                if let bioAuth = iosBiometric["biometricAuth"] as? Bool {
+                    if bioAuth {
+                        config.biometricAuth = 1
+                        if let bioTitle = iosBiometric["biometricTitle"] as? String {
+                            config.biometricTitle = bioTitle.count > 0
+                                ? bioTitle
+                                : "Biometric login for capacitor sqlite"
+                        }
                     }
                 }
-            }
 
+            }
         }
         return config
     }
