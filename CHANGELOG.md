@@ -1,3 +1,9 @@
+## 3.4.1-3 (2022-03-10)
+
+### Bug Fixes
+
+ - Fix Android the master key android-keystore://_androidx_security_master_key_ exists but is unusable
+
 ## 3.4.1-2 (2022-03-10)
 
 ### Bug Fixes

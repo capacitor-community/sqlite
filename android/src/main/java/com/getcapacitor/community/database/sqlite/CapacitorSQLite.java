@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -63,7 +64,7 @@ public class CapacitorSQLite {
     private Boolean biometricAuth = false;
     private String biometricTitle;
     private String biometricSubTitle;
-    private int VALIDITY_DURATION = 1;
+    private int VALIDITY_DURATION = 5;
     private RetHandler rHandler = new RetHandler();
     private PluginCall call;
 
@@ -86,11 +87,18 @@ public class CapacitorSQLite {
                         @Override
                         public void onSuccess(BiometricPrompt.AuthenticationResult result) {
                             try {
-                                masterKeyAlias =
-                                    new MasterKey.Builder(context)
-                                        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                                        .setUserAuthenticationRequired(true, VALIDITY_DURATION)
-                                        .build();
+                                KeyStore ks = KeyStore.getInstance("AndroidKeyStore");
+                                ks.load(null);
+                                Enumeration<String> aliases = ks.aliases();
+                                if (aliases.hasMoreElements()) {
+                                    masterKeyAlias =
+                                        new MasterKey.Builder(context)
+                                            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                                            .setUserAuthenticationRequired(true, VALIDITY_DURATION)
+                                            .build();
+                                } else {
+                                    masterKeyAlias = new MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build();
+                                }
                                 setSharedPreferences();
                                 notifyBiometricEvent(true, null);
                                 return;
