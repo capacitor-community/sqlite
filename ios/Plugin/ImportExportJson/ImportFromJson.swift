@@ -194,12 +194,16 @@ class ImportFromJson {
     -> [String] {
         var statements: [String] = []
         var stmt: String
+        var isLastModified: Bool = false
         stmt = "CREATE TABLE IF NOT EXISTS "
         stmt.append(tableName)
         stmt.append(" (")
         for jpos in 0..<mSchema.count {
             if let jSchColumn = mSchema[jpos].column {
                 if jSchColumn.count > 0 {
+                    if jSchColumn == "last_modified" {
+                        isLastModified = true
+                    }
                     stmt.append(jSchColumn)
                 }
             }
@@ -221,20 +225,22 @@ class ImportFromJson {
         }
         stmt.append(");")
         statements.append(stmt)
-        // create trigger last_modified associated with the table
-        let triggerName: String = tableName + "_trigger_last_modified"
-        stmt = "CREATE TRIGGER IF NOT EXISTS "
-        stmt.append(triggerName)
-        stmt.append(" AFTER UPDATE ON ")
-        stmt.append(tableName)
-        stmt.append(" FOR EACH ROW ")
-        stmt.append("WHEN NEW.last_modified <= OLD.last_modified ")
-        stmt.append("BEGIN UPDATE ")
-        stmt.append(tableName)
-        stmt.append(" SET last_modified = (strftime('%s','now')) ")
-        stmt.append("WHERE id=OLD.id; ")
-        stmt.append("END;")
-        statements.append(stmt)
+        if isLastModified {
+            // create trigger last_modified associated with the table
+            let triggerName: String = tableName + "_trigger_last_modified"
+            stmt = "CREATE TRIGGER IF NOT EXISTS "
+            stmt.append(triggerName)
+            stmt.append(" AFTER UPDATE ON ")
+            stmt.append(tableName)
+            stmt.append(" FOR EACH ROW ")
+            stmt.append("WHEN NEW.last_modified <= OLD.last_modified ")
+            stmt.append("BEGIN UPDATE ")
+            stmt.append(tableName)
+            stmt.append(" SET last_modified = (strftime('%s','now')) ")
+            stmt.append("WHERE id=OLD.id; ")
+            stmt.append("END;")
+            statements.append(stmt)
+        }
         return statements
     }
 

@@ -33,7 +33,15 @@ The created database can be encrypted or not based on the value of the name **_e
 
 The import mode can be selected either **full** or **partial**
 
-When mode **_full_** is choosen, all the existing **tables and views are dropped** if the database exists and they already exist in that database.
+To use the **partial** mode, it is mandatory to add a column **last_modified** to the schema of all tables in your database.
+
+When a table schema is created if a **last_modified** column exists, a trigger **_trigger_last_modified** is automatically added to make sure that the **last_modified** column is updated with the `date` of the modification to allow the synchronization process when exporting back the data to the server.
+
+When no **last_modified** column added:
+ -  **_full_** and **_partial_**  modes are available for import,
+ -  only **_full_** mode is available for export
+
+When mode **_full_** is choosen, all the existing **tables and views are dropped** if the database exists and they already exists in that database.
 
 When mode **_partial_** is choosen, you can perform the following actions on an existing database
 
@@ -50,6 +58,7 @@ Internally the `importFromJson`method is splitted into three SQL Transactions:
   - transaction creating the Table's Data (Insert, Update)
   - transaction creating the Views
 
+
 ### exportToJson
 
 This method allow to download a database to a Json object.
@@ -65,11 +74,15 @@ this method allow to check if the Json Object is valid before processing an impo
 
 ### createSyncTable
 
-Should be use once to create the table where the synchronization date is stored.
+Should be use once to create the table where the synchronization date is stored. To create a synchronization table, a column **last_modified** must be present in the database table's schema. 
 
 ### setSyncDate
 
-Allow for updating the synchronization date.
+Allow for updating the synchronization date. Only available if the synchronization table has been created.
+
+### getSyncDate
+
+Allow for retreiving the synchronization date. Only available if the synchronization table has been created.
 
 ## JSON Object
 

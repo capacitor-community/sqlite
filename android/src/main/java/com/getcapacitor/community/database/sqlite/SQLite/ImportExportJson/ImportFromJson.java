@@ -167,11 +167,15 @@ public class ImportFromJson {
     private ArrayList<String> createTableSchema(ArrayList<JsonColumn> mSchema, String tableName) {
         ArrayList<String> statements = new ArrayList<>();
         String stmt = new StringBuilder("CREATE TABLE IF NOT EXISTS ").append(tableName).append(" (").toString();
+        Boolean isLastModified = false;
         for (int j = 0; j < mSchema.size(); j++) {
             if (j == mSchema.size() - 1) {
                 if (mSchema.get(j).getColumn() != null) {
                     stmt =
                         new StringBuilder(stmt).append(mSchema.get(j).getColumn()).append(" ").append(mSchema.get(j).getValue()).toString();
+                    if (mSchema.get(j).getColumn().equals("last_modified")) {
+                        isLastModified = true;
+                    }
                 } else if (mSchema.get(j).getForeignkey() != null) {
                     stmt =
                         new StringBuilder(stmt)
@@ -198,6 +202,9 @@ public class ImportFromJson {
                             .append(mSchema.get(j).getValue())
                             .append(",")
                             .toString();
+                    if (mSchema.get(j).getColumn().equals("last_modified")) {
+                        isLastModified = true;
+                    }
                 } else if (mSchema.get(j).getForeignkey() != null) {
                     stmt =
                         new StringBuilder(stmt)
@@ -221,21 +228,23 @@ public class ImportFromJson {
         }
         stmt = new StringBuilder(stmt).append(");").toString();
         statements.add(stmt);
-        // create trigger last_modified associated with the table
-        String stmtTrigger = new StringBuilder("CREATE TRIGGER IF NOT EXISTS ")
-            .append(tableName)
-            .append("_trigger_last_modified")
-            .append(" AFTER UPDATE ON ")
-            .append(tableName)
-            .append(" FOR EACH ROW ")
-            .append("WHEN NEW.last_modified <= " + "OLD.last_modified BEGIN ")
-            .append("UPDATE ")
-            .append(tableName)
-            .append(" SET last_modified = (strftime('%s','now')) ")
-            .append("WHERE id=OLD.id; ")
-            .append("END;")
-            .toString();
-        statements.add(stmtTrigger);
+        if (isLastModified) {
+            // create trigger last_modified associated with the table
+            String stmtTrigger = new StringBuilder("CREATE TRIGGER IF NOT EXISTS ")
+                .append(tableName)
+                .append("_trigger_last_modified")
+                .append(" AFTER UPDATE ON ")
+                .append(tableName)
+                .append(" FOR EACH ROW ")
+                .append("WHEN NEW.last_modified <= " + "OLD.last_modified BEGIN ")
+                .append("UPDATE ")
+                .append(tableName)
+                .append(" SET last_modified = (strftime('%s','now')) ")
+                .append("WHERE id=OLD.id; ")
+                .append("END;")
+                .toString();
+            statements.add(stmtTrigger);
+        }
         return statements;
     }
 

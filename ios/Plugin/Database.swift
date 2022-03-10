@@ -453,18 +453,27 @@ class Database {
             let isExists: Bool = try UtilsJson.isTableExists(
                 mDB: self, tableName: "sync_table")
             if !isExists {
-                let date = Date()
-                let syncTime: Int = Int(date.timeIntervalSince1970)
-                var stmt: String = "CREATE TABLE IF NOT EXISTS "
-                stmt.append("sync_table (")
-                stmt.append("id INTEGER PRIMARY KEY NOT NULL,")
-                stmt.append("sync_date INTEGER);")
-                stmt.append("INSERT INTO sync_table (sync_date) ")
-                stmt.append("VALUES ('\(syncTime)');")
-                retObj = try executeSQL(sql: stmt)
+                // check if there are tables with last_modified column
+                let isLastModified: Bool = try UtilsJson.isLastModified(mDB: self)
+                if isLastModified {
+                    let date = Date()
+                    let syncTime: Int = Int(date.timeIntervalSince1970)
+                    var stmt: String = "CREATE TABLE IF NOT EXISTS "
+                    stmt.append("sync_table (")
+                    stmt.append("id INTEGER PRIMARY KEY NOT NULL,")
+                    stmt.append("sync_date INTEGER);")
+                    stmt.append("INSERT INTO sync_table (sync_date) ")
+                    stmt.append("VALUES ('\(syncTime)');")
+                    retObj = try executeSQL(sql: stmt)
+                } else {
+                    let msg = "No last_modified column in tables"
+                    throw DatabaseError.createSyncTable(message: msg)
+                }
             } else {
                 retObj = 0
             }
+        } catch UtilsJsonError.isLastModified(let message) {
+            throw DatabaseError.createSyncTable(message: message)
         } catch UtilsJsonError.tableNotExists(let message) {
             throw DatabaseError.createSyncTable(message: message)
         } catch DatabaseError.executeSQL(let message) {
@@ -478,6 +487,11 @@ class Database {
     func setSyncDate(syncDate: String ) throws -> Bool {
         var retBool: Bool = false
         do {
+            let isExists: Bool = try UtilsJson.isTableExists(
+                mDB: self, tableName: "sync_table")
+            if !isExists {
+                throw DatabaseError.createSyncDate(message: "No sync_table available")
+            }
             let dateFormatter = DateFormatter()
             dateFormatter.locale = Locale(identifier: "en_US_POSIX")
             dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
@@ -494,6 +508,8 @@ class Database {
             } else {
                 throw DatabaseError.createSyncDate(message: "wrong syncDate")
             }
+        } catch UtilsJsonError.tableNotExists(let message) {
+            throw DatabaseError.createSyncDate(message: message)
         } catch DatabaseError.runSQL(let message) {
             throw DatabaseError.createSyncDate(message: message)
         }
@@ -505,7 +521,14 @@ class Database {
     func getSyncDate( ) throws -> Int64 {
         var syncDate: Int64 = 0
         do {
+            let isExists: Bool = try UtilsJson.isTableExists(
+                mDB: self, tableName: "sync_table")
+            if !isExists {
+                throw DatabaseError.getSyncDate(message: "No sync_table available")
+            }
             syncDate = try ExportToJson.getSyncDate(mDB: self)
+        } catch UtilsJsonError.tableNotExists(let message) {
+            throw DatabaseError.getSyncDate(message: message)
         } catch ExportToJsonError.getSyncDate(let message) {
             throw DatabaseError.getSyncDate(message: message)
         }

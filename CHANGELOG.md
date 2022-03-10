@@ -1,3 +1,10 @@
+## 3.4.1-2 (2022-03-10)
+
+### Bug Fixes
+
+ - Fix ImportExportJson.md regarding the use of last_modified table column
+ - Fix createSyncTable when last_modified column not in table's schema
+
 ## 3.4.1-1 (2022-03-04)
 
 ### Chore

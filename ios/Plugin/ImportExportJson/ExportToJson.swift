@@ -88,6 +88,12 @@ class ExportToJson {
             let resTables =  try UtilsSQLCipher.querySQL(
                 mDB: mDB, sql: query, values: [])
             if resTables.count > 0 {
+                let isExists: Bool = try UtilsJson.isTableExists(
+                    mDB: mDB, tableName: "sync_table")
+                if !isExists && expMode == "partial" {
+                    throw ExportToJsonError.createExportObject(message: "No sync_table available")
+                }
+
                 switch expMode {
                 case "partial" :
                     tables = try ExportToJson
@@ -102,6 +108,8 @@ class ExportToJson {
                         message: "expMode \(expMode) not defined")
                 }
             }
+        } catch UtilsJsonError.tableNotExists(let message) {
+            throw ExportToJsonError.createExportObject(message: message)
         } catch UtilsSQLCipherError.querySQL(let message) {
             throw ExportToJsonError.createExportObject(
                 message: "Error get table's names failed : \(message)")

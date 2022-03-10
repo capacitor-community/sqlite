@@ -250,17 +250,25 @@ export class Database {
         'sync_table',
       );
       if (!retB) {
-        const date: number = Math.round(new Date().getTime() / 1000);
-        let stmts = `
-                        CREATE TABLE IF NOT EXISTS sync_table (
-                            id INTEGER PRIMARY KEY NOT NULL,
-                            sync_date INTEGER
-                            );`;
-        stmts += `INSERT INTO sync_table (sync_date) VALUES (
-                            "${date}");`;
-        changes = await this._uSQLite.execute(this._mDB, stmts);
-        if (changes < 0) {
-          return Promise.reject(`CreateSyncTable: failed changes < 0`);
+        const isLastModified = await this._uJson.isLastModified(
+          this._mDB,
+          isOpen,
+        );
+        if (isLastModified) {
+          const date: number = Math.round(new Date().getTime() / 1000);
+          let stmts = `
+                          CREATE TABLE IF NOT EXISTS sync_table (
+                              id INTEGER PRIMARY KEY NOT NULL,
+                              sync_date INTEGER
+                              );`;
+          stmts += `INSERT INTO sync_table (sync_date) VALUES (
+                              "${date}");`;
+          changes = await this._uSQLite.execute(this._mDB, stmts);
+          if (changes < 0) {
+            return Promise.reject(`CreateSyncTable: failed changes < 0`);
+          }
+        } else {
+          return Promise.reject('No last_modified column in tables');
         }
       }
       return Promise.resolve(changes);
@@ -281,6 +289,14 @@ export class Database {
       return { result: false, message: msg };
     }
     try {
+      const isTable = await this._uJson.isTableExists(
+        this._mDB,
+        this._isDBOpen,
+        'sync_table',
+      );
+      if (!isTable) {
+        return Promise.reject('No sync_table available');
+      }
       const sDate: number = Math.round(new Date(syncDate).getTime() / 1000);
       let stmt = `UPDATE sync_table SET sync_date = `;
       stmt += `${sDate} WHERE id = 1;`;
@@ -306,6 +322,14 @@ export class Database {
       return { syncDate: 0, message: msg };
     }
     try {
+      const isTable = await this._uJson.isTableExists(
+        this._mDB,
+        this._isDBOpen,
+        'sync_table',
+      );
+      if (!isTable) {
+        return Promise.reject('No sync_table available');
+      }
       const syncDate: number = await this._eTJson.getSyncDate(this._mDB);
       if (syncDate > 0) {
         return { syncDate: syncDate };

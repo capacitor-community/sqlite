@@ -68,6 +68,11 @@ public class ExportToJson {
             if (resTables.length() == 0) {
                 throw new Exception("CreateExportObject: table's names failed");
             } else {
+                boolean isSyncTable = uJson.isTableExists(db, "sync_table");
+                if (!isSyncTable && sqlObj.getMode().equals("partial")) {
+                    throw new Exception("No sync_table available");
+                }
+
                 switch (sqlObj.getMode()) {
                     case "partial":
                         tables = getTablesPartial(db, resTables);

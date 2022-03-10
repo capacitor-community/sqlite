@@ -34,6 +34,15 @@ export class ExportToJson {
       if (resTables.length === 0) {
         return Promise.reject("createExportObject: table's names failed");
       } else {
+        const isTable = await this._uJson.isTableExists(
+          mDB,
+          true,
+          'sync_table',
+        );
+        if (!isTable && sqlObj.mode === 'partial') {
+          return Promise.reject('No sync_table available');
+        }
+
         switch (sqlObj.mode) {
           case 'partial': {
             tables = await this.getTablesPartial(mDB, resTables);

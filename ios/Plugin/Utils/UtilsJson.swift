@@ -17,6 +17,7 @@ enum UtilsJsonError: Error {
     case validateIndexes(message: String)
     case validateTriggers(message: String)
     case validateViews(message: String)
+    case isLastModified(message: String)
 }
 
 // swiftlint:disable type_body_length
@@ -42,6 +43,33 @@ class UtilsJson {
             if resQuery.count > 0 {ret = true}
         } catch UtilsSQLCipherError.querySQL(let message) {
             throw UtilsJsonError.tableNotExists(message: message)
+        }
+        return ret
+    }
+
+    // MARK: - ImportFromJson - IsLastModified
+
+    class func isLastModified(mDB: Database) throws -> Bool {
+        var msg: String = "Error LastModified: "
+        if !mDB.isDBOpen() {
+            msg.append("Database not opened")
+            throw UtilsJsonError.isLastModified(message: msg)
+        }
+        var ret: Bool = false
+        do {
+            let tableList: [String] = try UtilsDrop.getTablesNames(mDB: mDB)
+            for table in tableList {
+                let namesTypes: JsonNamesTypes = try getTableColumnNamesTypes(mDB: mDB,
+                                                                              tableName: table)
+                if namesTypes.names.contains("last_modified") {
+                    ret = true
+                    break
+                }
+            }
+        } catch UtilsJsonError.getTableColumnNamesTypes(let message) {
+            throw UtilsJsonError.isLastModified(message: message)
+        } catch UtilsDropError.getTablesNamesFailed(let message) {
+            throw UtilsJsonError.isLastModified(message: message)
         }
         return ret
     }

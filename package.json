@@ -91,5 +91,8 @@
     "electron": {
       "src": "electron"
     }
+  },
+  "dependencies": {
+    "jeep-sqlite": "^1.3.7"
   }
 }

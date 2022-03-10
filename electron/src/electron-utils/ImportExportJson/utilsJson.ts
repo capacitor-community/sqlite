@@ -4,10 +4,38 @@ import type {
   JsonTrigger,
   JsonView,
 } from '../../../../src/definitions';
+import { UtilsDrop } from '../utilsDrop';
 import { UtilsSQLite } from '../utilsSQLite';
 
 export class UtilsJson {
   private _uSQLite: UtilsSQLite = new UtilsSQLite();
+  private _uDrop: UtilsDrop = new UtilsDrop();
+
+  /**
+   * isLastModified
+   * @param db
+   * @param isOpen
+   */
+  public async isLastModified(db: any, isOpen: boolean): Promise<boolean> {
+    if (!isOpen) {
+      return Promise.reject('isLastModified: database not opened');
+    }
+    try {
+      const tableList: string[] = await this._uDrop.getTablesNames(db);
+      for (const table of tableList) {
+        const tableNamesTypes: any = await this.getTableColumnNamesTypes(
+          db,
+          table,
+        );
+        const tableColumnNames: string[] = tableNamesTypes.names;
+        if (tableColumnNames.includes('last_modified')) {
+          return Promise.resolve(true);
+        }
+      }
+    } catch (err) {
+      return Promise.reject(`isLastModified: ${err}`);
+    }
+  }
   /**
    * IsTableExists
    * @param db
@@ -123,6 +151,7 @@ export class UtilsJson {
    */
   public async createSchemaStatement(jsonData: any): Promise<string[]> {
     const statements: string[] = [];
+    let isLastModified = false;
     // Prepare the statement to execute
     try {
       for (const jTable of jsonData.tables) {
@@ -135,6 +164,9 @@ export class UtilsJson {
                 statements.push(
                   `${jTable.schema[j].column} ${jTable.schema[j].value}`,
                 );
+                if (jTable.schema[j].column === 'last_modified') {
+                  isLastModified = true;
+                }
               } else if (jTable.schema[j].foreignkey) {
                 statements.push(
                   `FOREIGN KEY (${jTable.schema[j].foreignkey}) ${jTable.schema[j].value}`,
@@ -149,6 +181,9 @@ export class UtilsJson {
                 statements.push(
                   `${jTable.schema[j].column} ${jTable.schema[j].value},`,
                 );
+                if (jTable.schema[j].column === 'last_modified') {
+                  isLastModified = true;
+                }
               } else if (jTable.schema[j].foreignkey) {
                 statements.push(
                   `FOREIGN KEY (${jTable.schema[j].foreignkey}) ${jTable.schema[j].value},`,
@@ -161,17 +196,19 @@ export class UtilsJson {
             }
           }
           statements.push(');');
-          // create trigger last_modified associated with the table
-          let trig = 'CREATE TRIGGER IF NOT EXISTS ';
-          trig += `${jTable.name}`;
-          trig += `_trigger_last_modified `;
-          trig += `AFTER UPDATE ON ${jTable.name} `;
-          trig += 'FOR EACH ROW WHEN NEW.last_modified <= ';
-          trig += 'OLD.last_modified BEGIN UPDATE ';
-          trig += `${jTable.name} `;
-          trig += `SET last_modified = `;
-          trig += "(strftime('%s','now')) WHERE id=OLD.id; END;";
-          statements.push(trig);
+          if (isLastModified) {
+            // create trigger last_modified associated with the table
+            let trig = 'CREATE TRIGGER IF NOT EXISTS ';
+            trig += `${jTable.name}`;
+            trig += `_trigger_last_modified `;
+            trig += `AFTER UPDATE ON ${jTable.name} `;
+            trig += 'FOR EACH ROW WHEN NEW.last_modified <= ';
+            trig += 'OLD.last_modified BEGIN UPDATE ';
+            trig += `${jTable.name} `;
+            trig += `SET last_modified = `;
+            trig += "(strftime('%s','now')) WHERE id=OLD.id; END;";
+            statements.push(trig);
+          }
         }
 
         if (jTable.indexes != null && jTable.indexes.length >= 1) {

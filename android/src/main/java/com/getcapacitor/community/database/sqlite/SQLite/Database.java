@@ -569,17 +569,22 @@ public class Database {
         // check if the table has already been created
         boolean isExists = _uJson.isTableExists(this, "sync_table");
         if (!isExists) {
-            Date date = new Date();
-            long syncTime = date.getTime() / 1000L;
-            String[] statements = {
-                "CREATE TABLE IF NOT EXISTS sync_table (" + "id INTEGER PRIMARY KEY NOT NULL," + "sync_date INTEGER);",
-                "INSERT INTO sync_table (sync_date) VALUES ('" + syncTime + "');"
-            };
-            try {
-                retObj = execute(statements);
-                return retObj;
-            } catch (Exception e) {
-                throw new Exception(e.getMessage());
+            boolean isLastModified = _uJson.isLastModified(this);
+            if (isLastModified) {
+                Date date = new Date();
+                long syncTime = date.getTime() / 1000L;
+                String[] statements = {
+                    "CREATE TABLE IF NOT EXISTS sync_table (" + "id INTEGER PRIMARY KEY NOT NULL," + "sync_date INTEGER);",
+                    "INSERT INTO sync_table (sync_date) VALUES ('" + syncTime + "');"
+                };
+                try {
+                    retObj = execute(statements);
+                    return retObj;
+                } catch (Exception e) {
+                    throw new Exception(e.getMessage());
+                }
+            } else {
+                throw new Exception("No last_modified column in tables");
             }
         } else {
             retObj.put("changes", Integer.valueOf(0));
@@ -596,6 +601,10 @@ public class Database {
     public void setSyncDate(String syncDate) throws Exception {
         JSObject retObj = new JSObject();
         try {
+            boolean isSyncTable = _uJson.isTableExists(this, "sync_table");
+            if (!isSyncTable) {
+                throw new Exception("No sync_table available");
+            }
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
             Date date = formatter.parse(syncDate.replaceAll("Z$", "+0000"));
             long syncTime = date.getTime() / 1000L;
@@ -614,6 +623,10 @@ public class Database {
     public Long getSyncDate() throws Exception {
         long syncDate = 0;
         try {
+            boolean isSyncTable = _uJson.isTableExists(this, "sync_table");
+            if (!isSyncTable) {
+                throw new Exception("No sync_table available");
+            }
             syncDate = toJson.getSyncDate(this);
             return syncDate;
         } catch (Exception e) {

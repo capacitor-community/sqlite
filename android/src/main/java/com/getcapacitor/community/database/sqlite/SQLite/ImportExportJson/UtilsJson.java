@@ -3,6 +3,7 @@ package com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.community.database.sqlite.SQLite.Database;
+import com.getcapacitor.community.database.sqlite.SQLite.UtilsDrop;
 import java.sql.Blob;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -16,6 +17,28 @@ public class UtilsJson {
     private JsonIndex uJIdx = new JsonIndex();
     private JsonTrigger uJTrg = new JsonTrigger();
     private JsonView uJView = new JsonView();
+    private UtilsDrop _uDrop = new UtilsDrop();
+
+    public boolean isLastModified(Database db) throws Exception {
+        if (!db.isOpen()) {
+            throw new Exception("isLastModified: Database not opened");
+        }
+        boolean ret = false;
+        try {
+            List<String> tables = _uDrop.getTablesNames(db);
+            for (String tableName : tables) {
+                JSObject namesTypes = getTableColumnNamesTypes(db, tableName);
+                ArrayList<String> colNames = (ArrayList<String>) namesTypes.get("names");
+                if (colNames.contains("last_modified")) {
+                    ret = true;
+                    break;
+                }
+            }
+            return ret;
+        } catch (Exception e) {
+            throw new Exception("isLastModified: " + e.getMessage());
+        }
+    }
 
     /**
      * Check if a table exists
