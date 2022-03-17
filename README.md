@@ -28,11 +28,13 @@
 
 ## CAPACITOR 3 (Master)
 
-🚨 Since release 3.4.1-4 ->> 🚨
-  MacOS only, databases location for Electron can be set in `the config.config.ts` as followed:
+🚨 Since release 3.4.1 ->> 🚨
+  Databases location for Electron can be set in `the config.config.ts` as followed:
   plugins: {
     CapacitorSQLite: {
-      electronMacLocation: "/YOUR_DATABASES_PATH"
+      electronMacLocation: "/YOUR_DATABASES_PATH",
+      electronWindowsLocation: "C:\\ProgramData\\CapacitorDatabases",
+      electronLinuxLocation: "/home/CapacitorDatabases"
     }
   }
   For existing databases, YOU MUST COPY old databases to the new location
@@ -49,7 +51,7 @@
   npm run build
   npx cap copy @capacitor-community/electron
   npx cap open @capacitor-community/electron
-🚨 Since release 3.4.1-4 <<- 🚨
+🚨 Since release 3.4.1 <<- 🚨
 
 🚨 Since release 3.4.1-1 ->> 🚨
 
