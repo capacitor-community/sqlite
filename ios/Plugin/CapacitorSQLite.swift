@@ -26,6 +26,7 @@ enum CapacitorSQLiteError: Error {
 
     // swiftlint:disable function_body_length
     // swiftlint:disable cyclomatic_complexity
+    // swiftlint:disable no_space_in_method_call
     init(config: SqliteConfig) {
         self.config = config
         super.init()
@@ -97,6 +98,7 @@ enum CapacitorSQLiteError: Error {
             isInit = true
         }
     }
+    // swiftlint:enable no_space_in_method_call
     // swiftlint:enable cyclomatic_complexity
     // swiftlint:enable function_body_length
 
@@ -160,6 +162,7 @@ enum CapacitorSQLiteError: Error {
     // MARK: - ChangeEncryptionSecret
 
     // swiftlint:disable function_body_length
+    // swiftlint:disable no_space_in_method_call
     @objc public func changeEncryptionSecret(call: CAPPluginCall, passphrase: String,
                                              oldPassphrase: String) throws {
         if isInit {
@@ -225,6 +228,7 @@ enum CapacitorSQLiteError: Error {
         }
 
     }
+    // swiftlint:enable no_space_in_method_call
     // swiftlint:enable function_body_length
 
     // MARK: - getNCDatabasePath

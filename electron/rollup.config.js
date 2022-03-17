@@ -12,6 +12,22 @@ export default {
       exports: 'named',
     },
   ],
-  external: ['@capacitor/core', 'sqlite3', 'path', 'fs', 'os', 'jszip'],
-  plugins: [nodeResolve(), commonjs()],
+  external: [
+    '@capacitor/core',
+    'electron',
+    'sqlite3',
+    'path',
+    'fs',
+    'os',
+    'jszip',
+  ],
+  plugins: [
+    nodeResolve(),
+    commonjs({
+      ignoreDynamicRequires: true,
+      dynamicRequireTargets: [
+        'node_modules/@capacitor-community/sqlite/electron/dist/plugin.js',
+      ],
+    }),
+  ],
 };

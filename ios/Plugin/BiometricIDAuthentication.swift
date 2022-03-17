@@ -44,6 +44,7 @@ class BiometricIDAuthentication {
             throw BiometricIDAuthenticationError.biometricType(message: msg)
         }
     }
+    // swiftlint:disable no_space_in_method_call
     func authenticateUser(completion: @escaping (String?) -> Void) {
         let context = LAContext()
         context.touchIDAuthenticationAllowableReuseDuration = 10
@@ -76,4 +77,6 @@ class BiometricIDAuthentication {
         }
         }
     }
+    // swiftlint:enable no_space_in_method_call
+
 }

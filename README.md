@@ -28,10 +28,33 @@
 
 ## CAPACITOR 3 (Master)
 
+🚨 Since release 3.4.1-4 ->> 🚨
+  MacOS only, databases location for Electron can be set in `the config.config.ts` as followed:
+  plugins: {
+    CapacitorSQLite: {
+      electronMacLocation: "/YOUR_DATABASES_PATH"
+    }
+  }
+  For existing databases, YOU MUST COPY old databases to the new location
+  You MUST remove the Electron folder and add it again with
+  ``` 
+  npx cap add @capacitor-community/electron
+  npm run build 
+  cd electron
+  npm i --save sqlite3
+  npm i --save @types:sqlite3
+  npm run rebuild
+  cd ..
+  npx cap sync @capacitor-community/electron
+  npm run build
+  npx cap copy @capacitor-community/electron
+  npx cap open @capacitor-community/electron
+🚨 Since release 3.4.1-4 <<- 🚨
+
 🚨 Since release 3.4.1-1 ->> 🚨
 
   - add iosIsEncryption, androidIsEncryption in capacitor.config.ts
-    When your application use only `non-encrypted dzatabases` set those parameter to false then iOS KeyChain & Android MasterKey are not defined.
+    When your application use only `non-encrypted databases` set those parameter to false then iOS KeyChain & Android MasterKey are not defined.
     
 🚨 Since release 3.4.1-1 <<- 🚨
 

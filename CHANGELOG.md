@@ -1,3 +1,10 @@
+# 3.4.1-4
+
+### Added Features
+
+ - add Electron folder databases location in the `capacitor-config.ts`
+   first step MacOS only
+
 ## 3.4.1-3 (2022-03-10)
 
 ### Bug Fixes

@@ -1192,6 +1192,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
 
     // MARK: - Handle Notifications
 
+    // swiftlint:disable no_space_in_method_call
     @objc func importJsonProgress(notification: Notification) {
         guard let info = notification.userInfo as? [String: Any] else { return }
         DispatchQueue.main.async {
@@ -1213,6 +1214,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
     }
+    // swiftlint:enable no_space_in_method_call
     private func sqliteConfig() -> SqliteConfig {
         var config = SqliteConfig()
         config.iosIsEncryption = 1

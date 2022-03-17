@@ -4,31 +4,61 @@ export class UtilsFile {
   NodeFs: any = null;
   JSZip: any = null;
   Os: any = null;
+  Electron: any = null;
   AppName = '';
   HomeDir = '';
   osType: string;
   sep = '/';
   appPath: string;
+  capConfig: any;
 
   constructor() {
     this.Path = require('path');
     this.NodeFs = require('fs');
     this.Os = require('os');
     this.JSZip = require('jszip');
+    this.Electron = require('electron');
 
     this.HomeDir = this.Os.homedir();
     const dir: string = __dirname;
     const idx: number = dir.indexOf('\\');
     if (idx != -1) this.sep = '\\';
-    this.appPath = dir.substring(
-      0,
-      dir.indexOf(`electron${this.sep}`) /* + 8*/,
-    );
+    this.appPath = this.Electron.app.getAppPath();
     const rawdata = this.NodeFs.readFileSync(
       this.Path.resolve(this.appPath, 'package.json'),
     );
     this.AppName = JSON.parse(rawdata).name;
+    const pathToBuild = this.Path.join(this.appPath, 'build');
+    if (
+      this.NodeFs.existsSync(this.Path.join(pathToBuild, 'capacitor.config.js'))
+    ) {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      this.capConfig = require(this.Path.join(
+        pathToBuild,
+        'capacitor.config.js',
+      )).default;
+    } else {
+      this.capConfig = JSON.parse(
+        this.NodeFs.readFileSync(
+          this.Path.join(this.appPath, 'capacitor.config.json'),
+        ).toString(),
+      );
+    }
     this.osType = this.Os.type();
+    switch (this.osType) {
+      case 'Darwin':
+        this.pathDB = this.capConfig.plugins.CapacitorSQLite.electronMacLocation;
+        break;
+      case 'Linux':
+        this.pathDB = this.capConfig.plugins.CapacitorSQLite.electronLinuxLocation;
+        break;
+      case 'Windows_NT':
+        this.pathDB = this.capConfig.plugins.CapacitorSQLite.electronWindowsLocation;
+        break;
+      default:
+        console.log('other operating system');
+    }
+    console.log(`&&& Databases path: ${this.pathDB}`);
   }
   /**
    * IsPathExists
@@ -68,39 +98,23 @@ export class UtilsFile {
     return this.Path.join(this.getDatabasesPath(), fileName);
   }
   /**
-   * GetCustomerPath
-   * get the customer path
-   */
-  public getCustomerPath(custPath: string): string {
-    return this.Path.join(this.HomeDir, custPath);
-  }
-  /**
-   * GetCustomerFilePath
-   * get the customer file path
-   */
-  public getCustomerFilePath(custPath: string, file: string): string {
-    return this.Path.join(custPath, file);
-  }
-  /**
    * GetDatabasesPath
    * get the database folder path
    */
   public getDatabasesPath(): string {
     let retPath = '';
+    const sep = this.Path.sep;
     const dbFolder: string = this.pathDB;
-    retPath = this.Path.join(this.HomeDir, dbFolder, this.AppName);
-    let retB: boolean = this._createFolderIfNotExists(
-      this.Path.join(this.HomeDir, dbFolder),
-    );
-    if (retB) {
-      retB = this._createFolderIfNotExists(
-        this.Path.join(this.HomeDir, dbFolder, this.AppName),
-      );
-      if (!retB) retPath = '';
+    if (dbFolder.includes(sep)) {
+      retPath = dbFolder;
+      if (this.Path.basename(dbFolder) !== this.AppName) {
+        retPath = this.Path.join(dbFolder, this.AppName);
+      }
     } else {
-      retPath = '';
+      retPath = this.Path.join(this.HomeDir, dbFolder, this.AppName);
     }
-
+    const retB: boolean = this._createFolderIfNotExists(retPath);
+    if (!retB) retPath = '';
     return retPath;
   }
   /**
