@@ -1,3 +1,10 @@
+# 3.4.1
+
+### Added Features
+
+ - add Electron folder databases location in the `capacitor-config.ts`
+   for Windows and Linux
+
 # 3.4.1-4
 
 ### Added Features

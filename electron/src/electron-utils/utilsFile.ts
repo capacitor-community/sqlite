@@ -436,9 +436,10 @@ export class UtilsFile {
    * @param directory
    */
   private _mkdirSyncRecursive(directory: string): void {
-    const path = directory.replace(/\/$/, '').split('/');
+    const sep = this.Path.sep;
+    const path = directory.replace(/\/$/, '').split(sep);
     for (let i = 1; i <= path.length; i++) {
-      const segment = path.slice(0, i).join('/');
+      const segment = path.slice(0, i).join(sep);
       segment.length > 0 && !this.NodeFs.existsSync(segment)
         ? this.NodeFs.mkdirSync(segment)
         : null;
