@@ -53,7 +53,7 @@
         electronLinuxLocation: "Databases"
       }
     }
-   ``` 
+    ``` 
 
   For existing databases, YOU MUST COPY old databases to the new location
   You MUST remove the Electron folder and add it again with
