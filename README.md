@@ -33,6 +33,7 @@
 
   - for sharing databases between users:
 
+    ``` 
     plugins: {
       CapacitorSQLite: {
         electronMacLocation: "/YOUR_DATABASES_PATH",
@@ -40,9 +41,11 @@
         electronLinuxLocation: "/home/CapacitorDatabases"
       }
     }
+    ``` 
 
   - for only the user in its Home folder
 
+    ``` 
     Plugins: {
       CapacitorSQLite: {
         electronMacLocation: "Databases",
@@ -50,6 +53,7 @@
         electronLinuxLocation: "Databases"
       }
     }
+   ```
 
   For existing databases, YOU MUST COPY old databases to the new location
   You MUST remove the Electron folder and add it again with
