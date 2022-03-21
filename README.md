@@ -30,13 +30,23 @@
 
 🚨 Since release 3.4.1 ->> 🚨
   Databases location for Electron can be set in `the config.config.ts` as followed:
-  plugins: {
-    CapacitorSQLite: {
-      electronMacLocation: "/YOUR_DATABASES_PATH",
-      electronWindowsLocation: "C:\\ProgramData\\CapacitorDatabases",
-      electronLinuxLocation: "/home/CapacitorDatabases"
+  - for sharing databases between users:
+    plugins: {
+      CapacitorSQLite: {
+        electronMacLocation: "/YOUR_DATABASES_PATH",
+        electronWindowsLocation: "C:\\ProgramData\\CapacitorDatabases",
+        electronLinuxLocation: "/home/CapacitorDatabases"
+      }
     }
-  }
+  - for only the user
+    Plugins: {
+      CapacitorSQLite: {
+        electronMacLocation: "Databases",
+        electronWindowsLocation: "Databases",
+        electronLinuxLocation: "Databases"
+      }
+    }
+
   For existing databases, YOU MUST COPY old databases to the new location
   You MUST remove the Electron folder and add it again with
   ``` 
