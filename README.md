@@ -30,7 +30,9 @@
 
 🚨 Since release 3.4.1 ->> 🚨
   Databases location for Electron can be set in `the config.config.ts` as followed:
+
   - for sharing databases between users:
+
     plugins: {
       CapacitorSQLite: {
         electronMacLocation: "/YOUR_DATABASES_PATH",
@@ -38,7 +40,9 @@
         electronLinuxLocation: "/home/CapacitorDatabases"
       }
     }
-  - for only the user
+
+  - for only the user in its Home folder
+
     Plugins: {
       CapacitorSQLite: {
         electronMacLocation: "Databases",
