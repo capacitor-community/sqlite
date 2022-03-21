@@ -53,10 +53,11 @@
         electronLinuxLocation: "Databases"
       }
     }
-   ```
+   ``` 
 
   For existing databases, YOU MUST COPY old databases to the new location
   You MUST remove the Electron folder and add it again with
+
   ``` 
   npx cap add @capacitor-community/electron
   npm run build 
@@ -69,6 +70,7 @@
   npm run build
   npx cap copy @capacitor-community/electron
   npx cap open @capacitor-community/electron
+  ``` 
 🚨 Since release 3.4.1 <<- 🚨
 
 🚨 Since release 3.4.1-1 ->> 🚨
