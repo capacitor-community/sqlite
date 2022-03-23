@@ -41,12 +41,51 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 
 ### Electron
 
-- before **2.4.2-1** the location of the databases was selectable:
-
-  - the previous one **YourApplication/Electron/Databases**
-  - under **User/Databases/APP_NAME/** to not loose them when updating the application. This was manage in the index.html file of the application.
-
 - since **2.4.2-1** the databases location is : **User/Databases/APP_NAME/**
+
+- since **3.4.1** the databases location can be set in `the config.config.ts` as followed:
+
+  - for sharing databases between users:
+
+    ``` 
+    plugins: {
+      CapacitorSQLite: {
+        electronMacLocation: "/YOUR_DATABASES_PATH",
+        electronWindowsLocation: "C:\\ProgramData\\CapacitorDatabases",
+        electronLinuxLocation: "/home/CapacitorDatabases"
+      }
+    }
+    ``` 
+
+  - for only the user in its Home folder: **User/Databases/APP_NAME/**
+
+    ``` 
+    Plugins: {
+      CapacitorSQLite: {
+        electronMacLocation: "Databases",
+        electronWindowsLocation: "Databases",
+        electronLinuxLocation: "Databases"
+      }
+    }
+    ``` 
+    You can replace "Databases" by your "YOUR_DATABASES_LOCATION", but it MUST not have any "/" or "\\" characters.
+
+  For existing databases, YOU MUST COPY old databases to the new location
+  You MUST remove the Electron folder and add it again with: 
+
+  ``` 
+  npx cap add @capacitor-community/electron
+  npm run build 
+  cd electron
+  npm i --save sqlite3
+  npm i --save @types:sqlite3
+  npm run rebuild
+  cd ..
+  npx cap sync @capacitor-community/electron
+  npm run build
+  npx cap copy @capacitor-community/electron
+  npx cap open @capacitor-community/electron
+  ``` 
 
 ### Web
 
