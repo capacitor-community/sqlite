@@ -1,3 +1,15 @@
+# 3.4.2-1 (2022-03-23)
+
+### Chore
+
+ - Update to @capacitor/core 3.4.2
+ - Update to @capacitor/ios 3.4.2
+ - Update to @capacitor/android 3.4.2
+
+### Bug Fixes
+
+ - No handling of changeEncryptionSecret iOS & Android issue #233
+
 # 3.4.1 (2022-03-17)
 
 ### Added Features

@@ -159,6 +159,7 @@ public class CapacitorSQLitePlugin extends Plugin {
                         public void run() {
                             try {
                                 implementation.changeEncryptionSecret(call, passphrase, oldpassphrase);
+                                rHandler.retResult(call, null, null);
                                 return;
                             } catch (Exception e) {
                                 String msg = "ChangeEncryptionSecret: " + e.getMessage();

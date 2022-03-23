@@ -109,6 +109,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         }
         do {
             try implementation?.changeEncryptionSecret(call: call, passphrase: passphrase, oldPassphrase: oldPassphrase)
+            retHandler.rResult(call: call)
             return
         } catch CapacitorSQLiteError.failed(let message) {
             let msg = "ChangeEncryptionSecret: \(message)"
