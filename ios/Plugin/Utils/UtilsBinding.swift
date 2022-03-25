@@ -42,6 +42,8 @@ class UtilsBinding {
             sqlite3_bind_null(handle, Int32(idx))
         } else if let value = value as? Double {
             sqlite3_bind_double(handle, Int32(idx), value)
+        } else if let value = value as? Float {
+            sqlite3_bind_double(handle, Int32(idx), Double(value))
         } else if let value = value as? Int64 {
             sqlite3_bind_int64(handle, Int32(idx), value)
         } else if let value = value as? String {
