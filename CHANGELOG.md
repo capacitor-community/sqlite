@@ -1,6 +1,12 @@
+
+### Bug Fixes
+
+ - update documentation Web-Usage.md for Ionic/Angular
+
 # 3.4.2-2 (2022-03-25)
 
 ### Bug Fixes
+
  - Insert Floating point (iOS) issue#239
  
 # 3.4.2-1 (2022-03-23)
