@@ -130,11 +130,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     const dbName: string = options.database;
     keys = Object.keys(this._dbDict);
     if (!keys.includes(dbName)) {
-      return Promise.reject(
-        'CloseConnection command failed: No ' +
-          'available connection for ' +
-          dbName,
-      );
+      return Promise.resolve();
     }
 
     const mDB = this._dbDict[dbName];
@@ -225,7 +221,28 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       ret.version = version;
       return Promise.resolve(ret);
     } catch (err) {
-      return Promise.reject(`Open: ${err}`);
+      return Promise.reject(`GetVersion: ${err}`);
+    }
+  }
+  async getTableList(options: capSQLiteOptions): Promise<capSQLiteValues> {
+    let keys = Object.keys(options);
+    if (!keys.includes('database')) {
+      return Promise.reject('Must provide a database name');
+    }
+    const dbName: string = options.database;
+    keys = Object.keys(this._dbDict);
+    if (!keys.includes(dbName)) {
+      return Promise.reject(`Open: No available connection for ${dbName}`);
+    }
+
+    const mDB = this._dbDict[dbName];
+    try {
+      const tableList = await mDB.getTableList();
+      const ret: capSQLiteValues = {} as capSQLiteValues;
+      ret.values = tableList;
+      return Promise.resolve(ret);
+    } catch (err) {
+      return Promise.reject(`GetTableList: ${err}`);
     }
   }
   async execute(options: capSQLiteExecuteOptions): Promise<capSQLiteChanges> {
@@ -479,12 +496,15 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     const jsonStrObj: string = options.jsonstring;
     const jsonObj = JSON.parse(jsonStrObj);
     const isValid = this._uJson.isJsonSQLite(jsonObj);
+
     if (!isValid) {
       return Promise.reject('Must provide a valid JsonSQLite Object');
     }
     const vJsonObj: JsonSQLite = jsonObj;
     const dbName = `${vJsonObj.database}SQLite.db`;
     const dbVersion: number = vJsonObj.version ?? 1;
+    const mode: string = vJsonObj.mode;
+    const overwrite: boolean = vJsonObj.overwrite ?? false;
     //    const encrypted: boolean = vJsonObj.encrypted ?? false;
     //    const mode: string = encrypted ? 'secret' : 'no-encryption';
 
@@ -495,8 +515,27 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       {},
     );
     try {
+      if (overwrite && mode === 'full') {
+        const isExists = this._uFile.isFileExists(dbName);
+        if (isExists) {
+          await this._uFile.deleteFileName(dbName);
+        }
+      }
       // Open the database
       await mDb.open();
+      const tableList = await mDb.getTableList();
+      if (mode === 'full' && tableList.length > 0) {
+        const curVersion = await mDb.getVersion();
+        if (dbVersion < curVersion) {
+          return Promise.reject(
+            `ImportFromJson: Cannot import a version lower than ${curVersion}`,
+          );
+        }
+        if (curVersion === dbVersion) {
+          return Promise.resolve({ changes: { changes: 0 } });
+        }
+      }
+
       // Import the JsonSQLite Object
       const changes = await mDb.importJson(vJsonObj);
       // Close the database

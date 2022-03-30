@@ -214,6 +214,24 @@ export class CapacitorSQLiteWeb
       throw this.unimplemented('Not implemented on web.');
     }
   }
+  async getTableList(options: capSQLiteOptions): Promise<capSQLiteValues> {
+    if (this.sqliteEl != null) {
+      if (this.isStoreOpen) {
+        try {
+          const res: capSQLiteValues = await this.sqliteEl.getTableList(
+            options,
+          );
+          return Promise.resolve(res);
+        } catch (err) {
+          return Promise.reject(`${err}`);
+        }
+      } else {
+        return Promise.reject(`Store "jeepSqliteStore" failed to open`);
+      }
+    } else {
+      throw this.unimplemented('Not implemented on web.');
+    }
+  }
   async execute(options: capSQLiteExecuteOptions): Promise<capSQLiteChanges> {
     if (this.sqliteEl != null) {
       if (this.isStoreOpen) {

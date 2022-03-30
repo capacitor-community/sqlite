@@ -20,6 +20,7 @@
 * [`isExists()`](#isexists)
 * [`isDBOpen()`](#isdbopen)
 * [`isTable(...)`](#istable)
+* [`getTableList()`](#gettablelist)
 * [`delete()`](#delete)
 * [`createSyncTable()`](#createsynctable)
 * [`setSyncDate(...)`](#setsyncdate)
@@ -238,6 +239,21 @@ Check if a table exists
 --------------------
 
 
+### getTableList()
+
+```typescript
+getTableList() => Promise<capSQLiteValues>
+```
+
+Get database's table list
+
+**Returns:** <code>Promise&lt;<a href="#capsqlitevalues">capSQLiteValues</a>&gt;</code>
+
+**Since:** 3.4.2-3
+
+--------------------
+
+
 ### delete()
 
 ```typescript
@@ -399,6 +415,7 @@ executeTransaction(txn: [{ statement: string; values?: any[]; }]) => Promise<voi
 | --------------- | ------------------------ | ----------------------------------------------------- |
 | **`database`**  | <code>string</code>      | The database name                                     |
 | **`version`**   | <code>number</code>      | The database version                                  |
+| **`overwrite`** | <code>boolean</code>     | Delete the database prior to import (default false)   |
 | **`encrypted`** | <code>boolean</code>     | Set to true (database encryption) / false             |
 | **`mode`**      | <code>string</code>      | * Set the mode ["full", "partial"]                    |
 | **`tables`**    | <code>JsonTable[]</code> | * Array of Table (<a href="#jsontable">JsonTable</a>) |

@@ -10,6 +10,7 @@ import Foundation
 public struct JsonSQLite: Codable {
     let database: String
     let version: Int
+    var overwrite: Bool?
     let encrypted: Bool
     let mode: String
     let tables: [JsonTable]
@@ -18,6 +19,11 @@ public struct JsonSQLite: Codable {
     public func show() {
         print("databaseName: \(database) ")
         print("version: \(version) ")
+        var mOverwrite = false
+        if let mOver = overwrite {
+            mOverwrite = mOver
+        }
+        print("overwrite: \(mOverwrite) ")
         print("encrypted: \(encrypted) ")
         print("mode: \(mode) ")
         print("Number of Tables: \(tables.count) ")

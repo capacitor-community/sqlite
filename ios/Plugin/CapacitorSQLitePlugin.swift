@@ -395,6 +395,33 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         }
     }
 
+    // MARK: - GetTableList
+
+    @objc func getTableList(_ call: CAPPluginCall) {
+        guard let dbName = call.options["database"] as? String else {
+            retHandler.rValues(
+                call: call, ret: [],
+                message: "getDatabaseList: Must provide a database name")
+            return
+
+        }
+        do {
+            let res = try implementation?.getTableList(dbName) ?? []
+            retHandler.rValues(call: call, ret: res)
+            return
+        } catch CapacitorSQLiteError.failed(let message) {
+            retHandler.rValues(
+                call: call, ret: [],
+                message: "getDatabaseList: \(message)")
+            return
+        } catch let error {
+            retHandler.rValues(
+                call: call, ret: [],
+                message: "getDatabaseList: \(error)")
+            return
+        }
+    }
+
     // MARK: - getDatabaseList
 
     @objc func getDatabaseList(_ call: CAPPluginCall) {

@@ -1,7 +1,14 @@
+# 3.4.2-3 (2022-03-30)
+
+### Added Features
+
+ - add `getTableList`method
+ - add `overwrite` parameter in JSON object
 
 ### Bug Fixes
 
  - update documentation Web-Usage.md for Ionic/Angular
+ - set Foreign Keys Off before Dropping the tables in import full json issue#245
 
 # 3.4.2-2 (2022-03-25)
 

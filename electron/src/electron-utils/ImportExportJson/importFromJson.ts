@@ -20,14 +20,16 @@ export class ImportFromJson {
     let changes = -1;
     const version: number = jsonData.version;
     try {
-      // set Foreign Keys On
-      await this._uSQLite.setForeignKeyConstraintsEnabled(mDB, true);
       // set User Version PRAGMA
       await this._uSQLite.setVersion(mDB, version);
       // DROP ALL when mode="full"
       if (jsonData.mode === 'full') {
+        // set Foreign Keys Off
+        await this._uSQLite.setForeignKeyConstraintsEnabled(mDB, false);
         await this._uDrop.dropAll(mDB);
       }
+      // set Foreign Keys On
+      await this._uSQLite.setForeignKeyConstraintsEnabled(mDB, true);
       // create database schema
       changes = await this._uJson.createSchema(mDB, jsonData);
       return Promise.resolve(changes);

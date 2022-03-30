@@ -793,6 +793,24 @@ public class CapacitorSQLite {
         }
     }
 
+    public JSArray getTableList(String dbName) throws Exception {
+        JSArray res;
+        dbName = getDatabaseName(dbName);
+        Database db = dbDict.get(dbName);
+        if (db != null) {
+            if (db.isOpen()) {
+                res = db.getTableNames();
+                return res;
+            } else {
+                String msg = "database " + dbName + " not opened";
+                throw new Exception(msg);
+            }
+        } else {
+            String msg = "No available connection for database " + dbName;
+            throw new Exception(msg);
+        }
+    }
+
     public Boolean isDBExists(String dbName) throws Exception {
         dbName = getDatabaseName(dbName);
         Database db = dbDict.get(dbName);
@@ -937,7 +955,9 @@ public class CapacitorSQLite {
             }
             String dbName = getDatabaseName(jsonSQL.getDatabase());
             dbName = new StringBuilder(dbName).append("SQLite.db").toString();
-            int dbVersion = jsonSQL.getVersion();
+            Integer dbVersion = jsonSQL.getVersion();
+            String mode = jsonSQL.getMode();
+            Boolean overwrite = jsonSQL.getOverwrite();
             //            jsonSQL.print();
             Boolean encrypted = jsonSQL.getEncrypted();
             String inMode = "no-encryption";
@@ -945,11 +965,32 @@ public class CapacitorSQLite {
                 inMode = "secret";
             }
             Database db = new Database(context, dbName, encrypted, inMode, dbVersion, isEncryption, new Hashtable<>(), sharedPreferences);
+            if (overwrite && mode.equals("full")) {
+                Boolean isExists = this.uFile.isFileExists(context, dbName);
+                if (isExists) {
+                    this.uFile.deleteFile(context, dbName);
+                }
+            }
             db.open();
             if (!db.isOpen()) {
                 String msg = dbName + "SQLite.db not opened";
                 throw new Exception(msg);
             } else {
+                // check if the database as some tables
+                JSArray tableList = db.getTableNames();
+                if (mode.equals("full") && tableList.length() > 0) {
+                    Integer curVersion = db.getVersion();
+                    if (dbVersion < curVersion) {
+                        String msg = "ImportFromJson: Cannot import a ";
+                        msg += "version lower than" + curVersion;
+                        throw new Exception(msg);
+                    }
+                    if (curVersion == dbVersion) {
+                        JSObject result = new JSObject();
+                        result.put("changes", Integer.valueOf(0));
+                        return result;
+                    }
+                }
                 JSObject res = db.importFromJson(jsonSQL);
                 db.close();
                 if (res.getInteger("changes") == Integer.valueOf(-1)) {
@@ -972,7 +1013,7 @@ public class CapacitorSQLite {
             try {
                 JSObject ret = db.exportToJson(expMode);
 
-                if (ret.length() == 5 || ret.length() == 6) {
+                if (ret.length() == 5 || ret.length() == 6 || ret.length() == 7) {
                     return ret;
                 } else {
                     String msg = "ExportToJson: return Obj is not a JsonSQLite Obj";

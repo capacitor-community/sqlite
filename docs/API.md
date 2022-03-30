@@ -143,6 +143,7 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 * [`addUpgradeStatement(...)`](#addupgradestatement)
 * [`copyFromAssets(...)`](#copyfromassets)
 * [`getDatabaseList()`](#getdatabaselist)
+* [`getTableList(...)`](#gettablelist)
 * [`getMigratableDbList(...)`](#getmigratabledblist)
 * [`addSQLiteSuffix(...)`](#addsqlitesuffix)
 * [`deleteOldDatabases(...)`](#deleteolddatabases)
@@ -701,6 +702,25 @@ Get the database list
 --------------------
 
 
+### getTableList(...)
+
+```typescript
+getTableList(options: capSQLiteOptions) => Promise<capSQLiteValues>
+```
+
+Get the database's table list
+
+| Param         | Type                                                          |
+| ------------- | ------------------------------------------------------------- |
+| **`options`** | <code><a href="#capsqliteoptions">capSQLiteOptions</a></code> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqlitevalues">capSQLiteValues</a>&gt;</code>
+
+**Since:** 3.4.2-3
+
+--------------------
+
+
 ### getMigratableDbList(...)
 
 ```typescript
@@ -1012,6 +1032,7 @@ Check if a non conformed database exists without connection
 | --------------- | ------------------------ | ----------------------------------------------------- |
 | **`database`**  | <code>string</code>      | The database name                                     |
 | **`version`**   | <code>number</code>      | The database version                                  |
+| **`overwrite`** | <code>boolean</code>     | Delete the database prior to import (default false)   |
 | **`encrypted`** | <code>boolean</code>     | Set to true (database encryption) / false             |
 | **`mode`**      | <code>string</code>      | * Set the mode ["full", "partial"]                    |
 | **`tables`**    | <code>JsonTable[]</code> | * Array of Table (<a href="#jsontable">JsonTable</a>) |

@@ -42,6 +42,7 @@ public class ExportToJson {
         JsonSQLite retObj = new JsonSQLite();
         ArrayList<JsonView> views = new ArrayList<>();
         ArrayList<JsonTable> tables = new ArrayList<>();
+        Boolean isSyncTable = false;
         try {
             // Get Views
             String stmtV = "SELECT name,sql FROM sqlite_master WHERE ";
@@ -63,12 +64,11 @@ public class ExportToJson {
             stmt += "type = 'table' AND name NOT LIKE 'sqlite_%' AND ";
             stmt += "name NOT LIKE 'android_%' AND ";
             stmt += "name NOT LIKE 'sync_table';";
-
             JSArray resTables = db.selectSQL(stmt, new ArrayList<Object>());
             if (resTables.length() == 0) {
                 throw new Exception("CreateExportObject: table's names failed");
             } else {
-                boolean isSyncTable = uJson.isTableExists(db, "sync_table");
+                isSyncTable = uJson.isTableExists(db, "sync_table");
                 if (!isSyncTable && sqlObj.getMode().equals("partial")) {
                     throw new Exception("No sync_table available");
                 }
@@ -83,21 +83,20 @@ public class ExportToJson {
                     default:
                         throw new Exception("CreateExportObject: expMode " + sqlObj.getMode() + " not defined");
                 }
+                if (tables.size() > 0) {
+                    retObj.setDatabase(sqlObj.getDatabase());
+                    retObj.setVersion(sqlObj.getVersion());
+                    retObj.setEncrypted(sqlObj.getEncrypted());
+                    retObj.setMode(sqlObj.getMode());
+                    retObj.setTables(tables);
+                    if (views.size() > 0) {
+                        retObj.setViews(views);
+                    }
+                }
+                return retObj;
             }
         } catch (Exception e) {
             throw new Exception("CreateExportObject: " + e.getMessage());
-        } finally {
-            if (tables.size() > 0) {
-                retObj.setDatabase(sqlObj.getDatabase());
-                retObj.setVersion(sqlObj.getVersion());
-                retObj.setEncrypted(sqlObj.getEncrypted());
-                retObj.setMode(sqlObj.getMode());
-                retObj.setTables(tables);
-                if (views.size() > 0) {
-                    retObj.setViews(views);
-                }
-            }
-            return retObj;
         }
     }
 

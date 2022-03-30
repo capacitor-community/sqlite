@@ -225,6 +225,13 @@ export interface CapacitorSQLitePlugin {
    */
   getDatabaseList(): Promise<capSQLiteValues>;
   /**
+   * Get the database's table list
+   * @param options
+   * @returns Promise<capSQLiteValues>
+   * @since 3.4.2-3
+   */
+  getTableList(options: capSQLiteOptions): Promise<capSQLiteValues>;
+  /**
    * Get the Migratable database list
    * @param options: capSQLitePathOptions // only iOS & Android since 3.2.4-2
    * @returns Promise<capSQLiteValues>
@@ -594,6 +601,10 @@ export interface JsonSQLite {
    *  The database version
    */
   version: number;
+  /**
+   * Delete the database prior to import (default false)
+   */
+  overwrite?: boolean;
   /**
    * Set to true (database encryption) / false
    */
@@ -1367,6 +1378,11 @@ export interface ISQLiteDBConnection {
    */
   isTable(table: string): Promise<capSQLiteResult>;
   /**
+   * Get database's table list
+   * @since 3.4.2-3
+   */
+  getTableList(): Promise<capSQLiteValues>;
+  /**
    * Delete a SQLite DB Connection
    * @returns Promise<void>
    * @since 2.9.0 refactor
@@ -1449,6 +1465,16 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
         database: this.dbName,
       });
       return Promise.resolve(version);
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async getTableList(): Promise<capSQLiteValues> {
+    try {
+      const res: any = await this.sqlite.getTableList({
+        database: this.dbName,
+      });
+      return Promise.resolve(res);
     } catch (err) {
       return Promise.reject(err);
     }

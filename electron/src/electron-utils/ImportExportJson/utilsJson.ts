@@ -489,6 +489,7 @@ export class UtilsJson {
     const keyFirstLevel: string[] = [
       'database',
       'version',
+      'overwrite',
       'encrypted',
       'mode',
       'tables',
@@ -503,6 +504,7 @@ export class UtilsJson {
       if (keyFirstLevel.indexOf(key) === -1) return false;
       if (key === 'database' && typeof obj[key] != 'string') return false;
       if (key === 'version' && typeof obj[key] != 'number') return false;
+      if (key === 'overwrite' && typeof obj[key] != 'boolean') return false;
       if (key === 'encrypted' && typeof obj[key] != 'boolean') return false;
       if (key === 'mode' && typeof obj[key] != 'string') return false;
       if (key === 'tables' && typeof obj[key] != 'object') return false;

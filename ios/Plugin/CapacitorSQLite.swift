@@ -425,8 +425,7 @@ enum CapacitorSQLiteError: Error {
         if isInit {
             let mDbName = CapacitorSQLite.getDatabaseName(dbName: dbName)
             guard let mDb: Database = dbDict[mDbName] else {
-                let msg = "Connection to \(mDbName) not available"
-                throw CapacitorSQLiteError.failed(message: msg)
+                return
             }
             if mDb.isDBOpen() {
                 do {
@@ -830,6 +829,7 @@ enum CapacitorSQLiteError: Error {
     // MARK: - importFromJson
 
     // swiftlint:disable function_body_length
+    // swiftlint:disable cyclomatic_complexity
     @objc func importFromJson(_ parsingData: String)
     throws -> [String: Int] {
         if isInit {
@@ -845,6 +845,11 @@ enum CapacitorSQLiteError: Error {
                     throw CapacitorSQLiteError.failed(message: msg)
                 }
                 let encrypted: Bool = jsonSQLite[0].encrypted
+                var overwrite: Bool = false
+                if let mOverwrite = jsonSQLite[0].overwrite {
+                    overwrite = mOverwrite
+                }
+                let mode: String = jsonSQLite[0].mode
                 let inMode: String = encrypted ? "secret"
                     : "no-encryption"
                 let version: Int = jsonSQLite[0].version
@@ -856,8 +861,44 @@ enum CapacitorSQLiteError: Error {
                         databaseLocation: databaseLocation, databaseName: dbName,
                         encrypted: encrypted, isEncryption: isEncryption, account: account,
                         mode: inMode, version: version, vUpgDict: [:])
+                    if overwrite && mode == "full" {
+                        let isExists = UtilsFile
+                            .isFileExist(databaseLocation: databaseLocation,
+                                         fileName: dbName)
+                        if isExists {
+                            _ = try UtilsFile
+                                .deleteFile(fileName: dbName,
+                                            databaseLocation: databaseLocation)
+                        }
+                    }
                     try mDb.open()
+                } catch UtilsFileError.deleteFileFailed {
+                    let message = "Delete Database failed"
+                    throw CapacitorSQLiteError.failed(message: message)
                 } catch DatabaseError.open(let message) {
+                    throw CapacitorSQLiteError.failed(message: message)
+                } catch let error {
+                    let msg: String = "\(error)"
+                    throw CapacitorSQLiteError.failed(message: msg)
+                }
+                // check if the database as some tables
+                do {
+                    let tableList: [String] = try mDb.getTableNames()
+                    if mode == "full" && tableList.count > 0 {
+                        let curVersion = try mDb.getVersion()
+                        if version < curVersion {
+                            var msg: String = "ImportFromJson: Cannot import a "
+                            msg += "version lower than \(curVersion)"
+                            throw CapacitorSQLiteError.failed(message: msg)
+                        }
+                        if curVersion == version {
+                            var res: [String: Int] = [:]
+                            res["changes"] = 0
+                            return res
+                        }
+                    }
+
+                } catch DatabaseError.getTableNames(let message) {
                     throw CapacitorSQLiteError.failed(message: message)
                 } catch let error {
                     let msg: String = "\(error)"
@@ -900,6 +941,7 @@ enum CapacitorSQLiteError: Error {
             throw CapacitorSQLiteError.failed(message: initMessage)
         }
     }
+    // swiftlint:enable cyclomatic_complexity
     // swiftlint:enable function_body_length
 
     // MARK: - exportToJson
@@ -917,7 +959,7 @@ enum CapacitorSQLiteError: Error {
                 do {
                     let res: [String: Any] = try
                         mDb.exportToJson(expMode: expMode)
-                    if res.count == 5 || res.count == 6 {
+                    if res.count == 5 || res.count == 6 || res.count == 7 {
                         return res
                     } else {
                         var msg: String = "return Object is not a "
@@ -1118,6 +1160,34 @@ enum CapacitorSQLiteError: Error {
                 throw CapacitorSQLiteError.failed(message: message)
             } catch let error {
                 let msg: String = "\(error)"
+                throw CapacitorSQLiteError.failed(message: msg)
+            }
+        } else {
+            throw CapacitorSQLiteError.failed(message: initMessage)
+        }
+    }
+
+    // MARK: - getTableList
+
+    @objc func getTableList(_ dbName: String) throws -> [String] {
+        if isInit {
+            let mDbName = CapacitorSQLite.getDatabaseName(dbName: dbName)
+            guard let mDb: Database = dbDict[mDbName] else {
+                let msg = "Connection to \(mDbName) not available"
+                throw CapacitorSQLiteError.failed(message: msg)
+            }
+            if mDb.isDBOpen() {
+                do {
+                    let res: [String] = try mDb.getTableNames()
+                    return res
+                } catch DatabaseError.getTableNames(let message) {
+                    throw CapacitorSQLiteError.failed(message: message)
+                } catch let error {
+                    let msg: String = "\(error)"
+                    throw CapacitorSQLiteError.failed(message: msg)
+                }
+            } else {
+                let msg = "Database \(mDbName) not opened"
                 throw CapacitorSQLiteError.failed(message: msg)
             }
         } else {

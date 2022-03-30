@@ -23,6 +23,7 @@ enum DatabaseError: Error {
     case getSyncDate(message: String)
     case exportToJson(message: String)
     case importFromJson(message: String)
+    case getTableNames(message: String)
 }
 // swiftlint:disable file_length
 // swiftlint:disable type_body_length
@@ -138,20 +139,16 @@ class Database {
                     try UtilsSQLCipher.setVersion(mDB: self, version: 1)
                     curVersion = try UtilsSQLCipher.getVersion(mDB: self)
                 }
-                if dbVersion > curVersion {
-                    if vUpgDict.count > 0 {
-                        _ = try uUpg
-                            .onUpgrade(mDB: self, upgDict: vUpgDict,
-                                       dbName: dbName,
-                                       currentVersion: curVersion,
-                                       targetVersion: dbVersion,
-                                       databaseLocation: databaseLocation)
-                        try UtilsSQLCipher
-                            .deleteBackupDB(databaseLocation: databaseLocation,
-                                            databaseName: dbName)
-                    } else {
-                        try UtilsSQLCipher.setVersion(mDB: self, version: dbVersion)
-                    }
+                if dbVersion > curVersion && vUpgDict.count > 0 {
+                    _ = try uUpg
+                        .onUpgrade(mDB: self, upgDict: vUpgDict,
+                                   dbName: dbName,
+                                   currentVersion: curVersion,
+                                   targetVersion: dbVersion,
+                                   databaseLocation: databaseLocation)
+                    try UtilsSQLCipher
+                        .deleteBackupDB(databaseLocation: databaseLocation,
+                                        databaseName: dbName)
                 }
             }
         } catch UtilsSQLCipherError.openOrCreateDatabase(let message) {
@@ -407,6 +404,19 @@ class Database {
         } catch UtilsSQLCipherError.querySQL(let msg) {
             throw DatabaseError.selectSQL(
                 message: "Failed in selectSQL : \(msg)" )
+        }
+        return result
+    }
+
+    // MARK: - GetTableNames
+
+    func getTableNames() throws -> [String] {
+        var result: [String] = []
+        do {
+            result = try UtilsDrop.getTablesNames(mDB: self)
+        } catch UtilsDropError.getTablesNamesFailed(let msg) {
+            throw DatabaseError.getTableNames(
+                message: "Failed in getTableNames : \(msg)" )
         }
         return result
     }

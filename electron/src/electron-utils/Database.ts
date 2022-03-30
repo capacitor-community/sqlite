@@ -8,6 +8,7 @@ import { ExportToJson } from './ImportExportJson/exportToJson';
 import { ImportFromJson } from './ImportExportJson/importFromJson';
 import { UtilsJson } from './ImportExportJson/utilsJson';
 //import { UtilsEncryption } from './utilsEncryption';
+import { UtilsDrop } from './utilsDrop';
 import { UtilsFile } from './utilsFile';
 import { UtilsSQLite } from './utilsSQLite';
 import { UtilsUpgrade } from './utilsUpgrade';
@@ -22,6 +23,7 @@ export class Database {
   private _uFile: UtilsFile = new UtilsFile();
   private _uSQLite: UtilsSQLite = new UtilsSQLite();
   private _uJson: UtilsJson = new UtilsJson();
+  private _uDrop: UtilsDrop = new UtilsDrop();
   //  private _uGlobal: GlobalSQLite = new GlobalSQLite();
   //  private _uEncrypt: UtilsEncryption = new UtilsEncryption();
   private _uUpg: UtilsUpgrade = new UtilsUpgrade();
@@ -94,34 +96,27 @@ export class Database {
       const curVersion: number = await this._uSQLite.getVersion(this._mDB);
       this._isDBOpen = true;
 
-      if (this._version > curVersion) {
-        const keys: string[] = Object.keys(this._vUpgDict);
-
-        if (keys.length > 0) {
+      if (
+        this._version > curVersion &&
+        Object.keys(this._vUpgDict).length > 0
+      ) {
+        try {
+          // execute the upgrade flow process
+          await this._uUpg.onUpgrade(
+            this._mDB,
+            this._vUpgDict,
+            this._dbName,
+            curVersion,
+            this._version,
+          );
+          // delete the backup database
+          await this._uFile.deleteFileName(`backup-${this._dbName}`);
+        } catch (err) {
+          // restore the database from backup
           try {
-            // execute the upgrade flow process
-            await this._uUpg.onUpgrade(
-              this._mDB,
-              this._vUpgDict,
-              this._dbName,
-              curVersion,
-              this._version,
-            );
-            // delete the backup database
-            await this._uFile.deleteFileName(`backup-${this._dbName}`);
+            await this._uFile.restoreFileName(this._dbName, 'backup');
           } catch (err) {
-            // restore the database from backup
-            try {
-              await this._uFile.restoreFileName(this._dbName, 'backup');
-            } catch (err) {
-              return Promise.reject(`Open: ${err}`);
-            }
-          }
-        } else {
-          try {
-            await this._uSQLite.setVersion(this._mDB, this._version);
-          } catch (err) {
-            return Promise.reject(`SetVersion: ${this._version} ${err}`);
+            return Promise.reject(`Open: ${err}`);
           }
         }
       }
@@ -270,7 +265,10 @@ export class Database {
         } else {
           return Promise.reject('No last_modified column in tables');
         }
+      } else {
+        changes = 0;
       }
+      console.log(`>>> CreateSyncTable changes: ${changes}`);
       return Promise.resolve(changes);
     } catch (err) {
       return Promise.reject(`CreateSyncTable: ${err}`);
@@ -478,6 +476,19 @@ export class Database {
       } catch (err) {
         return Promise.reject(`ExecSet: ${msg}: ` + `${err}`);
       }
+    }
+  }
+  public async getTableList(): Promise<any[]> {
+    if (!this._isDBOpen) {
+      let msg = `GetTableList: Database ${this._dbName} `;
+      msg += `not opened`;
+      return Promise.reject(msg);
+    }
+    try {
+      const retArr = await this._uDrop.getTablesNames(this._mDB);
+      return Promise.resolve(retArr);
+    } catch (err) {
+      return Promise.reject(`GetTableList: ${err}`);
     }
   }
   public async importJson(jsonData: JsonSQLite): Promise<number> {

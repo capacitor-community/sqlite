@@ -865,7 +865,7 @@ public class CapacitorSQLitePlugin extends Plugin {
     @PluginMethod
     public void query(PluginCall call) {
         if (!call.getData().has("database")) {
-            String msg = "Run: Must provide a database name";
+            String msg = "Query: Must provide a database name";
             rHandler.retValues(call, new JSArray(), msg);
             return;
         }
@@ -889,6 +889,30 @@ public class CapacitorSQLitePlugin extends Plugin {
                 return;
             } catch (Exception e) {
                 String msg = "Query: " + e.getMessage();
+                rHandler.retValues(call, new JSArray(), msg);
+                return;
+            }
+        } else {
+            rHandler.retValues(call, new JSArray(), loadMessage);
+            return;
+        }
+    }
+
+    @PluginMethod
+    public void getTableList(PluginCall call) {
+        if (!call.getData().has("database")) {
+            String msg = "getTableList: Must provide a database name";
+            rHandler.retValues(call, new JSArray(), msg);
+            return;
+        }
+        String dbName = call.getString("database");
+        if (implementation != null) {
+            try {
+                JSArray res = implementation.getTableList(dbName);
+                rHandler.retValues(call, res, null);
+                return;
+            } catch (Exception e) {
+                String msg = "GetTableList: " + e.getMessage();
                 rHandler.retValues(call, new JSArray(), msg);
                 return;
             }

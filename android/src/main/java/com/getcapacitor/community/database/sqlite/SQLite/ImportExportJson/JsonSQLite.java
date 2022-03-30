@@ -16,13 +16,14 @@ public class JsonSQLite {
 
     private String database = "";
     private Integer version = 1;
+    private Boolean overwrite = false;
     private Boolean encrypted = null;
     private String mode = "";
     private ArrayList<JsonTable> tables = new ArrayList<JsonTable>();
     private ArrayList<JsonView> views = new ArrayList<JsonView>();
 
     private static final List<String> keyFirstLevel = new ArrayList<String>(
-        Arrays.asList("database", "version", "encrypted", "mode", "tables", "views")
+        Arrays.asList("database", "version", "overwrite", "encrypted", "mode", "tables", "views")
     );
 
     // Getter
@@ -32,6 +33,10 @@ public class JsonSQLite {
 
     public Integer getVersion() {
         return version;
+    }
+
+    public Boolean getOverwrite() {
+        return overwrite;
     }
 
     public Boolean getEncrypted() {
@@ -59,6 +64,10 @@ public class JsonSQLite {
         this.version = newVersion;
     }
 
+    public void setOverwrite(Boolean newOverwrite) {
+        this.overwrite = newOverwrite;
+    }
+
     public void setEncrypted(Boolean newEncrypted) {
         this.encrypted = newEncrypted;
     }
@@ -79,6 +88,7 @@ public class JsonSQLite {
         ArrayList<String> retArray = new ArrayList<String>();
         if (getDatabase().length() > 0) retArray.add("database");
         if (getVersion() != null) retArray.add("version");
+        if (getOverwrite() != null) retArray.add("overwrite");
         if (getEncrypted() != null) retArray.add("encrypted");
         if (getMode().length() > 0) retArray.add("mode");
         if (getTables().size() > 0) retArray.add("tables");
@@ -101,6 +111,7 @@ public class JsonSQLite {
                     } else {
                         database = (String) value;
                     }
+                    continue;
                 }
                 if (key.equals("version")) {
                     if (!(value instanceof Integer)) {
@@ -108,6 +119,15 @@ public class JsonSQLite {
                     } else {
                         version = (Integer) value;
                     }
+                    continue;
+                }
+                if (key.equals("overwrite")) {
+                    if (!(value instanceof Boolean)) {
+                        return false;
+                    } else {
+                        overwrite = jsObj.getBool(key);
+                    }
+                    continue;
                 }
                 if (key.equals("encrypted")) {
                     if (!(value instanceof Boolean)) {
@@ -118,6 +138,7 @@ public class JsonSQLite {
                             return false;
                         }
                     }
+                    continue;
                 }
                 if (key.equals("mode")) {
                     if (!(value instanceof String)) {
@@ -125,6 +146,7 @@ public class JsonSQLite {
                     } else {
                         mode = jsObj.getString(key);
                     }
+                    continue;
                 }
                 if (key.equals("tables")) {
                     if (!(value instanceof JSONArray)) {
@@ -150,6 +172,7 @@ public class JsonSQLite {
                             Log.d(TAG, msg);
                         }
                     }
+                    continue;
                 }
                 if (key.equals("views")) {
                     if (!(value instanceof JSONArray)) {
@@ -167,6 +190,7 @@ public class JsonSQLite {
                             views.add(view);
                         }
                     }
+                    continue;
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -179,6 +203,7 @@ public class JsonSQLite {
     public void print() {
         Log.d(TAG, "database: " + this.getDatabase());
         Log.d(TAG, "version: " + this.getVersion());
+        Log.d(TAG, "overwrite: " + this.getOverwrite());
         Log.d(TAG, "encrypted: " + this.getEncrypted());
         Log.d(TAG, "mode: " + this.getMode());
         Log.d(TAG, "number of Tables: " + this.getTables().size());

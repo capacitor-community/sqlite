@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import net.sqlcipher.Cursor;
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteException;
@@ -55,6 +56,7 @@ public class Database {
     private UtilsFile _uFile;
     private UtilsJson _uJson;
     private UtilsUpgrade _uUpg;
+    private UtilsDrop _uDrop;
     private UtilsSecret _uSecret;
     private Dictionary<Integer, JSONObject> _vUpgObject = new Hashtable<>();
     private ImportFromJson fromJson = new ImportFromJson();
@@ -91,6 +93,7 @@ public class Database {
         this._uFile = new UtilsFile();
         this._uJson = new UtilsJson();
         this._uUpg = new UtilsUpgrade();
+        this._uDrop = new UtilsDrop();
         this._uSecret = isEncryption ? new UtilsSecret(context, sharedPreferences) : null;
         InitializeSQLCipher();
         if (!this._file.getParentFile().exists()) {
@@ -197,29 +200,29 @@ public class Database {
                             _db = null;
                             throw new Exception(msg);
                         }
-                        if (_version > curVersion) {
-                            if (_vUpgObject != null && _vUpgObject.size() > 0) {
-                                try {
-                                    _uUpg.onUpgrade(this, _context, _dbName, _vUpgObject, curVersion, _version);
-                                    boolean ret = _uFile.deleteBackupDB(_context, _dbName);
-                                    if (!ret) {
-                                        String msg = "Failed in deleteBackupDB backup-\" + _dbName";
-                                        Log.v(TAG, msg);
-                                        close();
-                                        _db = null;
-                                        throw new Exception(msg);
-                                    }
-                                } catch (Exception e) {
-                                    // restore DB
-                                    boolean ret = _uFile.restoreDatabase(_context, _dbName);
-                                    String msg = e.getMessage();
-                                    if (!ret) msg += "Failed in restoreDatabase " + _dbName;
+                        if (_version > curVersion && _vUpgObject != null && _vUpgObject.size() > 0) {
+                            //                           if (_vUpgObject != null && _vUpgObject.size() > 0) {
+                            try {
+                                _uUpg.onUpgrade(this, _context, _dbName, _vUpgObject, curVersion, _version);
+                                boolean ret = _uFile.deleteBackupDB(_context, _dbName);
+                                if (!ret) {
+                                    String msg = "Failed in deleteBackupDB backup-\" + _dbName";
                                     Log.v(TAG, msg);
                                     close();
                                     _db = null;
                                     throw new Exception(msg);
                                 }
-                            } else {
+                            } catch (Exception e) {
+                                // restore DB
+                                boolean ret = _uFile.restoreDatabase(_context, _dbName);
+                                String msg = e.getMessage();
+                                if (!ret) msg += "Failed in restoreDatabase " + _dbName;
+                                Log.v(TAG, msg);
+                                close();
+                                _db = null;
+                                throw new Exception(msg);
+                            }
+                            /*                           } else {
                                 try {
                                     _db.setVersion(_version);
                                 } catch (Exception e) {
@@ -229,6 +232,7 @@ public class Database {
                                     throw new Exception(msg);
                                 }
                             }
+  */
                         }
                         _isOpen = true;
                         return;
@@ -528,6 +532,25 @@ public class Database {
     }
 
     /**
+     * GetTableNames Method
+     * Returned a JSArray of table's name
+     * @return
+     * @throws Exception
+     */
+    public JSArray getTableNames() throws Exception {
+        JSArray retArray = new JSArray();
+        try {
+            List<String> tableList = this._uDrop.getTablesNames(this);
+            for (int i = 0; i < tableList.size(); i++) {
+                retArray.put(tableList.get(i));
+            }
+            return retArray;
+        } catch (Exception e) {
+            throw new Exception("in getTableNames " + e.getMessage());
+        }
+    }
+
+    /**
      * DeleteDB Method
      * Delete the database file
      * @param dbName
@@ -665,7 +688,7 @@ public class Database {
      * @param mode
      * @return
      */
-    public JSObject exportToJson(String mode) {
+    public JSObject exportToJson(String mode) throws Exception {
         JsonSQLite inJson = new JsonSQLite();
         JSObject retObj = new JSObject();
         inJson.setDatabase(_dbName.substring(0, _dbName.length() - 9));
@@ -688,10 +711,10 @@ public class Database {
                     }
                 }
             }
+            return retObj;
         } catch (Exception e) {
             Log.e(TAG, "Error: exportToJson " + e.getMessage());
-        } finally {
-            return retObj;
-        }
+            throw new Exception(e.getMessage());
+        } finally {}
     }
 }

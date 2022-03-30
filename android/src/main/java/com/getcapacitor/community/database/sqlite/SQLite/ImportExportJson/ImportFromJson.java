@@ -47,7 +47,24 @@ public class ImportFromJson {
         // -> update database version
         db.getDb().setVersion(version);
 
-        // Set Foreign Key On
+        if (jsonSQL.getMode().equals("full")) {
+            // Set Foreign Key OFF
+            try {
+                db.getDb().setForeignKeyConstraintsEnabled(false);
+            } catch (IllegalStateException e) {
+                String msg = "CreateDatabaseSchema: ";
+                msg += "setForeignKeyConstraintsEnabled failed ";
+                msg += e.getMessage();
+                throw new Exception(msg);
+            }
+            try {
+                _uDrop.dropAll(db);
+            } catch (Exception e) {
+                String msg = "CreateDatabaseSchema: " + e.getMessage();
+                throw new Exception(msg);
+            }
+        }
+        // Set Foreign Key ON
         try {
             db.getDb().setForeignKeyConstraintsEnabled(true);
         } catch (IllegalStateException e) {
@@ -55,14 +72,6 @@ public class ImportFromJson {
             msg += "setForeignKeyConstraintsEnabled failed ";
             msg += e.getMessage();
             throw new Exception(msg);
-        }
-        if (jsonSQL.getMode().equals("full")) {
-            try {
-                _uDrop.dropAll(db);
-            } catch (Exception e) {
-                String msg = "CreateDatabaseSchema: " + e.getMessage();
-                throw new Exception(msg);
-            }
         }
         try {
             changes = createSchema(db, jsonSQL);

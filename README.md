@@ -292,6 +292,7 @@ No configuration required for this plugin
 | isDBOpen                    | ✅      | ✅  | ✅        | ✅  |
 | isDatabase                  | ✅      | ✅  | ✅        | ✅  |
 | isTableExists               | ✅      | ✅  | ✅        | ✅  |
+| getTableList                | ✅      | ✅  | ✅        | ✅  |
 | getDatabaseList             | ✅      | ✅  | ✅        | ✅  |
 | getMigratableDbList         | ✅      | ✅  | ❌        | ❌  |
 | addSQLiteSuffix             | ✅      | ✅  | ❌        | ❌  |

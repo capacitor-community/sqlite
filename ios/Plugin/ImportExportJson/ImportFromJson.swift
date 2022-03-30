@@ -45,13 +45,16 @@ class ImportFromJson {
             // Set PRAGMAS
             try UtilsSQLCipher.setVersion(mDB: mDB,
                                           version: version)
-            try UtilsSQLCipher
-                .setForeignKeyConstraintsEnabled(mDB: mDB,
-                                                 toggle: true)
             if jsonSQLite.mode == "full" {
+                try UtilsSQLCipher
+                    .setForeignKeyConstraintsEnabled(mDB: mDB,
+                                                     toggle: false)
                 // Drop All Tables, Indexes and Triggers
                 try _ = UtilsDrop.dropAll(mDB: mDB)
             }
+            try UtilsSQLCipher
+                .setForeignKeyConstraintsEnabled(mDB: mDB,
+                                                 toggle: true)
             // create database schema
             changes = try ImportFromJson
                 .createSchema(mDB: mDB,
