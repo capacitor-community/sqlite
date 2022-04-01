@@ -28,6 +28,17 @@
 
 ## CAPACITOR 3 (Master)
 
+🚨 Since release 3.4.2-3 ->> 🚨
+
+ - **overwrite** boolean parameter has been added to the Json Object (default false) 
+   - `true` : delete the physically the database whatever the version is.
+   - `false`: 
+      - re-importing a database with the same `version` number will do nothing, keeping the existing database and will return `changes = 0`
+      - re-importing a database with a lower `version` number will throw an error `ImportFromJson: Cannot import a version lower than `
+
+ - During an import in `full` mode the `Foreign Key` constraint has been turn off before dropping the tables and turn back on after
+
+🚨 Since release 3.4.2-3 <<- 🚨
 🚨 Since release 3.4.1 ->> 🚨
   Databases location for Electron can be set in `the config.config.ts` as followed:
 
