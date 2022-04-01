@@ -612,8 +612,8 @@ Delete Old Cordova databases
 
 #### capSQLiteValues
 
-| Prop         | Type               | Description                      |
-| ------------ | ------------------ | -------------------------------- |
-| **`values`** | <code>any[]</code> | the data values list as an Array |
+| Prop         | Type               | Description                                                                              |
+| ------------ | ------------------ | ---------------------------------------------------------------------------------------- |
+| **`values`** | <code>any[]</code> | the data values list as an Array iOS the first row is the returned ios_columns name list |
 
 </docgen-api>

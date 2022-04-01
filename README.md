@@ -28,6 +28,10 @@
 
 ## CAPACITOR 3 (Master)
 
+🚨 Release 3.4.2-4 ->> 🚨
+!!!! DO NOT USE IT !!!!
+🚨 Release 3.4.2-4 <<- 🚨
+
 🚨 Since release 3.4.2-3 ->> 🚨
 
  - **overwrite** boolean parameter has been added to the Json Object (default false) 

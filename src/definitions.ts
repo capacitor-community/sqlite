@@ -575,6 +575,13 @@ export interface Changes {
 export interface capSQLiteValues {
   /**
    * the data values list as an Array
+   * iOS the first row is the returned ios_columns name list
+   */
+  values?: any[];
+}
+export interface DBSQLiteValues {
+  /**
+   * the data values list as an Array
    */
   values?: any[];
 }
@@ -1333,10 +1340,10 @@ export interface ISQLiteDBConnection {
    * Execute SQLite DB Connection Query
    * @param statement
    * @param values (optional)
-   * @returns Promise<Promise<capSQLiteValues>
+   * @returns Promise<Promise<DBSQLiteValues>
    * @since 2.9.0 refactor
    */
-  query(statement: string, values?: any[]): Promise<capSQLiteValues>;
+  query(statement: string, values?: any[]): Promise<DBSQLiteValues>;
   /**
    * Execute SQLite DB Connection Raw Statement
    * @param statement
@@ -1381,7 +1388,7 @@ export interface ISQLiteDBConnection {
    * Get database's table list
    * @since 3.4.2-3
    */
-  getTableList(): Promise<capSQLiteValues>;
+  getTableList(): Promise<DBSQLiteValues>;
   /**
    * Delete a SQLite DB Connection
    * @returns Promise<void>
@@ -1469,7 +1476,7 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
       return Promise.reject(err);
     }
   }
-  async getTableList(): Promise<capSQLiteValues> {
+  async getTableList(): Promise<DBSQLiteValues> {
     try {
       const res: any = await this.sqlite.getTableList({
         database: this.dbName,
@@ -1494,7 +1501,7 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
       return Promise.reject(err);
     }
   }
-  async query(statement: string, values?: any[]): Promise<capSQLiteValues> {
+  async query(statement: string, values?: any[]): Promise<DBSQLiteValues> {
     let res: any;
     try {
       if (values && values.length > 0) {
@@ -1503,6 +1510,23 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
           statement: statement,
           values: values,
         });
+        console.log(`&&&& in query res start: ${JSON.stringify(res)}`);
+        console.log(`&&&& in query: ${res.values[0]["ios_columns"]}`);
+        if (Object.keys(res.values[0]).includes("ios_columns")) {
+          const columnList: string[] = res.values[0]["ios_columns"];
+          const iosRes: any[] = [];
+          for (let i = 1; i < res.values.length; i++) {
+            const rowJson: any = res.values[i];
+            const resRowJson: any = {};
+            for (const item of columnList) {
+              resRowJson[item] = rowJson[item];
+            }
+            iosRes.push(resRowJson);
+          }
+          res = iosRes; 
+        }  
+        console.log(`&&&& in query res final: ${JSON.stringify(res)}`);
+
       } else {
         res = await this.sqlite.query({
           database: this.dbName,
@@ -1699,3 +1723,21 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
     }
   }
 }
+
+/*
+if (Object.keys(res.values[0]).includes("ios_columns")) {
+  const columnList = res.values[0]["ios_columns"];
+  console.log(`in DBconnection query ${columnList}`);
+  const iosRes = []
+  for (let i = 1; i < res.values.length; i++) {
+    const rowJson = res.values[i];
+    const resRowJson = {};
+    for (const item of columnList) {
+      resRowJson[item] = rowJson[item];
+    }
+    console.log(`resRowJson: ${JSON.stringify(resRowJson)}`)
+    iosRes.push(resRowJson);
+  }
+  console.log(`iosRes ${JSON.stringify(iosRes)}`);
+}
+*/

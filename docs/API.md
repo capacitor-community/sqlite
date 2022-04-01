@@ -990,9 +990,9 @@ Check if a non conformed database exists without connection
 
 #### capSQLiteValues
 
-| Prop         | Type               | Description                      |
-| ------------ | ------------------ | -------------------------------- |
-| **`values`** | <code>any[]</code> | the data values list as an Array |
+| Prop         | Type               | Description                                                                              |
+| ------------ | ------------------ | ---------------------------------------------------------------------------------------- |
+| **`values`** | <code>any[]</code> | the data values list as an Array iOS the first row is the returned ios_columns name list |
 
 
 #### capSQLiteQueryOptions

@@ -724,7 +724,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
 
         }
         do {
-            if let res = try
+            if let res: [[String: Any]] = try
                 implementation?.query(dbName,
                                       statement: statement,
                                       values: values) {

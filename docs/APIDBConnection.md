@@ -132,7 +132,7 @@ Execute SQLite DB Connection Statements
 ### query(...)
 
 ```typescript
-query(statement: string, values?: any[] | undefined) => Promise<capSQLiteValues>
+query(statement: string, values?: any[] | undefined) => Promise<DBSQLiteValues>
 ```
 
 Execute SQLite DB Connection Query
@@ -142,7 +142,7 @@ Execute SQLite DB Connection Query
 | **`statement`** | <code>string</code> |             |
 | **`values`**    | <code>any[]</code>  | (optional)  |
 
-**Returns:** <code>Promise&lt;<a href="#capsqlitevalues">capSQLiteValues</a>&gt;</code>
+**Returns:** <code>Promise&lt;<a href="#dbsqlitevalues">DBSQLiteValues</a>&gt;</code>
 
 **Since:** 2.9.0 refactor
 
@@ -242,12 +242,12 @@ Check if a table exists
 ### getTableList()
 
 ```typescript
-getTableList() => Promise<capSQLiteValues>
+getTableList() => Promise<DBSQLiteValues>
 ```
 
 Get database's table list
 
-**Returns:** <code>Promise&lt;<a href="#capsqlitevalues">capSQLiteValues</a>&gt;</code>
+**Returns:** <code>Promise&lt;<a href="#dbsqlitevalues">DBSQLiteValues</a>&gt;</code>
 
 **Since:** 3.4.2-3
 
@@ -380,7 +380,7 @@ executeTransaction(txn: [{ statement: string; values?: any[]; }]) => Promise<voi
 | **`lastId`**  | <code>number</code> | the lastId created from a run command                |
 
 
-#### capSQLiteValues
+#### DBSQLiteValues
 
 | Prop         | Type               | Description                      |
 | ------------ | ------------------ | -------------------------------- |

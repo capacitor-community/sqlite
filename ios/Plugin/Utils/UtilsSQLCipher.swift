@@ -270,7 +270,7 @@ class UtilsSQLCipher {
                                                           sql: sqltr,
                                                           values: [])
             if resVersion.count > 0 {
-                guard let res: Int64 = resVersion[0]["user_version"]
+                guard let res: Int64 = resVersion[1]["user_version"]
                         as? Int64 else {
                     throw UtilsSQLCipherError.getVersion(
                         message: "Error get version failed")
@@ -508,7 +508,9 @@ class UtilsSQLCipher {
     throws -> [[String: Any]] {
         var result: [[String: Any]] = []
         var columnCount: Int32 = 0
-
+        var columnNames: [String] = []
+        var columnData: [String: Any] = [:]
+        
         while sqlite3_step(handle) == SQLITE_ROW {
             columnCount = sqlite3_column_count(handle)
             var rowData: [String: Any] = [:]
@@ -520,6 +522,13 @@ class UtilsSQLCipher {
                     message.append("failed")
                     throw UtilsSQLCipherError
                     .fetchColumnInfo(message: message)
+                }
+                if columnNames.count <= columnCount {
+                    columnNames.append(String(cString: name))
+                    if columnNames.count == columnCount {
+                        columnData["ios_columns"] = columnNames
+                        result.append(columnData)
+                    }
                 }
                 switch sqlite3_column_type(handle, Int32(index)) {
                 case SQLITE_INTEGER:
