@@ -1,3 +1,9 @@
+# 3.4.2-5 (2022-04-02)
+
+### Bug Fixes
+
+ - iOS Query returing multiple rows - Array issue#195
+
 # 3.4.2-4 (2022-04-01)
 
 !!!! DO NOT USE IT !!!!

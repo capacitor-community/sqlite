@@ -72,9 +72,10 @@ class ExportToJson {
             // get the view's name
             var stmtV: String = "SELECT name,sql FROM sqlite_master WHERE "
             stmtV.append("type = 'view' AND name NOT LIKE 'sqlite_%';")
-            let resViews =  try UtilsSQLCipher.querySQL(
+            var resViews =  try UtilsSQLCipher.querySQL(
                 mDB: mDB, sql: stmtV, values: [])
-            if resViews.count > 0 {
+            if resViews.count > 1 {
+                resViews.removeFirst()
                 views = try ExportToJson
                     .getViews(mDB: mDB,
                               resViews: resViews)
@@ -85,9 +86,10 @@ class ExportToJson {
             var query: String = "SELECT name,sql FROM sqlite_master WHERE "
             query.append("type = 'table' AND name NOT LIKE 'sqlite_%' ")
             query.append("AND name NOT LIKE 'sync_table';")
-            let resTables =  try UtilsSQLCipher.querySQL(
+            var resTables =  try UtilsSQLCipher.querySQL(
                 mDB: mDB, sql: query, values: [])
-            if resTables.count > 0 {
+            if resTables.count > 1 {
+                resTables.removeFirst()
                 let isExists: Bool = try UtilsJson.isTableExists(
                     mDB: mDB, tableName: "sync_table")
                 if !isExists && expMode == "partial" {
@@ -528,9 +530,10 @@ class ExportToJson {
         var ret: Int64 = -1
         let query: String = "SELECT sync_date FROM sync_table;"
         do {
-            let resSyncDate =  try UtilsSQLCipher.querySQL(
+            var resSyncDate =  try UtilsSQLCipher.querySQL(
                 mDB: mDB, sql: query, values: [])
-            if resSyncDate.count > 0 {
+            if resSyncDate.count > 1 {
+                resSyncDate.removeFirst()
                 guard let res: Int64 = resSyncDate[0]["sync_date"] as?
                         Int64 else {
                     throw ExportToJsonError.getSyncDate(
@@ -548,6 +551,7 @@ class ExportToJson {
     // MARK: - ExportToJson - GetTablesModified
 
     // swiftlint:disable function_body_length
+    // swiftlint:disable cyclomatic_complexity
     class func getTablesModified(mDB: Database,
                                  tables: [[String: Any]],
                                  syncDate: Int64)
@@ -569,6 +573,9 @@ class ExportToJson {
                 do {
                     var resQuery =  try UtilsSQLCipher.querySQL(
                         mDB: mDB, sql: query, values: [])
+                    if resQuery.count > 1 {
+                        resQuery.removeFirst()
+                    }
                     if resQuery.count != 1 {
                         break
                     } else {
@@ -585,6 +592,9 @@ class ExportToJson {
                         query.append("\(syncDate);")
                         resQuery =  try UtilsSQLCipher.querySQL(
                             mDB: mDB, sql: query, values: [])
+                        if resQuery.count > 1 {
+                            resQuery.removeFirst()
+                        }
                         if resQuery.count != 1 {
                             break
                         } else {
@@ -618,6 +628,8 @@ class ExportToJson {
         }
         return retObj
     }
+    // swiftlint:enable cyclomatic_complexity
+    // swiftlint:enable function_body_length
 
     // MARK: - ExportToJson - ModEmbeddedParentheses
 
@@ -751,9 +763,10 @@ class ExportToJson {
         query.append("type = 'index' AND tbl_name = '\(tableName)' ")
         query.append("AND sql NOTNULL;")
         do {
-            let resIndexes =  try UtilsSQLCipher.querySQL(
+            var resIndexes =  try UtilsSQLCipher.querySQL(
                 mDB: mDB, sql: query, values: [])
-            if resIndexes.count > 0 {
+            if resIndexes.count > 1 {
+                resIndexes.removeFirst()
                 for ipos in 0..<resIndexes.count {
                     var row: [String: String] = [:]
                     let keys: [String] = Array(resIndexes[ipos].keys)
@@ -837,9 +850,10 @@ class ExportToJson {
         query.append("type = 'trigger' AND tbl_name = '\(tableName)' ")
         query.append("AND sql NOTNULL;")
         do {
-            let resTriggers =  try UtilsSQLCipher.querySQL(
+            var resTriggers =  try UtilsSQLCipher.querySQL(
                 mDB: mDB, sql: query, values: [])
-            if resTriggers.count > 0 {
+            if resTriggers.count > 1 {
+                resTriggers.removeFirst()
                 for ipos in 0..<resTriggers.count {
                     var row: [String: String] = [:]
                     let keys: [String] = Array(resTriggers[ipos].keys)
@@ -952,9 +966,10 @@ class ExportToJson {
 
         var retValues: [[Any]] = []
         do {
-            let resValues =  try UtilsSQLCipher.querySQL(
+            var resValues =  try UtilsSQLCipher.querySQL(
                 mDB: mDB, sql: query, values: [])
-            if resValues.count > 0 {
+            if resValues.count > 1 {
+                resValues.removeFirst()
                 for ipos in 0..<resValues.count {
                     var row: [Any] = []
                     do {

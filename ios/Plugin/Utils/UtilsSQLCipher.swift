@@ -266,11 +266,12 @@ class UtilsSQLCipher {
 
         let sqltr: String = "PRAGMA user_version;"
         do {
-            let resVersion =  try UtilsSQLCipher.querySQL(mDB: mDB,
+            var resVersion =  try UtilsSQLCipher.querySQL(mDB: mDB,
                                                           sql: sqltr,
                                                           values: [])
-            if resVersion.count > 0 {
-                guard let res: Int64 = resVersion[1]["user_version"]
+            if resVersion.count > 1 {
+                resVersion.removeFirst()
+                guard let res: Int64 = resVersion[0]["user_version"]
                         as? Int64 else {
                     throw UtilsSQLCipherError.getVersion(
                         message: "Error get version failed")
@@ -504,13 +505,14 @@ class UtilsSQLCipher {
     // MARK: - FetchColumnInfo
 
     // swiftlint:disable function_body_length
+    // swiftlint:disable cyclomatic_complexity
     class func fetchColumnInfo(handle: OpaquePointer?)
     throws -> [[String: Any]] {
         var result: [[String: Any]] = []
         var columnCount: Int32 = 0
         var columnNames: [String] = []
         var columnData: [String: Any] = [:]
-        
+
         while sqlite3_step(handle) == SQLITE_ROW {
             columnCount = sqlite3_column_count(handle)
             var rowData: [String: Any] = [:]
@@ -567,6 +569,7 @@ class UtilsSQLCipher {
         }
         return result
     }
+    // swiftlint:enable cyclomatic_complexity
     // swiftlint:enable function_body_length
 
     // MARK: - dbChanges

@@ -38,9 +38,14 @@ class UtilsJson {
         query.append(tableName)
         query.append("';")
         do {
-            let resQuery: [Any] = try UtilsSQLCipher
+            var resQuery: [Any] = try UtilsSQLCipher
                 .querySQL(mDB: mDB, sql: query, values: [])
-            if resQuery.count > 0 {ret = true}
+            if resQuery.count > 0 {
+                resQuery.removeFirst()
+                if resQuery.count == 1 {
+                    ret = true
+                }
+            }
         } catch UtilsSQLCipherError.querySQL(let message) {
             throw UtilsJsonError.tableNotExists(message: message)
         }
@@ -89,9 +94,14 @@ class UtilsJson {
         query.append(viewName)
         query.append("';")
         do {
-            let resQuery: [Any] = try UtilsSQLCipher
+            var resQuery: [Any] = try UtilsSQLCipher
                 .querySQL(mDB: mDB, sql: query, values: [])
-            if resQuery.count > 0 {ret = true}
+            if resQuery.count > 0 {
+                resQuery.removeFirst()
+                if resQuery.count == 1 {
+                    ret = true
+                }
+            }
         } catch UtilsSQLCipherError.querySQL(let message) {
             throw UtilsJsonError.viewNotExists(message: message)
         }
@@ -109,8 +119,9 @@ class UtilsJson {
         query.append(tableName)
         query.append(");")
         do {
-            let resQuery =  try mDB.selectSQL(sql: query, values: [])
+            var resQuery =  try mDB.selectSQL(sql: query, values: [])
             if resQuery.count > 0 {
+                resQuery.removeFirst()
                 var names: [String] = []
                 var types: [String] = []
                 for ipos in 0..<resQuery.count {
@@ -190,9 +201,12 @@ class UtilsJson {
             query.append("\(key);")
         }
         do {
-            let resQuery =  try mDB.selectSQL(sql: query, values: [])
-            if resQuery.count == 1 {
-                ret = true
+            var resQuery =  try mDB.selectSQL(sql: query, values: [])
+            if resQuery.count > 1 {
+                resQuery.removeFirst()
+                if resQuery.count == 1 {
+                    ret = true
+                }
             }
         } catch DatabaseError.selectSQL(let message) {
             throw UtilsJsonError.isIdExists(

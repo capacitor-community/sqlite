@@ -307,9 +307,10 @@ class UtilsUpgrade {
         var retNames: [String] = []
         let query: String = "PRAGMA table_info('\(tableName)');"
         do {
-            let resColumns: [[String: Any]] =  try
+            var resColumns: [[String: Any]] =  try
                 mDB.selectSQL(sql: query, values: [])
             if resColumns.count > 0 {
+                resColumns.removeFirst()
                 for rColumn in resColumns {
                     guard let columnName: String = rColumn["name"] as?
                             String else {

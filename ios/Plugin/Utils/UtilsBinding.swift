@@ -24,10 +24,10 @@ class UtilsBinding {
                                           value: value, idx: idx)
                     idx += 1
                 } else {
-                    message = "Error: querySQL bind failed "
+                    message = "Error: bindValues bind failed "
                 }
             } catch let error as NSError {
-                message = "Error: querySQL bind failed "
+                message = "Error: bindValues bind failed "
                 message.append("\(error.localizedDescription)")
             }
             if message.count > 0 { break }

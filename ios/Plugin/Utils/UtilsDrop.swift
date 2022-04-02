@@ -33,8 +33,9 @@ class UtilsDrop {
         query.append("AND name NOT LIKE 'sqlite_%' ")
         query.append("ORDER BY rootpage DESC;")
         do {
-            let resQuery = try mDB.selectSQL(sql: query, values: [])
+            var resQuery = try mDB.selectSQL(sql: query, values: [])
             if resQuery.count > 0 {
+                resQuery.removeFirst()
                 for ipos in 0..<resQuery.count {
                     if let mName = resQuery[ipos]["name"] as? String {
                         names.append("\(mName)")
@@ -81,8 +82,9 @@ class UtilsDrop {
         query.append("type='view' AND name NOT LIKE 'sqlite_%' ")
         query.append("ORDER BY rootpage DESC;")
         do {
-            let resQuery = try mDB.selectSQL(sql: query, values: [])
+            var resQuery = try mDB.selectSQL(sql: query, values: [])
             if resQuery.count > 0 {
+                resQuery.removeFirst()
                 for ipos in 0..<resQuery.count {
                     if let mName = resQuery[ipos]["name"] as? String {
                         names.append("\(mName)")
@@ -128,8 +130,9 @@ class UtilsDrop {
         var query: String = "SELECT name FROM sqlite_master WHERE "
         query.append("type='index' AND name NOT LIKE 'sqlite_%';")
         do {
-            let resQuery = try mDB.selectSQL(sql: query, values: [])
+            var resQuery = try mDB.selectSQL(sql: query, values: [])
             if resQuery.count > 0 {
+                resQuery.removeFirst()
                 for ipos in 0..<resQuery.count {
                     if let mName = resQuery[ipos]["name"] as? String {
                         indexes.append("\(mName)")
@@ -174,8 +177,9 @@ class UtilsDrop {
         var query: String = "SELECT name FROM sqlite_master WHERE "
         query.append("type='trigger';")
         do {
-            let resQuery = try mDB.selectSQL(sql: query, values: [])
+            var resQuery = try mDB.selectSQL(sql: query, values: [])
             if resQuery.count > 0 {
+                resQuery.removeFirst()
                 for ipos in 0..<resQuery.count {
                     if let mName = resQuery[ipos]["name"] as? String {
                         triggers.append("\(mName)")

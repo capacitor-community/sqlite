@@ -1510,29 +1510,26 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
           statement: statement,
           values: values,
         });
-        console.log(`&&&& in query res start: ${JSON.stringify(res)}`);
-        console.log(`&&&& in query: ${res.values[0]["ios_columns"]}`);
-        if (Object.keys(res.values[0]).includes("ios_columns")) {
-          const columnList: string[] = res.values[0]["ios_columns"];
-          const iosRes: any[] = [];
-          for (let i = 1; i < res.values.length; i++) {
-            const rowJson: any = res.values[i];
-            const resRowJson: any = {};
-            for (const item of columnList) {
-              resRowJson[item] = rowJson[item];
-            }
-            iosRes.push(resRowJson);
-          }
-          res = iosRes; 
-        }  
-        console.log(`&&&& in query res final: ${JSON.stringify(res)}`);
-
       } else {
         res = await this.sqlite.query({
           database: this.dbName,
           statement: statement,
           values: [],
         });
+      }
+      if (Object.keys(res.values[0]).includes('ios_columns')) {
+        const columnList: string[] = res.values[0]['ios_columns'];
+        const iosRes: any[] = [];
+        for (let i = 1; i < res.values.length; i++) {
+          const rowJson: any = res.values[i];
+          const resRowJson: any = {};
+          for (const item of columnList) {
+            resRowJson[item] = rowJson[item];
+          }
+          iosRes.push(resRowJson);
+        }
+        res = {};
+        res['values'] = iosRes;
       }
       return Promise.resolve(res);
     } catch (err) {
