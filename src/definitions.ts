@@ -1517,19 +1517,21 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
           values: [],
         });
       }
-      if (Object.keys(res.values[0]).includes('ios_columns')) {
-        const columnList: string[] = res.values[0]['ios_columns'];
-        const iosRes: any[] = [];
-        for (let i = 1; i < res.values.length; i++) {
-          const rowJson: any = res.values[i];
-          const resRowJson: any = {};
-          for (const item of columnList) {
-            resRowJson[item] = rowJson[item];
+      if (res && typeof res.values[0] === 'object') {
+        if (Object.keys(res.values[0]).includes('ios_columns')) {
+          const columnList: string[] = res.values[0]['ios_columns'];
+          const iosRes: any[] = [];
+          for (let i = 1; i < res.values.length; i++) {
+            const rowJson: any = res.values[i];
+            const resRowJson: any = {};
+            for (const item of columnList) {
+              resRowJson[item] = rowJson[item];
+            }
+            iosRes.push(resRowJson);
           }
-          iosRes.push(resRowJson);
+          res = {};
+          res['values'] = iosRes;
         }
-        res = {};
-        res['values'] = iosRes;
       }
       return Promise.resolve(res);
     } catch (err) {
