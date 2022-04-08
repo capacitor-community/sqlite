@@ -149,7 +149,7 @@ public class ExportToJson {
 
                 // create Table's Data
                 String query = "SELECT * FROM " + tableName + ";";
-                ArrayList<ArrayList<Object>> values = getValues(mDb, query, tableName);
+                ArrayList<ArrayList<Object>> values = uJson.getValues(mDb, query, tableName);
 
                 table.setName(tableName);
                 if (schema.size() != 0) {
@@ -389,87 +389,6 @@ public class ExportToJson {
     }
 
     /**
-     * Get Tables Values
-     * @param mDb
-     * @param query
-     * @param tableName
-     * @return
-     * @throws Exception
-     */
-    private ArrayList<ArrayList<Object>> getValues(Database mDb, String query, String tableName) throws Exception {
-        ArrayList<ArrayList<Object>> values = new ArrayList<>();
-        try {
-            JSObject tableNamesTypes = uJson.getTableColumnNamesTypes(mDb, tableName);
-            ArrayList<String> rowNames = new ArrayList<>();
-            ArrayList<String> rowTypes = new ArrayList<>();
-            if (tableNamesTypes.has("names")) {
-                rowNames = (ArrayList<String>) tableNamesTypes.get("names");
-            } else {
-                throw new Exception("GetValues: Table " + tableName + " no names");
-            }
-            if (tableNamesTypes.has("types")) {
-                rowTypes = (ArrayList<String>) tableNamesTypes.get("types");
-            } else {
-                throw new Exception("GetValues: Table " + tableName + " no types");
-            }
-            JSArray retValues = mDb.selectSQL(query, new ArrayList<Object>());
-            List<JSObject> lValues = retValues.toList();
-            if (lValues.size() > 0) {
-                for (int j = 0; j < lValues.size(); j++) {
-                    ArrayList<Object> row = new ArrayList<>();
-                    for (int k = 0; k < rowNames.size(); k++) {
-                        String nType = rowTypes.get(k);
-                        String nName = rowNames.get(k);
-
-                        //                       if (nType.equals("INTEGER")) {
-                        if (lValues.get(j).has(nName)) {
-                            Object obj = lValues.get(j).get(nName);
-                            if (obj.toString().equals("null")) {
-                                row.add(JSONObject.NULL);
-                            } else if (obj instanceof Long) {
-                                row.add(lValues.get(j).getLong(nName));
-                            } else if (obj instanceof String) {
-                                row.add(lValues.get(j).getString(nName));
-                            } else if (obj instanceof Double) {
-                                row.add(lValues.get(j).getDouble(nName));
-                            }
-                        } else {
-                            String msg = "GetValues: value is not (string, nsnull," + "int64,double";
-                            throw new Exception("GetValues: " + msg);
-                        }
-                        /*                       } else if (nType.equals("REAL")) {
-                            if (lValues.get(j).has(nName)) {
-                                Object obj = lValues.get(j).get(nName);
-                                if (obj instanceof Double) {
-                                    row.add(lValues.get(j).getDouble(nName));
-                                }
-                                if (obj instanceof String) {
-                                    row.add(lValues.get(j).getString(nName));
-                                }
-                            } else {
-                                row.add(null);
-                            }
-                        } else {
-                            if (lValues.get(j).has(nName)) {
-                                row.add(lValues.get(j).getString(nName));
-                            } else {
-                                row.add(null);
-                            }
-
-                        }
-                    */
-                    }
-                    values.add(row);
-                }
-            }
-        } catch (Exception e) {
-            throw new Exception("GetValues: " + e.getMessage());
-        } finally {
-            return values;
-        }
-    }
-
-    /**
      * Get Tables when Mode is Partial
      * @param mDb
      * @param resTables
@@ -550,7 +469,7 @@ public class ExportToJson {
                 } else {
                     query = "SELECT * FROM " + tableName + " WHERE last_modified > " + syncDate + ";";
                 }
-                ArrayList<ArrayList<Object>> values = getValues(mDb, query, tableName);
+                ArrayList<ArrayList<Object>> values = uJson.getValues(mDb, query, tableName);
 
                 // check the table object validity
                 table.setName(tableName);

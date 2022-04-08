@@ -236,7 +236,7 @@ class ImportFromJson {
             stmt.append(" AFTER UPDATE ON ")
             stmt.append(tableName)
             stmt.append(" FOR EACH ROW ")
-            stmt.append("WHEN NEW.last_modified <= OLD.last_modified ")
+            stmt.append("WHEN NEW.last_modified < OLD.last_modified ")
             stmt.append("BEGIN UPDATE ")
             stmt.append(tableName)
             stmt.append(" SET last_modified = (strftime('%s','now')) ")
@@ -409,6 +409,8 @@ class ImportFromJson {
             // Check row validity
             let row: [UncertainValue<String, Int, Double>] =
                 mValues[jpos]
+            var isRun: Bool = true
+
             /* Remove types checking for allowing RDBMS Types
              do {
              try UtilsJson.checkRowValidity(
@@ -429,19 +431,26 @@ class ImportFromJson {
                                         jsonNamesTypes: jsonNamesTypes)
                 let rowValues = UtilsJson.getValuesFromRow(
                     rowValues: row)
-                let lastId: Int64 = try UtilsSQLCipher.prepareSQL(
-                    mDB: mDB, sql: stmt, values: rowValues)
-                if lastId < 0 {
-                    throw ImportFromJsonError.createTableData(
-                        message: "lastId < 0")
+                isRun = try UtilsJson.checkUpdate(mDB: mDB, stmt: stmt,
+                                                  values: rowValues,
+                                                  tableName: tableName,
+                                                  names: jsonNamesTypes.names,
+                                                  types: jsonNamesTypes.types)
+
+                if isRun {
+                    let lastId: Int64 = try UtilsSQLCipher.prepareSQL(
+                        mDB: mDB, sql: stmt, values: rowValues)
+                    if lastId < 0 {
+                        throw ImportFromJsonError.createTableData(
+                            message: "lastId < 0")
+                    }
                 }
-            } catch ImportFromJsonError.createRowStatement(
-                        let message) {
-                throw ImportFromJsonError.createTableData(
-                    message: message)
+            } catch UtilsJsonError.checkUpdate(let message) {
+                throw ImportFromJsonError.createTableData(message: message)
+            } catch ImportFromJsonError.createRowStatement(let message) {
+                throw ImportFromJsonError.createTableData(message: message)
             } catch UtilsSQLCipherError.prepareSQL(let message) {
-                throw ImportFromJsonError.createTableData(
-                    message: message)
+                throw ImportFromJsonError.createTableData(message: message)
             }
         }
         return

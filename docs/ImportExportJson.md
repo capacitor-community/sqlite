@@ -21,6 +21,7 @@
   - [`Full Mode with Views`](#full-mode-with-views)
   - [`Partial Mode with Views`](#partial-mode-with-views)
   - [`Full Mode with Composite Foreign Key Constraints`](#full-mode-with-composite-foreign-key-constraints)
+  - [`Import with Affinity Names`](#import-with-affinity-names)
 
 ## Methods
 
@@ -35,7 +36,34 @@ The import mode can be selected either **full** or **partial**
 
 To use the **partial** mode, it is mandatory to add a column **last_modified** to the schema of all tables in your database.
 
-When a table schema is created if a **last_modified** column exists, a trigger **_trigger_last_modified** is automatically added to make sure that the **last_modified** column is updated with the `date` of the modification to allow the synchronization process when exporting back the data to the server.
+When a table schema is created if a **last_modified** column exists, a trigger **YOURTABLENAME_trigger_last_modified** is automatically added to make sure that the **last_modified** column is updated with the `date` of the modification to allow the synchronization process when exporting back the data to the server.
+
+🚨 Since release 3.4.2 ->> 🚨
+
+The trigger before 3.4.2 was 
+
+`
+CREATE TRIGGER IF NOT EXISTS YOURTABLENAME_trigger_last_modified
+AFTER UPDATE ON YOURTABLENAME
+FOR EACH ROW WHEN NEW.last_modified <= OLD.last_modified
+BEGIN
+    UPDATE YOURTABLENAME SET last_modified = (strftime('%s', 'now')) WHERE id=OLD.id;
+END;
+`
+
+and is now and onwards to avoid updating the **last_modified** when no other values have been updated.
+
+YOU MUST DELETE IT AND RE-CREATE IT FOR EACH OF YOUR TABLES AS BELOW: 
+
+`
+CREATE TRIGGER IF NOT EXISTS YOURTABLENAME_trigger_last_modified
+AFTER UPDATE ON YOURTABLENAME
+FOR EACH ROW WHEN NEW.last_modified < OLD.last_modified
+BEGIN
+    UPDATE YOURTABLENAME SET last_modified = (strftime('%s', 'now')) WHERE id=OLD.id;
+END;
+`
+🚨 Since release 3.4.2 <<- 🚨
 
 When no **last_modified** column added:
  -  **_full_** and **_partial_**  modes are available for import,
@@ -626,3 +654,33 @@ export const schemaToImport179 = {
   };
 ```
 
+### Import with Affinity Names
+
+```ts
+const dataToImportFull71: any = {
+  database : 'db-from-json71',
+  version : 1,
+  encrypted : false,
+  mode : 'full',
+  tables :[
+      {
+          name: 'company',
+          schema: [
+              {column:'id', value: 'INTEGER'},
+              {column:'name', value:'VARCHAR(25) NOT NULL'},
+              {column:'age', value:'INT NOT NULL'},
+              {column:'country', value:'CHARACTER(20)'},
+              {column:'salary', value:'DECIMAL(10,3)'},
+              {column:'manager', value:'BOOLEAN DEFAULT 0 CHECK (manager IN (0, 1))'},
+              {column:'last_modified', value:'INTEGER'},
+              {constraint:'PK_name_country', value:'PRIMARY KEY (name,country)'}
+          ],
+          values: [
+              [1,'Jones',55,'Australia',1250,1,1608216034],
+              [2,'Lawson',32,'Ireland',2345.60,0,1608216034],
+              [3,'Bush',44,'USA',1850.10,0,1608216034],
+          ]
+      },
+  ]
+};
+```

@@ -28,9 +28,16 @@ enum ExportToJsonError: Error {
     case modEmbeddedParentheses(message: String)
     case getViews(message: String)
 }
-
+var REALAFFINITY: [String] = ["REAL", "DOUBLE", "DOUBLE PRECISION", "FLOAT"]
+var INTEGERAFFINITY: [String] = ["INTEGER", "INT", "TINYINT", "SMALLINT",
+                                 "MEDIUMINT", "BIGINT", "UNSIGNED BIG INT",
+                                 "INT2", "INT8"]
+var TEXTAFFINITY: [String] = ["TEXT", "CHARACTER", "VARCHAR", "VARYING CHARACTER",
+                              "NCHAR", "NATIVE CHARACTER", "NVARCHAR", "CLOB"]
+var BLOBAFFINITY: [String] = ["BLOB"]
+var NUMERICAFFINITY: [String] = ["NUMERIC", "DECIMAL", "BOOLEAN", "DATE",
+                                 "DATETIME"]
 class ExportToJson {
-
     // MARK: - JsonNotifications - NotifyExportProgressEvent
 
     class func notifyExportProgressEvent(msg: String) {
@@ -996,14 +1003,19 @@ class ExportToJson {
 
     // MARK: - ExportToJson - CreateRowValues
 
+    // swiftlint:disable function_body_length
+    // swiftlint:disable cyclomatic_complexity
     class func createRowValues(values: [[String: Any]], pos: Int,
                                names: [String],
                                types: [String] ) throws -> [Any] {
         var row: [Any] = []
         for jpos in 0..<names.count {
-
-            //            if types[jpos] == "INTEGER" {
-            if values[pos][names[jpos]] is String {
+            if values[pos][names[jpos]] is String  && (TEXTAFFINITY
+                                                        .contains(types[jpos].components(separatedBy: "(")[0]
+                                                                    .uppercased())
+                                                        || BLOBAFFINITY.contains(types[jpos].uppercased())
+                                                        || NUMERICAFFINITY.contains(types[jpos].uppercased())
+            ) {
                 guard let val = values[pos][names[jpos]] as? String
                 else {
                     throw ExportToJsonError.createValues(
@@ -1017,14 +1029,29 @@ class ExportToJson {
                         message: "Error value must be NSNull")
                 }
                 row.append(val)
-            } else if values[pos][names[jpos]] is Int64 {
+            } else if values[pos][names[jpos]] is Int64 && (
+                        INTEGERAFFINITY.contains(types[jpos].uppercased()) ||
+                            NUMERICAFFINITY.contains(types[jpos].uppercased())) {
                 guard let val = values[pos][names[jpos]] as? Int64
                 else {
                     throw ExportToJsonError.createValues(
                         message: "Error value must be Int64")
                 }
                 row.append(val)
-            } else if values[pos][names[jpos]] is Double {
+            } else if values[pos][names[jpos]] is Int64 && (
+                        REALAFFINITY.contains(types[jpos].uppercased())  ||
+                            NUMERICAFFINITY.contains(types[jpos]
+                                                        .components(separatedBy: "(")[0].uppercased())) {
+                guard let val = values[pos][names[jpos]] as? Int64
+                else {
+                    throw ExportToJsonError.createValues(
+                        message: "Error value must be double")
+                }
+                row.append(Double(val))
+            } else if values[pos][names[jpos]] is Double && (
+                        REALAFFINITY.contains(types[jpos].uppercased()) ||
+                            NUMERICAFFINITY.contains(types[jpos]
+                                                        .components(separatedBy: "(")[0].uppercased())) {
                 guard let val = values[pos][names[jpos]] as? Double
                 else {
                     throw ExportToJsonError.createValues(
@@ -1040,6 +1067,8 @@ class ExportToJson {
         }
         return row
     }
+    // swiftlint:enable cyclomatic_complexity
+    // swiftlint:enable function_body_length
 
 }
 // swiftlint:enable type_body_length

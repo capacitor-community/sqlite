@@ -18,8 +18,10 @@ enum UtilsJsonError: Error {
     case validateTriggers(message: String)
     case validateViews(message: String)
     case isLastModified(message: String)
-}
+    case checkUpdate(message: String)
+    case checkValues(message: String)}
 
+// swiftlint:disable file_length
 // swiftlint:disable type_body_length
 class UtilsJson {
 
@@ -238,6 +240,70 @@ class UtilsJson {
         return retArray
     }
 
+    // MARK: - ImportFromJson - CheckUpdate
+
+    // swiftlint:disable function_parameter_count
+    class func checkUpdate(mDB: Database, stmt: String, values: [Any],
+                           tableName: String, names: [String],
+                           types: [String]) throws -> Bool {
+        var isRun: Bool = true
+        if stmt.prefix(6) == "UPDATE" {
+            var query: String = "SELECT * FROM \(tableName) WHERE \(names[0]) = "
+            if type(of: values[0]) == String.self {
+                query.append("'\(values[0])';")
+            } else {
+                query.append("\(values[0]);")
+            }
+
+            do {
+                // create the table data
+                let resValues: [[Any]] = try ExportToJson
+                    .createValues(mDB: mDB, query: query, names: names,
+                                  types: types)
+                if resValues.count > 0 {
+                    isRun = try checkValues(values: values, nValues: resValues[0])
+                    return isRun
+                } else {
+                    let msg = "CheckUpdate statement returns nothing"
+                    throw UtilsJsonError.checkUpdate(message: msg)
+                }
+            } catch ExportToJsonError.createValues(let message) {
+                throw UtilsJsonError.checkUpdate(message: message)
+            } catch UtilsJsonError.checkValues(let message) {
+                throw UtilsJsonError.checkUpdate(message: message)
+            }
+        }
+        return isRun
+    }
+    // swiftlint:enable function_parameter_count
+
+    // MARK: - ImportFromJson - CheckValues
+
+    class func checkValues(values: [Any], nValues: [Any]) throws -> Bool {
+        if values.count > 0 && nValues.count > 0
+            && values.count == nValues.count {
+            let valuesWithIndex = values.enumerated()
+            for (index, mValue) in valuesWithIndex {
+                let rValue = nValues[index]
+                if type(of: rValue) == Double.self {
+                    if let dValue =  rValue as? Double {
+                        if let dValues = mValue as? Double {
+                            if !dValue.isEqual(to: dValues) {
+                                return true
+                            }
+                        }
+                    }
+                } else if rValue as AnyObject !== values[index] as AnyObject {
+                    return true
+                }
+            }
+            return false
+        } else {
+            let msg = "CheckValues Both arrays not the same length"
+            throw UtilsJsonError.checkValues(message: msg)
+        }
+
+    }
     // MARK: - ImportFromJson - SetNameForUpdate
 
     class func setNameForUpdate(names: [String]) -> String {
@@ -374,3 +440,4 @@ class UtilsJson {
 
 }
 // swiftlint:enable type_body_length
+// swiftlint:enable file_length

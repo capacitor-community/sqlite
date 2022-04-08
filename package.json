@@ -74,7 +74,7 @@
     "typescript": "~4.0.5"
   },
   "peerDependencies": {
-    "@capacitor/core": "~3.4.1"
+    "@capacitor/core": "~3.4.2"
   },
   "prettier": "@ionic/prettier-config",
   "swiftlint": "@ionic/swiftlint-config",
@@ -93,6 +93,6 @@
     }
   },
   "dependencies": {
-    "jeep-sqlite": "^1.4.0"
+    "jeep-sqlite": "^1.4.1"
   }
 }

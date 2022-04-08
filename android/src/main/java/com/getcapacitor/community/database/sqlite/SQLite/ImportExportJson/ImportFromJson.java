@@ -245,7 +245,7 @@ public class ImportFromJson {
                 .append(" AFTER UPDATE ON ")
                 .append(tableName)
                 .append(" FOR EACH ROW ")
-                .append("WHEN NEW.last_modified <= " + "OLD.last_modified BEGIN ")
+                .append("WHEN NEW.last_modified < " + "OLD.last_modified BEGIN ")
                 .append("UPDATE ")
                 .append(tableName)
                 .append(" SET last_modified = (strftime('%s','now')) ")
@@ -401,11 +401,15 @@ public class ImportFromJson {
                 // Check row validity remove to accept RDBMS types
                 //                _uJson.checkRowValidity(mDb, tColNames, tColTypes, row, j, tableName);
                 // Create INSERT or UPDATE Statements
+                Boolean isRun = true;
                 String stmt = createRowStatement(mDb, tColNames, tColTypes, row, j, tableName, mode);
-                // load the values
-                long lastId = mDb.prepareSQL(stmt, row);
-                if (lastId < 0) {
-                    throw new Exception("CreateTableData: lastId < 0");
+                isRun = checkUpdate(mDb, stmt, row, tableName, tColNames, tColTypes);
+                if (isRun) {
+                    // load the values
+                    long lastId = mDb.prepareSQL(stmt, row);
+                    if (lastId < 0) {
+                        throw new Exception("CreateTableData: lastId < 0");
+                    }
                 }
             }
             return;
@@ -413,6 +417,88 @@ public class ImportFromJson {
             throw new Exception("CreateTableData: " + e.getMessage());
         } catch (Exception e) {
             throw new Exception("CreateTableData: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Check when UPDATE if the values are updated
+     * @param mDb
+     * @param stmt
+     * @param values
+     * @param tableName
+     * @param tColNames
+     * @param tColTypes
+     * @return
+     * @throws Exception
+     */
+    private Boolean checkUpdate(
+        Database mDb,
+        String stmt,
+        ArrayList<Object> values,
+        String tableName,
+        ArrayList<String> tColNames,
+        ArrayList<String> tColTypes
+    ) throws Exception {
+        Boolean isRun = true;
+        if (stmt.substring(0, 6).equals("UPDATE")) {
+            StringBuilder sbQuery = new StringBuilder("SELECT * FROM ").append(tableName).append(" WHERE ").append(tColNames.get(0));
+
+            if (values.get(0) instanceof String) {
+                sbQuery.append(" = '").append(values.get(0)).append("';");
+            } else {
+                sbQuery.append(" = ").append(values.get(0)).append(";");
+            }
+            String query = sbQuery.toString();
+
+            try {
+                ArrayList<ArrayList<Object>> resValues = _uJson.getValues(mDb, query, tableName);
+                if (resValues.size() > 0) {
+                    isRun = checkValues(values, resValues.get(0));
+                } else {
+                    throw new Exception("CheckUpdate: CheckUpdate statement returns nothing");
+                }
+            } catch (Exception e) {
+                throw new Exception("CheckUpdate: " + e.getMessage());
+            }
+        }
+        return isRun;
+    }
+
+    /**
+     * Check Values
+     * @param values
+     * @param nValues
+     * @return
+     * @throws Exception
+     */
+    private Boolean checkValues(ArrayList<Object> values, ArrayList<Object> nValues) throws Exception {
+        if (values.size() > 0 && nValues.size() > 0 && values.size() == nValues.size()) {
+            for (int i = 0; i < values.size(); i++) {
+                if (nValues.get(i) instanceof String) {
+                    if (!values.get(i).equals(nValues.get(i))) {
+                        return true;
+                    }
+                } else if (nValues.get(i) instanceof Long && values.get(i) instanceof Integer) {
+                    //            int iVal = (Integer) values.get(i);
+                    long lVal = (Integer) values.get(i);
+                    //            long nlVal = (Long) nValues.get(i);
+                    if (lVal != (Long) nValues.get(i)) {
+                        return true;
+                    }
+                } else if (nValues.get(i) instanceof Double && values.get(i) instanceof Integer) {
+                    double dVal = (Integer) values.get(i);
+                    if (dVal != (Double) nValues.get(i)) {
+                        return true;
+                    }
+                } else {
+                    if (values.get(i) != nValues.get(i)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } else {
+            throw new Exception("CheckValues: Both arrays not the same length");
         }
     }
 

@@ -42,6 +42,7 @@ public class UtilsJson {
 
     /**
      * Check if a table exists
+     *
      * @param db
      * @param tableName
      * @return
@@ -63,6 +64,7 @@ public class UtilsJson {
 
     /**
      * Check if a view exists
+     *
      * @param db
      * @param viewName
      * @return
@@ -84,6 +86,7 @@ public class UtilsJson {
 
     /**
      * Check if the Id already exsists
+     *
      * @param mDb
      * @param tableName
      * @param firstColumnName
@@ -118,6 +121,7 @@ public class UtilsJson {
     /**
      * Create a String from a given Array of Strings with
      * a given separator
+     *
      * @param arr
      * @param sep
      * @return
@@ -137,6 +141,7 @@ public class UtilsJson {
 
     /**
      * Convert ArrayList to JSArray
+     *
      * @param row
      * @return
      */
@@ -150,6 +155,7 @@ public class UtilsJson {
 
     /**
      * Create the ? string for a given values length
+     *
      * @param length
      * @return
      */
@@ -166,6 +172,7 @@ public class UtilsJson {
 
     /**
      * Create the Name string from a given Names array
+     *
      * @param names
      * @return
      */
@@ -182,6 +189,7 @@ public class UtilsJson {
 
     /**
      * Check the values type from fields type
+     *
      * @param types
      * @param values
      * @return
@@ -197,6 +205,7 @@ public class UtilsJson {
 
     /**
      * Check if the the value type is the same than the field type
+     *
      * @param type
      * @param value
      * @return
@@ -223,6 +232,7 @@ public class UtilsJson {
 
     /**
      * Get Field's type and name for a given table
+     *
      * @param mDb
      * @param tableName
      * @return
@@ -254,6 +264,7 @@ public class UtilsJson {
 
     /**
      * Get JSObject keys
+     *
      * @param jsonObject
      * @return
      */
@@ -270,6 +281,7 @@ public class UtilsJson {
 
     /**
      * Check Row validity
+     *
      * @param mDb
      * @param tColNames
      * @param tColTypes
@@ -299,6 +311,7 @@ public class UtilsJson {
 
     /**
      * Check Schema Validity
+     *
      * @param schema
      * @throws Exception
      */
@@ -328,6 +341,7 @@ public class UtilsJson {
 
     /**
      * Check Indexes Validity
+     *
      * @param indexes
      * @throws Exception
      */
@@ -357,6 +371,7 @@ public class UtilsJson {
 
     /**
      * Check Triggers Validity
+     *
      * @param triggers
      * @throws Exception
      */
@@ -386,6 +401,7 @@ public class UtilsJson {
 
     /**
      * Check Views Validity
+     *
      * @param views
      * @throws Exception
      */
@@ -405,5 +421,79 @@ public class UtilsJson {
             }
         }
         return;
+    }
+
+    /**
+     * Get Tables Values
+     *
+     * @param mDb
+     * @param query
+     * @param tableName
+     * @return
+     * @throws Exception
+     */
+    public ArrayList<ArrayList<Object>> getValues(Database mDb, String query, String tableName) throws Exception {
+        ArrayList<ArrayList<Object>> values = new ArrayList<>();
+        try {
+            JSObject tableNamesTypes = getTableColumnNamesTypes(mDb, tableName);
+            ArrayList<String> rowNames = new ArrayList<>();
+            ArrayList<String> rowTypes = new ArrayList<>();
+            if (tableNamesTypes.has("names")) {
+                rowNames = (ArrayList<String>) tableNamesTypes.get("names");
+            } else {
+                throw new Exception("GetValues: Table " + tableName + " no names");
+            }
+            if (tableNamesTypes.has("types")) {
+                rowTypes = (ArrayList<String>) tableNamesTypes.get("types");
+            } else {
+                throw new Exception("GetValues: Table " + tableName + " no types");
+            }
+            JSArray retValues = mDb.selectSQL(query, new ArrayList<Object>());
+            List<JSObject> lValues = retValues.toList();
+            if (lValues.size() > 0) {
+                for (int j = 0; j < lValues.size(); j++) {
+                    ArrayList<Object> row = createRowValues(lValues, j, rowNames, rowTypes);
+                    values.add(row);
+                }
+            }
+        } catch (Exception e) {
+            throw new Exception("GetValues: " + e.getMessage());
+        } finally {
+            return values;
+        }
+    }
+
+    /**
+     * Get Table Row Values
+     * @param values
+     * @param pos
+     * @param rowNames
+     * @param rowTypes
+     * @return
+     */
+    public ArrayList<Object> createRowValues(List<JSObject> values, int pos, ArrayList<String> rowNames, ArrayList<String> rowTypes)
+        throws Exception {
+        ArrayList<Object> row = new ArrayList<>();
+        for (int k = 0; k < rowNames.size(); k++) {
+            String nType = rowTypes.get(k);
+            String nName = rowNames.get(k);
+
+            if (values.get(pos).has(nName)) {
+                Object obj = values.get(pos).get(nName);
+                if (obj.toString().equals("null")) {
+                    row.add(JSONObject.NULL);
+                } else if (obj instanceof Long) {
+                    row.add(values.get(pos).getLong(nName));
+                } else if (obj instanceof String) {
+                    row.add(values.get(pos).getString(nName));
+                } else if (obj instanceof Double) {
+                    row.add(values.get(pos).getDouble(nName));
+                }
+            } else {
+                String msg = "value is not (string, nsnull," + "int64,double";
+                throw new Exception("CreateRowValues: " + msg);
+            }
+        }
+        return row;
     }
 }

@@ -159,27 +159,6 @@ class UtilsSQLCipher {
                 let msg: String = "Cannot open the DB"
                 throw UtilsSQLCipherError.openOrCreateDatabase(message: msg)
             }
-
-            /* this should work but doe not sqlite3_key_v2 is not known
-             if password.count > 0 {
-             let nKey:Int32 = Int32(password.count)
-             if sqlite3_key_v2(mDB!, filename, password, nKey) == SQLITE_OK {
-             var stmt: String = "SELECT count(*) FROM "
-             stmt.append("sqlite_master;")
-             if sqlite3_exec(mDB, stmt, nil, nil, nil) !=
-             SQLITE_OK {
-             print("Unable to open a database \(filename)")
-             throw UtilsSQLCipherError
-             .openOrCreateDatabase(message: msg)
-             }
-             } else  {
-             print("Unable to open a database \(filename)")
-             throw UtilsSQLCipherError
-             .openOrCreateDatabase(message: msg)
-             }
-             }
-             print("Successfully opened database \(filename)")
-             */
             return mDB
         } else {
             let message: String = "open_v2 failed"

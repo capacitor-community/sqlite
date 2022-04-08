@@ -1,3 +1,13 @@
+# 3.4.2 (2022-04-08)
+
+### Bug Fixes
+
+ - update _trigger_last_modified (WHEN NEW.last_modified < OLD.last_modified BEGIN )
+ - iOS: add TYPE AFFINITY in JSON Object for `importFromJson` and `ExportToJson`
+ - do not execute UPDATE in `importFromJson` for `partial` mode when all provided column' values are identical to those in the database
+ - Fix TypeError: Cannot convert undefined or null to object during TypeORM DataSource.initialize() issue#249
+ - Update `ImportExportJson.md` documentation
+
 # 3.4.2-5 (2022-04-02)
 
 ### Bug Fixes

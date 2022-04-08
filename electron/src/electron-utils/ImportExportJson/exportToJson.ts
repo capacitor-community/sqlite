@@ -195,7 +195,11 @@ export class ExportToJson {
         }
         // create Table's Data
         const query = `SELECT * FROM ${tableName};`;
-        const values: any[] = await this.getValues(mDb, query, tableName);
+        const values: any[] = await this._uJson.getValues(
+          mDb,
+          query,
+          tableName,
+        );
         table.name = tableName;
         if (schema.length > 0) {
           table.schema = schema;
@@ -408,48 +412,6 @@ export class ExportToJson {
     }
   }
   /**
-   * GetValues
-   * @param mDb
-   * @param query
-   * @param tableName
-   */
-  private async getValues(
-    mDb: any,
-    query: string,
-    tableName: string,
-  ): Promise<any[]> {
-    const values: any[] = [];
-    try {
-      // get table column names and types
-      const tableNamesTypes = await this._uJson.getTableColumnNamesTypes(
-        mDb,
-        tableName,
-      );
-      let rowNames: string[] = [];
-      if (Object.keys(tableNamesTypes).includes('names')) {
-        rowNames = tableNamesTypes.names;
-      } else {
-        return Promise.reject(`GetValues: Table ${tableName} no names`);
-      }
-      const retValues = await this._uSQLite.queryAll(mDb, query, []);
-      for (const rValue of retValues) {
-        const row: any[] = [];
-        for (const rName of rowNames) {
-          if (Object.keys(rValue).includes(rName)) {
-            row.push(rValue[rName]);
-          } else {
-            row.push('NULL');
-          }
-        }
-        values.push(row);
-      }
-      return Promise.resolve(values);
-    } catch (err) {
-      return Promise.reject(`GetValues: ${err}`);
-    }
-  }
-
-  /**
    * GetTablesPartial
    * @param mDb
    * @param resTables
@@ -533,7 +495,11 @@ export class ExportToJson {
             `SELECT * FROM ${tableName} ` +
             `WHERE last_modified > ${syncDate};`;
         }
-        const values: any[] = await this.getValues(mDb, query, tableName);
+        const values: any[] = await this._uJson.getValues(
+          mDb,
+          query,
+          tableName,
+        );
 
         // check the table object validity
         table.name = tableName;
