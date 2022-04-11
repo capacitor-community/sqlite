@@ -9,7 +9,7 @@
 </p>
 <br>
 <p align="center">
-  <img src="https://img.shields.io/maintenance/yes/2021?style=flat-square" />
+  <img src="https://img.shields.io/maintenance/yes/2022?style=flat-square" />
   <a href="https://github.com/capacitor-community/sqlite/actions?query=workflow%3A%22CI%22"><img src="https://img.shields.io/github/workflow/status/capacitor-community/sqlite/CI?style=flat-square" /></a>
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/l/@capacitor-community/sqlite?style=flat-square" /></a>
 <br>
@@ -387,6 +387,11 @@ No configuration required for this plugin
 ### Vue+Vite
 
 - [vue-vite-sqlite-app](https://github.com/jepiqueau/vuevite-app)
+
+### SolidJS+Vite
+
+- [solidjs-vite-sqlite-app](https://github.com/jepiqueau/capacitor-solid-sqlite)
+
 
 ## Usage
 
