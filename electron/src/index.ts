@@ -597,7 +597,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   /**
    * Gets the value of an option from the options object.
    * If the `optionKey` does not exist and there is no `defaultValue` defined, an exception is thrown.
-   * If the `optionKey` does not exust but there is a `defaultValue`, the `defaultValue` is returned.
+   * If the `optionKey` does not exist but there is a `defaultValue`, the `defaultValue` is returned.
    * 
    * @param options 
    * @param optionKey 
