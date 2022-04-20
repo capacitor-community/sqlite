@@ -306,7 +306,8 @@ Echo a given string
 open(options: capSQLiteOptions) => Promise<void>
 ```
 
-Open a SQLite database
+Opens a SQLite database.
+Attention: This re-opens a database if it's already open!
 
 | Param         | Type                                                          | Description                                        |
 | ------------- | ------------------------------------------------------------- | -------------------------------------------------- |

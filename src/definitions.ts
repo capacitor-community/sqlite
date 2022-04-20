@@ -72,7 +72,9 @@ export interface CapacitorSQLitePlugin {
    */
   echo(options: capEchoOptions): Promise<capEchoResult>;
   /**
-   * Open a SQLite database
+   * Opens a SQLite database.
+   * Attention: This re-opens a database if it's already open!
+   * 
    * @param options: capSQLiteOptions
    * @returns Promise<void>
    * @since 0.0.1
@@ -975,7 +977,7 @@ export interface ISQLiteConnection {
  */
 export class SQLiteConnection implements ISQLiteConnection {
   private _connectionDict: Map<string, SQLiteDBConnection> = new Map();
-  constructor(private sqlite: any) {}
+  constructor(private sqlite: any) { }
 
   async initWebStore(): Promise<void> {
     try {
@@ -1435,7 +1437,7 @@ export interface ISQLiteDBConnection {
  * SQLiteDBConnection Class
  */
 export class SQLiteDBConnection implements ISQLiteDBConnection {
-  constructor(private dbName: string, private sqlite: any) {}
+  constructor(private dbName: string, private sqlite: any) { }
   getConnectionDBName(): string {
     return this.dbName;
   }
