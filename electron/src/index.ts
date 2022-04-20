@@ -1,93 +1,53 @@
 import type {
   CapacitorSQLitePlugin,
+  capAllConnectionsOptions, capChangeSecretOptions,
   capConnectionOptions,
   capEchoOptions,
   capEchoResult,
+  capNCConnectionOptions,
+  capNCDatabasePathOptions,
+  capNCDatabasePathResult,
+  capNCOptions,
+  capSetSecretOptions,
   capSQLiteChanges,
   capSQLiteExecuteOptions,
   capSQLiteExportOptions,
+  capSQLiteFromAssetsOptions,
   capSQLiteImportOptions,
   capSQLiteJson,
   capSQLiteOptions,
+  capSQLitePathOptions,
   capSQLiteQueryOptions,
   capSQLiteResult,
-  capVersionResult,
   capSQLiteRunOptions,
   capSQLiteSetOptions,
+  capSQLiteSyncDate,
   capSQLiteSyncDateOptions,
+  capSQLiteTableOptions,
   capSQLiteUpgradeOptions,
+  capSQLiteUrl,
   capSQLiteValues,
   capSQLiteVersionUpgrade,
-  capSQLiteSyncDate,
-  capSQLiteTableOptions,
-  capSQLitePathOptions,
-  JsonSQLite,
-  capAllConnectionsOptions,
-  capSetSecretOptions,
-  capChangeSecretOptions,
-  capSQLiteFromAssetsOptions,
-  capNCDatabasePathOptions,
-  capNCConnectionOptions,
-  capNCOptions,
-  capNCDatabasePathResult,
-  capSQLiteUrl,
+  capVersionResult,
+  JsonSQLite
 } from '../../src/definitions';
-
 import { Database } from './electron-utils/Database';
 import { UtilsJson } from './electron-utils/ImportExportJson/utilsJson';
 import { UtilsFile } from './electron-utils/utilsFile';
 
 export class CapacitorSQLite implements CapacitorSQLitePlugin {
-  private _versionUpgrades: Record<
-    string,
-    Record<number, capSQLiteVersionUpgrade>
-  > = {};
-  private _dbDict: any = {};
-  private _uFile: UtilsFile = new UtilsFile();
-  private _uJson: UtilsJson = new UtilsJson();
-
-  async initWebStore(): Promise<void> {
-    return Promise.reject('Method not implemented.');
-  }
-  async saveToStore(options: capSQLiteOptions): Promise<void> {
-    console.log(`${JSON.stringify(options)}`);
-    return Promise.reject('Method not implemented.');
-  }
-  async isSecretStored(): Promise<capSQLiteResult> {
-    return Promise.reject('Method not implemented.');
-  }
-  async setEncryptionSecret(options: capSetSecretOptions): Promise<void> {
-    console.log(`${JSON.stringify(options)}`);
-    return Promise.reject('Method not implemented.');
-  }
-  async changeEncryptionSecret(options: capChangeSecretOptions): Promise<void> {
-    console.log(`${JSON.stringify(options)}`);
-    return Promise.reject('Method not implemented.');
-  }
-  async getNCDatabasePath(
-    options: capNCDatabasePathOptions,
-  ): Promise<capNCDatabasePathResult> {
-    console.log('getNCDatabasePath', options);
-    return Promise.reject('Method not implemented.');
-  }
-  async createNCConnection(options: capNCConnectionOptions): Promise<void> {
-    console.log('createNCConnection', options);
-    return Promise.reject('Method not implemented.');
-  }
-  async closeNCConnection(options: capNCOptions): Promise<void> {
-    console.log('closeNCConnection', options);
-    return Promise.reject('Method not implemented.');
-  }
-  async isNCDatabase(options: capNCOptions): Promise<capSQLiteResult> {
-    console.log('isNCDatabase', options);
-    return Promise.reject('Method not implemented.');
-  }
+  private versionUpgrades: Record<string, Record<number, capSQLiteVersionUpgrade>> = {};
+  private databases: { [databasename: string]: Database } = {};
+  private fileUtil: UtilsFile = new UtilsFile();
+  private jsonUtil: UtilsJson = new UtilsJson();
 
   async createConnection(options: capConnectionOptions): Promise<void> {
-    const keys = Object.keys(options);
-    if (!keys.includes('database')) {
-      return Promise.reject('Must provide a database name');
+    const optionKeys = Object.keys(options);
+
+    if (!optionKeys.includes('database')) {
+      throw new Error('Must provide a database name');
     }
+
     const dbName: string = options.database;
     const version: number = options.version ? options.version : 1;
     /*    const encrypted = false;
@@ -102,647 +62,462 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
         ? options.mode
         : 'no-encryption';
     */
-    let upgDict: Record<number, capSQLiteVersionUpgrade> = {};
-    const vUpgKeys: string[] = Object.keys(this._versionUpgrades);
-    if (vUpgKeys.length !== 0 && vUpgKeys.includes(dbName)) {
-      upgDict = this._versionUpgrades[dbName];
+    let upgrades: Record<number, capSQLiteVersionUpgrade> = {};
+    const versionUpgradeKeys: string[] = Object.keys(this.versionUpgrades);
+
+    if (versionUpgradeKeys.length !== 0 && versionUpgradeKeys.includes(dbName)) {
+      upgrades = this.versionUpgrades[dbName];
     }
-    try {
-      const mDb: Database = new Database(
-        dbName + 'SQLite.db',
-        /*        encrypted,
-        inMode,
-*/
-        version,
-        upgDict,
-      );
-      this._dbDict[dbName] = mDb;
-      return Promise.resolve();
-    } catch (err) {
-      return Promise.reject(err);
-    }
+
+    const databaseConnection: Database = new Database(
+      dbName + 'SQLite.db',
+      /*        encrypted,
+      inMode,
+      */
+      version,
+      upgrades,
+    );
+
+    this.databases[dbName] = databaseConnection;
+
+    return;
   }
   async closeConnection(options: capSQLiteOptions): Promise<void> {
-    let keys = Object.keys(options);
-    if (!keys.includes('database')) {
-      return Promise.reject('Must provide a database name');
-    }
-    const dbName: string = options.database;
-    keys = Object.keys(this._dbDict);
-    if (!keys.includes(dbName)) {
-      return Promise.resolve();
-    }
+    const dbName: string = this.getOptionValue(options, 'database');
 
-    const mDB = this._dbDict[dbName];
-    if (mDB.isDBOpen()) {
+    const database = this.getDatabaseConnectionOrThrowError(dbName);
+
+    if (database.isDBOpen()) {
       // close the database
       try {
-        await mDB.close();
+        await database.close();
       } catch (err) {
-        return Promise.reject(
-          'CloseConnection command failed: ' +
-            'close ' +
-            dbName +
-            ' failed ' +
-            err,
-        );
+        throw new Error(`CloseConnection command failed:  close ${dbName} failed ${err.message}`);
       }
     }
+
     // remove the connection from dictionary
-    delete this._dbDict[dbName];
-    return Promise.resolve();
+    delete this.databases[dbName];
   }
+
   async echo(options: capEchoOptions): Promise<capEchoResult> {
-    const keys = Object.keys(options);
-    if (!keys.includes('value')) {
-      return Promise.reject('Must provide a value to echo');
-    }
-    const ret: capEchoResult = {} as capEchoResult;
-    ret.value = options.value;
-    return Promise.resolve(ret);
+    const echoValue = this.getOptionValue(options, 'value');
+
+    const echoResult: capEchoResult = {} as capEchoResult;
+    echoResult.value = echoValue;
+    return echoResult;
   }
+
   async open(options: capSQLiteOptions): Promise<void> {
-    let keys = Object.keys(options);
-    if (!keys.includes('database')) {
-      return Promise.reject('Must provide a database name');
-    }
-    const dbName: string = options.database;
-    keys = Object.keys(this._dbDict);
-    if (!keys.includes(dbName)) {
-      return Promise.reject(`Open: No available connection for ${dbName}`);
-    }
+    const dbName: string = this.getOptionValue(options, 'database');
+    const database = this.getDatabaseConnectionOrThrowError(dbName);
 
-    const mDB = this._dbDict[dbName];
     try {
-      await mDB.open();
-      return Promise.resolve();
+      await database.open();
+      return;
     } catch (err) {
-      return Promise.reject(`Open: ${err}`);
+      throw new Error(`Open: ${err}`);
     }
   }
+
   async close(options: capSQLiteOptions): Promise<void> {
-    let keys = Object.keys(options);
-    if (!keys.includes('database')) {
-      return Promise.reject('Must provide a database name');
-    }
-    const dbName: string = options.database;
-    keys = Object.keys(this._dbDict);
-    if (!keys.includes(dbName)) {
-      return Promise.reject(`Close: No available connection for ${dbName}`);
-    }
+    const dbName: string = this.getOptionValue(options, 'database');
+    const database = this.getDatabaseConnectionOrThrowError(dbName);
 
-    const mDB = this._dbDict[dbName];
     try {
-      await mDB.close();
-      return Promise.resolve();
+      await database.close();
+      return;
     } catch (err) {
-      return Promise.reject(`Close: ${err}`);
+      throw new Error(`Close: ${err}`);
     }
-  }
-  async getUrl(): Promise<capSQLiteUrl> {
-    return Promise.reject('Method not implemented.');
   }
 
   async getVersion(options: capSQLiteOptions): Promise<capVersionResult> {
-    let keys = Object.keys(options);
-    if (!keys.includes('database')) {
-      return Promise.reject('Must provide a database name');
-    }
-    const dbName: string = options.database;
-    keys = Object.keys(this._dbDict);
-    if (!keys.includes(dbName)) {
-      return Promise.reject(`Open: No available connection for ${dbName}`);
-    }
+    const dbName: string = this.getOptionValue(options, 'database');
+    const database = this.getDatabaseConnectionOrThrowError(dbName);
 
-    const mDB = this._dbDict[dbName];
     try {
-      const version: number = await mDB.getVersion();
-      const ret: capVersionResult = {} as capVersionResult;
-      ret.version = version;
-      return Promise.resolve(ret);
+      const version: number = await database.getVersion();
+      const versionResult: capVersionResult = {} as capVersionResult;
+      versionResult.version = version;
+
+      return versionResult;
     } catch (err) {
-      return Promise.reject(`GetVersion: ${err}`);
+      throw new Error(`GetVersion: ${err}`);
     }
   }
+
   async getTableList(options: capSQLiteOptions): Promise<capSQLiteValues> {
-    let keys = Object.keys(options);
-    if (!keys.includes('database')) {
-      return Promise.reject('Must provide a database name');
-    }
-    const dbName: string = options.database;
-    keys = Object.keys(this._dbDict);
-    if (!keys.includes(dbName)) {
-      return Promise.reject(`Open: No available connection for ${dbName}`);
-    }
+    const dbName: string = this.getOptionValue(options, 'database');
+    const database = this.getDatabaseConnectionOrThrowError(dbName);
 
-    const mDB = this._dbDict[dbName];
     try {
-      const tableList = await mDB.getTableList();
-      const ret: capSQLiteValues = {} as capSQLiteValues;
-      ret.values = tableList;
-      return Promise.resolve(ret);
+      const tableList = await database.getTableList();
+      const tableListResult: capSQLiteValues = {} as capSQLiteValues;
+      tableListResult.values = tableList;
+
+      return tableListResult;
     } catch (err) {
-      return Promise.reject(`GetTableList: ${err}`);
+      throw new Error(`GetTableList: ${err}`);
     }
   }
+
   async execute(options: capSQLiteExecuteOptions): Promise<capSQLiteChanges> {
-    let keys = Object.keys(options);
-    if (!keys.includes('database')) {
-      return Promise.reject('Must provide a database name');
-    }
-    if (!keys.includes('statements') || options.statements.length === 0) {
-      return Promise.reject('Must provide raw SQL statements');
-    }
-    const dbName: string = options.database;
-    const statements: string = options.statements;
-    let transaction: boolean;
-    if (!keys.includes('transaction')) {
-      transaction = true;
-    } else {
-      transaction = options.transaction;
-    }
-    keys = Object.keys(this._dbDict);
-    if (!keys.includes(dbName)) {
-      return Promise.reject(`Execute: No available connection for ${dbName}`);
-    }
-    const mDB = this._dbDict[dbName];
+    const dbName: string = this.getOptionValue(options, 'database');
+    const statements: string = this.getOptionValue(options, 'statements');
+    const transaction: boolean = this.getOptionValue(options, 'transaction', true);
+
+    const database = this.getDatabaseConnectionOrThrowError(dbName);
+
     try {
-      const ret: number = await mDB.executeSQL(statements, transaction);
-      if (ret < 0) {
-        return Promise.reject('Execute failed changes < 0');
+      const executeResult: number = await database.executeSQL(statements, transaction);
+
+      if (executeResult < 0) {
+        throw new Error('Execute failed changes < 0');
       } else {
-        return Promise.resolve({ changes: { changes: ret } });
+        return { changes: { changes: executeResult } };
       }
     } catch (err) {
-      return Promise.reject(`Execute failed: ${err}`);
+      throw new Error(`Execute failed: ${err}`);
     }
   }
+
   async executeSet(options: capSQLiteSetOptions): Promise<capSQLiteChanges> {
-    let keys = Object.keys(options);
-    if (!keys.includes('database')) {
-      return Promise.reject('Must provide a database name');
-    }
-    if (!keys.includes('set') || options.set.length === 0) {
-      return Promise.reject('Must provide a non-empty set of SQL statements');
-    }
-    const dbName: string = options.database;
-    const setOfStatements: any[] = options.set;
-    let transaction: boolean;
-    if (!keys.includes('transaction')) {
-      transaction = true;
-    } else {
-      transaction = options.transaction;
-    }
-    keys = Object.keys(this._dbDict);
-    if (!keys.includes(dbName)) {
-      return Promise.reject(
-        `ExecuteSet: No available connection for ${dbName}`,
-      );
-    }
-    const mDB = this._dbDict[dbName];
+    const dbName: string = this.getOptionValue(options, 'database');
+    const setOfStatements: any = this.getOptionValue(options, 'set');
+    const transaction: boolean = this.getOptionValue(options, 'transaction', true);
+
+    const database = this.getDatabaseConnectionOrThrowError(dbName);
 
     for (const sStmt of setOfStatements) {
       if (!('statement' in sStmt) || !('values' in sStmt)) {
-        return Promise.reject(
+        throw new Error(
           'ExecuteSet: Must provide a set as ' + 'Array of {statement,values}',
         );
       }
     }
+
     try {
-      const ret: any = await mDB.execSet(setOfStatements, transaction);
-      if (ret < 0) {
-        return Promise.reject(`ExecuteSet failed changes <0`);
+      const execSetResult: any = await database.execSet(setOfStatements, transaction);
+
+      if (execSetResult < 0) {
+        throw new Error(`ExecuteSet failed changes <0`);
       } else {
-        return Promise.resolve({ changes: ret });
+        return { changes: execSetResult };
       }
     } catch (err) {
-      return Promise.reject(`ExecuteSet failed: ${err}`);
+      throw new Error(`ExecuteSet failed: ${err}`);
     }
   }
+
   async run(options: capSQLiteRunOptions): Promise<capSQLiteChanges> {
-    let keys = Object.keys(options);
-    if (!keys.includes('database')) {
-      return Promise.reject('Must provide a database name');
-    }
-    if (!keys.includes('statement') || options.statement.length === 0) {
-      return Promise.reject('Must provide a query statement');
-    }
-    if (!keys.includes('values')) {
-      return Promise.reject('Must provide an Array of values');
-    }
-    const dbName: string = options.database;
-    const statement: string = options.statement;
-    const values: any[] = options.values.length > 0 ? options.values : [];
-    let transaction: boolean;
-    if (!keys.includes('transaction')) {
-      transaction = true;
-    } else {
-      transaction = options.transaction;
-    }
-    keys = Object.keys(this._dbDict);
-    if (!keys.includes(dbName)) {
-      return Promise.reject(`Run: No available connection for ${dbName}`);
-    }
-    const mDB = this._dbDict[dbName];
+    const dbName: string = this.getOptionValue(options, 'database');
+    const statement: string = this.getOptionValue(options, 'statement');
+    const values: any[] = this.getOptionValue(options, 'values', []);
+    const transaction: boolean = this.getOptionValue(options, 'transaction', true);
+
+    const database = this.getDatabaseConnectionOrThrowError(dbName);
+
     try {
-      const ret: any = await mDB.runSQL(statement, values, transaction);
-      return Promise.resolve({ changes: ret });
+      const runResult: any = await database.runSQL(statement, values, transaction);
+      return { changes: runResult };
     } catch (err) {
-      return Promise.reject(`RUN failed: ${err} `);
+      throw new Error(`RUN failed: ${err} `);
     }
   }
+
   async query(options: capSQLiteQueryOptions): Promise<capSQLiteValues> {
-    let keys = Object.keys(options);
-    if (!keys.includes('database')) {
-      return Promise.reject('Must provide a database name');
+    const dbName: string = this.getOptionValue(options, 'database');
+    const statement: string = this.getOptionValue(options, 'statement');
+    const values: any[] = this.getOptionValue(options, 'values', []);
+
+    if (statement.length === 0) {
+      throw new Error('Statement may not be an empty string.');
     }
-    if (!keys.includes('statement') || options.statement.length === 0) {
-      return Promise.reject('Must provide a query statement');
-    }
-    if (!keys.includes('values')) {
-      return Promise.reject('Must provide an Array of any');
-    }
-    const dbName: string = options.database;
-    const statement: string = options.statement;
-    const values: any[] = options.values.length > 0 ? options.values : [];
-    keys = Object.keys(this._dbDict);
-    if (!keys.includes(dbName)) {
-      return Promise.reject(`Query: No available connection for ${dbName}`);
-    }
-    const mDB = this._dbDict[dbName];
-    let ret: any[] = [];
+
+    const database = this.getDatabaseConnectionOrThrowError(dbName);
+
     try {
-      ret = await mDB.selectSQL(statement, values);
-      return Promise.resolve({ values: ret });
+      const queryResult: any[] = await database.selectSQL(statement, values);
+      return { values: queryResult };
     } catch (err) {
-      return Promise.reject(`Query failed: ${err}`);
+      throw new Error(`Query failed: ${err}`);
     }
   }
+
   async isDBExists(options: capSQLiteOptions): Promise<capSQLiteResult> {
-    let keys = Object.keys(options);
-    if (!keys.includes('database')) {
-      return Promise.reject('Must provide a database name');
-    }
-    const dbName: string = options.database;
-    keys = Object.keys(this._dbDict);
-    if (!keys.includes(dbName)) {
-      return Promise.reject(
-        'IsDBExists command failed: No available ' + 'connection for ' + dbName,
-      );
-    }
-    const isExists: boolean = this._uFile.isFileExists(dbName + 'SQLite.db');
-    return Promise.resolve({
-      result: isExists,
-    });
+    const dbName: string = this.getOptionValue(options, 'database');
+
+    // Throw an error, if db connection is not opened yet:
+    this.getDatabaseConnectionOrThrowError(dbName);
+
+    const isExists: boolean = this.fileUtil.isFileExists(dbName + 'SQLite.db');
+    return { result: isExists };
   }
+
   async isDBOpen(options: capSQLiteOptions): Promise<capSQLiteResult> {
-    let keys = Object.keys(options);
-    if (!keys.includes('database')) {
-      return Promise.reject('Must provide a database name');
-    }
-    const dbName: string = options.database;
-    keys = Object.keys(this._dbDict);
-    if (!keys.includes(dbName)) {
-      return Promise.reject(
-        'isDBOpen command failed: No available ' + 'connection for ' + dbName,
-      );
-    }
-    const mDB = this._dbDict[dbName];
-    const isOpen: boolean = await mDB.isDBOpen();
-    return Promise.resolve({ result: isOpen });
+    const dbName: string = this.getOptionValue(options, 'database');
+    const database = this.getDatabaseConnectionOrThrowError(dbName);
+
+    const isOpen: boolean = await database.isDBOpen();
+    return { result: isOpen };
   }
   async isDatabase(options: capSQLiteOptions): Promise<capSQLiteResult> {
-    const keys = Object.keys(options);
-    if (!keys.includes('database')) {
-      return Promise.reject('Must provide a database name');
-    }
-    const dbName: string = options.database;
-    const isExists: boolean = this._uFile.isFileExists(dbName + 'SQLite.db');
-    return Promise.resolve({
-      result: isExists,
-    });
+    const dbName: string = this.getOptionValue(options, 'database');
+    const isExists: boolean = this.fileUtil.isFileExists(dbName + 'SQLite.db');
+
+    return { result: isExists };
   }
+
   async isTableExists(
     options: capSQLiteTableOptions,
   ): Promise<capSQLiteResult> {
-    let keys = Object.keys(options);
-    if (!keys.includes('database')) {
-      return Promise.reject('Must provide a database name');
-    }
+    const dbName: string = this.getOptionValue(options, 'database');
+    const tableName: string = this.getOptionValue(options, 'table');
 
-    const dbName: string = options.database;
-    if (!keys.includes('table')) {
-      return Promise.reject('Must provide a table name');
-    }
-    const tableName: string = options.table;
-    keys = Object.keys(this._dbDict);
-    if (!keys.includes(dbName)) {
-      return Promise.reject(
-        'isTableExists command failed: No available ' +
-          'connection for ' +
-          dbName,
-      );
-    }
-    const mDB = this._dbDict[dbName];
+    const database = this.getDatabaseConnectionOrThrowError(dbName);
+
     try {
-      const res: boolean = await mDB.isTableExists(tableName);
-      return Promise.resolve({ result: res });
+      const isTableExistsResult: boolean = await database.isTableExists(tableName);
+      return { result: isTableExistsResult };
     } catch (err) {
-      return Promise.reject(`isTableExists: ${err}`);
+      throw new Error(`isTableExists: ${err}`);
     }
   }
+
   async deleteDatabase(options: capSQLiteOptions): Promise<void> {
-    let keys = Object.keys(options);
-    if (!keys.includes('database')) {
-      return Promise.reject('Must provide a database name');
-    }
-    const dbName: string = options.database;
-    keys = Object.keys(this._dbDict);
-    if (!keys.includes(dbName)) {
-      return Promise.reject(
-        'deleteDatabase: No available connection for ' + `${dbName}`,
-      );
-    }
+    const dbName: string = this.getOptionValue(options, 'database');
+    const database = this.getDatabaseConnectionOrThrowError(dbName);
 
-    const mDB = this._dbDict[dbName];
     try {
-      await mDB.deleteDB(dbName + 'SQLite.db');
-      return Promise.resolve();
+      await database.deleteDB(dbName + 'SQLite.db');
+      return;
     } catch (err) {
-      return Promise.reject(`Delete: ${err}`);
+      throw new Error(`Delete: ${err}`);
     }
   }
+
   async isJsonValid(options: capSQLiteImportOptions): Promise<capSQLiteResult> {
-    const keys = Object.keys(options);
-    if (!keys.includes('jsonstring')) {
-      return Promise.reject('Must provide a json object');
-    }
-    const jsonStrObj: string = options.jsonstring;
-    const jsonObj = JSON.parse(jsonStrObj);
-    const isValid = this._uJson.isJsonSQLite(jsonObj);
+    const jsonString: string = this.getOptionValue(options, 'jsonstring');
+    const jsonObj = JSON.parse(jsonString);
+    const isValid = this.jsonUtil.isJsonSQLite(jsonObj);
+
     if (!isValid) {
-      return Promise.reject('Stringify Json Object not Valid');
+      throw new Error('Stringify Json Object not Valid');
     } else {
-      return Promise.resolve({ result: true });
+      return { result: true };
     }
   }
+
   async importFromJson(
     options: capSQLiteImportOptions,
   ): Promise<capSQLiteChanges> {
-    const keys = Object.keys(options);
-    if (!keys.includes('jsonstring')) {
-      return Promise.reject('Must provide a json object');
-    }
-    const jsonStrObj: string = options.jsonstring;
-    const jsonObj = JSON.parse(jsonStrObj);
-    const isValid = this._uJson.isJsonSQLite(jsonObj);
+    const jsonString: string = this.getOptionValue(options, 'jsonstring');
+
+    const jsonObj = JSON.parse(jsonString);
+    const isValid = this.jsonUtil.isJsonSQLite(jsonObj);
 
     if (!isValid) {
-      return Promise.reject('Must provide a valid JsonSQLite Object');
+      throw new Error('Must provide a valid JsonSQLite Object');
     }
+
     const vJsonObj: JsonSQLite = jsonObj;
     const dbName = `${vJsonObj.database}SQLite.db`;
-    const dbVersion: number = vJsonObj.version ?? 1;
+    const targetDbVersion: number = vJsonObj.version ?? 1;
     const mode: string = vJsonObj.mode;
     const overwrite: boolean = vJsonObj.overwrite ?? false;
     //    const encrypted: boolean = vJsonObj.encrypted ?? false;
     //    const mode: string = encrypted ? 'secret' : 'no-encryption';
 
     // Create the database
-    const mDb: Database = new Database(
+    const database: Database = new Database(
       dbName,
-      /*encrypted, mode, */ dbVersion,
+      /*encrypted, mode, */
+      targetDbVersion,
       {},
     );
+
     try {
       if (overwrite && mode === 'full') {
-        const isExists = this._uFile.isFileExists(dbName);
+        const isExists = this.fileUtil.isFileExists(dbName);
         if (isExists) {
-          await this._uFile.deleteFileName(dbName);
+          await this.fileUtil.deleteFileName(dbName);
         }
       }
       // Open the database
-      await mDb.open();
-      const tableList = await mDb.getTableList();
+      await database.open();
+      const tableList = await database.getTableList();
       if (mode === 'full' && tableList.length > 0) {
-        const curVersion = await mDb.getVersion();
-        if (dbVersion < curVersion) {
-          return Promise.reject(
-            `ImportFromJson: Cannot import a version lower than ${curVersion}`,
+        const currentVersion = await database.getVersion();
+        if (targetDbVersion < currentVersion) {
+          throw new Error(
+            `ImportFromJson: Cannot import a version lower than ${currentVersion}`,
           );
         }
-        if (curVersion === dbVersion) {
-          return Promise.resolve({ changes: { changes: 0 } });
+        if (currentVersion === targetDbVersion) {
+          return { changes: { changes: 0 } };
         }
       }
 
       // Import the JsonSQLite Object
-      const changes = await mDb.importJson(vJsonObj);
+      const changes = await database.importJson(vJsonObj);
       // Close the database
-      await mDb.close();
-      return Promise.resolve({ changes: { changes: changes } });
+      await database.close();
+      return { changes: { changes: changes } };
     } catch (err) {
-      return Promise.reject(`ImportFromJson: ${err}`);
+      throw new Error(`ImportFromJson: ${err}`);
     }
   }
+
   async exportToJson(options: capSQLiteExportOptions): Promise<capSQLiteJson> {
-    let keys = Object.keys(options);
-    if (!keys.includes('database')) {
-      return Promise.reject('Must provide a database name');
-    }
-    if (!keys.includes('jsonexportmode')) {
-      return Promise.reject('Must provide a json export mode');
-    }
-    const dbName: string = options.database;
-    const exportMode: string = options.jsonexportmode;
-    keys = Object.keys(this._dbDict);
-    if (!keys.includes(dbName)) {
-      return Promise.reject(
-        'exportToJson: No available connection for ' + `${dbName}`,
-      );
-    }
-    const mDB = this._dbDict[dbName];
+    const dbName: string = this.getOptionValue(options, 'database');
+    const exportMode: string = this.getOptionValue(options, 'jsonexportmode');
+
+    const database = this.getDatabaseConnectionOrThrowError(dbName);
+
     try {
-      const ret: any = await mDB.exportJson(exportMode);
-      const keys = Object.keys(ret);
-      if (keys.includes('message')) {
-        return Promise.reject(`exportToJson: ${ret.message}`);
+      const exportJsonResult: any = await database.exportJson(exportMode);
+      const resultKeys = Object.keys(exportJsonResult);
+
+      if (resultKeys.includes('message')) {
+        throw new Error(`exportToJson: ${exportJsonResult.message}`);
       } else {
-        return Promise.resolve({ export: ret });
+        return { export: exportJsonResult };
       }
     } catch (err) {
-      return Promise.reject(`exportToJson: ${err}`);
+      throw new Error(`exportToJson: ${err}`);
     }
   }
-  async createSyncTable(options: capSQLiteOptions): Promise<capSQLiteChanges> {
-    let keys = Object.keys(options);
-    if (!keys.includes('database')) {
-      return Promise.reject('Must provide a database name');
-    }
-    const dbName: string = options.database;
-    keys = Object.keys(this._dbDict);
-    if (!keys.includes(dbName)) {
-      return Promise.reject(
-        'CreateSyncTable: No available connection for ' + `${dbName}`,
-      );
-    }
 
-    const mDB = this._dbDict[dbName];
+  async createSyncTable(options: capSQLiteOptions): Promise<capSQLiteChanges> {
+    const dbName: string = this.getOptionValue(options, 'database');
+
+    const database = this.getDatabaseConnectionOrThrowError(dbName);
+
     try {
-      const ret: number = await mDB.createSyncTable();
-      return Promise.resolve({ changes: { changes: ret } });
+      const createTableSyncResult: number = await database.createSyncTable();
+      return {
+        changes: { changes: createTableSyncResult }
+      };
     } catch (err) {
-      return Promise.reject(`createSyncTable: ${err}`);
+      throw new Error(`createSyncTable: ${err}`);
     }
   }
   async setSyncDate(options: capSQLiteSyncDateOptions): Promise<void> {
-    let keys = Object.keys(options);
-    if (!keys.includes('database')) {
-      return Promise.reject('Must provide a database name');
-    }
-    if (!keys.includes('syncdate')) {
-      return Promise.reject('Must provide a synchronization date');
-    }
-    const dbName: string = options.database;
-    const syncDate: string = options.syncdate;
-    keys = Object.keys(this._dbDict);
-    if (!keys.includes(dbName)) {
-      return Promise.reject(
-        `SetSyncDate: No available connection for ${dbName}`,
-      );
-    }
+    const dbName: string = this.getOptionValue(options, 'database');
+    const syncDate: string = this.getOptionValue(options, 'syncdate');
 
-    const mDB = this._dbDict[dbName];
+    const database = this.getDatabaseConnectionOrThrowError(dbName);
+
     try {
-      await mDB.setSyncDate(syncDate);
-      return Promise.resolve();
+      await database.setSyncDate(syncDate);
+      return;
     } catch (err) {
-      return Promise.reject(`SetSyncDate: ${err}`);
+      throw new Error(`SetSyncDate: ${err}`);
     }
   }
-  async getSyncDate(options: capSQLiteOptions): Promise<capSQLiteSyncDate> {
-    let keys = Object.keys(options);
-    if (!keys.includes('database')) {
-      return Promise.reject('Must provide a database name');
-    }
-    const dbName: string = options.database;
-    keys = Object.keys(this._dbDict);
-    if (!keys.includes(dbName)) {
-      return Promise.reject(
-        `GetSyncDate: No available connection for ${dbName}`,
-      );
-    }
 
-    const mDB = this._dbDict[dbName];
+  async getSyncDate(options: capSQLiteOptions): Promise<capSQLiteSyncDate> {
+    const dbName: string = this.getOptionValue(options, 'database');
+    const database = this.getDatabaseConnectionOrThrowError(dbName);
+
     try {
-      const ret: any = await mDB.getSyncDate();
+      const ret: any = await database.getSyncDate();
       return Promise.resolve(ret);
     } catch (err) {
-      return Promise.reject(`GetSyncDate: ${err}`);
+      throw new Error(`GetSyncDate: ${err}`);
     }
   }
   async addUpgradeStatement(options: capSQLiteUpgradeOptions): Promise<void> {
-    let keys = Object.keys(options);
-    if (!keys.includes('database')) {
-      return Promise.reject('Must provide a database name');
-    }
-    if (!keys.includes('upgrade')) {
-      return Promise.reject('Must provide an upgrade statement');
-    }
-    const dbName: string = options.database;
-    const upgrade = options.upgrade[0];
-    keys = Object.keys(upgrade);
+    const dbName: string = this.getOptionValue(options, 'database');
+    const upgrades: capSQLiteVersionUpgrade[] = this.getOptionValue(options, 'upgrade');
+
+    const firstUpgrade = upgrades[0];
+    const versionUpgradeKeys = Object.keys(firstUpgrade);
+
     if (
-      !keys.includes('fromVersion') ||
-      !keys.includes('toVersion') ||
-      !keys.includes('statement')
+      !versionUpgradeKeys.includes('fromVersion') ||
+      !versionUpgradeKeys.includes('toVersion') ||
+      !versionUpgradeKeys.includes('statement')
     ) {
-      return Promise.reject(
+      throw new Error(
         'Must provide an upgrade capSQLiteVersionUpgrade Object',
       );
     }
-    if (typeof upgrade.fromVersion != 'number') {
-      return Promise.reject('ugrade.fromVersion must be a number');
+
+    if (typeof firstUpgrade.fromVersion != 'number') {
+      throw new Error('upgrade.fromVersion must be a number');
     }
-    const upgVDict: Record<number, capSQLiteVersionUpgrade> = {};
-    upgVDict[upgrade.fromVersion] = upgrade;
-    this._versionUpgrades[dbName] = upgVDict;
-    return Promise.resolve();
+
+    const upgradeVersionDict: Record<number, capSQLiteVersionUpgrade> = {};
+    upgradeVersionDict[firstUpgrade.fromVersion] = firstUpgrade;
+    this.versionUpgrades[dbName] = upgradeVersionDict;
+
+    return;
   }
+
   async copyFromAssets(options: capSQLiteFromAssetsOptions): Promise<void> {
-    const keys = Object.keys(options);
-    const mOverwrite = keys.includes('overwrite') ? options.overwrite : true;
+    const overwrite: boolean = this.getOptionValue(options, 'overwrite', false);
 
     // check if the assets/database folder exists
-    const assetsDbPath = this._uFile.getAssetsDatabasesPath();
-    const res: boolean = this._uFile.isPathExists(assetsDbPath);
-    if (res) {
+    const assetsDbPath = this.fileUtil.getAssetsDatabasesPath();
+    const pathExists: boolean = this.fileUtil.isPathExists(assetsDbPath);
+
+    if (pathExists) {
       // get the database files
-      const dbList: string[] = await this._uFile.getFileList(assetsDbPath);
+      const dbList: string[] = await this.fileUtil.getFileList(assetsDbPath);
+
       // loop through the database files
       dbList.forEach(async (db: string) => {
         if (db.substring(db.length - 3) === '.db') {
           // for each copy the file to the Application database folder
-          await this._uFile.copyFromAssetToDatabase(db, mOverwrite);
+          await this.fileUtil.copyFromAssetToDatabase(db, overwrite);
         }
         if (db.substring(db.length - 4) === '.zip') {
-          await this._uFile.unzipDatabase(db, mOverwrite);
+          await this.fileUtil.unzipDatabase(db, overwrite);
         }
       });
-      return Promise.resolve();
+
+      return;
     } else {
-      return Promise.reject(
+      throw new Error(
         'CopyFromAssets: assets/databases folder does not exist',
       );
     }
   }
+
   async getDatabaseList(): Promise<capSQLiteValues> {
     // get the database folder
-    const pathDatabase = this._uFile.getDatabasesPath();
+    const pathDatabase = this.fileUtil.getDatabasesPath();
+
     // get the list of databases
-    const files: string[] = await this._uFile.getFileList(pathDatabase);
+    const files: string[] = await this.fileUtil.getFileList(pathDatabase);
+
     if (files.length > 0) {
-      return Promise.resolve({ values: files });
+      return { values: files };
     } else {
-      return Promise.reject(`isTableExists: No databases found`);
+      throw new Error(`isTableExists: No databases found`);
     }
   }
-  async getMigratableDbList(
-    options: capSQLitePathOptions,
-  ): Promise<capSQLiteValues> {
-    console.log('getCordovaDbList', options);
-    return Promise.reject('Method not implemented.');
-  }
 
-  async addSQLiteSuffix(options: capSQLitePathOptions): Promise<void> {
-    console.log(`${JSON.stringify(options)}`);
-    throw new Error('Method not implemented.');
-  }
-  async deleteOldDatabases(options: capSQLitePathOptions): Promise<void> {
-    console.log(`${JSON.stringify(options)}`);
-    throw new Error('Method not implemented.');
-  }
   async checkConnectionsConsistency(
     options: capAllConnectionsOptions,
   ): Promise<capSQLiteResult> {
-    const keys = Object.keys(options);
-    if (!keys.includes('dbNames')) {
-      return Promise.reject(`Must provide a list of connection's name`);
-    }
-    const dbNames: string[] = options.dbNames;
-    const ret: capSQLiteResult = {} as capSQLiteResult;
-    ret.result = false;
+    const dbNames: string[] = this.getOptionValue(options, 'dbNames');
+
+    const checkConsistencyResult: capSQLiteResult = {} as capSQLiteResult;
+    checkConsistencyResult.result = false;
 
     try {
-      let inConnectionsSet: Set<string> = new Set(Object.keys(this._dbDict));
+      let inConnectionsSet: Set<string> = new Set(Object.keys(this.databases));
       const outConnectionSet: Set<string> = new Set(dbNames);
       if (outConnectionSet.size === 0) {
-        await this.resetDbDict(Object.keys(this._dbDict));
-        return Promise.resolve(ret);
+        await this.resetDbDict(Object.keys(this.databases));
+        return Promise.resolve(checkConsistencyResult);
       }
       if (inConnectionsSet.size < outConnectionSet.size) {
-        await this.resetDbDict(Object.keys(this._dbDict));
-        return Promise.resolve(ret);
+        await this.resetDbDict(Object.keys(this.databases));
+        return Promise.resolve(checkConsistencyResult);
       }
       if (inConnectionsSet.size > outConnectionSet.size) {
         for (const key of inConnectionsSet) {
@@ -753,27 +528,28 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
           }
         }
       }
-      inConnectionsSet = new Set(Object.keys(this._dbDict));
+      inConnectionsSet = new Set(Object.keys(this.databases));
       if (inConnectionsSet.size === outConnectionSet.size) {
-        const symDiffSet = await this.symmetricDifference(
+        const symmetricDifferenceSet = await this.symmetricDifference(
           inConnectionsSet,
           outConnectionSet,
         );
-        if (symDiffSet.size === 0) {
-          ret.result = true;
-          return Promise.resolve(ret);
+        if (symmetricDifferenceSet.size === 0) {
+          checkConsistencyResult.result = true;
+          return checkConsistencyResult;
         } else {
-          await this.resetDbDict(Object.keys(this._dbDict));
-          return Promise.resolve(ret);
+          await this.resetDbDict(Object.keys(this.databases));
+          return checkConsistencyResult;
         }
       } else {
-        await this.resetDbDict(Object.keys(this._dbDict));
-        return Promise.resolve(ret);
+        await this.resetDbDict(Object.keys(this.databases));
+        return checkConsistencyResult;
       }
     } catch (err) {
-      return Promise.reject(`CheckConnectionsConsistency: ${err}`);
+      throw new Error(`CheckConnectionsConsistency: ${err}`);
     }
   }
+
   private async resetDbDict(keys: string[]): Promise<void> {
     try {
       for (const key of keys) {
@@ -782,9 +558,10 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
         await this.closeConnection(opt);
       }
     } catch (err) {
-      return Promise.reject(`ResetDbDict: ${err}`);
+      throw new Error(`ResetDbDict: ${err}`);
     }
   }
+
   private async symmetricDifference(
     setA: Set<string>,
     setB: Set<string>,
@@ -797,6 +574,117 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
         difference.add(elem);
       }
     }
-    return Promise.resolve(difference);
+    return difference;
+  }
+
+  /**
+   * Returns a database connection, if it already exists.
+   * If the conneciton does not exist yet, it throws an error.
+   * 
+   * @param dbName 
+   * @returns 
+   */
+  private getDatabaseConnectionOrThrowError(dbName: string): Database {
+    const databaseNames = Object.keys(this.databases);
+
+    if (!databaseNames.includes(dbName)) {
+      throw new Error(`No connection available for database "${dbName}"`);
+    }
+
+    return this.databases[dbName];
+  }
+
+  /**
+   * Gets the value of an option from the options object.
+   * If the `optionKey` does not exist and there is no `defaultValue` defined, an exception is thrown.
+   * If the `optionKey` does not exust but there is a `defaultValue`, the `defaultValue` is returned.
+   * 
+   * @param options 
+   * @param optionKey 
+   * @param defaultValue 
+   * @returns 
+   */
+  private getOptionValue(options: { [optionKey: string]: any }, optionKey: string, defaultValue: any = undefined): any {
+    const optionKeys = Object.keys(options);
+
+    if (!optionKeys.includes(optionKey)) {
+      if (defaultValue === undefined) {
+        throw new Error(`Must provide "${optionKey}" in options.`);
+      } else {
+        return defaultValue;
+      }
+    }
+
+    return options[optionKey];
+  }
+
+
+  ////////////////////////////////
+  //// UNIMPLEMENTED MTEHODS
+  ////////////////////////////////
+
+  async getMigratableDbList(
+    options: capSQLitePathOptions,
+  ): Promise<capSQLiteValues> {
+    console.log('getCordovaDbList', options);
+    throw new Error('Method not implemented.');
+  }
+
+  async addSQLiteSuffix(options: capSQLitePathOptions): Promise<void> {
+    console.log(`${JSON.stringify(options)}`);
+    throw new Error('Method not implemented.');
+  }
+  async deleteOldDatabases(options: capSQLitePathOptions): Promise<void> {
+    console.log(`${JSON.stringify(options)}`);
+    throw new Error('Method not implemented.');
+  }
+
+  async getUrl(): Promise<capSQLiteUrl> {
+    throw new Error('Method not implemented.');
+  }
+
+  async initWebStore(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+
+  async saveToStore(options: capSQLiteOptions): Promise<void> {
+    console.log(`${JSON.stringify(options)}`);
+    throw new Error('Method not implemented.');
+  }
+
+  async isSecretStored(): Promise<capSQLiteResult> {
+    throw new Error('Method not implemented.');
+  }
+
+  async setEncryptionSecret(options: capSetSecretOptions): Promise<void> {
+    console.log(`${JSON.stringify(options)}`);
+    throw new Error('Method not implemented.');
+  }
+
+  async changeEncryptionSecret(options: capChangeSecretOptions): Promise<void> {
+    console.log(`${JSON.stringify(options)}`);
+    throw new Error('Method not implemented.');
+  }
+
+  async getNCDatabasePath(
+    options: capNCDatabasePathOptions,
+  ): Promise<capNCDatabasePathResult> {
+    console.log('getNCDatabasePath', options);
+    throw new Error('Method not implemented.');
+  }
+
+  async createNCConnection(options: capNCConnectionOptions): Promise<void> {
+    console.log('createNCConnection', options);
+    throw new Error('Method not implemented.');
+  }
+
+  async closeNCConnection(options: capNCOptions): Promise<void> {
+    console.log('closeNCConnection', options);
+    throw new Error('Method not implemented.');
+  }
+
+  async isNCDatabase(options: capNCOptions): Promise<capSQLiteResult> {
+    console.log('isNCDatabase', options);
+    throw new Error('Method not implemented.');
   }
 }
