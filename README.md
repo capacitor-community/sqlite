@@ -16,7 +16,7 @@
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/dw/@capacitor-community/sqlite?style=flat-square" /></a>
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/v/@capacitor-community/sqlite?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-<a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-14-orange?style=flat-square" /></a>
+<a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-16-orange?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 </p>
 
@@ -428,6 +428,8 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/joewoodhouse"><img src="https://avatars.githubusercontent.com/u/3168135?v=4" width="100px;" alt=""/><br /><sub><b>Joe Woodhouse</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=joewoodhouse" title="Documentation">📖</a></td>
     <td align="center"><a href="https://github.com/ptasheq"><img src="https://avatars.githubusercontent.com/u/3025106?v=4" width="100px;" alt=""/><br /><sub><b>Ptasheq</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=ptasheq" title="Documentation">📖</a></td>  
     <td align="center"><a href="https://github.com/victorybiz"><img src="https://avatars.githubusercontent.com/u/8276466?v=4" width="100px;" alt=""/><br /><sub><b>Victory Osayi</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=victorybiz" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/tobiasmuecksch"><img src="https://avatars.githubusercontent.com/u/1294854?v=4" width="100px;" alt=""/><br /><sub><b>Tobias Mücksch</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=tobiasmuecksch" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/dragermrb"><img src="https://avatars.githubusercontent.com/u/11479696?v=4" width="100px;" alt=""/><br /><sub><b>Manuel Rodríguez</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=dragermrb" title="Code">💻</a></td>
   </tr>
 </table>
 

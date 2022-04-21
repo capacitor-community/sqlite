@@ -1,3 +1,17 @@
+# 3.4.3-1 (2022-04-21)
+
+### Chore
+
+ - Update to @capacitor/core 3.4.3
+ - Update to @capacitor/ios 3.4.3
+ - Update to @capacitor/android 3.4.3
+
+### Bug Fixes
+
+ - Fix Upgrade Database Version, another table already exists issue#263
+ - Improve Electron code visibility
+ - Upgrade TypeORM-Usage.md
+
 # 3.4.2 (2022-04-08)
 
 ### Bug Fixes

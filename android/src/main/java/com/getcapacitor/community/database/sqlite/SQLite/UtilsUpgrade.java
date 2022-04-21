@@ -150,15 +150,15 @@ public class UtilsUpgrade {
 
             // -> Update the new table's data from old table's data
             updateNewTablesData(db);
-
+        } catch (Exception e) {
+            throw new Exception("Error: executeStatementProcess " + " failed " + e);
+        } finally {
             // -> Drop _temp_tables
             _uDrop.dropTempTables(db, _alterTables);
 
             // -> Do some cleanup
             _alterTables = new Hashtable<>();
             _commonColumns = new Hashtable<>();
-        } catch (Exception e) {
-            throw new Exception("Error: executeStatementProcess " + " failed " + e);
         }
     }
 
@@ -194,9 +194,13 @@ public class UtilsUpgrade {
             // get the column's name
             List<String> colNames = getColumnNames(db, table);
             _alterTables.put(table, colNames);
+            // Delete _temp_table if exists
+            String tmpTable = "_temp_" + table;
+            String delStmt = "DROP TABLE IF EXISTS " + tmpTable + ";";
+            db.runSQL(delStmt, new ArrayList<>());
             // prefix the table with _temp_
             String stmt = "ALTER TABLE " + table + " RENAME ";
-            stmt += "TO _temp_" + table + ";";
+            stmt += "TO " + tmpTable + ";";
             JSObject ret = db.runSQL(stmt, new ArrayList<>());
             long lastId = ret.getLong("lastId");
             if (lastId == -1) {

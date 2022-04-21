@@ -22,7 +22,7 @@ enum UtilsUpgradeError: Error {
     case executeStatementProcessFailed(message: String)
     case executeSetProcessFailed(message: String)
 }
-
+// swiftlint:disable file_length
 // swiftlint:disable type_body_length
 class UtilsUpgrade {
     let utilsDrop: UtilsDrop = UtilsDrop()
@@ -88,6 +88,13 @@ class UtilsUpgrade {
             if statement.count > 0 {
                 _ = try executeStatementProcess(mDB: mDB,
                                                 statement: statement)
+                // -> Drop _temp_tables
+                _ = try UtilsDrop
+                    .dropTempTables(mDB: mDB,
+                                    alterTables: self.alterTables)
+                // -> Do some cleanup
+                self.alterTables = [:]
+                self.commonColumns = [:]
 
                 // here we assume that the Set contains only
                 //  - the data for new tables as INSERT statements
@@ -116,6 +123,25 @@ class UtilsUpgrade {
             throw UtilsUpgradeError.onUpgradeFailed(message: msg)
         } catch UtilsUpgradeError.executeStatementProcessFailed(
                     let message) {
+            var msg: String = message
+            do {
+                // -> Drop _temp_tables
+                _ = try UtilsDrop
+                    .dropTempTables(mDB: mDB,
+                                    alterTables: self.alterTables)
+                // -> Do some cleanup
+                self.alterTables = [:]
+                self.commonColumns = [:]
+
+            } catch UtilsDropError.dropTempTablesFailed(let message) {
+                msg += ": \(message)"
+                throw UtilsUpgradeError.onUpgradeFailed(
+                    message: message)
+            }
+
+            throw UtilsUpgradeError.onUpgradeFailed(
+                message: message)
+        } catch UtilsDropError.dropTempTablesFailed(let message) {
             throw UtilsUpgradeError.onUpgradeFailed(
                 message: message)
         } catch UtilsUpgradeError.executeSetProcessFailed(
@@ -194,6 +220,7 @@ class UtilsUpgrade {
     throws {
         var changes: Int = -1
         do {
+
             // -> backup all existing tables  "tableName" in
             //    "temp_tableName"
             _ = try backupTables(mDB: mDB)
@@ -216,13 +243,6 @@ class UtilsUpgrade {
             // -> Update the new table's data from old table's data
             _ = try updateNewTablesData(mDB: mDB)
 
-            // -> Drop _temp_tables
-            _ = try UtilsDrop
-                .dropTempTables(mDB: mDB,
-                                alterTables: self.alterTables)
-            // -> Do some cleanup
-            self.alterTables = [:]
-            self.commonColumns = [:]
         } catch UtilsUpgradeError.backupTablesFailed(let message) {
             throw UtilsUpgradeError.executeStatementProcessFailed(
                 message: message)
@@ -241,9 +261,6 @@ class UtilsUpgrade {
                 message: message)
         } catch UtilsUpgradeError.updateNewTablesDataFailed(
                     let message) {
-            throw UtilsUpgradeError.executeStatementProcessFailed(
-                message: message)
-        } catch UtilsDropError.dropTempTablesFailed(let message) {
             throw UtilsUpgradeError.executeStatementProcessFailed(
                 message: message)
         }
@@ -276,9 +293,12 @@ class UtilsUpgrade {
             columnNames = try getTableColumnNames(mDB: mDB,
                                                   tableName: tableName)
             alterTables["\(tableName)"] = columnNames
+            let tmpTable = "_temp_\(tableName)"
+            let delStmt: String  = "DROP TABLE IF EXISTS \(tmpTable);"
+            _ = try mDB.runSQL(sql: delStmt, values: [])
             // prefix the table with _temp_
             var stmt: String = "ALTER TABLE \(tableName) RENAME "
-            stmt.append("TO _temp_\(tableName);")
+            stmt.append("TO \(tmpTable);")
             let retRun: [String: Int64] = try mDB.runSQL(
                 sql: stmt, values: [])
             guard let changes: Int64 = retRun["changes"] else {
@@ -392,3 +412,4 @@ class UtilsUpgrade {
     }
 }
 // swiftlint:enable type_body_length
+// swiftlint:enable file_length
