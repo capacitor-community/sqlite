@@ -937,6 +937,31 @@ public class CapacitorSQLitePlugin: CAPPlugin {
 
     }
 
+    // MARK: - DeleteExportedRows
+
+    @objc func deleteExportedRows(_ call: CAPPluginCall) {
+        guard let dbName = call.options["database"]
+                as? String else {
+            let msg = "DeleteExportedRows: Must provide a database name"
+            retHandler.rResult(call: call, message: msg)
+            return
+        }
+        do {
+            try implementation?.deleteExportedRows(dbName)
+            retHandler.rResult(call: call)
+            return
+        } catch CapacitorSQLiteError.failed(let message) {
+            let msg = "exportToJson: \(message)"
+            retHandler.rResult(call: call, message: msg)
+            return
+        } catch let error {
+            let msg = "exportToJson: \(error)"
+            retHandler.rResult(call: call, message: msg)
+            return
+        }
+
+    }
+
     // MARK: - CreateSyncTable
 
     @objc func createSyncTable(_ call: CAPPluginCall) {

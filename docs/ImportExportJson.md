@@ -27,6 +27,39 @@
 
 All the methods below give you all the bits and pieces to manage in your application the synchronization of SQL databases between a remote server and the mobile device. It can also be used for upgrading the schema of databases by exporting the current database to json, make the schema modifications in the json object and importing it back with the mode "full".
 
+🚨 Release 3.4.3-2 Web, iOS & Android only ->> 🚨
+
+The main change is related to the delete table's rows when a synchronization table exists as well as a last_mofidied table's column, allowing for database synchronization of the local database with a remote server database.
+
+- All existing triggers to YOUR_TABLE_NAME_trigger_last_modified must be modified as follows
+  ```
+  CREATE TRIGGER YOUR_TABLE_NAME_trigger_last_modified
+    AFTER UPDATE ON YOUR_TABLE_NAME
+    FOR EACH ROW WHEN NEW.last_modified < OLD.last_modified
+    BEGIN
+        UPDATE YOUR_TABLE_NAME SET last_modified= (strftime('%s', 'now')) WHERE id=OLD.id;
+    END;
+  ```
+- an new column `sql_deleted` must be added to each of your tables as
+  ```
+  sql_deleted BOOLEAN DEFAULT 0 CHECK (sql_deleted IN (0, 1))
+  ```
+  This column will be autommatically set to 1 when you will use a `DELETE FROM ...` sql statement in the `execute`, `run` or `executeSet` methods.
+
+- In the JSON object that you provide to `importFromJson`, all the deleted rows in your remote server database's tables must have the `sql_deleted` column set to 1. This will indicate to the import process to physically delete the corresponding rows in your local database. All the others rows must have the `sql_deleted` column set to 0. 
+
+- In the JSON object outputs by the `exportToJson`, all the deleted rows in your local database have got the `sql_deleted` column set to 1 to help in your synchronization management process with the remote server database. A system `last_exported_date` is automatically saved in the synchronization table at the start of the export process flow.
+
+- On successfull completion of your synchronization management process with the remote server database, you must 
+  - Set a new synchronization date (as `(new Date()).toISOString()`) with the `setSyncDate` method.
+  - Execute the `deleteExportedRows` method which physically deletes all table's rows having 1 as value for the `sql_deleted` column prior to the `last_exported_date` in your local database.
+
+An example of using this new feature is given in [solidjs-vite-sqlite-app](https://github.com/jepiqueau/capacitor-solid-sqlite). It has been used to test the validity of the implementation.
+
+
+🚨 Release 3.4.3-2 <<- 🚨
+
+
 ### importFromJson
 
 This method allow to create a database from a JSON Object.
@@ -199,7 +232,8 @@ const dataToImport: jsonSQLite = {
         { column: 'email', value: 'TEXT UNIQUE NOT NULL' },
         { column: 'name', value: 'TEXT' },
         { column: 'age', value: 'INTEGER' },
-        { column: 'last_modified', value: 'INTEGER' },
+        {column:"sql_deleted", value:"BOOLEAN DEFAULT 0 CHECK (sql_deleted IN (0, 1))"},
+        {column:"last_modified", value:"INTEGER DEFAULT (strftime('%s', 'now'))"}
       ],
       indexes: [
         { name: 'index_user_on_name', value: 'name' },
@@ -211,10 +245,10 @@ const dataToImport: jsonSQLite = {
         },
       ],
       values: [
-        [1, 'Whiteley.com', 'Whiteley', 30, 1582536810],
-        [2, 'Jones.com', 'Jones', 44, 1582812800],
-        [3, 'Simpson@example.com', 'Simpson', 69, 1583570630],
-        [4, 'Brown@example.com', 'Brown', 15, 1590383895],
+        [1, 'Whiteley.com', 'Whiteley', 30, 0, 1582536810],
+        [2, 'Jones.com', 'Jones', 44, 0, 1582812800],
+        [3, 'Simpson@example.com', 'Simpson', 69, 0, 1583570630],
+        [4, 'Brown@example.com', 'Brown', 15, 0, 1590383895],
       ],
     },
     {
@@ -224,7 +258,8 @@ const dataToImport: jsonSQLite = {
         { column: 'userid', value: 'INTEGER' },
         { column: 'title', value: 'TEXT NOT NULL' },
         { column: 'body', value: 'TEXT NOT NULL' },
-        { column: 'last_modified', value: 'INTEGER' },
+        {column:"sql_deleted", value:"BOOLEAN DEFAULT 0 CHECK (sql_deleted IN (0, 1))"},
+        {column:"last_modified", value:"INTEGER DEFAULT (strftime('%s', 'now'))"},
         {
           foreignkey: 'userid',
           value: 'REFERENCES users(id) ON DELETE CASCADE',
@@ -238,9 +273,9 @@ const dataToImport: jsonSQLite = {
         },
       ],
       values: [
-        [1, 1, 'test post 1', 'content test post 1', 1587310030],
-        [2, 2, 'test post 2', 'content test post 2', 1590388125],
-        [3, 1, 'test post 3', 'content test post 3', 1590383895],
+        [1, 1, 'test post 1', 'content test post 1', 0, 1587310030],
+        [2, 2, 'test post 2', 'content test post 2', 0, 1590388125],
+        [3, 1, 'test post 3', 'content test post 3', 0, 1590383895],
       ],
     },
     {
@@ -251,14 +286,15 @@ const dataToImport: jsonSQLite = {
         { column: 'type', value: 'TEXT NOT NULL' },
         { column: 'size', value: 'INTEGER' },
         { column: 'img', value: 'BLOB' },
-        { column: 'last_modified', value: 'INTEGER' },
+        {column:"sql_deleted", value:"BOOLEAN DEFAULT 0 CHECK (sql_deleted IN (0, 1))"},
+        {column:"last_modified", value:"INTEGER DEFAULT (strftime('%s', 'now'))"}
       ],
       indexes: [
         { name: 'index_images_on_last_modified', value: 'last_modified DESC' },
       ],
       values: [
-        [1, 'meowth', 'png', 'NULL', Images[0], 1590388825],
-        [2, 'feather', 'png', 'NULL', Images[1], 1590389895],
+        [1, 'meowth', 'png', 'NULL', Images[0], 0, 1590388825],
+        [2, 'feather', 'png', 'NULL', Images[1], 0, 1590389895],
       ],
     },
   ],
@@ -292,7 +328,8 @@ const dataToImport1: jsonSQLite = {
         { column: 'email', value: 'TEXT UNIQUE NOT NULL' },
         { column: 'name', value: 'TEXT' },
         { column: 'age', value: 'INTEGER' },
-        { column: 'last_modified', value: 'INTEGER' },
+        {column:"sql_deleted", value:"BOOLEAN DEFAULT 0 CHECK (sql_deleted IN (0, 1))"},
+        {column:"last_modified", value:"INTEGER DEFAULT (strftime('%s', 'now'))"}
       ],
       indexes: [
         { name: 'index_user_on_name', value: 'name' },
@@ -311,7 +348,8 @@ const dataToImport1: jsonSQLite = {
         { column: 'userid', value: 'INTEGER' },
         { column: 'title', value: 'TEXT NOT NULL' },
         { column: 'body', value: 'TEXT NOT NULL' },
-        { column: 'last_modified', value: 'INTEGER' },
+        {column:"sql_deleted", value:"BOOLEAN DEFAULT 0 CHECK (sql_deleted IN (0, 1))"},
+        {column:"last_modified", value:"INTEGER DEFAULT (strftime('%s', 'now'))"},
         {
           foreignkey: 'userid',
           value: 'REFERENCES users(id) ON DELETE CASCADE',
@@ -340,18 +378,18 @@ const dataToImport2: jsonSQLite = {
     {
       name: 'users',
       values: [
-        [1, 'Whiteley.com', 'Whiteley', 30, 1582536810],
-        [2, 'Jones.com', 'Jones', 44, 1582812800],
-        [3, 'Simpson@example.com', 'Simpson', 69, 1583570630],
-        [4, 'Brown@example.com', 'Brown', 15, 1590383895],
+        [1, 'Whiteley.com', 'Whiteley', 30, 0, 1582536810],
+        [2, 'Jones.com', 'Jones', 44, 0, 1582812800],
+        [3, 'Simpson@example.com', 'Simpson', 69, 0, 1583570630],
+        [4, 'Brown@example.com', 'Brown', 15, 0, 1590383895],
       ],
     },
     {
       name: 'messages',
       values: [
-        [1, 1, 'test post 1', 'content test post 1', 1587310030],
-        [2, 2, 'test post 2', 'content test post 2', 1590388125],
-        [3, 1, 'test post 3', 'content test post 3', 1590383895],
+        [1, 1, 'test post 1', 'content test post 1', 0, 1587310030],
+        [2, 2, 'test post 2', 'content test post 2', 0, 1590388125],
+        [3, 1, 'test post 3', 'content test post 3', 0, 1590383895],
       ],
     },
   ],
@@ -370,9 +408,10 @@ const partialImport1: any = {
         {
           name: "users",
           values: [
-              [5,"Addington.com","Addington",22,1601972413],
-              [6,"Bannister.com","Bannister",59,1601983245],
-              [2,"Jones@example.com","Jones",45,1601995473],
+              [5,"Addington.com","Addington",22,0,1601972413],
+              [6,"Bannister.com","Bannister",59,0,1601983245],
+              [2,"Jones@example.com","Jones",45,0,1601995473],
+              [1, 'Whiteley.com', 'Whiteley', 30, 1, 1601995520],
           ]
         },
         {
@@ -381,9 +420,11 @@ const partialImport1: any = {
               {name: "index_messages_on_title", value: "title"}
           ],
           values: [
-              [4,1"test post 4","content test post 4",1601983742],
-              [5,6,"test post 5","content test post 5",1601992872]
-          ]
+              [4,2,"test post 4","content test post 4",0,1601983742],
+              [5,6,"test post 5","content test post 5",0,1601992872]
+              [1,1,'test post 1', 'content test post 1',1,1601995520],
+              [3,1,'test post 3', 'content test post 3',1,1601995520],
+         ]
         },
         {
           name: 'fruits',
@@ -391,16 +432,17 @@ const partialImport1: any = {
             { column: 'id', value: 'INTEGER PRIMARY KEY NOT NULL' },
             { column: 'name', value: 'TEXT UNIQUE NOT NULL' },
             { column: 'weight', value: 'REAL' },
-            { column:"last_modified", value:"INTEGER"},
+            {column:"sql_deleted", value:"BOOLEAN DEFAULT 0 CHECK (sql_deleted IN (0, 1))"},
+            {column:"last_modified", value:"INTEGER DEFAULT (strftime('%s', 'now'))"}
           ],
           indexes: [
             { name: 'index_fruits_on_name', value: 'name' },
             { name: "index_fruits_on_last_modified",value: "last_modified DESC"},
           ],
           values: [
-            [1, 'orange', 200.3,1601995573],
-            [2, 'apple', 450.0,1601995573],
-            [2, 'banana', 120.5,1601995573],
+            [1, 'orange', 200.3,0,1601995573],
+            [2, 'apple', 450.0,0,1601995573],
+            [2, 'banana', 120.5,0,1601995573],
           ],
         },
         {
@@ -411,7 +453,8 @@ const partialImport1: any = {
             { column: 'age', value: 'INTEGER NOT NULL' },
             { column: 'address', value: 'TEXT' },
             { column: 'salary', value: 'REAL'},
-            { column: "last_modified", value: "INTEGER"},
+            {column:"sql_deleted", value:"BOOLEAN DEFAULT 0 CHECK (sql_deleted IN (0, 1))"},
+            {column:"last_modified", value:"INTEGER DEFAULT (strftime('%s', 'now'))"},
             { constraint: 'PK_id_name', value: 'PRIMARY KEY (id,name)'},
           ],
         },
@@ -436,16 +479,17 @@ export const dataToImport59: any = {
         { column: 'code', value: 'TEXT' },
         { column: 'language', value: 'TEXT' },
         { column: 'phone_code', value: 'TEXT' },
-        { column: 'last_modified', value: 'INTEGER' },
+        {column:"sql_deleted", value:"BOOLEAN DEFAULT 0 CHECK (sql_deleted IN (0, 1))"},
+        {column:"last_modified", value:"INTEGER DEFAULT (strftime('%s', 'now'))"}
       ],
       indexes: [
         { name: 'index_country_on_name', value: 'name', mode: 'UNIQUE' },
         { name: 'index_country_on_last_modified', value: 'last_modified DESC' },
       ],
       values: [
-        ['3', 'Afghanistan', 'AF', 'fa', '93', 1608216034],
-        ['6', 'Albania', 'AL', 'sq', '355', 1608216034],
-        ['56', 'Algeria', 'DZ', 'ar', '213', 1608216034],
+        ['3', 'Afghanistan', 'AF', 'fa', '93', 0, 1608216034],
+        ['6', 'Albania', 'AL', 'sq', '355', 0, 1608216034],
+        ['56', 'Algeria', 'DZ', 'ar', '213', 0, 1608216034],
       ],
     },
     {
@@ -465,7 +509,8 @@ export const dataToImport59: any = {
         { column: 'organization', value: 'TEXT' },
         { column: 'comment_id', value: 'TEXT' },
         { column: 'country_id', value: 'TEXT NOT NULL' },
-        { column: 'last_modified', value: 'INTEGER' },
+        {column:"sql_deleted", value:"BOOLEAN DEFAULT 0 CHECK (sql_deleted IN (0, 1))"},
+        {column:"last_modified", value:"INTEGER DEFAULT (strftime('%s', 'now'))"},
         {
           foreignkey: 'country_id',
           value: 'REFERENCES countries(id) ON DELETE CASCADE',
@@ -502,6 +547,7 @@ export const dataToImport59: any = {
           '1',
           'NULL',
           '3',
+          0,
           1608216040,
         ],
         [
@@ -519,6 +565,7 @@ export const dataToImport59: any = {
           '2',
           'NULL',
           '6',
+          0,
           1608216040,
         ],
       ],
@@ -541,16 +588,17 @@ export const dataToImport167: any = {
       schema: [
         {column: "id", value: "INTEGER PRIMARY KEY AUTOINCREMENT" },
         {column: "name", value: "TEXT NOT NULL" },
-        {column:"last_modified", value:"INTEGER"}
+        {column:"sql_deleted", value:"BOOLEAN DEFAULT 0 CHECK (sql_deleted IN (0, 1))"},
+        {column:"last_modified", value:"INTEGER DEFAULT (strftime('%s', 'now'))"}
       ],
       indexes: [
         {name: "index_departments_on_last_modified",value: "last_modified DESC"}
       ],
       values: [
-        [1,"Admin",1608216034],
-        [2,"Sales",1608216034],
-        [3,"Quality Control",1608216034],
-        [4,"Marketing",1608216034],
+        [1,"Admin",0,1608216034],
+        [2,"Sales",0,1608216034],
+        [3,"Quality Control",0,1608216034],
+        [4,"Marketing",0,1608216034],
       ]
     },
     {
@@ -561,23 +609,24 @@ export const dataToImport167: any = {
         {column: "last_name", value: "TEXT" },
         {column: "salary", value: "NUMERIC" },
         {column: "dept_id", value: "INTEGER" },
-        {column: "last_modified", value: "INTEGER"}
+        {column:"sql_deleted", value:"BOOLEAN DEFAULT 0 CHECK (sql_deleted IN (0, 1))"},
+        {column:"last_modified", value:"INTEGER DEFAULT (strftime('%s', 'now'))"}
       ],
       indexes: [
         {name: "index_departments_on_last_modified",value: "last_modified DESC"}
       ],
       values: [
-        [1,"John","Brown",27500,1,1608216034],
-        [2,"Sally","Brown",37500,2,1608216034],
-        [3,'Vinay','Jariwala', 35100,3,1608216034],
-        [4,'Jagruti','Viras', 9500,2,1608216034],
-        [5,'Shweta','Rana',12000,3,1608216034],
-        [6,'sonal','Menpara', 13000,1,1608216034],
-        [7,'Yamini','Patel', 10000,2,1608216034],
-        [8,'Khyati','Shah', 50000,3,1608216034],
-        [9,'Shwets','Jariwala',19400,2,1608216034],
-        [10,'Kirk','Douglas',36400,4,1608216034],
-        [11,'Leo','White',45000,4,1608216034],
+        [1,"John","Brown",27500,1,0,1608216034],
+        [2,"Sally","Brown",37500,2,0,1608216034],
+        [3,'Vinay','Jariwala', 35100,3,0,1608216034],
+        [4,'Jagruti','Viras', 9500,2,0,1608216034],
+        [5,'Shweta','Rana',12000,3,0,1608216034],
+        [6,'sonal','Menpara', 13000,1,0,1608216034],
+        [7,'Yamini','Patel', 10000,2,0,1608216034],
+        [8,'Khyati','Shah', 50000,3,0,1608216034],
+        [9,'Shwets','Jariwala',19400,2,0,1608216034],
+        [10,'Kirk','Douglas',36400,4,0,1608216034],
+        [11,'Leo','White',45000,4,0,1608216034],
       ],
     }
   ],
@@ -621,7 +670,8 @@ export const schemaToImport179 = {
           { column: 'albumartist', value: 'TEXT NOT NULL' },
           { column: 'albumname', value: 'TEXT NOT NULL' },
           { column: 'albumcover', value: 'BINARY' },
-          { column: 'last_modified', value: 'INTEGER' },
+          {column:"sql_deleted", value:"BOOLEAN DEFAULT 0 CHECK (sql_deleted IN (0, 1))"},
+          {column:"last_modified", value:"INTEGER DEFAULT (strftime('%s', 'now'))"}
           { constraint: 'PK_albumartist_albumname', value: 'PRIMARY KEY (albumartist,albumname)'},
         ],
         indexes: [
@@ -636,7 +686,8 @@ export const schemaToImport179 = {
           { column: 'songartist', value: 'TEXT NOT NULL' },
           { column: 'songalbum', value: 'TEXT NOT NULL' },
           { column: 'songname', value: 'TEXT NOT NULL' },
-          { column: 'last_modified', value: 'INTEGER' },
+          {column:"sql_deleted", value:"BOOLEAN DEFAULT 0 CHECK (sql_deleted IN (0, 1))"},
+          {column:"last_modified", value:"INTEGER DEFAULT (strftime('%s', 'now'))"},
           {
             foreignkey: 'songartist,songalbum',
             value: 'REFERENCES album(albumartist,albumname)',
@@ -672,13 +723,14 @@ const dataToImportFull71: any = {
               {column:'country', value:'CHARACTER(20)'},
               {column:'salary', value:'DECIMAL(10,3)'},
               {column:'manager', value:'BOOLEAN DEFAULT 0 CHECK (manager IN (0, 1))'},
-              {column:'last_modified', value:'INTEGER'},
+              {column:"sql_deleted", value:"BOOLEAN DEFAULT 0 CHECK (sql_deleted IN (0, 1))"},
+              {column:"last_modified", value:"INTEGER DEFAULT (strftime('%s', 'now'))"},
               {constraint:'PK_name_country', value:'PRIMARY KEY (name,country)'}
           ],
           values: [
-              [1,'Jones',55,'Australia',1250,1,1608216034],
-              [2,'Lawson',32,'Ireland',2345.60,0,1608216034],
-              [3,'Bush',44,'USA',1850.10,0,1608216034],
+              [1,'Jones',55,'Australia',1250,1,0,1608216034],
+              [2,'Lawson',32,'Ireland',2345.60,0,0,1608216034],
+              [3,'Bush',44,'USA',1850.10,0,0,1608216034],
           ]
       },
   ]

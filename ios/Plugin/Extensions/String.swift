@@ -27,4 +27,12 @@ extension String {
         let stopIndex = self.index(self.startIndex, offsetBy: toIdx)
         return self[startIndex..<stopIndex]
     }
+    public func deletingPrefix(_ prefix: String) -> String {
+        guard self.hasPrefix(prefix) else { return self }
+        return String(self.dropFirst(prefix.count))
+    }
+    public func trimmingLeadingAndTrailingSpaces(using characterSet: CharacterSet = .whitespacesAndNewlines) -> String {
+        return trimmingCharacters(in: characterSet)
+    }
+
 }

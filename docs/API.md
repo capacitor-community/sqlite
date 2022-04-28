@@ -140,6 +140,7 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 * [`createSyncTable(...)`](#createsynctable)
 * [`setSyncDate(...)`](#setsyncdate)
 * [`getSyncDate(...)`](#getsyncdate)
+* [`deleteExportedRows(...)`](#deleteexportedrows)
 * [`addUpgradeStatement(...)`](#addupgradestatement)
 * [`copyFromAssets(...)`](#copyfromassets)
 * [`getDatabaseList()`](#getdatabaselist)
@@ -306,7 +307,8 @@ Echo a given string
 open(options: capSQLiteOptions) => Promise<void>
 ```
 
-Open a SQLite database
+Opens a SQLite database.
+Attention: This re-opens a database if it's already open!
 
 | Param         | Type                                                          | Description                                        |
 | ------------- | ------------------------------------------------------------- | -------------------------------------------------- |
@@ -649,6 +651,23 @@ Get the synchronization date
 **Returns:** <code>Promise&lt;<a href="#capsqlitesyncdate">capSQLiteSyncDate</a>&gt;</code>
 
 **Since:** 2.9.0
+
+--------------------
+
+
+### deleteExportedRows(...)
+
+```typescript
+deleteExportedRows(options: capSQLiteOptions) => Promise<void>
+```
+
+Remove rows with sql_deleted = 1 after an export
+
+| Param         | Type                                                          |
+| ------------- | ------------------------------------------------------------- |
+| **`options`** | <code><a href="#capsqliteoptions">capSQLiteOptions</a></code> |
+
+**Since:** 3.4.3-2
 
 --------------------
 

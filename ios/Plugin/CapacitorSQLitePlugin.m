@@ -24,6 +24,7 @@ CAP_PLUGIN(CapacitorSQLitePlugin, "CapacitorSQLite",
            CAP_PLUGIN_METHOD(importFromJson, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(isJsonValid, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(exportToJson, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(deleteExportedRows, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(createSyncTable, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(setSyncDate, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(getSyncDate, CAPPluginReturnPromise);

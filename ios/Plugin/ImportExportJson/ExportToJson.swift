@@ -27,6 +27,10 @@ enum ExportToJsonError: Error {
     case createRowValues(message: String)
     case modEmbeddedParentheses(message: String)
     case getViews(message: String)
+    case setLastExportDate(message: String)
+    case getLastExportDate(message: String)
+    case delExportedRows(message: String)
+
 }
 var REALAFFINITY: [String] = ["REAL", "DOUBLE", "DOUBLE PRECISION", "FLOAT"]
 var INTEGERAFFINITY: [String] = ["INTEGER", "INT", "TINYINT", "SMALLINT",
@@ -45,6 +49,124 @@ class ExportToJson {
         let vId: [String: Any] = ["progress": message ]
         NotificationCenter.default.post(name: .exportJsonProgress, object: nil,
                                         userInfo: vId)
+    }
+
+    // MARK: - ExportToJson - GetLastExportDate
+
+    class func getLastExportDate(mDB: Database) throws -> Int64 {
+        var ret: Int64 = -1
+        let query: String = "SELECT sync_date FROM sync_table WHERE id = 2;"
+        do {
+            let isExists: Bool = try UtilsJson.isTableExists(
+                mDB: mDB, tableName: "sync_table")
+            if isExists {
+                var resSyncDate =  try UtilsSQLCipher.querySQL(
+                    mDB: mDB, sql: query, values: [])
+                if resSyncDate.count > 1 {
+                    resSyncDate.removeFirst()
+                    guard let res: Int64 = resSyncDate[0]["sync_date"] as?
+                            Int64 else {
+                        throw ExportToJsonError.getLastExportDate(
+                            message: "Error get sync date failed")
+                    }
+                    if res > 0 {ret = res}
+                }
+            } else {
+                let msg = "No sync_table available"
+                throw ExportToJsonError.getLastExportDate(message: msg)
+            }
+        } catch UtilsJsonError.tableNotExists(let message) {
+            throw ExportToJsonError.getLastExportDate(message: message)
+        } catch UtilsSQLCipherError.querySQL(let message) {
+            throw ExportToJsonError.getLastExportDate(
+                message: "Error get last export date failed : \(message)")
+        }
+        return ret
+
+    }
+
+    // MARK: - ExportToJson - SetLastExportDate
+
+    class func setLastExportDate(mDB: Database, sTime: Int) throws {
+        do {
+            let isExists: Bool = try UtilsJson.isTableExists(
+                mDB: mDB, tableName: "sync_table")
+            if !isExists {
+                let msg = "No sync_table available"
+                throw ExportToJsonError.setLastExportDate(message: msg)
+            }
+            var stmt: String = ""
+            let res = try getLastExportDate(mDB: mDB)
+            if res > 0 {
+                stmt = "UPDATE sync_table SET sync_date = \(sTime) " +
+                    "WHERE id = 2;"
+            } else {
+                stmt = "INSERT INTO sync_table (sync_date) VALUES (\(sTime));"
+            }
+            let lastId: Int64 = try UtilsSQLCipher.prepareSQL(
+                mDB: mDB, sql: stmt, values: [], fromJson: false)
+            if lastId < 0 {
+                throw ExportToJsonError.setLastExportDate(
+                    message: "lastId < 0")
+            }
+            return
+        } catch UtilsSQLCipherError.prepareSQL(let message) {              throw ExportToJsonError.setLastExportDate(message: message)
+        } catch UtilsJsonError.tableNotExists(let message) {
+            throw ExportToJsonError.setLastExportDate(message: message)
+        } catch ExportToJsonError.getLastExportDate(let message) {
+            throw ExportToJsonError.setLastExportDate(message: message)
+        }
+
+    }
+
+    // MARK: - ExportToJson - DelExportedRows
+
+    class func delExportedRows(mDB: Database) throws {
+        do {
+            // check if synchronization table exists
+            let isExists: Bool = try UtilsJson.isTableExists(
+                mDB: mDB, tableName: "sync_table")
+            if !isExists {
+                let msg = "No sync_table available"
+                throw ExportToJsonError.delExportedRows(message: msg)
+            }
+            // get the last export date
+            let lastExportDate = try getLastExportDate(mDB: mDB)
+            if lastExportDate < 0 {
+                let msg = "No last exported date available"
+                throw ExportToJsonError.delExportedRows(message: msg)
+            }
+
+            // get the table' name list
+            let tableList: [String] = try mDB.getTableNames()
+            if tableList.count == 0 {
+                let msg = "No table's names returned"
+                throw ExportToJsonError.delExportedRows(message: msg)
+            }
+            // Loop through the tables
+            for table in tableList {
+                var lastId: Int64 = -1
+                // define the delete statement
+                let delStmt = "DELETE FROM \(table) WHERE sql_deleted = 1 " +
+                    "AND last_modified < \(lastExportDate);"
+                lastId = try UtilsSQLCipher.prepareSQL(mDB: mDB, sql: delStmt,
+                                                       values: [],
+                                                       fromJson: true)
+                if lastId < 0 {
+                    let msg = "DelExportedRows: lastId < 0"
+                    throw ExportToJsonError.delExportedRows(message: msg)
+                }
+            }
+            return
+        } catch UtilsJsonError.tableNotExists(let message) {
+            throw ExportToJsonError.delExportedRows(message: message)
+        } catch ExportToJsonError.getLastExportDate(let message) {
+            throw ExportToJsonError.delExportedRows(message: message)
+        } catch DatabaseError.getTableNames(let message) {
+            throw ExportToJsonError.delExportedRows(message: message)
+        } catch UtilsSQLCipherError.prepareSQL(let message) {
+            throw ExportToJsonError.delExportedRows(message: message)
+        }
     }
 
     // MARK: - ExportToJson - CreateExportObject
@@ -434,17 +556,17 @@ class ExportToJson {
                                           table: table)
                     guard let isSch: Bool = result["isSchema"] as? Bool
                     else {
-                        throw ExportToJsonError.getTablesFull(
+                        throw ExportToJsonError.getTablesPartial(
                             message: "Error did not find isSchema")
                     }
                     guard let isIdxes: Bool = result["isIndexes"] as?
                             Bool else {
-                        throw ExportToJsonError.getTablesFull(
+                        throw ExportToJsonError.getTablesPartial(
                             message: "Error did not find isIndexes")
                     }
                     guard let retTable: [String: Any] = result["table"]
                             as? [String: Any] else {
-                        throw ExportToJsonError.getTablesFull(
+                        throw ExportToJsonError.getTablesPartial(
                             message: "Error did not find table")
                     }
                     isSchema = isSch
@@ -459,18 +581,18 @@ class ExportToJson {
                 let query: String = modTables[tableName] == "Create"
                     ? "SELECT * FROM \(tableName);"
                     : "SELECT * FROM \(tableName) WHERE last_modified" +
-                    " > \(syncDate);"
+                    " >= \(syncDate);"
                 result = try ExportToJson
                     .getValues(mDB: mDB, stmt: query,
                                table: table)
                 guard let isValues: Bool = result["isValues"] as? Bool
                 else {
-                    throw ExportToJsonError.getTablesFull(
+                    throw ExportToJsonError.getTablesPartial(
                         message: "Error did not find isValues")
                 }
                 guard let retTable1: [String: Any] = result["table"]
                         as? [String: Any] else {
-                    throw ExportToJsonError.getTablesFull(
+                    throw ExportToJsonError.getTablesPartial(
                         message: "Error did not find table")
                 }
                 table = retTable1
@@ -478,15 +600,13 @@ class ExportToJson {
                 var tableKeys: [String] = []
                 tableKeys.append(contentsOf: table.keys)
 
-                if tableKeys.count <= 1 ||
-                    (!isSchema && !isIndexes && !isValues) {
-                    throw ExportToJsonError.getTablesPartial(
-                        message: "Error table \(tableName) is not a jsonTable")
+                if tableKeys.count >= 1 &&
+                    (isSchema || isIndexes || isValues) {
+                    tables.append(table)
+                    msg = "Partial: Table \(tableName) data export completed " +
+                        "\(iTable)/\(resTables.count) ..."
+                    notifyExportProgressEvent(msg: msg)
                 }
-                tables.append(table)
-                msg = "Partial: Table \(tableName) data export completed " +
-                    "\(iTable)/\(resTables.count) ..."
-                notifyExportProgressEvent(msg: msg)
 
             }
         } catch ExportToJsonError.getSchemaIndexes(let message) {
@@ -535,19 +655,28 @@ class ExportToJson {
 
     class func getSyncDate(mDB: Database) throws -> Int64 {
         var ret: Int64 = -1
-        let query: String = "SELECT sync_date FROM sync_table;"
+        let query: String = "SELECT sync_date FROM sync_table WHERE id = 1;"
         do {
-            var resSyncDate =  try UtilsSQLCipher.querySQL(
-                mDB: mDB, sql: query, values: [])
-            if resSyncDate.count > 1 {
-                resSyncDate.removeFirst()
-                guard let res: Int64 = resSyncDate[0]["sync_date"] as?
-                        Int64 else {
-                    throw ExportToJsonError.getSyncDate(
-                        message: "Error get sync date failed")
+            let isExists: Bool = try UtilsJson.isTableExists(
+                mDB: mDB, tableName: "sync_table")
+            if isExists {
+                var resSyncDate =  try UtilsSQLCipher.querySQL(
+                    mDB: mDB, sql: query, values: [])
+                if resSyncDate.count > 1 {
+                    resSyncDate.removeFirst()
+                    guard let res: Int64 = resSyncDate[0]["sync_date"] as?
+                            Int64 else {
+                        throw ExportToJsonError.getSyncDate(
+                            message: "Error get sync date failed")
+                    }
+                    if res > 0 {ret = res}
                 }
-                if res > 0 {ret = res}
+            } else {
+                throw ExportToJsonError.getSyncDate(
+                    message: "Error no sync_table available")
             }
+        } catch UtilsJsonError.tableNotExists(let message) {
+            throw ExportToJsonError.getSyncDate(message: message)
         } catch UtilsSQLCipherError.querySQL(let message) {
             throw ExportToJsonError.getSyncDate(
                 message: "Error get sync date failed : \(message)")
@@ -595,7 +724,7 @@ class ExportToJson {
                             .getTablesModified(message: msg)
                         }
                         query = "SELECT count(*) AS count FROM \(tableName) "
-                        query.append("WHERE last_modified > ")
+                        query.append("WHERE last_modified >= ")
                         query.append("\(syncDate);")
                         resQuery =  try UtilsSQLCipher.querySQL(
                             mDB: mDB, sql: query, values: [])

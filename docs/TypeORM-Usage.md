@@ -2,7 +2,7 @@
 
 ```typescript
 import { CapacitorSQLite, SQLiteConnection } from '@capacitor-community/sqlite';
-import { createConnection } from 'typeorm';
+import { DataSource } from 'typeorm';
 
 // when using Capacitor, you might want to close existing connections, 
 // otherwise new connections will fail when using dev-live-reload
@@ -25,11 +25,21 @@ const sqliteConnection = new SQLiteConnection(CapacitorSQLite);
 await sqliteConnection.copyFromAssets();
 
 // create the TypeORM connection
-const typeOrmConnection = await createConnection({
+// For more information see https://typeorm.io/data-source#creating-a-new-datasource
+const AppDataSource = new DataSource({
     type: 'capacitor',
     driver: sqliteConnection, // pass the connection wrapper here
     database: 'YOUR_DB_NAME' // database name without the `.db` suffix
 });
+
+AppDataSource.initialize()
+    .then(() => {
+        console.log("Data Source has been initialized!")
+    })
+    .catch((err) => {
+        console.error("Error during Data Source initialization", err)
+    });
+    
 ```
 
 An example of a Ionic/Vue app has been developed `https://github.com/jepiqueau/vue-typeorm-app` demonstrating the use of TypeORM migrations and multiple connections. it will be enhanced in the future.

@@ -13,6 +13,7 @@ enum UtilsSQLCipherError: Error {
     case openOrCreateDatabase(message: String)
     case bindFailed
     case setForeignKeyConstraintsEnabled(message: String)
+    case getForeignKeysStateFailed(message: String)
     case getVersion(message: String)
     case setVersion(message: String)
     case closeDB(message: String)
@@ -23,6 +24,9 @@ enum UtilsSQLCipherError: Error {
     case commitTransaction(message: String)
     case execute(message: String)
     case prepareSQL(message: String)
+    case deleteSQL(message: String)
+    case findReferenciesAndUpdate(message: String)
+    case getReferencies(message: String)
     case querySQL(message: String)
     case fetchColumnInfo(message: String)
     case deleteDB(message: String)
@@ -233,6 +237,40 @@ class UtilsSQLCipher {
 
     }
 
+    // MARK: - GetForeignKeysState
+
+    class func getForeignKeysState(mDB: Database) throws -> Int {
+        var msg: String = "Error ForeignKeysState: "
+        if !mDB.isDBOpen() {
+            msg.append("Database not opened")
+            throw UtilsSQLCipherError.getForeignKeysStateFailed(message: msg)
+        }
+        var fkState: Int = 0
+
+        let sqltr: String = "PRAGMA foreign_keys;"
+        do {
+            var resForKeys =  try UtilsSQLCipher.querySQL(mDB: mDB,
+                                                          sql: sqltr,
+                                                          values: [])
+            if resForKeys.count > 1 {
+                resForKeys.removeFirst()
+                guard let res: Int64 = resForKeys[0]["foreign_keys"]
+                        as? Int64 else {
+                    throw UtilsSQLCipherError.getForeignKeysStateFailed(
+                        message: "Error get foreign keys failed")
+                }
+                if res > 0 {
+                    fkState =  Int(truncatingIfNeeded: res)
+
+                }
+            }
+            return fkState
+        } catch UtilsSQLCipherError.querySQL(let message) {
+            throw UtilsSQLCipherError.getForeignKeysStateFailed(
+                message: message)
+        }
+    }
+
     // MARK: - GetVersion
 
     class func getVersion(mDB: Database) throws -> Int {
@@ -262,7 +300,7 @@ class UtilsSQLCipher {
             }
             return version
         } catch UtilsSQLCipherError.querySQL(let message) {
-            throw UtilsUpgradeError.getDatabaseVersionFailed(
+            throw UtilsSQLCipherError.getVersion(
                 message: message)
         }
     }
@@ -373,8 +411,9 @@ class UtilsSQLCipher {
     // MARK: - PrepareSQL
 
     // swiftlint:disable function_body_length
-    class func prepareSQL(mDB: Database,
-                          sql: String, values: [Any]) throws -> Int64 {
+    // swiftlint:disable cyclomatic_complexity
+    class func prepareSQL(mDB: Database, sql: String, values: [Any],
+                          fromJson: Bool) throws -> Int64 {
         var msg: String = "Error prepareSQL: "
         if !mDB.isDBOpen() {
             msg.append("Database not opened")
@@ -383,9 +422,19 @@ class UtilsSQLCipher {
         var runSQLStatement: OpaquePointer?
         var message: String = ""
         var lastId: Int64 = -1
-
+        var sqlStmt = sql
+        // Check for DELETE statement
+        if !fromJson && sqlStmt.prefix(6).uppercased() == "DELETE" {
+            do {
+                sqlStmt = try deleteSQL(mDB: mDB, sql: sql,
+                                        values: values)
+            } catch UtilsSQLCipherError.deleteSQL(let message) {
+                let msg = "Error: prepareSQL \(message)"
+                throw UtilsSQLCipherError.prepareSQL(message: msg)
+            }
+        }
         var returnCode: Int32 = sqlite3_prepare_v2(
-            mDB.mDb, sql, -1, &runSQLStatement, nil)
+            mDB.mDb, sqlStmt, -1, &runSQLStatement, nil)
         if returnCode == SQLITE_OK {
             if !values.isEmpty {
                 // do the binding of values
@@ -429,7 +478,197 @@ class UtilsSQLCipher {
             return lastId
         }
     }
+    // swiftlint:enable cyclomatic_complexity
     // swiftlint:enable function_body_length
+
+    // MARK: - deleteSQL
+
+    class func deleteSQL(mDB: Database, sql: String, values: [Any]) throws -> String {
+        var sqlStmt = sql
+        do {
+            let isLast: Bool = try UtilsJson.isLastModified(mDB: mDB)
+            if isLast {
+                if let range: Range<String.Index> = sql
+                    .range(of: "WHERE", options: .caseInsensitive) {
+                    let index: Int = sql
+                        .distance(from: sql.startIndex, to: range.lowerBound)
+                    let preStmt = String(sql.stringRange(fromIdx: 0,
+                                                         toIdx: (index - 1)))
+                    let clauseStmt = String(sql.stringRange(fromIdx: index,
+                                                            toIdx: sql.count))
+                    let tableName = (preStmt.deletingPrefix("DELETE FROM"))
+                        .trimmingLeadingAndTrailingSpaces()
+                    sqlStmt = "UPDATE \(tableName) SET sql_deleted = 1 "
+                    sqlStmt += clauseStmt
+                    // Find REFERENCIES if any and update the sql_deleted column
+                    try findReferenciesAndUpdate(mDB: mDB,
+                                                 tableName: tableName,
+                                                 whereStmt: clauseStmt,
+                                                 values: values)
+                } else {
+                    let msg: String = "deleteSQL cannot find a WHERE clause"
+                    throw UtilsSQLCipherError.deleteSQL(message: msg)
+                }
+            }
+            return sqlStmt
+        } catch UtilsSQLCipherError.findReferenciesAndUpdate(let message) {
+            throw UtilsSQLCipherError.deleteSQL(message: message)
+        } catch UtilsJsonError.isLastModified(let message) {
+            throw UtilsSQLCipherError.deleteSQL(message: message)
+        }
+    }
+
+    // MARK: - findReferencesAndUpdate
+
+    class func findReferenciesAndUpdate(mDB: Database, tableName: String,
+                                        whereStmt: String,
+                                        values: [Any]) throws {
+        do {
+            let referencies = try getReferencies(mDB: mDB,
+                                                 tableName: tableName)
+            if referencies.count <= 0 {
+                return
+            }
+            // Loop through referencies
+            for ref in referencies {
+                // get the tableName of the references
+                let refTable: String = getReferencesTableName(value: ref)
+                if refTable.count <= 0 {
+                    continue
+                }
+                // get the columnName
+                let colName: String = getReferencesColumnName(value: ref)
+                if colName.count <= 0 {
+                    continue
+                }
+                // update the where clause
+                let uWhereStmt: String = updateWhere(whStmt: whereStmt,
+                                                     colName: colName)
+
+                if uWhereStmt.count <= 0 {
+                    continue
+                }
+                //update sql_deleted for this references
+                let stmt = "UPDATE \(refTable) SET sql_deleted = 1 " +
+                    uWhereStmt
+                let lastId = try prepareSQL(mDB: mDB, sql: stmt,
+                                            values: values, fromJson: false)
+                if lastId == -1 {
+                    let msg = "UPDATE sql_deleted failed for references " +
+                        "table: \(refTable) "
+                    throw UtilsSQLCipherError
+                    .findReferenciesAndUpdate(message: msg)
+                }
+            }
+            return
+        } catch UtilsSQLCipherError.prepareSQL(let message) {
+            throw UtilsSQLCipherError
+            .findReferenciesAndUpdate(message: message)
+        } catch UtilsSQLCipherError.querySQL(let message) {
+            throw UtilsSQLCipherError
+            .findReferenciesAndUpdate(message: message)
+        }
+
+    }
+
+    // MARK: - getReferencies
+
+    class func getReferencies(mDB: Database, tableName: String)
+    throws -> [[String: Any]] {
+        // find the REFERENCIES
+        var sqlStmt = "SELECT sql FROM sqlite_master "
+        sqlStmt += "WHERE sql LIKE('%REFERENCES%') AND "
+        sqlStmt += "sql LIKE('%\(tableName)%') AND sql LIKE('%ON DELETE%');"
+        do {
+            var referencies: [[String: Any]] = try querySQL(mDB: mDB,
+                                                            sql: sqlStmt,
+                                                            values: [])
+            if referencies.count > 1 {
+                referencies.removeFirst()
+            }
+            return referencies
+        } catch UtilsSQLCipherError.querySQL(let message) {
+            throw UtilsSQLCipherError
+            .getReferencies(message: message)
+        }
+    }
+
+    // MARK: - getReferencesTableName
+
+    class func getReferencesTableName(value: [String: Any]) -> String {
+
+        var tableName: String = ""
+        if let refValue = value["sql"] as? String {
+
+            if let range: Range<String.Index> = refValue
+                .range(of: "CREATE TABLE", options: .caseInsensitive) {
+                let index: Int = refValue
+                    .distance(from: refValue.startIndex, to: range.lowerBound)
+                let stmt = String(refValue.stringRange(fromIdx: index + 13,
+                                                       toIdx: refValue.count))
+                if let oPar = stmt.firstIndex(of: "(") {
+                    let idx: Int = stmt.distance(from: stmt.startIndex, to: oPar)
+                    tableName = String(stmt.stringRange(fromIdx: 0, toIdx: idx))
+                        .trimmingLeadingAndTrailingSpaces()
+                }
+            }
+        }
+        return tableName
+    }
+
+    // MARK: - getReferencesColumnName
+
+    class func getReferencesColumnName(value: [String: Any]) -> String {
+
+        var colName: String = ""
+        if let refValue = value["sql"] as? String {
+
+            if let range: Range<String.Index> = refValue
+                .range(of: "FOREIGN KEY", options: .caseInsensitive) {
+                let index: Int = refValue
+                    .distance(from: refValue.startIndex, to: range.lowerBound)
+                let stmt = String(refValue.stringRange(fromIdx: index + 12,
+                                                       toIdx: refValue.count))
+                if let oPar = stmt.firstIndex(of: "(") {
+                    let idxOPar: Int = stmt.distance(from: stmt.startIndex,
+                                                     to: oPar) + 1
+                    if let cPar = stmt.firstIndex(of: ")") {
+                        let idxCPar: Int = stmt
+                            .distance(from: stmt.startIndex,
+                                      to: cPar)
+                        colName = String(stmt.stringRange(fromIdx: idxOPar,
+                                                          toIdx: idxCPar))
+                            .trimmingLeadingAndTrailingSpaces()
+
+                    }
+                }
+            }
+        }
+
+        return colName
+    }
+
+    class func updateWhere(whStmt: String, colName: String) -> String {
+        var whereStmt = ""
+        if let range: Range<String.Index> = whStmt
+            .range(of: "WHERE", options: .caseInsensitive) {
+            let index: Int = whStmt
+                .distance(from: whStmt.startIndex, to: range.lowerBound)
+            let stmt = String(whStmt.stringRange(fromIdx: index + 6,
+                                                 toIdx: whStmt.count))
+            if let fEqual = stmt.firstIndex(of: "=") {
+                let idxfEqual: Int = stmt.distance(from: stmt.startIndex,
+                                                   to: fEqual)
+                let whereColName = String(stmt.stringRange(fromIdx: 0,
+                                                           toIdx: idxfEqual))
+                    .trimmingLeadingAndTrailingSpaces()
+                whereStmt = whStmt.replacingOccurrences(of: whereColName, with: colName)
+
+            }
+        }
+
+        return whereStmt
+    }
 
     // MARK: - querySQL
 
@@ -565,8 +804,34 @@ class UtilsSQLCipher {
             msg.append("Database not opened")
             throw UtilsSQLCipherError.execute(message: msg)
         }
+        var sqlStmt = sql
+        if sql.localizedCaseInsensitiveContains("DELETE FROM") {
+            sqlStmt = sqlStmt.replacingOccurrences(of: "\n",
+                                                   with: "")
+            var stmtArr = sqlStmt.components(separatedBy: ";")
+            stmtArr.removeLast()
+            var resArr: [String] = []
+            for stmt in stmtArr {
+                let trimStmt = stmt
+                    .trimmingLeadingAndTrailingSpaces().prefix(11).uppercased()
+                if trimStmt == "DELETE FROM" &&
+                    stmt.localizedCaseInsensitiveContains("WHERE") {
+                    let whereStmt = stmt.trimmingLeadingAndTrailingSpaces()
+                    do {
+                        let rStmt: String = try deleteSQL(mDB: mDB, sql: whereStmt, values: [])
+                        resArr.append(rStmt)
+                    } catch UtilsSQLCipherError.deleteSQL(let message) {
+                        let msg = "Error: execute \(message)"
+                        throw UtilsSQLCipherError.execute(message: msg)
+                    }
+                } else {
+                    resArr.append(String(stmt))
+                }
+            }
+            sqlStmt = resArr.joined(separator: ";")
+        }
 
-        let returnCode: Int32 = sqlite3_exec(mDB.mDb, sql, nil,
+        let returnCode: Int32 = sqlite3_exec(mDB.mDb, sqlStmt, nil,
                                              nil, nil)
         if returnCode != SQLITE_OK {
             let errmsg: String = String(
@@ -633,7 +898,7 @@ class UtilsSQLCipher {
                         for vals in arrValues {
                             lastId = try UtilsSQLCipher
                                 .prepareSQL(mDB: mDB, sql: sql,
-                                            values: vals)
+                                            values: vals, fromJson: false)
                             if  lastId == -1 {
                                 let message: String = "lastId < 0"
                                 throw UtilsSQLCipherError
@@ -643,7 +908,8 @@ class UtilsSQLCipher {
                     }
                 } else {
                     lastId = try UtilsSQLCipher
-                        .prepareSQL(mDB: mDB, sql: sql, values: values)
+                        .prepareSQL(mDB: mDB, sql: sql, values: values,
+                                    fromJson: false)
                     if  lastId == -1 {
                         let message: String = "lastId < 0"
                         throw UtilsSQLCipherError.executeSet(
@@ -741,6 +1007,9 @@ class UtilsSQLCipher {
         }
 
     }
+
+    // MARK: - parse
+
     class func parse(mVar: Any) -> Bool {
         var ret: Bool = false
         if mVar is NSArray {

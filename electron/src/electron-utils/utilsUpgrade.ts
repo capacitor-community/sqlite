@@ -117,14 +117,15 @@ export class UtilsUpgrade {
         await this.updateNewTablesData(mDB);
       }
 
+      return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(`ExecuteStatementProcess: ${err}`);
+    } finally {
       // -> Drop _temp_tables
       await this._uDrop.dropTempTables(mDB, this._alterTables);
       // -> Do some cleanup
       this._alterTables = {};
       this._commonColumns = {};
-      return Promise.resolve();
-    } catch (err) {
-      return Promise.reject(`ExecuteStatementProcess: ${err}`);
     }
   }
   /**
@@ -194,9 +195,13 @@ export class UtilsUpgrade {
       // get the table's column names
       const colNames: string[] = await this.getTableColumnNames(mDB, table);
       this._alterTables[`${table}`] = colNames;
+      const tmpTable = `_temp_${table}`;
+      // Drop the tmpTable if exists
+      const delStmt = `DROP TABLE IF EXISTS ${tmpTable};`;
+      await this._uSQLite.prepareRun(mDB, delStmt, []);
       // prefix the table with _temp_
       let stmt = `ALTER TABLE ${table} RENAME `;
-      stmt += `TO _temp_${table};`;
+      stmt += `TO ${tmpTable};`;
       const lastId: number = await this._uSQLite.prepareRun(mDB, stmt, []);
       if (lastId < 0) {
         let msg = 'BackupTable: lastId < 0';

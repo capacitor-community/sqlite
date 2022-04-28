@@ -194,6 +194,10 @@ public class UtilsUpgrade {
             // get the column's name
             List<String> colNames = getColumnNames(db, table);
             _alterTables.put(table, colNames);
+            // Delete _temp_table if exists
+            String tmpTable = "_temp_" + table;
+            String delStmt = "DROP TABLE IF EXISTS " + tmpTable + ";";
+            db.runSQL(delStmt, new ArrayList<>());
             // prefix the table with _temp_
             String stmt = "ALTER TABLE " + table + " RENAME ";
             stmt += "TO _temp_" + table + ";";

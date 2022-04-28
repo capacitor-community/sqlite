@@ -52,7 +52,7 @@ public class NotificationCenter {
     public synchronized void postNotification(String notificationName, Map<String, Object> _info) {
         ArrayList<MyRunnable> list = registredObjects.get(notificationName);
         if (list != null) {
-            for (MyRunnable r : list) {
+            for (MyRunnable r : new ArrayList<>(list)) {
                 r.setInfo(_info);
                 r.run();
             }

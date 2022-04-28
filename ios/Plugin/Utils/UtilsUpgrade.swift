@@ -15,7 +15,6 @@ enum UtilsUpgradeError: Error {
     case backupTableFailed(message: String)
     case getTableColumnNamesFailed(message: String)
     case updateDatabaseVersionFailed(message: String)
-    case getDatabaseVersionFailed(message: String)
     case findCommonColumnsFailed(message: String)
     case arrayIntersectionFailed(message: String)
     case updateNewTablesDataFailed(message: String)

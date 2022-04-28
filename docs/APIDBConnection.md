@@ -26,6 +26,7 @@
 * [`setSyncDate(...)`](#setsyncdate)
 * [`getSyncDate()`](#getsyncdate)
 * [`exportToJson(...)`](#exporttojson)
+* [`deleteExportedRows()`](#deleteexportedrows)
 * [`executeTransaction(...)`](#executetransaction)
 * [Interfaces](#interfaces)
 
@@ -329,6 +330,19 @@ Export the given database to a JSON Object
 **Returns:** <code>Promise&lt;<a href="#capsqlitejson">capSQLiteJson</a>&gt;</code>
 
 **Since:** 2.9.0 refactor
+
+--------------------
+
+
+### deleteExportedRows()
+
+```typescript
+deleteExportedRows() => Promise<void>
+```
+
+Remove rows with sql_deleted = 1 after an export
+
+**Since:** 3.4.3-2
 
 --------------------
 

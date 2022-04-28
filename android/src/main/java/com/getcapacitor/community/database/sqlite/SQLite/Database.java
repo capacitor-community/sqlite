@@ -18,6 +18,7 @@ import com.getcapacitor.JSObject;
 import com.getcapacitor.community.database.sqlite.SQLite.GlobalSQLite;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.ExportToJson;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.ImportFromJson;
+import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.JsonIndex;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.JsonSQLite;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.UtilsJson;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLCipher;
@@ -34,6 +35,7 @@ import net.sqlcipher.Cursor;
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteException;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Database {
@@ -116,6 +118,7 @@ public class Database {
 
     /**
      * isOpen Method
+     *
      * @return database status
      */
     public Boolean isOpen() {
@@ -124,6 +127,7 @@ public class Database {
 
     /**
      * isNCDB Method
+     *
      * @return non-conformed database status
      */
     public Boolean isNCDB() {
@@ -132,6 +136,7 @@ public class Database {
 
     /**
      * GetUrl method
+     *
      * @return database url
      */
     public String getUrl() {
@@ -141,6 +146,7 @@ public class Database {
 
     /**
      * Open method
+     *
      * @return open status
      */
     public void open() throws Exception {
@@ -257,6 +263,7 @@ public class Database {
 
     /**
      * Close Method
+     *
      * @return close status
      */
 
@@ -293,6 +300,7 @@ public class Database {
 
     /**
      * IsDBExists Method
+     *
      * @return the existence of the database on folder
      */
     public boolean isDBExists() {
@@ -306,6 +314,7 @@ public class Database {
     /**
      * Execute Method
      * Execute an Array of SQL Statements
+     *
      * @param statements Array of Strings
      * @return
      */
@@ -319,7 +328,13 @@ public class Database {
                 if (transaction) _db.beginTransaction();
                 for (String cmd : statements) {
                     if (!cmd.endsWith(";")) cmd += ";";
-                    _db.execSQL(cmd);
+                    String nCmd = cmd;
+                    String trimCmd = nCmd.trim().substring(0, 11).toUpperCase();
+                    if (trimCmd.equals("DELETE FROM") && nCmd.toLowerCase().contains("WHERE".toLowerCase())) {
+                        String whereStmt = nCmd.trim();
+                        nCmd = deleteSQL(this, whereStmt, new ArrayList<Object>());
+                    }
+                    _db.execSQL(nCmd);
                 }
                 changes = _uSqlite.dbChanges(_db) - initChanges;
                 if (changes != -1) {
@@ -340,6 +355,7 @@ public class Database {
     /**
      * ExecuteSet Method
      * Execute a Set of SQL Statements
+     *
      * @param set JSArray of statements
      * @return
      */
@@ -368,11 +384,11 @@ public class Database {
                             for (int k = 0; k < valsJson.length(); k++) {
                                 vals.add(valsJson.get(k));
                             }
-                            lastId = prepareSQL(statement, vals);
+                            lastId = prepareSQL(statement, vals, false);
                             if (lastId == -1) break;
                         }
                     } else {
-                        lastId = prepareSQL(statement, values);
+                        lastId = prepareSQL(statement, values, false);
                     }
                     if (lastId == -1) break;
                 }
@@ -399,6 +415,7 @@ public class Database {
     /**
      * InTransaction Method
      * Check if a transaction is still running
+     *
      * @return
      */
     public boolean inTransaction() {
@@ -407,8 +424,9 @@ public class Database {
 
     /**
      * RunSQL Method
+     *
      * @param statement a raw SQL statement
-     * @param values Array of Strings to bind to the statement
+     * @param values    Array of Strings to bind to the statement
      * @return
      */
     public JSObject runSQL(String statement, ArrayList<Object> values, Boolean... others) throws Exception {
@@ -420,7 +438,7 @@ public class Database {
             if (_db != null && _db.isOpen() && statement.length() > 0) {
                 Integer initChanges = _uSqlite.dbChanges(_db);
                 if (transaction) _db.beginTransaction();
-                lastId = prepareSQL(statement, values);
+                lastId = prepareSQL(statement, values, false);
                 if (lastId != -1 && transaction) _db.setTransactionSuccessful();
                 changes = _uSqlite.dbChanges(_db) - initChanges;
                 retObj.put("changes", changes);
@@ -438,15 +456,20 @@ public class Database {
 
     /**
      * PrepareSQL Method
+     *
      * @param statement
      * @param values
      * @return
      */
-    public long prepareSQL(String statement, ArrayList<Object> values) throws Exception {
+    public long prepareSQL(String statement, ArrayList<Object> values, Boolean fromJson) throws Exception {
         String stmtType = statement.replaceAll("\n", "").trim().substring(0, 6).toUpperCase();
         SupportSQLiteStatement stmt = null;
+        String sqlStmt = statement;
         try {
-            stmt = _db.compileStatement(statement);
+            if (!fromJson && stmtType.equals("DELETE")) {
+                sqlStmt = deleteSQL(this, statement, values);
+            }
+            stmt = _db.compileStatement(sqlStmt);
             if (values != null && values.size() > 0) {
                 Object[] valObj = new Object[values.size()];
                 for (int i = 0; i < values.size(); i++) {
@@ -482,8 +505,159 @@ public class Database {
     }
 
     /**
+     * DeleteSQL method
+     *
+     * @param mDB
+     * @param statement
+     * @param values
+     * @return
+     * @throws Exception
+     */
+    public String deleteSQL(Database mDB, String statement, ArrayList<Object> values) throws Exception {
+        String sqlStmt = statement;
+        try {
+            Boolean isLast = _uJson.isLastModified(mDB);
+            if (isLast) {
+                // Replace DELETE by UPDATE and set sql_deleted to 1
+                Integer wIdx = statement.toUpperCase().indexOf("WHERE");
+                String preStmt = statement.substring(0, wIdx - 1);
+                String clauseStmt = statement.substring(wIdx, statement.length());
+                String tableName = preStmt.substring(("DELETE FROM").length()).trim();
+                sqlStmt = "UPDATE " + tableName + " SET sql_deleted = 1 " + clauseStmt;
+                // Find REFERENCES if any and update the sql_deleted column
+                findReferencesAndUpdate(mDB, tableName, clauseStmt, values);
+            }
+            return sqlStmt;
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
+        }
+    }
+
+    /**
+     * FindReferencesAndUpdate method
+     *
+     * @param mDB
+     * @param tableName
+     * @param whereStmt
+     * @param values
+     * @throws Exception
+     */
+    public void findReferencesAndUpdate(Database mDB, String tableName, String whereStmt, ArrayList<Object> values) throws Exception {
+        try {
+            JSArray references = getReferences(mDB, tableName);
+            for (int j = 0; j < references.length(); j++) {
+                // get the tableName of the reference
+                String refTable = getReferenceTableName(references.getJSONObject(j).getString("sql"));
+                if (refTable.length() <= 0) {
+                    continue;
+                }
+                // get the columnName
+                String colName = getReferenceColumnName(references.getJSONObject(j).getString("sql"));
+                if (refTable.length() <= 0) {
+                    continue;
+                }
+                // update the where clause
+                String uWhereStmt = updateWhere(whereStmt, colName);
+
+                if (uWhereStmt.length() <= 0) {
+                    continue;
+                }
+                //update sql_deleted for this reference
+                String stmt = "UPDATE " + refTable + " SET sql_deleted = 1 " + uWhereStmt;
+                long lastId = prepareSQL(stmt, values, false);
+                if (lastId == -1) {
+                    String msg = "UPDATE sql_deleted failed for references " + "table: " + refTable + ";";
+                    throw new Exception(msg);
+                }
+            }
+            return;
+        } catch (JSONException e) {
+            throw new Exception(e.getMessage());
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
+        }
+    }
+
+    /**
+     * GetReferenceTableName method
+     *
+     * @param refValue
+     * @return
+     */
+    public String getReferenceTableName(String refValue) {
+        String tableName = "";
+        if (refValue.length() > 0 && refValue.substring(0, 12).equalsIgnoreCase("CREATE TABLE")) {
+            Integer oPar = refValue.indexOf("(");
+            tableName = refValue.substring(13, oPar).trim();
+        }
+
+        return tableName;
+    }
+
+    /**
+     * GetReferenceColumnName method
+     *
+     * @param refValue
+     * @return
+     */
+    public String getReferenceColumnName(String refValue) {
+        String colName = "";
+        if (refValue.length() > 0) {
+            Integer index = refValue.toLowerCase().indexOf("FOREIGN KEY".toLowerCase());
+            String stmt = refValue.substring(index + 12);
+            Integer oPar = stmt.indexOf("(");
+            Integer cPar = stmt.indexOf(")");
+            colName = stmt.substring(oPar + 1, cPar).trim();
+        }
+        return colName;
+    }
+
+    /**
+     * UpdateWhere method
+     *
+     * @param whStmt
+     * @param colName
+     * @return
+     */
+    public String updateWhere(String whStmt, String colName) {
+        String whereStmt = "";
+        if (whStmt.length() > 0) {
+            Integer index = whStmt.toLowerCase().indexOf("WHERE".toLowerCase());
+            String stmt = whStmt.substring(index + 6);
+            Integer fEqual = stmt.indexOf("=");
+            String whereColName = stmt.substring(0, fEqual).trim();
+            whereStmt = whStmt.replaceFirst(whereColName, colName);
+        }
+        return whereStmt;
+    }
+
+    /**
+     * GetReferences method
+     *
+     * @param mDB
+     * @param tableName
+     * @return
+     * @throws Exception
+     */
+    public JSArray getReferences(Database mDB, String tableName) throws Exception {
+        String sqlStmt =
+            "SELECT sql FROM sqlite_master " +
+            "WHERE sql LIKE('%REFERENCES%') AND " +
+            "sql LIKE('%" +
+            tableName +
+            "%') AND sql LIKE('%ON DELETE%');";
+        try {
+            JSArray references = mDB.selectSQL(sqlStmt, new ArrayList<Object>());
+            return references;
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
+        }
+    }
+
+    /**
      * SelectSQL Method
      * Query a raw sql statement with or without binding values
+     *
      * @param statement
      * @param values
      * @return
@@ -534,6 +708,7 @@ public class Database {
     /**
      * GetTableNames Method
      * Returned a JSArray of table's name
+     *
      * @return
      * @throws Exception
      */
@@ -553,6 +728,7 @@ public class Database {
     /**
      * DeleteDB Method
      * Delete the database file
+     *
      * @param dbName
      * @return
      */
@@ -584,6 +760,7 @@ public class Database {
     /**
      * CreateSyncTable Method
      * create the synchronization table
+     *
      * @return
      */
     public JSObject createSyncTable() throws Exception {
@@ -618,6 +795,7 @@ public class Database {
     /**
      * SetSyncDate Method
      * Set the synchronization date
+     *
      * @param syncDate
      * @return
      */
@@ -643,6 +821,13 @@ public class Database {
         }
     }
 
+    /**
+     * GetSyncDate method
+     * get the synchronization date
+     *
+     * @return
+     * @throws Exception
+     */
     public Long getSyncDate() throws Exception {
         long syncDate = 0;
         try {
@@ -659,6 +844,7 @@ public class Database {
 
     /**
      * Import from Json object
+     *
      * @param jsonSQL
      * @return
      */
@@ -666,6 +852,9 @@ public class Database {
         JSObject retObj = new JSObject();
         int changes = Integer.valueOf(0);
         try {
+            // set Foreign Keys OFF
+            _db.setForeignKeyConstraintsEnabled(false);
+
             if (jsonSQL.getTables().size() > 0) {
                 // create the database schema
                 changes = fromJson.createDatabaseSchema(this, jsonSQL);
@@ -676,6 +865,9 @@ public class Database {
             if (jsonSQL.getViews().size() > 0) {
                 changes += fromJson.createViews(this, jsonSQL.getViews());
             }
+            // set Foreign Keys ON
+            _db.setForeignKeyConstraintsEnabled(true);
+
             retObj.put("changes", changes);
             return retObj;
         } catch (Exception e) {
@@ -685,6 +877,7 @@ public class Database {
 
     /**
      * Export to JSON Object
+     *
      * @param mode
      * @return
      */
@@ -696,6 +889,11 @@ public class Database {
         inJson.setEncrypted(_encrypted);
         inJson.setMode(mode);
         try {
+            // set the last export date
+            Date date = new Date();
+            long syncTime = date.getTime() / 1000L;
+            toJson.setLastExportDate(this, syncTime);
+            // launch the export process
             JsonSQLite retJson = toJson.createExportObject(this, inJson);
             //        retJson.print();
             ArrayList<String> keys = retJson.getKeys();
@@ -716,5 +914,20 @@ public class Database {
             Log.e(TAG, "Error: exportToJson " + e.getMessage());
             throw new Exception(e.getMessage());
         } finally {}
+    }
+
+    /**
+     * Delete exported rows
+     *
+     * @throws Exception
+     */
+    public void deleteExportedRows() throws Exception {
+        try {
+            toJson.delExportedRows(this);
+            return;
+        } catch (Exception e) {
+            Log.e(TAG, "Error: exportToJson " + e.getMessage());
+            throw new Exception(e.getMessage());
+        }
     }
 }

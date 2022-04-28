@@ -959,7 +959,13 @@ enum CapacitorSQLiteError: Error {
                 do {
                     let res: [String: Any] = try
                         mDb.exportToJson(expMode: expMode)
-                    if res.count == 5 || res.count == 6 || res.count == 7 {
+                    if res.count == 0 {
+                        var msg: String = "return Object is empty "
+                        msg.append("No data to synchronize")
+                        throw CapacitorSQLiteError.failed(message: msg)
+
+                    } else if res.count == 5 || res.count == 6 ||
+                                res.count == 7 {
                         return res
                     } else {
                         var msg: String = "return Object is not a "
@@ -967,6 +973,33 @@ enum CapacitorSQLiteError: Error {
                         throw CapacitorSQLiteError.failed(message: msg)
                     }
                 } catch DatabaseError.exportToJson(let message) {
+                    throw CapacitorSQLiteError.failed(message: message)
+                } catch let error {
+                    let msg: String = "\(error)"
+                    throw CapacitorSQLiteError.failed(message: msg)
+                }
+            } else {
+                let msg = "Database \(mDbName) not opened"
+                throw CapacitorSQLiteError.failed(message: msg)
+            }
+        } else {
+            throw CapacitorSQLiteError.failed(message: initMessage)
+        }
+    }
+
+    // MARK: - deleteExportedRows
+
+    @objc func deleteExportedRows(_ dbName: String) throws {
+        if isInit {
+            let mDbName = CapacitorSQLite.getDatabaseName(dbName: dbName)
+            guard let mDb: Database = dbDict[mDbName] else {
+                let msg = "Connection to \(mDbName) not available"
+                throw CapacitorSQLiteError.failed(message: msg)
+            }
+            if mDb.isDBOpen() {
+                do {
+                    try mDb.deleteExportedRows()
+                } catch DatabaseError.deleteExportedRows(let message) {
                     throw CapacitorSQLiteError.failed(message: message)
                 } catch let error {
                     let msg: String = "\(error)"

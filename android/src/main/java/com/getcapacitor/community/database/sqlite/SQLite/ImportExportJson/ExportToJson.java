@@ -4,8 +4,10 @@ import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.community.database.sqlite.NotificationCenter;
 import com.getcapacitor.community.database.sqlite.SQLite.Database;
+import com.getcapacitor.community.database.sqlite.SQLite.UtilsDrop;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLite;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +19,7 @@ public class ExportToJson {
     private static final String TAG = ImportFromJson.class.getName();
     private UtilsJson uJson = new UtilsJson();
     private UtilsSQLite uSqlite = new UtilsSQLite();
+    private UtilsDrop _uDrop = new UtilsDrop();
 
     /**
      * Notify progress export event
@@ -30,6 +33,96 @@ public class ExportToJson {
             }
         };
         NotificationCenter.defaultCenter().postNotification("exportJsonProgress", info);
+    }
+
+    /**
+     * GetLastExportDate method
+     * get the last export date
+     *
+     * @return
+     * @throws Exception
+     */
+    public Long getLastExportDate(Database mDb) throws Exception {
+        long lastExportDate = -1;
+        String stmt = "SELECT sync_date FROM sync_table WHERE id = 2;";
+        JSArray retQuery = new JSArray();
+
+        try {
+            boolean isSyncTable = uJson.isTableExists(mDb, "sync_table");
+            if (!isSyncTable) {
+                throw new Exception("GetSyncDate: No sync_table available");
+            }
+            retQuery = mDb.selectSQL(stmt, new ArrayList<Object>());
+            List<JSObject> lQuery = retQuery.toList();
+            if (lQuery.size() == 1) {
+                long syncDate = lQuery.get(0).getLong("sync_date");
+                if (syncDate > 0) lastExportDate = syncDate;
+            }
+        } catch (Exception e) {
+            throw new Exception("GetSyncDate: " + e.getMessage());
+        } finally {
+            return lastExportDate;
+        }
+    }
+
+    public void setLastExportDate(Database mDb, Long sTime) throws Exception {
+        try {
+            boolean isSyncTable = uJson.isTableExists(mDb, "sync_table");
+            if (!isSyncTable) {
+                throw new Exception("SetLastExportDate: No sync_table available");
+            }
+            String stmt = "";
+            Long lastExportDate = getLastExportDate(mDb);
+            if (lastExportDate > 0) {
+                stmt = "UPDATE sync_table SET sync_date = " + sTime + " WHERE id = 2;";
+            } else {
+                stmt = "INSERT INTO sync_table (sync_date) VALUES (" + sTime + ");";
+            }
+            long lastId = mDb.prepareSQL(stmt, new ArrayList<>(), false);
+            if (lastId < 0) {
+                throw new Exception("SetLastExportDate: lastId < 0");
+            }
+            return;
+        } catch (Exception e) {
+            throw new Exception("SetLastExportDate: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Delete Exported Rows
+     * @throws Exception
+     */
+    public void delExportedRows(Database mDb) throws Exception {
+        try {
+            // check if 'sync_table' exists
+            boolean isSyncTable = uJson.isTableExists(mDb, "sync_table");
+            if (!isSyncTable) {
+                throw new Exception("DelExportedRows: No sync_table available");
+            }
+            // get the last export date
+            long lastExportDate = getLastExportDate(mDb);
+            if (lastExportDate < 0) {
+                throw new Exception("DelExportedRows: No last exported date available");
+            }
+            // get the table' name list
+            List<String> tables = _uDrop.getTablesNames(mDb);
+            if (tables.size() == 0) {
+                throw new Exception("DelExportedRows: No table's names returned");
+            }
+            // Loop through the tables
+            for (String table : tables) {
+                long lastId = -1;
+                // define the delete statement
+                String delStmt = "DELETE FROM " + table + " WHERE sql_deleted = 1 " + "AND last_modified < " + lastExportDate + ";";
+                lastId = mDb.prepareSQL(delStmt, new ArrayList<>(), true);
+                if (lastId < 0) {
+                    throw new Exception("SetLastExportDate: lastId < 0");
+                }
+            }
+            return;
+        } catch (Exception e) {
+            throw new Exception("DelExportedRows: " + e.getMessage());
+        }
     }
 
     /**
@@ -467,7 +560,7 @@ public class ExportToJson {
                 if (modTables.getString(tableName).equals("Create")) {
                     query = "SELECT * FROM " + tableName + ";";
                 } else {
-                    query = "SELECT * FROM " + tableName + " WHERE last_modified > " + syncDate + ";";
+                    query = "SELECT * FROM " + tableName + " WHERE last_modified >= " + syncDate + ";";
                 }
                 ArrayList<ArrayList<Object>> values = uJson.getValues(mDb, query, tableName);
 
@@ -544,9 +637,13 @@ public class ExportToJson {
      */
     public Long getSyncDate(Database mDb) throws Exception {
         long ret = -1;
-        String stmt = "SELECT sync_date FROM sync_table;";
+        String stmt = "SELECT sync_date FROM sync_table WHERE id = 1;";
         JSArray retQuery = new JSArray();
         try {
+            boolean isSyncTable = uJson.isTableExists(mDb, "sync_table");
+            if (!isSyncTable) {
+                throw new Exception("No sync_table available");
+            }
             retQuery = mDb.selectSQL(stmt, new ArrayList<Object>());
             List<JSObject> lQuery = retQuery.toList();
             if (lQuery.size() == 1) {
@@ -586,7 +683,7 @@ public class ExportToJson {
                 if (lQuery.size() != 1) break;
                 long totalCount = lQuery.get(0).getLong("count");
                 // get total count of modified since last sync
-                stmt = "SELECT count(*) AS count FROM " + tableName + " WHERE last_modified > " + syncDate + ";";
+                stmt = "SELECT count(*) AS count FROM " + tableName + " WHERE last_modified >= " + syncDate + ";";
                 retQuery = mDb.selectSQL(stmt, new ArrayList<Object>());
                 lQuery = retQuery.toList();
                 if (lQuery.size() != 1) break;

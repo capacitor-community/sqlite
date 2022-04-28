@@ -14,23 +14,23 @@ import { UtilsSQLite } from './utilsSQLite';
 import { UtilsUpgrade } from './utilsUpgrade';
 
 export class Database {
-  private _isDBOpen: boolean;
-  private _dbName: string;
+  private _isDbOpen: boolean;
+  private dbName: string;
   //  private _encrypted: boolean;
   //  private _mode: string;
-  private _version: number;
-  private _pathDB: string;
-  private _uFile: UtilsFile = new UtilsFile();
-  private _uSQLite: UtilsSQLite = new UtilsSQLite();
-  private _uJson: UtilsJson = new UtilsJson();
-  private _uDrop: UtilsDrop = new UtilsDrop();
+  private version: number;
+  private pathDB: string;
+  private fileUtil: UtilsFile = new UtilsFile();
+  private sqliteUtil: UtilsSQLite = new UtilsSQLite();
+  private jsonUtil: UtilsJson = new UtilsJson();
+  private dropUtil: UtilsDrop = new UtilsDrop();
   //  private _uGlobal: GlobalSQLite = new GlobalSQLite();
   //  private _uEncrypt: UtilsEncryption = new UtilsEncryption();
-  private _uUpg: UtilsUpgrade = new UtilsUpgrade();
-  private _iFJson: ImportFromJson = new ImportFromJson();
-  private _eTJson: ExportToJson = new ExportToJson();
-  private _mDB: any;
-  private _vUpgDict: Record<number, capSQLiteVersionUpgrade> = {};
+  private upgradeUtil: UtilsUpgrade = new UtilsUpgrade();
+  private importFromJsonUtil: ImportFromJson = new ImportFromJson();
+  private exportToJsonUtil: ExportToJson = new ExportToJson();
+  private database: any;
+  private upgradeVersionDict: Record<number, capSQLiteVersionUpgrade> = {};
 
   constructor(
     dbName: string,
@@ -39,15 +39,15 @@ export class Database {
     version: number,
     upgDict: Record<number, capSQLiteVersionUpgrade>,
   ) {
-    this._dbName = dbName;
+    this.dbName = dbName;
     //    this._encrypted = encrypted;
     //    this._mode = mode;
-    this._version = version;
-    this._vUpgDict = upgDict;
-    this._pathDB = this._uFile.getFilePath(dbName);
-    this._isDBOpen = false;
+    this.version = version;
+    this.upgradeVersionDict = upgDict;
+    this.pathDB = this.fileUtil.getFilePath(dbName);
+    this._isDbOpen = false;
 
-    if (this._pathDB.length === 0)
+    if (this.pathDB.length === 0)
       throw new Error('Could not generate a path to ' + dbName);
   }
   /**
@@ -58,7 +58,7 @@ export class Database {
    * @since 0.0.1
    */
   isDBOpen(): boolean {
-    return this._isDBOpen;
+    return this._isDbOpen;
   }
   /**
    * Open
@@ -66,7 +66,7 @@ export class Database {
    * @returns Promise<boolean>
    */
   async open(): Promise<void> {
-    this._isDBOpen = false;
+    this._isDbOpen = false;
     //    let password = '';
     try {
       /*
@@ -88,42 +88,44 @@ export class Database {
         await this._uEncrypt.encryptDatabase(this._pathDB, password);
       }
 */
-      this._mDB = await this._uSQLite.openOrCreateDatabase(
-        this._pathDB /*,
+      this.database = await this.sqliteUtil.openOrCreateDatabase(
+        this.pathDB /*,
         password,*/,
       );
 
-      const curVersion: number = await this._uSQLite.getVersion(this._mDB);
-      this._isDBOpen = true;
+      const curVersion: number = await this.sqliteUtil.getVersion(
+        this.database,
+      );
+      this._isDbOpen = true;
 
       if (
-        this._version > curVersion &&
-        Object.keys(this._vUpgDict).length > 0
+        this.version > curVersion &&
+        Object.keys(this.upgradeVersionDict).length > 0
       ) {
         try {
           // execute the upgrade flow process
-          await this._uUpg.onUpgrade(
-            this._mDB,
-            this._vUpgDict,
-            this._dbName,
+          await this.upgradeUtil.onUpgrade(
+            this.database,
+            this.upgradeVersionDict,
+            this.dbName,
             curVersion,
-            this._version,
+            this.version,
           );
           // delete the backup database
-          await this._uFile.deleteFileName(`backup-${this._dbName}`);
+          await this.fileUtil.deleteFileName(`backup-${this.dbName}`);
         } catch (err) {
           // restore the database from backup
           try {
-            await this._uFile.restoreFileName(this._dbName, 'backup');
+            await this.fileUtil.restoreFileName(this.dbName, 'backup');
           } catch (err) {
-            return Promise.reject(`Open: ${err}`);
+            throw new Error(`Open: ${err}`);
           }
         }
       }
-      return Promise.resolve();
+      return;
     } catch (err) {
-      if (this._isDBOpen) this.close();
-      return Promise.reject(`Open: ${err}`);
+      if (this._isDbOpen) this.close();
+      throw new Error(`Open: ${err}`);
     }
   }
   /**
@@ -132,39 +134,35 @@ export class Database {
    * @returns Promise<boolean>
    */
   async close(): Promise<void> {
-    if (this._mDB != null && this._isDBOpen) {
-      this._mDB.close((err: Error) => {
-        if (err) {
-          let msg = 'Close: Failed in closing: ';
-          msg += `${this._dbName}  ${err}`;
-          return Promise.reject(msg);
-        }
-        this._isDBOpen = false;
-        return Promise.resolve();
-      });
-    }
-    return Promise.resolve();
+    this.ensureDatabaseIsOpen();
+
+    this.database.close((err: Error) => {
+      if (err) {
+        throw new Error('Close failed: ${this.dbName}  ${err}');
+      }
+      this._isDbOpen = false;
+    });
   }
+
   /**
    * GetVersion
    * get the database version
    * @returns Promise<number>
    */
   async getVersion(): Promise<number> {
-    if (this._mDB != null && this._isDBOpen) {
-      try {
-        const curVersion: number = await this._uSQLite.getVersion(this._mDB);
-        return Promise.resolve(curVersion);
-      } catch (err) {
-        if (this._isDBOpen) this.close();
-        return Promise.reject(`getVersion: ${err}`);
-      }
-    } else {
-      let msg = `getVersion: Database ${this._dbName} `;
-      msg += `not opened`;
-      return Promise.reject(msg);
+    this.ensureDatabaseIsOpen();
+
+    try {
+      const currentVersion: number = await this.sqliteUtil.getVersion(
+        this.database,
+      );
+      return currentVersion;
+    } catch (err) {
+      if (this._isDbOpen) this.close();
+      throw new Error(`getVersion: ${err}`);
     }
   }
+
   /**
    * DeleteDB
    * delete a database
@@ -173,55 +171,54 @@ export class Database {
    */
   async deleteDB(dbName: string): Promise<void> {
     // test if file exists
-    const isExists: boolean = this._uFile.isFileExists(dbName);
-    if (isExists && !this._isDBOpen) {
+    const isExists: boolean = this.fileUtil.isFileExists(dbName);
+
+    if (isExists && !this._isDbOpen) {
       // open the database
       try {
         await this.open();
       } catch (err) {
-        return Promise.reject(`DeleteDB: ${err}`);
+        throw new Error(`DeleteDB: ${err}`);
       }
     }
+
     // close the database
     try {
       await this.close();
     } catch (err) {
-      return Promise.reject('DeleteDB: Close failed');
+      throw new Error('DeleteDB: Close failed');
     }
+
     // delete the database
     if (isExists) {
       try {
-        await this._uFile.deleteFileName(dbName);
+        await this.fileUtil.deleteFileName(dbName);
       } catch (err) {
-        let msg = `DeleteDB: deleteFile ${dbName}`;
-        msg += ` failed ${err}`;
-        return Promise.reject(msg);
+        throw new Error(`DeleteDB: deleteFile ${dbName} failed ${err}`);
       }
     }
-    return Promise.resolve();
+    return;
   }
+
   /**
    * IsTableExists
    * @param tableName
    * @returns
    */
   async isTableExists(tableName: string): Promise<boolean> {
-    if (this._mDB != null && this._isDBOpen) {
-      const isOpen: boolean = this._isDBOpen;
-      try {
-        const retB = await this._uJson.isTableExists(
-          this._mDB,
-          isOpen,
-          tableName,
-        );
-        return Promise.resolve(retB);
-      } catch (err) {
-        return Promise.reject(`IsTableExists: ${err}`);
-      }
-    } else {
-      let msg = `isTableExists: Database ${this._dbName} `;
-      msg += `not opened`;
-      return Promise.reject(msg);
+    this.ensureDatabaseIsOpen();
+
+    const isOpen: boolean = this._isDbOpen;
+
+    try {
+      const tableExistsResult = await this.jsonUtil.isTableExists(
+        this.database,
+        isOpen,
+        tableName,
+      );
+      return tableExistsResult;
+    } catch (err) {
+      throw new Error(`IsTableExists: ${err}`);
     }
   }
   /**
@@ -230,23 +227,20 @@ export class Database {
    * @returns Promise<number>
    */
   async createSyncTable(): Promise<number> {
-    if (!this._isDBOpen) {
-      let msg = `CreateSyncTable: Database ${this._dbName} `;
-      msg += `not opened`;
-      return Promise.reject(msg);
-    }
+    this.ensureDatabaseIsOpen();
+
     let changes = -1;
-    const isOpen = this._isDBOpen;
+    const isOpen = this._isDbOpen;
     // check if the table has already being created
     try {
-      const retB = await this._uJson.isTableExists(
-        this._mDB,
+      const retB = await this.jsonUtil.isTableExists(
+        this.database,
         isOpen,
         'sync_table',
       );
       if (!retB) {
-        const isLastModified = await this._uJson.isLastModified(
-          this._mDB,
+        const isLastModified = await this.jsonUtil.isLastModified(
+          this.database,
           isOpen,
         );
         if (isLastModified) {
@@ -258,20 +252,20 @@ export class Database {
                               );`;
           stmts += `INSERT INTO sync_table (sync_date) VALUES (
                               "${date}");`;
-          changes = await this._uSQLite.execute(this._mDB, stmts);
+          changes = await this.sqliteUtil.execute(this.database, stmts);
           if (changes < 0) {
-            return Promise.reject(`CreateSyncTable: failed changes < 0`);
+            throw new Error(`CreateSyncTable: failed changes < 0`);
           }
         } else {
-          return Promise.reject('No last_modified column in tables');
+          throw new Error('No last_modified column in tables');
         }
       } else {
         changes = 0;
       }
       console.log(`>>> CreateSyncTable changes: ${changes}`);
-      return Promise.resolve(changes);
+      return changes;
     } catch (err) {
-      return Promise.reject(`CreateSyncTable: ${err}`);
+      throw new Error(`CreateSyncTable: ${err}`);
     }
   }
   /**
@@ -281,24 +275,28 @@ export class Database {
    * @returns Promise<{result: boolean, message: string}>
    */
   async setSyncDate(syncDate: string): Promise<any> {
-    if (!this._isDBOpen) {
-      let msg = `SetSyncDate: Database ${this._dbName} `;
-      msg += `not opened`;
-      return { result: false, message: msg };
-    }
+    this.ensureDatabaseIsOpen();
+
     try {
-      const isTable = await this._uJson.isTableExists(
-        this._mDB,
-        this._isDBOpen,
+      const isTable = await this.jsonUtil.isTableExists(
+        this.database,
+        this._isDbOpen,
         'sync_table',
       );
       if (!isTable) {
-        return Promise.reject('No sync_table available');
+        throw new Error('No sync_table available');
       }
-      const sDate: number = Math.round(new Date(syncDate).getTime() / 1000);
+      const syncDateUnixTimestamp: number = Math.round(
+        new Date(syncDate).getTime() / 1000,
+      );
       let stmt = `UPDATE sync_table SET sync_date = `;
-      stmt += `${sDate} WHERE id = 1;`;
-      const changes: number = await this._uSQLite.execute(this._mDB, stmt);
+      stmt += `${syncDateUnixTimestamp} WHERE id = 1;`;
+
+      const changes: number = await this.sqliteUtil.execute(
+        this.database,
+        stmt,
+      );
+
       if (changes < 0) {
         return { result: false, message: 'setSyncDate failed' };
       } else {
@@ -314,23 +312,22 @@ export class Database {
    * @returns Promise<{syncDate: number, message: string}>
    */
   async getSyncDate(): Promise<any> {
-    if (!this._isDBOpen) {
-      let msg = `GetSyncDate: Database ${this._dbName} `;
-      msg += `not opened`;
-      return { syncDate: 0, message: msg };
-    }
+    this.ensureDatabaseIsOpen();
+
     try {
-      const isTable = await this._uJson.isTableExists(
-        this._mDB,
-        this._isDBOpen,
+      const isTable = await this.jsonUtil.isTableExists(
+        this.database,
+        this._isDbOpen,
         'sync_table',
       );
       if (!isTable) {
-        return Promise.reject('No sync_table available');
+        throw new Error('No sync_table available');
       }
-      const syncDate: number = await this._eTJson.getSyncDate(this._mDB);
+      const syncDate: number = await this.exportToJsonUtil.getSyncDate(
+        this.database,
+      );
       if (syncDate > 0) {
-        return { syncDate: syncDate };
+        return { syncDate };
       } else {
         return { syncDate: 0, message: `setSyncDate failed` };
       }
@@ -338,6 +335,7 @@ export class Database {
       return { syncDate: 0, message: `setSyncDate failed: ${err}` };
     }
   }
+
   /**
    * ExecuteSQL
    * execute raw sql statements store in a string
@@ -345,30 +343,37 @@ export class Database {
    * @returns Promise<number>
    */
   async executeSQL(sql: string, transaction: boolean): Promise<number> {
-    if (!this._isDBOpen) {
-      let msg = `ExecuteSQL: Database ${this._dbName} `;
-      msg += `not opened`;
-      return Promise.reject(msg);
-    }
+    this.ensureDatabaseIsOpen();
+
     try {
-      if (transaction)
-        await this._uSQLite.beginTransaction(this._mDB, this._isDBOpen);
-      const changes = await this._uSQLite.execute(this._mDB, sql);
+      if (transaction) {
+        await this.sqliteUtil.beginTransaction(this.database, this._isDbOpen);
+      }
+
+      const changes = await this.sqliteUtil.execute(this.database, sql);
+
       if (changes < 0) {
-        return Promise.reject('ExecuteSQL: changes < 0');
+        throw new Error('ExecuteSQL: changes < 0');
       }
-      if (transaction)
-        await this._uSQLite.commitTransaction(this._mDB, this._isDBOpen);
-      return Promise.resolve(changes);
-    } catch (err) {
-      let msg = `ExecuteSQL: ${err}`;
+
+      if (transaction) {
+        await this.sqliteUtil.commitTransaction(this.database, this._isDbOpen);
+      }
+
+      return changes;
+    } catch (executeError) {
+      let message = `${executeError}`;
       try {
-        if (transaction)
-          await this._uSQLite.rollbackTransaction(this._mDB, this._isDBOpen);
-      } catch (err) {
-        msg += ` : ${err}`;
+        if (transaction) {
+          await this.sqliteUtil.rollbackTransaction(
+            this.database,
+            this._isDbOpen,
+          );
+        }
+      } catch (rollbackErr) {
+        message += ` : ${rollbackErr}`;
       }
-      return Promise.reject(`ExecuteSQL: ${msg}`);
+      throw new Error(`ExecuteSQL: ${message}`);
     }
   }
   /**
@@ -379,16 +384,17 @@ export class Database {
    * @returns Promise<any[]>
    */
   async selectSQL(sql: any, values: any[]): Promise<any[]> {
-    if (!this._isDBOpen) {
-      let msg = `SelectSQL: Database ${this._dbName} `;
-      msg += `not opened`;
-      return Promise.reject(msg);
-    }
+    this.ensureDatabaseIsOpen();
+
     try {
-      const retArr = await this._uSQLite.queryAll(this._mDB, sql, values);
-      return Promise.resolve(retArr);
+      const selectResult = await this.sqliteUtil.queryAll(
+        this.database,
+        sql,
+        values,
+      );
+      return selectResult;
     } catch (err) {
-      return Promise.reject(`SelectSQL: ${err}`);
+      throw new Error(`SelectSQL: ${err}`);
     }
   }
   /**
@@ -403,43 +409,55 @@ export class Database {
     values: any[],
     transaction: boolean,
   ): Promise<any> {
-    if (!this._isDBOpen) {
-      let msg = `RunSQL: Database ${this._dbName} `;
-      msg += `not opened`;
-      return Promise.reject(msg);
-    }
-    const retRes: any = { changes: -1, lastId: -1 };
+    this.ensureDatabaseIsOpen();
+
+    const result: any = { changes: -1, lastId: -1 };
     let initChanges = -1;
+
     try {
-      initChanges = await this._uSQLite.dbChanges(this._mDB);
+      initChanges = await this.sqliteUtil.dbChanges(this.database);
       // start a transaction
-      if (transaction)
-        await this._uSQLite.beginTransaction(this._mDB, this._isDBOpen);
+      if (transaction) {
+        await this.sqliteUtil.beginTransaction(this.database, this._isDbOpen);
+      }
     } catch (err) {
-      return Promise.reject(`ExecSet: ${err}`);
+      throw new Error(`RunSQL: ${err}`);
     }
     try {
-      const lastId = await this._uSQLite.prepareRun(
-        this._mDB,
+      const lastId = await this.sqliteUtil.prepareRun(
+        this.database,
         statement,
         values,
       );
       if (lastId < 0) {
-        if (transaction)
-          await this._uSQLite.rollbackTransaction(this._mDB, this._isDBOpen);
-        return Promise.reject(`RunSQL: return LastId < 0`);
+        if (transaction) {
+          await this.sqliteUtil.rollbackTransaction(
+            this.database,
+            this._isDbOpen,
+          );
+        }
+
+        throw new Error(`RunSQL: return LastId < 0`);
       }
-      if (transaction)
-        await this._uSQLite.commitTransaction(this._mDB, this._isDBOpen);
-      retRes.changes = (await this._uSQLite.dbChanges(this._mDB)) - initChanges;
-      retRes.lastId = lastId;
-      return Promise.resolve(retRes);
+      if (transaction) {
+        await this.sqliteUtil.commitTransaction(this.database, this._isDbOpen);
+      }
+      result.changes =
+        (await this.sqliteUtil.dbChanges(this.database)) - initChanges;
+      result.lastId = lastId;
+
+      return result;
     } catch (err) {
-      if (transaction)
-        await this._uSQLite.rollbackTransaction(this._mDB, this._isDBOpen);
-      return Promise.reject(`RunSQL: ${err}`);
+      if (transaction) {
+        await this.sqliteUtil.rollbackTransaction(
+          this.database,
+          this._isDbOpen,
+        );
+      }
+      throw new Error(`RunSQL: ${err}`);
     }
   }
+
   /**
    * ExecSet
    * execute a set of raw sql statements with/without binding values
@@ -447,100 +465,124 @@ export class Database {
    * @returns Promise<{changes:number, lastId:number}>
    */
   async execSet(set: any[], transaction: boolean): Promise<any> {
-    if (!this._isDBOpen) {
-      let msg = `ExecSet: Database ${this._dbName} `;
-      msg += `not opened`;
-      return Promise.reject(msg);
-    }
-    const retRes: any = { changes: -1, lastId: -1 };
+    this.ensureDatabaseIsOpen();
+
+    const result: any = { changes: -1, lastId: -1 };
     let initChanges = -1;
+
     try {
-      initChanges = await this._uSQLite.dbChanges(this._mDB);
+      initChanges = await this.sqliteUtil.dbChanges(this.database);
+
       // start a transaction
-      if (transaction)
-        await this._uSQLite.beginTransaction(this._mDB, this._isDBOpen);
+      if (transaction) {
+        await this.sqliteUtil.beginTransaction(this.database, this._isDbOpen);
+      }
     } catch (err) {
-      return Promise.reject(`ExecSet: ${err}`);
+      throw new Error(`ExecSet: ${err}`);
     }
     try {
-      retRes.lastId = await this._uSQLite.executeSet(this._mDB, set);
-      if (transaction)
-        await this._uSQLite.commitTransaction(this._mDB, this._isDBOpen);
-      retRes.changes = (await this._uSQLite.dbChanges(this._mDB)) - initChanges;
-      return Promise.resolve(retRes);
+      result.lastId = await this.sqliteUtil.executeSet(this.database, set);
+      if (transaction) {
+        await this.sqliteUtil.commitTransaction(this.database, this._isDbOpen);
+      }
+
+      result.changes =
+        (await this.sqliteUtil.dbChanges(this.database)) - initChanges;
+      return result;
     } catch (err) {
-      const msg: string = err;
+      const message: string = err;
+
       try {
-        if (transaction)
-          await this._uSQLite.rollbackTransaction(this._mDB, this._isDBOpen);
+        if (transaction) {
+          await this.sqliteUtil.rollbackTransaction(
+            this.database,
+            this._isDbOpen,
+          );
+        }
       } catch (err) {
-        return Promise.reject(`ExecSet: ${msg}: ` + `${err}`);
+        throw new Error(`ExecSet: ${message}: ` + `${err}`);
       }
     }
   }
+
   public async getTableList(): Promise<any[]> {
-    if (!this._isDBOpen) {
-      let msg = `GetTableList: Database ${this._dbName} `;
-      msg += `not opened`;
-      return Promise.reject(msg);
-    }
+    this.ensureDatabaseIsOpen();
+
     try {
-      const retArr = await this._uDrop.getTablesNames(this._mDB);
-      return Promise.resolve(retArr);
+      const tableNames = await this.dropUtil.getTablesNames(this.database);
+      return tableNames;
     } catch (err) {
-      return Promise.reject(`GetTableList: ${err}`);
+      throw new Error(`GetTableList: ${err}`);
     }
   }
+
   public async importJson(jsonData: JsonSQLite): Promise<number> {
     let changes = 0;
-    if (this._isDBOpen) {
-      try {
-        if (jsonData.tables && jsonData.tables.length > 0) {
-          // create the database schema
-          changes = await this._iFJson.createDatabaseSchema(
-            this._mDB,
+    this.ensureDatabaseIsOpen();
+
+    try {
+      if (jsonData.tables && jsonData.tables.length > 0) {
+        // create the database schema
+        changes = await this.importFromJsonUtil.createDatabaseSchema(
+          this.database,
+          jsonData,
+        );
+
+        if (changes != -1) {
+          // create the tables data
+          changes += await this.importFromJsonUtil.createTablesData(
+            this.database,
             jsonData,
           );
-          if (changes != -1) {
-            // create the tables data
-            changes += await this._iFJson.createTablesData(this._mDB, jsonData);
-          }
         }
-        if (jsonData.views && jsonData.views.length > 0) {
-          // create the views
-          changes += await this._iFJson.createViews(this._mDB, jsonData);
-        }
-        return Promise.resolve(changes);
-      } catch (err) {
-        return Promise.reject(`ImportJson: ${err}`);
       }
-    } else {
-      return Promise.reject(`ImportJson: database is closed`);
+      if (jsonData.views && jsonData.views.length > 0) {
+        // create the views
+        changes += await this.importFromJsonUtil.createViews(
+          this.database,
+          jsonData,
+        );
+      }
+      return changes;
+    } catch (err) {
+      throw new Error(`ImportJson: ${err}`);
     }
   }
+
   public async exportJson(mode: string): Promise<any> {
     const inJson: JsonSQLite = {} as JsonSQLite;
-    inJson.database = this._dbName.slice(0, -9);
-    inJson.version = this._version;
+    inJson.database = this.dbName.slice(0, -9);
+    inJson.version = this.version;
     inJson.encrypted = false;
     inJson.mode = mode;
-    if (this._isDBOpen) {
-      try {
-        const retJson: JsonSQLite = await this._eTJson.createExportObject(
-          this._mDB,
-          inJson,
-        );
-        const isValid = this._uJson.isJsonSQLite(retJson);
-        if (isValid) {
-          return Promise.resolve(retJson);
-        } else {
-          return Promise.reject(`ExportJson: retJson not valid`);
-        }
-      } catch (err) {
-        return Promise.reject(`ExportJson: ${err}`);
+    this.ensureDatabaseIsOpen();
+
+    try {
+      const jsonResult: JsonSQLite = await this.exportToJsonUtil.createExportObject(
+        this.database,
+        inJson,
+      );
+
+      const isValid = this.jsonUtil.isJsonSQLite(jsonResult);
+
+      if (isValid) {
+        return jsonResult;
+      } else {
+        throw new Error(`ExportJson: retJson not valid`);
       }
-    } else {
-      return Promise.reject(`ExportJson: database is closed`);
+    } catch (err) {
+      throw new Error(`ExportJson: ${err}`);
+    }
+  }
+
+  /**
+   * Throws an error if `this._isDbOpen` is `false`.
+   */
+  private ensureDatabaseIsOpen() {
+    if (!this._isDbOpen || !this.database) {
+      throw new Error(
+        `getVersion: Database ${this.dbName} is not open yet. You should open it first.`,
+      );
     }
   }
 }

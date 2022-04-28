@@ -46,15 +46,9 @@ class ImportFromJson {
             try UtilsSQLCipher.setVersion(mDB: mDB,
                                           version: version)
             if jsonSQLite.mode == "full" {
-                try UtilsSQLCipher
-                    .setForeignKeyConstraintsEnabled(mDB: mDB,
-                                                     toggle: false)
                 // Drop All Tables, Indexes and Triggers
                 try _ = UtilsDrop.dropAll(mDB: mDB)
             }
-            try UtilsSQLCipher
-                .setForeignKeyConstraintsEnabled(mDB: mDB,
-                                                 toggle: true)
             // create database schema
             changes = try ImportFromJson
                 .createSchema(mDB: mDB,
@@ -429,7 +423,7 @@ class ImportFromJson {
                     .createRowStatement(mDB: mDB, data: data,
                                         row: row,
                                         jsonNamesTypes: jsonNamesTypes)
-                let rowValues = UtilsJson.getValuesFromRow(
+                var rowValues = UtilsJson.getValuesFromRow(
                     rowValues: row)
                 isRun = try UtilsJson.checkUpdate(mDB: mDB, stmt: stmt,
                                                   values: rowValues,
@@ -438,8 +432,11 @@ class ImportFromJson {
                                                   types: jsonNamesTypes.types)
 
                 if isRun {
+                    if stmt.prefix(6) == "DELETE" {
+                        rowValues = []
+                    }
                     let lastId: Int64 = try UtilsSQLCipher.prepareSQL(
-                        mDB: mDB, sql: stmt, values: rowValues)
+                        mDB: mDB, sql: stmt, values: rowValues, fromJson: true)
                     if lastId < 0 {
                         throw ImportFromJsonError.createTableData(
                             message: "lastId < 0")
@@ -460,6 +457,7 @@ class ImportFromJson {
     // MARK: - ImportFromJson - createRowStatement
 
     // swiftlint:disable function_body_length
+    // swiftlint:disable cyclomatic_complexity
     class func createRowStatement(
         mDB: Database,
         data: [String: Any],
@@ -508,31 +506,59 @@ class ImportFromJson {
             stmt = "INSERT INTO \(tableName) (\(nameString)) VALUES "
             stmt.append("(\(questionMarkString));")
         } else {
-            // Update
-            let setString: String = UtilsJson.setNameForUpdate(
-                names: jsonNamesTypes.names)
-            if setString.count == 0 {
-                var message: String = "importFromJson: Table "
-                message.append("\(tableName) values row ")
-                message.append("\(pos) not set to String")
-                throw ImportFromJsonError.createRowStatement(
-                    message: message)
+            var isUpdate: Bool = true
+            let idxDelete: Int = jsonNamesTypes
+                .names.firstIndex(where: {$0 == "sql_deleted"}) ?? -1
+            if idxDelete >= 0 {
+                if let delValue = row[idxDelete].value as? Int {
+                    if delValue == 1 {
+                        isUpdate = false
+                        stmt = "DELETE FROM \(tableName) WHERE "
+                        if let rwValue = row[0].value as? String {
+                            stmt += "\(jsonNamesTypes.names[0]) = '\(rwValue)';"
+                        } else if let rwValue = row[0].value as? Int {
+                            stmt += "\(jsonNamesTypes.names[0]) = \(rwValue);"
+                        } else {
+                            var msg: String = "importFromJson: Table "
+                            msg.append("\(tableName) values row[0]does not exist")
+                            throw ImportFromJsonError.createRowStatement(
+                                message: message)
+                        }
+                    }
+                }
             }
+            if isUpdate {
+                // Update
+                let setString: String = UtilsJson.setNameForUpdate(
+                    names: jsonNamesTypes.names)
+                if setString.count == 0 {
+                    var message: String = "importFromJson: Table "
+                    message.append("\(tableName) values row ")
+                    message.append("\(pos) not set to String")
+                    throw ImportFromJsonError.createRowStatement(
+                        message: message)
+                }
 
-            stmt = "UPDATE \(tableName)  SET \(setString) WHERE "
-            if let rwValue = row[0].value as? String {
-                stmt += "\(jsonNamesTypes.names[0]) = '\(rwValue)';"
-            } else if let rwValue = row[0].value as? Int {
-                stmt += "\(jsonNamesTypes.names[0]) = \(rwValue);"
-            } else {
-                var msg: String = "importFromJson: Table "
-                msg.append("\(tableName) values row[0]does not exist")
-                throw ImportFromJsonError.createRowStatement(
-                    message: message)
+                stmt = "UPDATE \(tableName)  SET \(setString) WHERE "
+                if let rwValue = row[0].value as? String {
+                    stmt += "\(jsonNamesTypes.names[0]) = '\(rwValue)';"
+                } else if let rwValue = row[0].value as? Int {
+                    stmt += "\(jsonNamesTypes.names[0]) = \(rwValue);"
+                } else {
+                    var msg: String = "importFromJson: Table "
+                    msg.append("\(tableName) values row[0]does not exist")
+                    throw ImportFromJsonError.createRowStatement(
+                        message: message)
+                }
             }
         }
         return stmt
     }
+    // swiftlint:enable cyclomatic_complexity
+    // swiftlint:enable function_body_length
+
+    // MARK: - ImportFromJson - createViews
+
     // swiftlint:disable function_body_length
     class func createViews(mDB: Database, views: [JsonView]) throws -> Int {
         var changes: Int = 0

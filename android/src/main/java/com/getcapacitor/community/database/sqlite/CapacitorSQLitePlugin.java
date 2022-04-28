@@ -1259,6 +1259,32 @@ public class CapacitorSQLitePlugin extends Plugin {
         }
     }
 
+    @PluginMethod
+    public void deleteExportedRows(PluginCall call) {
+        JSObject retObj = new JSObject();
+        JsonSQLite retJson = new JsonSQLite();
+        if (!call.getData().has("database")) {
+            String msg = "ExportToJson: Must provide a database name";
+            rHandler.retResult(call, null, msg);
+            return;
+        }
+        String dbName = call.getString("database");
+        if (implementation != null) {
+            try {
+                implementation.deleteExportedRows(dbName);
+                rHandler.retResult(call, null, null);
+                return;
+            } catch (Exception e) {
+                String msg = "DeleteExportedRows: " + e.getMessage();
+                rHandler.retResult(call, null, msg);
+                return;
+            }
+        } else {
+            rHandler.retResult(call, null, loadMessage);
+            return;
+        }
+    }
+
     /**
      * CopyFromAssets
      * copy all databases from public/assets/databases to application folder

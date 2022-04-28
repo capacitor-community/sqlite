@@ -232,8 +232,8 @@ class UtilsDrop {
             changes += retChanges
             retChanges = try self.dropViews(mDB: mDB)
             if changes >= 0 {
-                _ = try UtilsSQLCipher.prepareSQL(mDB: mDB,
-                                                  sql: "VACUUM;", values: [])
+                _ = try UtilsSQLCipher.prepareSQL(mDB: mDB, sql: "VACUUM;",
+                                                  values: [], fromJson: false)
                 changes = UtilsSQLCipher.dbChanges(mDB: mDB.mDb) -
                     initChanges
             }

@@ -18,7 +18,7 @@ npm i --save jeep-sqlite@latest
 
 `jeep-sqlite` is a Stencil Component which is using `sql.js` for sql in-memory queries and store the database in the Browser on a `localforage` IndexedDB store named `jeepSqliteStore` and inside a table named `databases`.
 
-🚨 The database is stored from in-memory to `localforage` IndexedDB store when once requires 
+🚨 The database is stored from in-memory to `localforage` IndexedDB store when one requires 
  - a `saveToStore`,
  - a `close`,
  - a `closeConnection`. 

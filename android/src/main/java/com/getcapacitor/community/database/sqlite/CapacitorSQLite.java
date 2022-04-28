@@ -864,6 +864,10 @@ public class CapacitorSQLite {
         Database db = dbDict.get(dbName);
         if (db != null) {
             try {
+                if (!db.isOpen()) {
+                    String msg = "CreateSyncTable: db not opened";
+                    throw new Exception(msg);
+                }
                 JSObject res = db.createSyncTable();
                 return res;
             } catch (Exception e) {
@@ -880,6 +884,10 @@ public class CapacitorSQLite {
         Database db = dbDict.get(dbName);
         if (db != null) {
             try {
+                if (!db.isOpen()) {
+                    String msg = "SetSyncDate: db not opened";
+                    throw new Exception(msg);
+                }
                 db.setSyncDate(syncDate);
                 return;
             } catch (Exception e) {
@@ -896,6 +904,10 @@ public class CapacitorSQLite {
         Database db = dbDict.get(dbName);
         if (db != null) {
             try {
+                if (!db.isOpen()) {
+                    String msg = "GetSyncDate: db not opened";
+                    throw new Exception(msg);
+                }
                 long syncDate = db.getSyncDate();
                 return syncDate;
             } catch (Exception e) {
@@ -1011,9 +1023,15 @@ public class CapacitorSQLite {
         Database db = dbDict.get(dbName);
         if (db != null) {
             try {
+                if (!db.isOpen()) {
+                    String msg = "ExportToJson: db not opened";
+                    throw new Exception(msg);
+                }
                 JSObject ret = db.exportToJson(expMode);
-
-                if (ret.length() == 5 || ret.length() == 6 || ret.length() == 7) {
+                if (ret.length() == 0) {
+                    String msg = "ExportToJson: : return Object is empty " + "No data to synchronize";
+                    throw new Exception(msg);
+                } else if (ret.length() == 5 || ret.length() == 6 || ret.length() == 7) {
                     return ret;
                 } else {
                     String msg = "ExportToJson: return Obj is not a JsonSQLite Obj";
@@ -1021,6 +1039,27 @@ public class CapacitorSQLite {
                 }
             } catch (Exception e) {
                 String msg = "ExportToJson " + e.getMessage();
+                throw new Exception(msg);
+            }
+        } else {
+            String msg = "No available connection for database " + dbName;
+            throw new Exception(msg);
+        }
+    }
+
+    public void deleteExportedRows(String dbName) throws Exception {
+        dbName = getDatabaseName(dbName);
+        Database db = dbDict.get(dbName);
+        if (db != null) {
+            try {
+                if (!db.isOpen()) {
+                    String msg = "deleteExportedRows: db not opened";
+                    throw new Exception(msg);
+                }
+                db.deleteExportedRows();
+                return;
+            } catch (Exception e) {
+                String msg = "DeleteExportedRows " + e.getMessage();
                 throw new Exception(msg);
             }
         } else {
