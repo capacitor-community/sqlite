@@ -1,9 +1,8 @@
 //import { GlobalSQLite } from '../GlobalSQLite';
 import type {
   capSQLiteVersionUpgrade,
-  JsonSQLite,
+  JsonSQLite
 } from '../../../src/definitions';
-
 import { ExportToJson } from './ImportExportJson/exportToJson';
 import { ImportFromJson } from './ImportExportJson/importFromJson';
 import { UtilsJson } from './ImportExportJson/utilsJson';
@@ -12,6 +11,7 @@ import { UtilsDrop } from './utilsDrop';
 import { UtilsFile } from './utilsFile';
 import { UtilsSQLite } from './utilsSQLite';
 import { UtilsUpgrade } from './utilsUpgrade';
+
 
 export class Database {
   private _isDbOpen: boolean;
