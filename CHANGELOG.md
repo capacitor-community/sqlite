@@ -1,3 +1,10 @@
+# 3.4.3-3 (2022-05-04)
+
+### Added Features Only (Electron)
+
+ - add a `sql_deleted` column on table to manage the synchronization of deleted records. Before the record was deleted when a `DELETE FROM` command was issued, now the record is updated with the `sql_deleted`set to 1 
+ - add `deleteExportedRows`method to physically delete the records having the `sql_deleted` set to 1, after a successful synchronization with a remote server database
+
 # 3.4.3-2 (2022-04-21)
 
 ### Added Features Only (Web, iOS, Android)

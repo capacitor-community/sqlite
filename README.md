@@ -28,7 +28,7 @@
 
 ## CAPACITOR 3 (Master)
 
-🚨 Release 3.4.3-2 Web, iOS & Android only ->> 🚨
+🚨 Release 3.4.3-3 all platforms ->> 🚨
 
 The main change is related to the delete table's rows when a synchronization table exists as well as a last_mofidied table's column, allowing for database synchronization of the local database with a remote server database.
 
@@ -58,7 +58,7 @@ The main change is related to the delete table's rows when a synchronization tab
 An example of using this new feature is given in [solidjs-vite-sqlite-app](https://github.com/jepiqueau/capacitor-solid-sqlite). It has been used to test the validity of the implementation.
 
 
-🚨 Release 3.4.3-2 <<- 🚨
+🚨 Release 3.4.3-3 <<- 🚨
 
 🚨 Release 3.4.2-4 ->> 🚨
 !!!! DO NOT USE IT !!!!
@@ -329,7 +329,7 @@ No configuration required for this plugin
 | deleteDatabase              | ✅      | ✅  | ✅        | ✅  |
 | importFromJson              | ✅      | ✅  | ✅        | ✅  |
 | exportToJson                | ✅      | ✅  | ✅        | ✅  |
-| deleteExportedRows          | ✅      | ✅  | ❌        | ✅  | NEW in 3.4.3-2
+| deleteExportedRows          | ✅      | ✅  | ✅        | ✅  | NEW in 3.4.3-2
 | createSyncTable             | ✅      | ✅  | ✅        | ✅  |
 | setSyncDate                 | ✅      | ✅  | ✅        | ✅  |
 | getSyncDate                 | ✅      | ✅  | ✅        | ✅  |

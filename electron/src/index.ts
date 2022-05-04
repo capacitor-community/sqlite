@@ -32,6 +32,7 @@ import type {
   capVersionResult,
   JsonSQLite,
 } from '../../src/definitions';
+
 import { Database } from './electron-utils/Database';
 import { UtilsJson } from './electron-utils/ImportExportJson/utilsJson';
 import { UtilsFile } from './electron-utils/utilsFile';
@@ -462,6 +463,16 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     }
   }
 
+  async deleteExportedRows(options: capSQLiteOptions): Promise<void> {
+    const dbName: string = this.getOptionValue(options, 'database');
+    const database = this.getDatabaseConnectionOrThrowError(dbName);
+    try {
+      await database.deleteExportedRows();
+      return Promise.resolve();
+    } catch (err) {
+      throw new Error(`DeleteExportedRows: ${err}`);
+    }
+  }
 
   async addUpgradeStatement(options: capSQLiteUpgradeOptions): Promise<void> {
     const dbName: string = this.getOptionValue(options, 'database');
@@ -722,12 +733,6 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
   async isNCDatabase(options: capNCOptions): Promise<capSQLiteResult> {
     console.log('isNCDatabase', options);
-    throw new Error('Method not implemented.');
-  }
-  async deleteExportedRows(options: capSQLiteOptions): Promise<void> {
-    const dbName: string = this.getOptionValue(options, 'database');
-//    const database = this.getDatabaseConnectionOrThrowError(dbName);
-    console.log('deleteExportedRows', dbName);
     throw new Error('Method not implemented.');
   }
 }

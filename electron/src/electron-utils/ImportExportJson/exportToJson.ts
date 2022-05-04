@@ -11,8 +11,8 @@ import { UtilsSQLite } from '../utilsSQLite';
 import { UtilsJson } from './utilsJson';
 
 export class ExportToJson {
-  private _uSQLite: UtilsSQLite = new UtilsSQLite();
-  private _uJson: UtilsJson = new UtilsJson();
+  private sqliteUtil: UtilsSQLite = new UtilsSQLite();
+  private jsonUtil: UtilsJson = new UtilsJson();
   /**
    * CreateExportObject
    * @param mDB
@@ -34,7 +34,7 @@ export class ExportToJson {
       if (resTables.length === 0) {
         return Promise.reject("createExportObject: table's names failed");
       } else {
-        const isTable = await this._uJson.isTableExists(
+        const isTable = await this.jsonUtil.isTableExists(
           mDB,
           true,
           'sync_table',
@@ -88,13 +88,113 @@ export class ExportToJson {
     sql += "AND name NOT LIKE 'sqlite_%';";
     let retQuery: any[] = [];
     try {
-      retQuery = await this._uSQLite.queryAll(mDb, sql, []);
+      retQuery = await this.sqliteUtil.queryAll(mDb, sql, []);
       return Promise.resolve(retQuery);
     } catch (err) {
       return Promise.reject(`getTablesNameSQL: ${err}`);
     }
   }
-
+  public async getLastExportDate(mDb: any): Promise<number> {
+    return new Promise((resolve, reject) => {
+      let retDate = -1;
+      // get the last sync date
+      const stmt = `SELECT sync_date FROM sync_table WHERE id = 2;`;
+      mDb.get(stmt, [], (err: Error, row: any) => {
+        // process the row here
+        if (err) {
+          reject(`getLastExportDate: ${err.message}`);
+        } else {
+          if (row != null) {
+            const key: any = Object.keys(row)[0];
+            retDate = row[key];
+          }
+          resolve(retDate);
+        }
+      });
+    });
+  }
+  /**
+   * SetLastExportDate
+   * @param mDb
+   * @param lastExportedDate
+   * @returns
+   */
+  public async setLastExportDate(
+    mDb: any,
+    lastExportedDate: string,
+  ): Promise<any> {
+    try {
+      const isTable = await this.jsonUtil.isTableExists(
+        mDb,
+        true,
+        'sync_table',
+      );
+      if (!isTable) {
+        return Promise.reject(
+          new Error('setLastExportDate: No sync_table available'),
+        );
+      }
+      const sDate: number = Math.round(
+        new Date(lastExportedDate).getTime() / 1000,
+      );
+      let stmt = '';
+      if ((await this.getLastExportDate(mDb)) > 0) {
+        stmt = `UPDATE sync_table SET sync_date = ${sDate} WHERE id = 2;`;
+      } else {
+        stmt = `INSERT INTO sync_table (sync_date) VALUES (${sDate});`;
+      }
+      const changes: number = await this.sqliteUtil.execute(mDb, stmt, false);
+      if (changes < 0) {
+        return { result: false, message: 'setLastExportDate failed' };
+      } else {
+        return { result: true };
+      }
+    } catch (err) {
+      return {
+        result: false,
+        message: `setLastExportDate failed: ${err.message}`,
+      };
+    }
+  }
+  public async delExportedRows(mDb: any): Promise<void> {
+    let lastExportDate: number;
+    try {
+      // check if synchronization table exists
+      const isTable = await this.jsonUtil.isTableExists(
+        mDb,
+        true,
+        'sync_table',
+      );
+      if (!isTable) {
+        return Promise.reject('DelExportedRows: No sync_table available');
+      }
+      // get the last export date
+      lastExportDate = await this.getLastExportDate(mDb);
+      if (lastExportDate < 0) {
+        return Promise.reject(
+          'DelExportedRows: no last exported date available',
+        );
+      }
+      // get the table' name list
+      const resTables: any[] = await this.sqliteUtil.getTablesNames(mDb);
+      if (resTables.length === 0) {
+        return Promise.reject("DelExportedRows: No table's names returned");
+      }
+      // Loop through the tables
+      for (const table of resTables) {
+        let lastId = -1;
+        // define the delete statement
+        const delStmt = `DELETE FROM ${table}
+              WHERE sql_deleted = 1 AND last_modified < ${lastExportDate};`;
+        lastId = await this.sqliteUtil.prepareRun(mDb, delStmt, [], true);
+        if (lastId < 0) {
+          return Promise.reject('DelExportedRows: lastId < 0');
+        }
+      }
+    } catch (err) {
+      return Promise.reject(`DelExportedRows failed: ${err.message}`);
+    }
+  }
   /**
    * GetViewsNameSQL
    * @param mDb
@@ -105,7 +205,7 @@ export class ExportToJson {
     sql += "type='view' AND name NOT LIKE 'sqlite_%';";
     let retQuery: any[] = [];
     try {
-      retQuery = await this._uSQLite.queryAll(mDb, sql, []);
+      retQuery = await this.sqliteUtil.queryAll(mDb, sql, []);
       for (const query of retQuery) {
         const view: JsonView = {} as JsonView;
         view.name = query.name;
@@ -125,7 +225,7 @@ export class ExportToJson {
     return new Promise((resolve, reject) => {
       let retDate = -1;
       // get the last sync date
-      const stmt = `SELECT sync_date FROM sync_table;`;
+      const stmt = `SELECT sync_date FROM sync_table WHERE id = 1;`;
       mDb.get(stmt, [], (err: Error, row: any) => {
         // process the row here
         if (err) {
@@ -180,22 +280,22 @@ export class ExportToJson {
           break;
         }
         // check schema validity
-        await this._uJson.checkSchemaValidity(schema);
+        await this.jsonUtil.checkSchemaValidity(schema);
         // create Table's indexes if any
         const indexes: JsonIndex[] = await this.getIndexes(mDb, tableName);
         if (indexes.length > 0) {
           // check indexes validity
-          await this._uJson.checkIndexesValidity(indexes);
+          await this.jsonUtil.checkIndexesValidity(indexes);
         }
         // create Table's triggers if any
         const triggers: JsonTrigger[] = await this.getTriggers(mDb, tableName);
         if (triggers.length > 0) {
           // check triggers validity
-          await this._uJson.checkTriggersValidity(triggers);
+          await this.jsonUtil.checkTriggersValidity(triggers);
         }
         // create Table's Data
         const query = `SELECT * FROM ${tableName};`;
-        const values: any[] = await this._uJson.getValues(
+        const values: any[] = await this.jsonUtil.getValues(
           mDb,
           query,
           tableName,
@@ -298,7 +398,7 @@ export class ExportToJson {
       let stmt = 'SELECT name,tbl_name,sql FROM sqlite_master WHERE ';
       stmt += `type = 'index' AND tbl_name = '${tableName}' `;
       stmt += `AND sql NOTNULL;`;
-      const retIndexes = await this._uSQLite.queryAll(mDb, stmt, []);
+      const retIndexes = await this.sqliteUtil.queryAll(mDb, stmt, []);
       if (retIndexes.length > 0) {
         for (const rIndex of retIndexes) {
           const keys: string[] = Object.keys(rIndex);
@@ -346,7 +446,7 @@ export class ExportToJson {
       let stmt = 'SELECT name,tbl_name,sql FROM sqlite_master WHERE ';
       stmt += `type = 'trigger' AND tbl_name = '${tableName}' `;
       stmt += `AND sql NOT NULL;`;
-      const retTriggers = await this._uSQLite.queryAll(mDb, stmt, []);
+      const retTriggers = await this.sqliteUtil.queryAll(mDb, stmt, []);
       if (retTriggers.length > 0) {
         for (const rTrg of retTriggers) {
           const keys: string[] = Object.keys(rTrg);
@@ -471,19 +571,19 @@ export class ExportToJson {
           schema = await this.getSchema(sqlStmt);
           if (schema.length > 0) {
             // check schema validity
-            await this._uJson.checkSchemaValidity(schema);
+            await this.jsonUtil.checkSchemaValidity(schema);
           }
           // create Table's indexes if any
           indexes = await this.getIndexes(mDb, tableName);
           if (indexes.length > 0) {
             // check indexes validity
-            await this._uJson.checkIndexesValidity(indexes);
+            await this.jsonUtil.checkIndexesValidity(indexes);
           }
           // create Table's triggers if any
           triggers = await this.getTriggers(mDb, tableName);
           if (triggers.length > 0) {
             // check triggers validity
-            await this._uJson.checkTriggersValidity(triggers);
+            await this.jsonUtil.checkTriggersValidity(triggers);
           }
         }
         // create Table's Data
@@ -495,7 +595,7 @@ export class ExportToJson {
             `SELECT * FROM ${tableName} ` +
             `WHERE last_modified > ${syncDate};`;
         }
-        const values: any[] = await this._uJson.getValues(
+        const values: any[] = await this.jsonUtil.getValues(
           mDb,
           query,
           tableName,
@@ -572,7 +672,7 @@ export class ExportToJson {
         // get total count of the table
         let stmt = 'SELECT count(*) AS tcount  ';
         stmt += `FROM ${rTable.name};`;
-        let retQuery: any[] = await this._uSQLite.queryAll(db, stmt, []);
+        let retQuery: any[] = await this.sqliteUtil.queryAll(db, stmt, []);
         if (retQuery.length != 1) {
           errmsg = 'GetTableModified: total ' + 'count not returned';
           break;
@@ -582,7 +682,7 @@ export class ExportToJson {
         stmt = 'SELECT count(*) AS mcount FROM ';
         stmt += `${rTable.name} WHERE last_modified > `;
         stmt += `${syncDate};`;
-        retQuery = await this._uSQLite.queryAll(db, stmt, []);
+        retQuery = await this.sqliteUtil.queryAll(db, stmt, []);
         if (retQuery.length != 1) break;
         const totalModifiedCount: number = retQuery[0]['mcount'];
 

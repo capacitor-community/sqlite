@@ -1,48 +1,8 @@
 import { UtilsSQLite } from './utilsSQLite';
 
 export class UtilsDrop {
-  private _uSQLite: UtilsSQLite = new UtilsSQLite();
+  private sqliteUtil: UtilsSQLite = new UtilsSQLite();
 
-  /**
-   * GetTablesNames
-   * @param mDb
-   */
-  public async getTablesNames(mDb: any): Promise<string[]> {
-    let sql = 'SELECT name FROM sqlite_master WHERE ';
-    sql += "type='table' AND name NOT LIKE 'sync_table' ";
-    sql += "AND name NOT LIKE '_temp_%' ";
-    sql += "AND name NOT LIKE 'sqlite_%' ";
-    sql += 'ORDER BY rootpage DESC;';
-    const retArr: string[] = [];
-    try {
-      const retQuery: any[] = await this._uSQLite.queryAll(mDb, sql, []);
-      for (const query of retQuery) {
-        retArr.push(query.name);
-      }
-      return Promise.resolve(retArr);
-    } catch (err) {
-      return Promise.reject(`getTablesNames: ${err}`);
-    }
-  }
-  /**
-   * GetViewsNames
-   * @param mDb
-   */
-  public async getViewsNames(mDb: any): Promise<string[]> {
-    let sql = 'SELECT name FROM sqlite_master WHERE ';
-    sql += "type='view' AND name NOT LIKE 'sqlite_%' ";
-    sql += 'ORDER BY rootpage DESC;';
-    const retArr: string[] = [];
-    try {
-      const retQuery: any[] = await this._uSQLite.queryAll(mDb, sql, []);
-      for (const query of retQuery) {
-        retArr.push(query.name);
-      }
-      return Promise.resolve(retArr);
-    } catch (err) {
-      return Promise.reject(`getViewsNames: ${err}`);
-    }
-  }
   /**
    * DropElements
    * @param db
@@ -73,7 +33,7 @@ export class UtilsDrop {
     let stmt = 'SELECT name FROM sqlite_master WHERE ';
     stmt += `type = '${type}' ${stmt1};`;
     try {
-      const elements: any[] = await this._uSQLite.queryAll(db, stmt, []);
+      const elements: any[] = await this.sqliteUtil.queryAll(db, stmt, []);
       if (elements.length > 0) {
         const upType: string = type.toUpperCase();
         const statements: string[] = [];
@@ -83,7 +43,12 @@ export class UtilsDrop {
           statements.push(stmt);
         }
         for (const stmt of statements) {
-          const lastId: number = await this._uSQLite.prepareRun(db, stmt, []);
+          const lastId: number = await this.sqliteUtil.prepareRun(
+            db,
+            stmt,
+            [],
+            false,
+          );
           if (lastId < 0) {
             return Promise.reject(`${msg}: lastId < 0`);
           }
@@ -110,7 +75,7 @@ export class UtilsDrop {
       // drop views
       await this.dropElements(db, 'view');
       // vacuum the database
-      await this._uSQLite.prepareRun(db, 'VACUUM;', []);
+      await this.sqliteUtil.prepareRun(db, 'VACUUM;', [], false);
       return Promise.resolve();
     } catch (err) {
       return Promise.reject(`DropAll: ${err}`);
@@ -133,9 +98,10 @@ export class UtilsDrop {
       statements.push(stmt);
     }
     try {
-      const changes: number = await this._uSQLite.execute(
+      const changes: number = await this.sqliteUtil.execute(
         db,
         statements.join('\n'),
+        false,
       );
       if (changes < 0) {
         return Promise.reject('DropTempTables: changes < 0');

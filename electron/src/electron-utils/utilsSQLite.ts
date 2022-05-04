@@ -1,6 +1,7 @@
 export class UtilsSQLite {
   //  public JSQlite: any;
   public SQLite3: any;
+
   constructor() {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     //    this.JSQlite = require('@journeyapps/sqlcipher').verbose();
@@ -296,12 +297,41 @@ export class UtilsSQLite {
    * @param mDB
    * @param sql
    */
-  public async execute(mDB: any, sql: string): Promise<number> {
+  public async execute(
+    mDB: any,
+    sql: string,
+    fromJson: boolean,
+  ): Promise<number> {
     let changes = -1;
     let initChanges = -1;
     try {
       initChanges = await this.dbChanges(mDB);
-      await this.execDB(mDB, sql);
+      let sqlStmt = sql;
+      // Check for DELETE FROM in sql string
+      if (
+        !fromJson &&
+        sql.toLowerCase().includes('DELETE FROM'.toLowerCase())
+      ) {
+        sqlStmt = sql.replace(/\n/g, '');
+        const sqlStmts: string[] = sqlStmt.split(';');
+        const resArr: string[] = [];
+        for (const stmt of sqlStmts) {
+          const trimStmt = stmt.trim().substring(0, 11).toUpperCase();
+          if (
+            trimStmt === 'DELETE FROM' &&
+            stmt.toLowerCase().includes('WHERE'.toLowerCase())
+          ) {
+            const whereStmt = `${stmt.trim()};`;
+            const rStmt = await this.deleteSQL(mDB, whereStmt, []);
+            resArr.push(rStmt);
+          } else {
+            resArr.push(stmt);
+          }
+        }
+        sqlStmt = resArr.join(';');
+      }
+
+      await this.execDB(mDB, sqlStmt);
       changes = (await this.dbChanges(mDB)) - initChanges;
       return Promise.resolve(changes);
     } catch (err) {
@@ -328,7 +358,11 @@ export class UtilsSQLite {
    * @param db
    * @param set
    */
-  public async executeSet(db: any, set: any[]): Promise<number> {
+  public async executeSet(
+    db: any,
+    set: any[],
+    fromJson: boolean,
+  ): Promise<number> {
     let lastId = -1;
     for (let i = 0; i < set.length; i++) {
       const statement = 'statement' in set[i] ? set[i].statement : null;
@@ -342,10 +376,12 @@ export class UtilsSQLite {
       try {
         if (Array.isArray(values[0])) {
           for (const val of values) {
-            lastId = await this.prepareRun(db, statement, val);
+            const mVal: any[] = await this.replaceUndefinedByNull(val);
+            lastId = await this.prepareRun(db, statement, mVal, fromJson);
           }
         } else {
-          lastId = await this.prepareRun(db, statement, values);
+          const mVal: any[] = await this.replaceUndefinedByNull(values);
+          lastId = await this.prepareRun(db, statement, mVal, fromJson);
         }
       } catch (err) {
         return Promise.reject(`ExecuteSet: ${err}`);
@@ -359,27 +395,192 @@ export class UtilsSQLite {
    * @param statement
    * @param values
    */
-  public prepareRun(
+  public async prepareRun(
     db: any,
     statement: string,
     values: any[],
+    fromJson: boolean,
   ): Promise<number> {
-    return new Promise((resolve, reject) => {
-      let lastId = -1;
-      db.run(statement, values, async (err: any) => {
-        if (err) {
-          reject(`PrepareRun: run ${err.message}`);
-        } else {
-          try {
-            lastId = await this.getLastId(db);
-            resolve(lastId);
-          } catch (err) {
-            reject(`PrepareRun: lastId ${err}`);
-          }
-        }
-      });
-    });
+    const stmtType: string = statement
+      .replace(/\n/g, '')
+      .trim()
+      .substring(0, 6)
+      .toUpperCase();
+    let sqlStmt: string = statement;
+    let lastId = -1;
+    try {
+      if (!fromJson && stmtType === 'DELETE') {
+        sqlStmt = await this.deleteSQL(db, statement, values);
+      }
+      let mVal: any[] = [];
+      if (values != null && values.length > 0) {
+        mVal = await this.replaceUndefinedByNull(values);
+      }
+      if (mVal.length > 0) {
+        await db.run(sqlStmt, mVal);
+      } else {
+        await db.exec(sqlStmt);
+      }
+      lastId = await this.getLastId(db);
+      return Promise.resolve(lastId);
+    } catch (err) {
+      return Promise.reject(`PrepareRun: ${err}`);
+    }
   }
+  /**
+   * replaceUndefinedByNull
+   * @param values
+   * @returns
+   */
+  public async replaceUndefinedByNull(values: any[]): Promise<any[]> {
+    const retValues: any[] = [];
+    if (values.length > 0) {
+      for (const val of values) {
+        let mVal: any = val;
+        if (typeof val === 'undefined') mVal = null;
+        retValues.push(mVal);
+      }
+    }
+    return Promise.resolve(retValues);
+  }
+  /**
+   * deleteSQL
+   * @param db
+   * @param statement
+   * @param values
+   * @returns
+   */
+  public async deleteSQL(
+    db: any,
+    statement: string,
+    values: any[],
+  ): Promise<string> {
+    let sqlStmt: string = statement;
+    try {
+      const isLast: boolean = await this.isLastModified(db, true);
+      if (isLast) {
+        // Replace DELETE by UPDATE and set sql_deleted to 1
+        const wIdx: number = statement.toUpperCase().indexOf('WHERE');
+        const preStmt: string = statement.substring(0, wIdx - 1);
+        const clauseStmt: string = statement.substring(wIdx, statement.length);
+        const tableName: string = preStmt
+          .substring('DELETE FROM'.length)
+          .trim();
+        sqlStmt = `UPDATE ${tableName} SET sql_deleted = 1 ${clauseStmt}`;
+        // Find REFERENCES if any and update the sql_deleted column
+        await this.findReferencesAndUpdate(db, tableName, clauseStmt, values);
+      }
+      return sqlStmt;
+    } catch (err) {
+      return Promise.reject(`DeleteSL: ${err}`);
+    }
+  }
+  /**
+   * findReferencesAndUpdate
+   * @param db
+   * @param tableName
+   * @param whereStmt
+   * @param values
+   * @returns
+   */
+  public async findReferencesAndUpdate(
+    db: any,
+    tableName: string,
+    whereStmt: string,
+    values: any[],
+  ): Promise<void> {
+    try {
+      const references = await this.getReferences(db, tableName);
+      for (const refe of references) {
+        // get the tableName of the reference
+        const refTable: string = await this.getReferenceTableName(refe.sql);
+        if (refTable.length <= 0) {
+          continue;
+        }
+
+        // get the columnName
+        const colName: string = await this.getReferenceColumnName(refe.sql);
+        if (colName.length <= 0) {
+          continue;
+        }
+        // update the where clause
+        const uWhereStmt: string = await this.updateWhere(whereStmt, colName);
+        if (uWhereStmt.length <= 0) {
+          continue;
+        }
+
+        //update sql_deleted for this reference
+        const stmt = `UPDATE ${refTable} SET sql_deleted = 1 ${uWhereStmt}`;
+        if (values != null && values.length > 0) {
+          const mVal: any[] = await this.replaceUndefinedByNull(values);
+          await db.run(stmt, mVal);
+        } else {
+          await db.exec(stmt);
+        }
+        const lastId: number = await this.getLastId(db);
+        if (lastId == -1) {
+          const msg = `UPDATE sql_deleted failed for references table: ${refTable}`;
+          return Promise.reject(new Error(`findReferencesAndUpdate: ${msg}`));
+        }
+      }
+      return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(
+        new Error(`findReferencesAndUpdate: ${err.message}`),
+      );
+    }
+  }
+  public async getReferenceTableName(refValue: string): Promise<string> {
+    let tableName = '';
+    if (
+      refValue.length > 0 &&
+      refValue.substring(0, 12).toLowerCase() === 'CREATE TABLE'.toLowerCase()
+    ) {
+      const oPar = refValue.indexOf('(');
+      tableName = refValue.substring(13, oPar).trim();
+    }
+    return tableName;
+  }
+  public async getReferenceColumnName(refValue: string): Promise<string> {
+    let colName = '';
+    if (refValue.length > 0) {
+      const index: number = refValue
+        .toLowerCase()
+        .indexOf('FOREIGN KEY'.toLowerCase());
+      const stmt: string = refValue.substring(index + 12);
+      const oPar: number = stmt.indexOf('(');
+      const cPar: number = stmt.indexOf(')');
+      colName = stmt.substring(oPar + 1, cPar).trim();
+    }
+    return colName;
+  }
+  public async updateWhere(whStmt: string, colName: string): Promise<string> {
+    let whereStmt = '';
+    if (whStmt.length > 0) {
+      const index: number = whStmt.toLowerCase().indexOf('WHERE'.toLowerCase());
+      const stmt: string = whStmt.substring(index + 6);
+      const fEqual: number = stmt.indexOf('=');
+      const whereColName: string = stmt.substring(0, fEqual).trim();
+      whereStmt = whStmt.replace(whereColName, colName);
+    }
+    return whereStmt;
+  }
+
+  public async getReferences(db: any, tableName: string): Promise<any[]> {
+    const sqlStmt: string =
+      'SELECT sql FROM sqlite_master ' +
+      "WHERE sql LIKE('%REFERENCES%') AND " +
+      "sql LIKE('%" +
+      tableName +
+      "%') AND sql LIKE('%ON DELETE%');";
+    try {
+      const res: any[] = await this.queryAll(db, sqlStmt, []);
+      return Promise.resolve(res);
+    } catch (err) {
+      return Promise.reject(new Error(`getReferences: ${err.message}`));
+    }
+  }
+
   /**
    * QueryAll
    * @param mDB
@@ -401,5 +602,96 @@ export class UtilsSQLite {
         });
       });
     });
+  }
+  /**
+   * GetTablesNames
+   * @param mDb
+   */
+  public async getTablesNames(mDb: any): Promise<string[]> {
+    let sql = 'SELECT name FROM sqlite_master WHERE ';
+    sql += "type='table' AND name NOT LIKE 'sync_table' ";
+    sql += "AND name NOT LIKE '_temp_%' ";
+    sql += "AND name NOT LIKE 'sqlite_%' ";
+    sql += 'ORDER BY rootpage DESC;';
+    const retArr: string[] = [];
+    try {
+      const retQuery: any[] = await this.queryAll(mDb, sql, []);
+      for (const query of retQuery) {
+        retArr.push(query.name);
+      }
+      return Promise.resolve(retArr);
+    } catch (err) {
+      return Promise.reject(`getTablesNames: ${err}`);
+    }
+  }
+  /**
+   * GetViewsNames
+   * @param mDb
+   */
+  public async getViewsNames(mDb: any): Promise<string[]> {
+    let sql = 'SELECT name FROM sqlite_master WHERE ';
+    sql += "type='view' AND name NOT LIKE 'sqlite_%' ";
+    sql += 'ORDER BY rootpage DESC;';
+    const retArr: string[] = [];
+    try {
+      const retQuery: any[] = await this.queryAll(mDb, sql, []);
+      for (const query of retQuery) {
+        retArr.push(query.name);
+      }
+      return Promise.resolve(retArr);
+    } catch (err) {
+      return Promise.reject(`getViewsNames: ${err}`);
+    }
+  }
+  /**
+   * isLastModified
+   * @param db
+   * @param isOpen
+   */
+  public async isLastModified(db: any, isOpen: boolean): Promise<boolean> {
+    if (!isOpen) {
+      return Promise.reject('isLastModified: database not opened');
+    }
+    try {
+      const tableList: string[] = await this.getTablesNames(db);
+      for (const table of tableList) {
+        const tableNamesTypes: any = await this.getTableColumnNamesTypes(
+          db,
+          table,
+        );
+        const tableColumnNames: string[] = tableNamesTypes.names;
+        if (tableColumnNames.includes('last_modified')) {
+          return Promise.resolve(true);
+        }
+      }
+    } catch (err) {
+      return Promise.reject(`isLastModified: ${err}`);
+    }
+  }
+  /**
+   * GetTableColumnNamesTypes
+   * @param mDB
+   * @param tableName
+   */
+  public async getTableColumnNamesTypes(
+    mDB: any,
+    tableName: string,
+  ): Promise<any> {
+    let resQuery: any[] = [];
+    const retNames: string[] = [];
+    const retTypes: string[] = [];
+    const query = `PRAGMA table_info('${tableName}');`;
+    try {
+      resQuery = await this.queryAll(mDB, query, []);
+      if (resQuery.length > 0) {
+        for (const query of resQuery) {
+          retNames.push(query.name);
+          retTypes.push(query.type);
+        }
+      }
+      return Promise.resolve({ names: retNames, types: retTypes });
+    } catch (err) {
+      return Promise.reject('GetTableColumnNamesTypes: ' + `${err}`);
+    }
   }
 }

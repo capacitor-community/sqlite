@@ -1,17 +1,16 @@
 //import { GlobalSQLite } from '../GlobalSQLite';
 import type {
   capSQLiteVersionUpgrade,
-  JsonSQLite
+  JsonSQLite,
 } from '../../../src/definitions';
+
 import { ExportToJson } from './ImportExportJson/exportToJson';
 import { ImportFromJson } from './ImportExportJson/importFromJson';
 import { UtilsJson } from './ImportExportJson/utilsJson';
 //import { UtilsEncryption } from './utilsEncryption';
-import { UtilsDrop } from './utilsDrop';
 import { UtilsFile } from './utilsFile';
 import { UtilsSQLite } from './utilsSQLite';
 import { UtilsUpgrade } from './utilsUpgrade';
-
 
 export class Database {
   private _isDbOpen: boolean;
@@ -23,7 +22,6 @@ export class Database {
   private fileUtil: UtilsFile = new UtilsFile();
   private sqliteUtil: UtilsSQLite = new UtilsSQLite();
   private jsonUtil: UtilsJson = new UtilsJson();
-  private dropUtil: UtilsDrop = new UtilsDrop();
   //  private _uGlobal: GlobalSQLite = new GlobalSQLite();
   //  private _uEncrypt: UtilsEncryption = new UtilsEncryption();
   private upgradeUtil: UtilsUpgrade = new UtilsUpgrade();
@@ -239,7 +237,7 @@ export class Database {
         'sync_table',
       );
       if (!retB) {
-        const isLastModified = await this.jsonUtil.isLastModified(
+        const isLastModified = await this.sqliteUtil.isLastModified(
           this.database,
           isOpen,
         );
@@ -252,7 +250,7 @@ export class Database {
                               );`;
           stmts += `INSERT INTO sync_table (sync_date) VALUES (
                               "${date}");`;
-          changes = await this.sqliteUtil.execute(this.database, stmts);
+          changes = await this.sqliteUtil.execute(this.database, stmts, false);
           if (changes < 0) {
             throw new Error(`CreateSyncTable: failed changes < 0`);
           }
@@ -262,7 +260,6 @@ export class Database {
       } else {
         changes = 0;
       }
-      console.log(`>>> CreateSyncTable changes: ${changes}`);
       return changes;
     } catch (err) {
       throw new Error(`CreateSyncTable: ${err}`);
@@ -295,6 +292,7 @@ export class Database {
       const changes: number = await this.sqliteUtil.execute(
         this.database,
         stmt,
+        false,
       );
 
       if (changes < 0) {
@@ -350,7 +348,7 @@ export class Database {
         await this.sqliteUtil.beginTransaction(this.database, this._isDbOpen);
       }
 
-      const changes = await this.sqliteUtil.execute(this.database, sql);
+      const changes = await this.sqliteUtil.execute(this.database, sql, false);
 
       if (changes < 0) {
         throw new Error('ExecuteSQL: changes < 0');
@@ -428,6 +426,7 @@ export class Database {
         this.database,
         statement,
         values,
+        false,
       );
       if (lastId < 0) {
         if (transaction) {
@@ -481,7 +480,11 @@ export class Database {
       throw new Error(`ExecSet: ${err}`);
     }
     try {
-      result.lastId = await this.sqliteUtil.executeSet(this.database, set);
+      result.lastId = await this.sqliteUtil.executeSet(
+        this.database,
+        set,
+        false,
+      );
       if (transaction) {
         await this.sqliteUtil.commitTransaction(this.database, this._isDbOpen);
       }
@@ -504,12 +507,25 @@ export class Database {
       }
     }
   }
-
+  async deleteExportedRows(): Promise<void> {
+    this.ensureDatabaseIsOpen();
+    try {
+      await this.exportToJsonUtil.delExportedRows(this.database);
+      return;
+    } catch (err) {
+      throw new Error(`DeleteExportedRows: ${err}`);
+    }
+  }
+  /**
+   * GetTableList
+   * get the table's list
+   * @returns
+   */
   public async getTableList(): Promise<any[]> {
     this.ensureDatabaseIsOpen();
 
     try {
-      const tableNames = await this.dropUtil.getTablesNames(this.database);
+      const tableNames = await this.sqliteUtil.getTablesNames(this.database);
       return tableNames;
     } catch (err) {
       throw new Error(`GetTableList: ${err}`);
@@ -521,6 +537,11 @@ export class Database {
     this.ensureDatabaseIsOpen();
 
     try {
+      // set Foreign Keys Off
+      await this.sqliteUtil.setForeignKeyConstraintsEnabled(
+        this.database,
+        false,
+      );
       if (jsonData.tables && jsonData.tables.length > 0) {
         // create the database schema
         changes = await this.importFromJsonUtil.createDatabaseSchema(
@@ -543,6 +564,12 @@ export class Database {
           jsonData,
         );
       }
+      // set Foreign Keys On
+      await this.sqliteUtil.setForeignKeyConstraintsEnabled(
+        this.database,
+        true,
+      );
+
       return changes;
     } catch (err) {
       throw new Error(`ImportJson: ${err}`);
@@ -558,10 +585,21 @@ export class Database {
     this.ensureDatabaseIsOpen();
 
     try {
+      await this.exportToJsonUtil.setLastExportDate(
+        this.database,
+        new Date().toISOString(),
+      );
+
       const jsonResult: JsonSQLite = await this.exportToJsonUtil.createExportObject(
         this.database,
         inJson,
       );
+      const keys = Object.keys(jsonResult);
+      if (keys.length === 0) {
+        const msg =
+          `ExportJson: return Object is empty ` + `No data to synchronize`;
+        throw new Error(msg);
+      }
 
       const isValid = this.jsonUtil.isJsonSQLite(jsonResult);
 

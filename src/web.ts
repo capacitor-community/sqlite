@@ -1,5 +1,6 @@
 import { WebPlugin } from '@capacitor/core';
-import {
+
+import type {
   CapacitorSQLitePlugin,
   capAllConnectionsOptions,
   capChangeSecretOptions,
