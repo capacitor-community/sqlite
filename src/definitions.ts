@@ -1444,7 +1444,7 @@ export interface ISQLiteDBConnection {
    * @since 3.4.0
    */
   executeTransaction(
-    txn: [{ statement: string; values?: any[] }],
+    txn: { statement: string; values?: any[] }[],
   ): Promise<void>;
 }
 /**
@@ -1692,7 +1692,7 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
   }
 
   async executeTransaction(
-    txn: [{ statement: string; values?: any[] }],
+    txn: { statement: string; values?: any[] }[],
   ): Promise<void> {
     try {
       const ret = await this.sqlite.execute({
