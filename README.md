@@ -16,7 +16,7 @@
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/dw/@capacitor-community/sqlite?style=flat-square" /></a>
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/v/@capacitor-community/sqlite?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-<a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-16-orange?style=flat-square" /></a>
+<a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-17-orange?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 </p>
 
@@ -400,6 +400,8 @@ No configuration required for this plugin
 
 - [angular-sqlite-app-starter](https://github.com/jepiqueau/angular-sqlite-app-starter)
 
+- [angular-sqlite-synchronize-app](https://github.com/jepiqueau/angular-sqlite-synchronize-app)
+
 ### Ionic/React
 
 - [react-sqlite-app-starter](https://github.com/jepiqueau/react-sqlite-app-starter)
@@ -445,26 +447,25 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
-<table>
-  <tr>
-    <td align="center"><a href="https://github.com/jepiqueau"><img src="https://avatars3.githubusercontent.com/u/16580653?v=4" width="100px;" alt=""/><br /><sub><b>Jean Pierre Quéau</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=jepiqueau" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/paulantoine2"><img src="https://avatars0.githubusercontent.com/u/22882943?s=64&v=4" width="100px;" alt=""/><br /><sub><b>Paul Antoine</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=paulantoine2" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/karyfars"><img src="https://avatars2.githubusercontent.com/u/303016?s=60&u=1ce232ae3c22eac7b0b4778e46fe079939c39b40&v=4" width="100px;" alt=""/><br /><sub><b>Karyfars</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=karyfars" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/chriswep"><img src="https://avatars2.githubusercontent.com/u/1055809?s=400&u=e555940f143da8be255743028d6838cb5c020b44&v=4" width="100px;" alt=""/><br /><sub><b>Chriswep</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=chriswep" title="Documentation">📖</a></td>    
-    <td align="center"><a href="https://github.com/nirajhinge"><img src="https://avatars.githubusercontent.com/u/54309996?v=4" width="100px;" alt=""/><br /><sub><b>Nirajhinge</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=nirajhinge" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/digaus"><img src="https://avatars.githubusercontent.com/u/15358538?v=4" width="100px;" alt=""/><br /><sub><b>Dirk Gausmann</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=digaus" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/IT-MikeS"><img src="https://avatars.githubusercontent.com/u/20338451?v=4" width="100px;" alt=""/><br /><sub><b>Mike Summerfeldt</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=IT-MikeS" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/peakcool"><img src="https://avatars.githubusercontent.com/u/14804014?v=4" width="100px;" alt=""/><br /><sub><b>Peakcool</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=peakcool" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/gion-andri"><img src="https://avatars.githubusercontent.com/u/540998?v=4" width="100px;" alt=""/><br /><sub><b>Gion-Andri Cantieni</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=gion-andri" title="Documentation">📖</a></td>
-    <td align="center"><a href="https://github.com/robingenz"><img src="https://avatars.githubusercontent.com/u/13857929?v=4" width="100px;" alt=""/><br /><sub><b>Robin Genz</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=robingenz" title="Documentation">📖</a></td>
-    <td align="center"><a href="https://github.com/dewald-els"><img src="https://avatars.githubusercontent.com/u/10051247?v=4" width="100px;" alt=""/><br /><sub><b>Dewald Els</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=dewald-els" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/joewoodhouse"><img src="https://avatars.githubusercontent.com/u/3168135?v=4" width="100px;" alt=""/><br /><sub><b>Joe Woodhouse</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=joewoodhouse" title="Documentation">📖</a></td>
-    <td align="center"><a href="https://github.com/ptasheq"><img src="https://avatars.githubusercontent.com/u/3025106?v=4" width="100px;" alt=""/><br /><sub><b>Ptasheq</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=ptasheq" title="Documentation">📖</a></td>  
-    <td align="center"><a href="https://github.com/victorybiz"><img src="https://avatars.githubusercontent.com/u/8276466?v=4" width="100px;" alt=""/><br /><sub><b>Victory Osayi</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=victorybiz" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/tobiasmuecksch"><img src="https://avatars.githubusercontent.com/u/1294854?v=4" width="100px;" alt=""/><br /><sub><b>Tobias Mücksch</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=tobiasmuecksch" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/dragermrb"><img src="https://avatars.githubusercontent.com/u/11479696?v=4" width="100px;" alt=""/><br /><sub><b>Manuel Rodríguez</b></sub></a><br /><a href="https://github.com/capacitor-community/sqlite/commits?author=dragermrb" title="Code">💻</a></td>
-  </tr>
-</table>
+<p align="center">
+  <a href="https://github.com/jepiqueau"><img src="https://github.com/jepiqueau.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/paulantoine2"><img src="https://github.com/paulantoine2.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/karyfars"><img src="https://github.com/karyfars.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/chriswep"><img src="https://github.com/chriswep.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/nirajhinge"><img src="https://github.com/nirajhinge.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/digaus"><img src="https://github.com/digaus.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/IT-MikeS"><img src="https://github.com/IT-MikeS.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/peakcool"><img src="https://github.com/peakcool.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/gion-andri"><img src="https://github.com/gion-andri.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/robingenz"><img src="https://github.com/robingenz.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/dewald-els"><img src="https://github.com/dewald-els.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/joewoodhouse"><img src="https://github.com/joewoodhouse.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/ptasheq"><img src="https://github.com/ptasheq.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/victorybiz"><img src="https://github.com/victorybiz.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/tobiasmuecksch"><img src="https://github.com/tobiasmuecksch.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/dragermrb"><img src="https://github.com/dragermrb.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/iamcco"><img src="https://github.com/iamcco.png?size=100" width="50" height="50" /></a>
+</p>
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->

@@ -350,12 +350,12 @@ Remove rows with sql_deleted = 1 after an export
 ### executeTransaction(...)
 
 ```typescript
-executeTransaction(txn: [{ statement: string; values?: any[]; }]) => Promise<void>
+executeTransaction(txn: { statement: string; values?: any[]; }[]) => Promise<void>
 ```
 
 | Param     | Type                                                  |
 | --------- | ----------------------------------------------------- |
-| **`txn`** | <code>[{ statement: string; values?: any[]; }]</code> |
+| **`txn`** | <code>{ statement: string; values?: any[]; }[]</code> |
 
 **Since:** 3.4.0
 

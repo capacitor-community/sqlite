@@ -1,6 +1,18 @@
+# 3.4.3 (2022-05-07)
+
+### Added Features
+
+ - Add a link `angular-sqlite-synchronize-app` application demonstrating the import/export JSON object including the new delete feature with the `sql_deleted` column to synchronize local database with remote server database.
+
+ - Modify Contributor list format
+
+### Bug Fixes
+
+ - fix(executeTransaction): fix definition issue#267
+
 # 3.4.3-3 (2022-05-04)
 
-### Added Features Only (Electron)
+### Added Features (Electron)
 
  - add a `sql_deleted` column on table to manage the synchronization of deleted records. Before the record was deleted when a `DELETE FROM` command was issued, now the record is updated with the `sql_deleted`set to 1 
  - add `deleteExportedRows`method to physically delete the records having the `sql_deleted` set to 1, after a successful synchronization with a remote server database
