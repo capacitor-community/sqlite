@@ -1,3 +1,11 @@
+# 3.5.0 (2022-05-09)
+
+### Chore
+
+ - Update to @capacitor/core 3.5.0
+ - Update to @capacitor/ios 3.5.0
+ - Update to @capacitor/android 3.5.0
+
 # 3.4.3 (2022-05-07)
 
 ### Added Features
