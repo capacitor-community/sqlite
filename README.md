@@ -51,7 +51,7 @@ The main change is related to the delete table's rows when a synchronization tab
 
 - In the JSON object outputs by the `exportToJson`, all the deleted rows in your local database have got the `sql_deleted` column set to 1 to help in your synchronization management process with the remote server database. A system `last_exported_date` is automatically saved in the synchronization table at the start of the export process flow.
 
-- On successfull completion of your synchronization management process with the remote server database, you must 
+- On successful completion of your synchronization management process with the remote server database, you must 
   - Set a new synchronization date (as `(new Date()).toISOString()`) with the `setSyncDate` method.
   - Execute the `deleteExportedRows` method which physically deletes all table's rows having 1 as value for the `sql_deleted` column prior to the `last_exported_date` in your local database.
 
