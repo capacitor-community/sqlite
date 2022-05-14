@@ -465,6 +465,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <a href="https://github.com/tobiasmuecksch"><img src="https://github.com/tobiasmuecksch.png?size=100" width="50" height="50" /></a>
   <a href="https://github.com/dragermrb"><img src="https://github.com/dragermrb.png?size=100" width="50" height="50" /></a>
   <a href="https://github.com/iamcco"><img src="https://github.com/iamcco.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/eltociear"><img src="https://github.com/eltociear.png?size=100" width="50" height="50" /></a>
 </p>
 
 <!-- markdownlint-enable -->
