@@ -1,3 +1,15 @@
+# 3.5.1-1 (2022-05-16)
+
+### Chore
+
+ - Update to @capacitor/core 3.5.1
+ - Update to @capacitor/ios 3.5.1
+ - Update to @capacitor/android 3.5.1
+
+### Bug Fixes
+
+ - DELETE FROM does not work #271 (victorybiz)
+ 
 # 3.5.0 (2022-05-09)
 
 ### Chore

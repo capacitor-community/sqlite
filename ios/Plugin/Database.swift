@@ -467,7 +467,8 @@ class Database {
             if !isExists {
                 // check if there are tables with last_modified column
                 let isLastModified: Bool = try UtilsJson.isLastModified(mDB: self)
-                if isLastModified {
+                let isSqlDeleted: Bool = try UtilsJson.isSqlDeleted(mDB: self)
+                if isLastModified && isSqlDeleted {
                     let date = Date()
                     let syncTime: Int = Int(date.timeIntervalSince1970)
                     var stmt: String = "CREATE TABLE IF NOT EXISTS "
@@ -485,6 +486,8 @@ class Database {
                 retObj = 0
             }
         } catch UtilsJsonError.isLastModified(let message) {
+            throw DatabaseError.createSyncTable(message: message)
+        } catch UtilsJsonError.isSqlDeleted(let message) {
             throw DatabaseError.createSyncTable(message: message)
         } catch UtilsJsonError.tableNotExists(let message) {
             throw DatabaseError.createSyncTable(message: message)

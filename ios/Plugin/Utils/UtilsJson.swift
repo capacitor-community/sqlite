@@ -18,6 +18,7 @@ enum UtilsJsonError: Error {
     case validateTriggers(message: String)
     case validateViews(message: String)
     case isLastModified(message: String)
+    case isSqlDeleted(message: String)
     case checkUpdate(message: String)
     case checkValues(message: String)}
 
@@ -77,6 +78,33 @@ class UtilsJson {
             throw UtilsJsonError.isLastModified(message: message)
         } catch UtilsDropError.getTablesNamesFailed(let message) {
             throw UtilsJsonError.isLastModified(message: message)
+        }
+        return ret
+    }
+
+    // MARK: - ImportFromJson - IsSqlDeleted
+
+    class func isSqlDeleted(mDB: Database) throws -> Bool {
+        var msg: String = "Error SqlDeleted: "
+        if !mDB.isDBOpen() {
+            msg.append("Database not opened")
+            throw UtilsJsonError.isSqlDeleted(message: msg)
+        }
+        var ret: Bool = false
+        do {
+            let tableList: [String] = try UtilsDrop.getTablesNames(mDB: mDB)
+            for table in tableList {
+                let namesTypes: JsonNamesTypes = try getTableColumnNamesTypes(mDB: mDB,
+                                                                              tableName: table)
+                if namesTypes.names.contains("sql_deleted") {
+                    ret = true
+                    break
+                }
+            }
+        } catch UtilsJsonError.getTableColumnNamesTypes(let message) {
+            throw UtilsJsonError.isSqlDeleted(message: message)
+        } catch UtilsDropError.getTablesNamesFailed(let message) {
+            throw UtilsJsonError.isSqlDeleted(message: message)
         }
         return ret
     }

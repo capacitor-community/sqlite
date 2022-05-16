@@ -517,7 +517,8 @@ public class Database {
         String sqlStmt = statement;
         try {
             Boolean isLast = _uJson.isLastModified(mDB);
-            if (isLast) {
+            Boolean isDel = _uJson.isSqlDeleted(mDB);
+            if (isLast && isDel) {
                 // Replace DELETE by UPDATE and set sql_deleted to 1
                 Integer wIdx = statement.toUpperCase().indexOf("WHERE");
                 String preStmt = statement.substring(0, wIdx - 1);
@@ -770,7 +771,8 @@ public class Database {
         boolean isExists = _uJson.isTableExists(this, "sync_table");
         if (!isExists) {
             boolean isLastModified = _uJson.isLastModified(this);
-            if (isLastModified) {
+            boolean isSqlDeleted = _uJson.isSqlDeleted(this);
+            if (isLastModified && isSqlDeleted) {
                 Date date = new Date();
                 long syncTime = date.getTime() / 1000L;
                 String[] statements = {

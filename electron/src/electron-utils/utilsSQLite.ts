@@ -458,7 +458,8 @@ export class UtilsSQLite {
     let sqlStmt: string = statement;
     try {
       const isLast: boolean = await this.isLastModified(db, true);
-      if (isLast) {
+      const isDel: boolean = await this.isSqlDeleted(db, true);
+      if (isLast && isDel) {
         // Replace DELETE by UPDATE and set sql_deleted to 1
         const wIdx: number = statement.toUpperCase().indexOf('WHERE');
         const preStmt: string = statement.substring(0, wIdx - 1);
@@ -666,6 +667,31 @@ export class UtilsSQLite {
       }
     } catch (err) {
       return Promise.reject(`isLastModified: ${err}`);
+    }
+  }
+  /**
+   * isSqlDeleted
+   * @param db
+   * @param isOpen
+   */
+  public async isSqlDeleted(db: any, isOpen: boolean): Promise<boolean> {
+    if (!isOpen) {
+      return Promise.reject('isSqlDeleted: database not opened');
+    }
+    try {
+      const tableList: string[] = await this.getTablesNames(db);
+      for (const table of tableList) {
+        const tableNamesTypes: any = await this.getTableColumnNamesTypes(
+          db,
+          table,
+        );
+        const tableColumnNames: string[] = tableNamesTypes.names;
+        if (tableColumnNames.includes('sql_deleted')) {
+          return Promise.resolve(true);
+        }
+      }
+    } catch (err) {
+      return Promise.reject(`isSqlDeleted: ${err}`);
     }
   }
   /**

@@ -125,6 +125,7 @@ export class UtilsJson {
   public async createSchemaStatement(jsonData: any): Promise<string[]> {
     const statements: string[] = [];
     let isLastModified = false;
+    let isSqlDeleted = false;
     // Prepare the statement to execute
     try {
       for (const jTable of jsonData.tables) {
@@ -139,6 +140,9 @@ export class UtilsJson {
                 );
                 if (jTable.schema[j].column === 'last_modified') {
                   isLastModified = true;
+                }
+                if (jTable.schema[j].column === 'sql_deleted') {
+                  isSqlDeleted = true;
                 }
               } else if (jTable.schema[j].foreignkey) {
                 statements.push(
@@ -157,6 +161,9 @@ export class UtilsJson {
                 if (jTable.schema[j].column === 'last_modified') {
                   isLastModified = true;
                 }
+                if (jTable.schema[j].column === 'sql_deleted') {
+                  isSqlDeleted = true;
+                }
               } else if (jTable.schema[j].foreignkey) {
                 statements.push(
                   `FOREIGN KEY (${jTable.schema[j].foreignkey}) ${jTable.schema[j].value},`,
@@ -169,7 +176,7 @@ export class UtilsJson {
             }
           }
           statements.push(');');
-          if (isLastModified) {
+          if (isLastModified && isSqlDeleted) {
             // create trigger last_modified associated with the table
             let trig = 'CREATE TRIGGER IF NOT EXISTS ';
             trig += `${jTable.name}`;

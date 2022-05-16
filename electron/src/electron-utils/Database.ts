@@ -241,7 +241,11 @@ export class Database {
           this.database,
           isOpen,
         );
-        if (isLastModified) {
+        const isSqlDeleted = await this.sqliteUtil.isSqlDeleted(
+          this.database,
+          isOpen,
+        );
+        if (isLastModified && isSqlDeleted) {
           const date: number = Math.round(new Date().getTime() / 1000);
           let stmts = `
                           CREATE TABLE IF NOT EXISTS sync_table (

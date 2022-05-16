@@ -19,6 +19,12 @@ public class UtilsJson {
     private JsonView uJView = new JsonView();
     private UtilsDrop _uDrop = new UtilsDrop();
 
+    /**
+     * Check existence of last_modified column
+     * @param db
+     * @return
+     * @throws Exception
+     */
     public boolean isLastModified(Database db) throws Exception {
         if (!db.isOpen()) {
             throw new Exception("isLastModified: Database not opened");
@@ -37,6 +43,33 @@ public class UtilsJson {
             return ret;
         } catch (Exception e) {
             throw new Exception("isLastModified: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Check existence of sql_deleted column
+     * @param db
+     * @return
+     * @throws Exception
+     */
+    public boolean isSqlDeleted(Database db) throws Exception {
+        if (!db.isOpen()) {
+            throw new Exception("isSqlDeleted: Database not opened");
+        }
+        boolean ret = false;
+        try {
+            List<String> tables = _uDrop.getTablesNames(db);
+            for (String tableName : tables) {
+                JSObject namesTypes = getTableColumnNamesTypes(db, tableName);
+                ArrayList<String> colNames = (ArrayList<String>) namesTypes.get("names");
+                if (colNames.contains("sql_deleted")) {
+                    ret = true;
+                    break;
+                }
+            }
+            return ret;
+        } catch (Exception e) {
+            throw new Exception("isSqlDeleted: " + e.getMessage());
         }
     }
 

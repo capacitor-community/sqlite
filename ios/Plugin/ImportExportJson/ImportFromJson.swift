@@ -186,12 +186,15 @@ class ImportFromJson {
 
     // MARK: - ImportFromJson - CreateTableSchema
 
+    // swiftlint:disable function_body_length
+    // swiftlint:disable cyclomatic_complexity
     class func createTableSchema(mSchema: [JsonColumn],
                                  tableName: String, mode: String)
     -> [String] {
         var statements: [String] = []
         var stmt: String
         var isLastModified: Bool = false
+        var isSqlDeleted: Bool = false
         stmt = "CREATE TABLE IF NOT EXISTS "
         stmt.append(tableName)
         stmt.append(" (")
@@ -200,6 +203,9 @@ class ImportFromJson {
                 if jSchColumn.count > 0 {
                     if jSchColumn == "last_modified" {
                         isLastModified = true
+                    }
+                    if jSchColumn == "sql_deleted" {
+                        isSqlDeleted = true
                     }
                     stmt.append(jSchColumn)
                 }
@@ -222,7 +228,7 @@ class ImportFromJson {
         }
         stmt.append(");")
         statements.append(stmt)
-        if isLastModified {
+        if isLastModified && isSqlDeleted {
             // create trigger last_modified associated with the table
             let triggerName: String = tableName + "_trigger_last_modified"
             stmt = "CREATE TRIGGER IF NOT EXISTS "
@@ -240,6 +246,8 @@ class ImportFromJson {
         }
         return statements
     }
+    // swiftlint:enable cyclomatic_complexity
+    // swiftlint:enable function_body_length
 
     // MARK: - ImportFromJson - CreateTableIndexes
 

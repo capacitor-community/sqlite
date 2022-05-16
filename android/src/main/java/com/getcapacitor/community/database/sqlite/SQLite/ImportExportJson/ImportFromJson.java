@@ -159,6 +159,7 @@ public class ImportFromJson {
         ArrayList<String> statements = new ArrayList<>();
         String stmt = new StringBuilder("CREATE TABLE IF NOT EXISTS ").append(tableName).append(" (").toString();
         Boolean isLastModified = false;
+        Boolean isSqlDeleted = false;
         for (int j = 0; j < mSchema.size(); j++) {
             if (j == mSchema.size() - 1) {
                 if (mSchema.get(j).getColumn() != null) {
@@ -166,6 +167,9 @@ public class ImportFromJson {
                         new StringBuilder(stmt).append(mSchema.get(j).getColumn()).append(" ").append(mSchema.get(j).getValue()).toString();
                     if (mSchema.get(j).getColumn().equals("last_modified")) {
                         isLastModified = true;
+                    }
+                    if (mSchema.get(j).getColumn().equals("sql_deleted")) {
+                        isSqlDeleted = true;
                     }
                 } else if (mSchema.get(j).getForeignkey() != null) {
                     stmt =
@@ -196,6 +200,9 @@ public class ImportFromJson {
                     if (mSchema.get(j).getColumn().equals("last_modified")) {
                         isLastModified = true;
                     }
+                    if (mSchema.get(j).getColumn().equals("sql_deleted")) {
+                        isSqlDeleted = true;
+                    }
                 } else if (mSchema.get(j).getForeignkey() != null) {
                     stmt =
                         new StringBuilder(stmt)
@@ -219,7 +226,7 @@ public class ImportFromJson {
         }
         stmt = new StringBuilder(stmt).append(");").toString();
         statements.add(stmt);
-        if (isLastModified) {
+        if (isLastModified && isSqlDeleted) {
             // create trigger last_modified associated with the table
             String stmtTrigger = new StringBuilder("CREATE TRIGGER IF NOT EXISTS ")
                 .append(tableName)
