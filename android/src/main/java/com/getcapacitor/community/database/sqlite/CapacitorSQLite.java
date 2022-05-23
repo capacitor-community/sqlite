@@ -2,14 +2,14 @@ package com.getcapacitor.community.database.sqlite;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
+
 import androidx.biometric.BiometricManager;
 import androidx.biometric.BiometricPrompt;
 import androidx.security.crypto.EncryptedSharedPreferences;
 import androidx.security.crypto.MasterKey;
-import androidx.security.crypto.MasterKeys;
+
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.PluginCall;
@@ -24,14 +24,13 @@ import com.getcapacitor.community.database.sqlite.SQLite.UtilsMigrate;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsNCDatabase;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLite;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsSecret;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Dictionary;
 import java.util.Enumeration;
@@ -40,32 +39,28 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class CapacitorSQLite {
 
     private static final String TAG = CapacitorSQLite.class.getName();
-    private Context context;
-    private Dictionary<String, Database> dbDict = new Hashtable<>();
-    private UtilsSQLite uSqlite = new UtilsSQLite();
-    private UtilsFile uFile = new UtilsFile();
-    private UtilsJson uJson = new UtilsJson();
-    private UtilsMigrate uMigrate = new UtilsMigrate();
-    private UtilsNCDatabase uNCDatabase = new UtilsNCDatabase();
+    private final Context context;
+    private final Dictionary<String, Database> dbDict = new Hashtable<>();
+    private final UtilsSQLite uSqlite = new UtilsSQLite();
+    private final UtilsFile uFile = new UtilsFile();
+    private final UtilsJson uJson = new UtilsJson();
+    private final UtilsMigrate uMigrate = new UtilsMigrate();
+    private final UtilsNCDatabase uNCDatabase = new UtilsNCDatabase();
     private UtilsSecret uSecret;
     private SharedPreferences sharedPreferences = null;
     private MasterKey masterKeyAlias;
     private BiometricManager biometricManager;
-    private SqliteConfig config;
+    private final SqliteConfig config;
     private Boolean isEncryption = true;
     private Boolean biometricAuth = false;
-    private String biometricTitle;
-    private String biometricSubTitle;
-    private int VALIDITY_DURATION = 5;
-    private RetHandler rHandler = new RetHandler();
+    private final String biometricTitle;
+    private final String biometricSubTitle;
+    private final int VALIDITY_DURATION = 5;
+    private final RetHandler rHandler = new RetHandler();
     private PluginCall call;
 
     public CapacitorSQLite(Context context, SqliteConfig config) throws Exception {
@@ -92,10 +87,10 @@ public class CapacitorSQLite {
                                 Enumeration<String> aliases = ks.aliases();
                                 if (aliases.hasMoreElements()) {
                                     masterKeyAlias =
-                                        new MasterKey.Builder(context)
-                                            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                                            .setUserAuthenticationRequired(true, VALIDITY_DURATION)
-                                            .build();
+                                            new MasterKey.Builder(context)
+                                                    .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                                                    .setUserAuthenticationRequired(true, VALIDITY_DURATION)
+                                                    .build();
                                 } else {
                                     masterKeyAlias = new MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build();
                                 }
@@ -150,13 +145,13 @@ public class CapacitorSQLite {
         try {
             // get instance of the EncryptedSharedPreferences class
             this.sharedPreferences =
-                EncryptedSharedPreferences.create(
-                    context,
-                    "sqlite_encrypted_shared_prefs",
-                    masterKeyAlias,
-                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-                );
+                    EncryptedSharedPreferences.create(
+                            context,
+                            "sqlite_encrypted_shared_prefs",
+                            masterKeyAlias,
+                            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+                    );
             this.uSecret = new UtilsSecret(this.context, this.sharedPreferences);
         } catch (Exception e) {
             throw new Exception(e.getMessage());
@@ -165,6 +160,7 @@ public class CapacitorSQLite {
 
     /**
      * Echo
+     *
      * @param value
      * @return
      */
@@ -189,6 +185,7 @@ public class CapacitorSQLite {
 
     /**
      * SetEncryptionSecret
+     *
      * @param passphrase
      * @throws Exception
      */
@@ -209,6 +206,7 @@ public class CapacitorSQLite {
 
     /**
      * ChangeEncryptionSecret
+     *
      * @param passphrase
      * @param oldPassphrase
      * @throws Exception
@@ -274,6 +272,7 @@ public class CapacitorSQLite {
 
     /**
      * CreateConnection
+     *
      * @param dbName
      * @param encrypted
      * @param mode
@@ -282,7 +281,7 @@ public class CapacitorSQLite {
      * @throws Exception
      */
     public void createConnection(String dbName, boolean encrypted, String mode, int version, Dictionary<Integer, JSONObject> vUpgObject)
-        throws Exception {
+            throws Exception {
         dbName = getDatabaseName(dbName);
         // check if connection already exists
         Database conn = dbDict.get(dbName);
@@ -295,14 +294,14 @@ public class CapacitorSQLite {
         }
         try {
             Database db = new Database(
-                context,
-                dbName + "SQLite.db",
-                encrypted,
-                mode,
-                version,
-                isEncryption,
-                vUpgObject,
-                sharedPreferences
+                    context,
+                    dbName + "SQLite.db",
+                    encrypted,
+                    mode,
+                    version,
+                    isEncryption,
+                    vUpgObject,
+                    sharedPreferences
             );
             if (db != null) {
                 dbDict.put(dbName, db);
@@ -318,6 +317,7 @@ public class CapacitorSQLite {
 
     /**
      * CreateNCConnection
+     *
      * @param dbPath
      * @param version
      * @throws Exception
@@ -336,14 +336,14 @@ public class CapacitorSQLite {
                 throw new Exception(msg);
             }
             Database db = new Database(
-                context,
-                dbPath,
-                false,
-                "no-encryption",
-                version,
-                isEncryption,
-                new Hashtable<>(),
-                sharedPreferences
+                    context,
+                    dbPath,
+                    false,
+                    "no-encryption",
+                    version,
+                    isEncryption,
+                    new Hashtable<>(),
+                    sharedPreferences
             );
             if (db != null) {
                 dbDict.put(dbPath, db);
@@ -359,6 +359,7 @@ public class CapacitorSQLite {
 
     /**
      * Open
+     *
      * @param dbName
      * @throws Exception
      */
@@ -380,6 +381,7 @@ public class CapacitorSQLite {
 
     /**
      * Close
+     *
      * @param dbName
      * @throws Exception
      */
@@ -411,9 +413,10 @@ public class CapacitorSQLite {
 
     /**
      * GetUrl
+     *
      * @param dbName
-     * @throws Exception
      * @return String
+     * @throws Exception
      */
     public String getUrl(String dbName) throws Exception {
         dbName = getDatabaseName(dbName);
@@ -433,9 +436,10 @@ public class CapacitorSQLite {
 
     /**
      * GetVersion
+     *
      * @param dbName
-     * @throws Exception
      * @return Integer
+     * @throws Exception
      */
     public Integer getVersion(String dbName) throws Exception {
         dbName = getDatabaseName(dbName);
@@ -455,6 +459,7 @@ public class CapacitorSQLite {
 
     /**
      * CloseNCConnection
+     *
      * @param dbPath
      * @throws Exception
      */
@@ -478,6 +483,7 @@ public class CapacitorSQLite {
 
     /**
      * CloseConnection
+     *
      * @param dbName
      * @throws Exception
      */
@@ -546,6 +552,7 @@ public class CapacitorSQLite {
 
     /**
      * IsDatabase
+     *
      * @param dbName
      * @return Boolean
      * @throws Exception
@@ -557,6 +564,7 @@ public class CapacitorSQLite {
 
     /**
      * IsNCDatabase
+     *
      * @param dbPath
      * @return Boolean
      * @throws Exception
@@ -567,6 +575,7 @@ public class CapacitorSQLite {
 
     /**
      * IsTableExists
+     *
      * @param dbName
      * @param tableName
      * @throws Exception
@@ -585,6 +594,7 @@ public class CapacitorSQLite {
 
     /**
      * GetDatabaseList
+     *
      * @return JSArray
      * @throws Exception
      */
@@ -604,6 +614,7 @@ public class CapacitorSQLite {
 
     /**
      * GetMigratableDbList
+     *
      * @return JSArray
      * @throws Exception
      */
@@ -623,6 +634,7 @@ public class CapacitorSQLite {
 
     /**
      * AddSQLiteSuffix
+     *
      * @param folderPath
      * @throws Exception
      */
@@ -637,7 +649,6 @@ public class CapacitorSQLite {
     }
 
     /**
-     *
      * @param folderPath
      * @throws Exception
      */
@@ -653,6 +664,7 @@ public class CapacitorSQLite {
 
     /**
      * Execute
+     *
      * @param dbName
      * @param statements
      * @return
@@ -683,6 +695,7 @@ public class CapacitorSQLite {
 
     /**
      * ExecuteSet
+     *
      * @param dbName
      * @param set
      * @return
@@ -711,6 +724,7 @@ public class CapacitorSQLite {
 
     /**
      * Run
+     *
      * @param dbName
      * @param statement
      * @param values
@@ -753,6 +767,7 @@ public class CapacitorSQLite {
 
     /**
      * Query
+     *
      * @param dbName
      * @param statement
      * @param values
@@ -816,11 +831,7 @@ public class CapacitorSQLite {
         Database db = dbDict.get(dbName);
         if (db != null) {
             File databaseFile = context.getDatabasePath(dbName + "SQLite.db");
-            if (databaseFile.exists()) {
-                return true;
-            } else {
-                return false;
-            }
+            return databaseFile.exists();
         } else {
             String msg = "No available connection for database " + dbName;
             throw new Exception(msg);
@@ -832,11 +843,7 @@ public class CapacitorSQLite {
         Database db = dbDict.get(dbName);
         if (db != null) {
             Boolean isOpen = db.isOpen();
-            if (isOpen) {
-                return true;
-            } else {
-                return false;
-            }
+            return isOpen;
         } else {
             String msg = "No available connection for database " + dbName;
             throw new Exception(msg);
@@ -1094,7 +1101,7 @@ public class CapacitorSQLite {
         try {
             Enumeration<String> connections = dbDict.keys();
             while (connections.hasMoreElements()) {
-                String dbName = (String) connections.nextElement();
+                String dbName = connections.nextElement();
                 closeConnection(dbName);
             }
         } catch (Exception e) {

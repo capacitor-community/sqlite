@@ -8,72 +8,71 @@ import static android.database.Cursor.FIELD_TYPE_STRING;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.text.TextUtils;
 import android.util.Log;
+
 import androidx.sqlite.db.SimpleSQLiteQuery;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 import androidx.sqlite.db.SupportSQLiteStatement;
+
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
-import com.getcapacitor.community.database.sqlite.SQLite.GlobalSQLite;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.ExportToJson;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.ImportFromJson;
-import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.JsonIndex;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.JsonSQLite;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.UtilsJson;
-import com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLCipher;
-import com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLite;
+
+import net.sqlcipher.Cursor;
+import net.sqlcipher.database.SQLiteDatabase;
+import net.sqlcipher.database.SQLiteException;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Dictionary;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
-import net.sqlcipher.Cursor;
-import net.sqlcipher.database.SQLiteDatabase;
-import net.sqlcipher.database.SQLiteException;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class Database {
 
     private static final String TAG = Database.class.getName();
     private Boolean _isOpen = false;
-    private String _dbName;
-    private Context _context;
-    private String _mode;
+    private final String _dbName;
+    private final Context _context;
+    private final String _mode;
     private String _secret;
-    private Boolean _encrypted;
-    private Boolean _isEncryption;
-    private SharedPreferences _sharedPreferences;
-    private File _file;
-    private int _version;
-    private GlobalSQLite _globVar;
+    private final Boolean _encrypted;
+    private final Boolean _isEncryption;
+    private final SharedPreferences _sharedPreferences;
+    private final File _file;
+    private final int _version;
+    private final GlobalSQLite _globVar;
     private SupportSQLiteDatabase _db = null;
-    private UtilsSQLite _uSqlite;
-    private UtilsSQLCipher _uCipher;
-    private UtilsFile _uFile;
-    private UtilsJson _uJson;
-    private UtilsUpgrade _uUpg;
-    private UtilsDrop _uDrop;
-    private UtilsSecret _uSecret;
+    private final UtilsSQLite _uSqlite;
+    private final UtilsSQLCipher _uCipher;
+    private final UtilsFile _uFile;
+    private final UtilsJson _uJson;
+    private final UtilsUpgrade _uUpg;
+    private final UtilsDrop _uDrop;
+    private final UtilsSecret _uSecret;
     private Dictionary<Integer, JSONObject> _vUpgObject = new Hashtable<>();
-    private ImportFromJson fromJson = new ImportFromJson();
-    private ExportToJson toJson = new ExportToJson();
+    private final ImportFromJson fromJson = new ImportFromJson();
+    private final ExportToJson toJson = new ExportToJson();
     private Boolean ncDB = false;
 
     public Database(
-        Context context,
-        String dbName,
-        Boolean encrypted,
-        String mode,
-        int version,
-        Boolean isEncryption,
-        Dictionary<Integer, JSONObject> vUpgObject,
-        SharedPreferences sharedPreferences
+            Context context,
+            String dbName,
+            Boolean encrypted,
+            String mode,
+            int version,
+            Boolean isEncryption,
+            Dictionary<Integer, JSONObject> vUpgObject,
+            SharedPreferences sharedPreferences
     ) {
         this._context = context;
         this._dbName = dbName;
@@ -153,8 +152,8 @@ public class Database {
         int curVersion;
 
         String password = _uSecret != null && _encrypted && (_mode.equals("secret") || _mode.equals("encryption"))
-            ? _uSecret.getPassphrase()
-            : "";
+                ? _uSecret.getPassphrase()
+                : "";
         if (_mode.equals("encryption")) {
             if (_isEncryption) {
                 try {
@@ -227,17 +226,6 @@ public class Database {
                                 _db = null;
                                 throw new Exception(msg);
                             }
-                            /*                           } else {
-                                try {
-                                    _db.setVersion(_version);
-                                } catch (Exception e) {
-                                    String msg = e.getMessage() + "Failed in setting version " + _version;
-                                    close();
-                                    _db = null;
-                                    throw new Exception(msg);
-                                }
-                            }
-  */
                         }
                         _isOpen = true;
                         return;
@@ -303,11 +291,7 @@ public class Database {
      * @return the existence of the database on folder
      */
     public boolean isDBExists() {
-        if (_file.exists()) {
-            return true;
-        } else {
-            return false;
-        }
+        return _file.exists();
     }
 
     /**
@@ -521,7 +505,7 @@ public class Database {
                 // Replace DELETE by UPDATE and set sql_deleted to 1
                 Integer wIdx = statement.toUpperCase().indexOf("WHERE");
                 String preStmt = statement.substring(0, wIdx - 1);
-                String clauseStmt = statement.substring(wIdx, statement.length());
+                String clauseStmt = statement.substring(wIdx);
                 String tableName = preStmt.substring(("DELETE FROM").length()).trim();
                 sqlStmt = "UPDATE " + tableName + " SET sql_deleted = 1 " + clauseStmt;
                 // Find REFERENCES if any and update the sql_deleted column
@@ -641,11 +625,11 @@ public class Database {
      */
     public JSArray getReferences(Database mDB, String tableName) throws Exception {
         String sqlStmt =
-            "SELECT sql FROM sqlite_master " +
-            "WHERE sql LIKE('%REFERENCES%') AND " +
-            "sql LIKE('%" +
-            tableName +
-            "%') AND sql LIKE('%ON DELETE%');";
+                "SELECT sql FROM sqlite_master " +
+                        "WHERE sql LIKE('%REFERENCES%') AND " +
+                        "sql LIKE('%" +
+                        tableName +
+                        "%') AND sql LIKE('%ON DELETE%');";
         try {
             JSArray references = mDB.selectSQL(sqlStmt, new ArrayList<Object>());
             return references;
@@ -775,8 +759,8 @@ public class Database {
                 Date date = new Date();
                 long syncTime = date.getTime() / 1000L;
                 String[] statements = {
-                    "CREATE TABLE IF NOT EXISTS sync_table (" + "id INTEGER PRIMARY KEY NOT NULL," + "sync_date INTEGER);",
-                    "INSERT INTO sync_table (sync_date) VALUES ('" + syncTime + "');"
+                        "CREATE TABLE IF NOT EXISTS sync_table (" + "id INTEGER PRIMARY KEY NOT NULL," + "sync_date INTEGER);",
+                        "INSERT INTO sync_table (sync_date) VALUES ('" + syncTime + "');"
                 };
                 try {
                     retObj = execute(statements);
@@ -790,6 +774,27 @@ public class Database {
         } else {
             retObj.put("changes", Integer.valueOf(0));
             return retObj;
+        }
+    }
+
+    /**
+     * GetSyncDate method
+     * get the synchronization date
+     *
+     * @return
+     * @throws Exception
+     */
+    public Long getSyncDate() throws Exception {
+        long syncDate = 0;
+        try {
+            boolean isSyncTable = _uJson.isTableExists(this, "sync_table");
+            if (!isSyncTable) {
+                throw new Exception("No sync_table available");
+            }
+            syncDate = toJson.getSyncDate(this);
+            return syncDate;
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
         }
     }
 
@@ -810,34 +815,13 @@ public class Database {
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
             Date date = formatter.parse(syncDate.replaceAll("Z$", "+0000"));
             long syncTime = date.getTime() / 1000L;
-            String[] statements = { "UPDATE sync_table SET sync_date = " + syncTime + " WHERE id = 1;" };
+            String[] statements = {"UPDATE sync_table SET sync_date = " + syncTime + " WHERE id = 1;"};
             retObj = execute(statements);
             if (retObj.getInteger("changes") != Integer.valueOf(-1)) {
                 return;
             } else {
                 throw new Exception("changes < 0");
             }
-        } catch (Exception e) {
-            throw new Exception(e.getMessage());
-        }
-    }
-
-    /**
-     * GetSyncDate method
-     * get the synchronization date
-     *
-     * @return
-     * @throws Exception
-     */
-    public Long getSyncDate() throws Exception {
-        long syncDate = 0;
-        try {
-            boolean isSyncTable = _uJson.isTableExists(this, "sync_table");
-            if (!isSyncTable) {
-                throw new Exception("No sync_table available");
-            }
-            syncDate = toJson.getSyncDate(this);
-            return syncDate;
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         }
@@ -914,7 +898,8 @@ public class Database {
         } catch (Exception e) {
             Log.e(TAG, "Error: exportToJson " + e.getMessage());
             throw new Exception(e.getMessage());
-        } finally {}
+        } finally {
+        }
     }
 
     /**
