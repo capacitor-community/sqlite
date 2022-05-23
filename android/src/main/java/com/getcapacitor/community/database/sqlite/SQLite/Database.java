@@ -188,11 +188,7 @@ public class Database {
                     }
                     if (!isNCDB()) {
                         try {
-                            curVersion = _db.getVersion();
-                            if (curVersion == 0) {
-                                _db.setVersion(1);
-                                curVersion = _db.getVersion();
-                            }
+                            curVersion = _db.getVersion(); // default 0
                         } catch (IllegalStateException e) {
                             String msg = "Failed in get/setVersion " + e.getMessage();
                             Log.v(TAG, msg);
@@ -209,7 +205,10 @@ public class Database {
                         if (_version > curVersion && _vUpgObject != null && _vUpgObject.size() > 0) {
                             //                           if (_vUpgObject != null && _vUpgObject.size() > 0) {
                             try {
-                                _uUpg.onUpgrade(this, _context, _dbName, _vUpgObject, curVersion, _version);
+                                this._uFile.copyFile(_context, _dbName, "backup-" + _dbName);
+
+                                _uUpg.onUpgrade(this, _vUpgObject, curVersion, _version);
+
                                 boolean ret = _uFile.deleteBackupDB(_context, _dbName);
                                 if (!ret) {
                                     String msg = "Failed in deleteBackupDB backup-\" + _dbName";

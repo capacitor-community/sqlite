@@ -930,17 +930,17 @@ public class CapacitorSQLite {
             throw new Exception(msg);
         }
 
-        if (upgObj == null || !upgObj.has("fromVersion") || !upgObj.has("toVersion") || !upgObj.has("statement")) {
+        if (upgObj == null || !upgObj.has("toVersion") || !upgObj.has("statements")) {
             String msg = "Must provide an upgrade statement";
-            msg += " {fromVersion,toVersion,statement}";
+            msg += " {toVersion,statement}";
             throw new Exception(msg);
         }
         try {
-            int fromVersion = upgObj.getInt("fromVersion");
-            upgDict.put(fromVersion, upgObj);
+            int toVersion = upgObj.getInt("toVersion");
+            upgDict.put(toVersion, upgObj);
             return upgDict;
         } catch (Exception e) {
-            String msg = "Must provide fromVersion as Integer" + e.getMessage();
+            String msg = "Must provide toVersion as Integer" + e.getMessage();
             throw new Exception(msg);
         }
     }
