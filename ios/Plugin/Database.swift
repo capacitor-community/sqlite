@@ -134,19 +134,20 @@ class Database {
                 .setForeignKeyConstraintsEnabled(mDB: self,
                                                  toggle: true)
             if !ncDB {
-                var curVersion: Int = try UtilsSQLCipher
-                    .getVersion(mDB: self)
-                if curVersion == 0 {
-                    try UtilsSQLCipher.setVersion(mDB: self, version: 1)
-                    curVersion = try UtilsSQLCipher.getVersion(mDB: self)
-                }
+                let curVersion: Int = try UtilsSQLCipher.getVersion(mDB: self)
+
                 if dbVersion > curVersion && vUpgDict.count > 0 {
+                    // backup the database
+                    _ = try UtilsFile.copyFile(fileName: dbName,
+                                               toFileName: "backup-\(dbName)",
+                                               databaseLocation: databaseLocation)
+
                     _ = try uUpg
                         .onUpgrade(mDB: self, upgDict: vUpgDict,
-                                   dbName: dbName,
                                    currentVersion: curVersion,
                                    targetVersion: dbVersion,
                                    databaseLocation: databaseLocation)
+
                     try UtilsSQLCipher
                         .deleteBackupDB(databaseLocation: databaseLocation,
                                         databaseName: dbName)
