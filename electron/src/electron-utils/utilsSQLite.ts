@@ -37,15 +37,9 @@ export class UtilsSQLite {
         if (password.length > 0) {
           await this.setCipherPragma(mDB, password);
         }
-*/
+        */
         // set Foreign Keys On
         await this.setForeignKeyConstraintsEnabled(mDB, true);
-
-        // Check Version
-        const curVersion: number = await this.getVersion(mDB);
-        if (curVersion === 0) {
-          await this.setVersion(mDB, 1);
-        }
       } catch (err) {
         return Promise.reject(msg + `${err}`);
       }
