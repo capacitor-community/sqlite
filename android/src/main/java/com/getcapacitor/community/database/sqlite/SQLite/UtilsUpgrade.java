@@ -38,7 +38,7 @@ public class UtilsUpgrade {
         Collections.sort(sortedKeys);
 
         for (Integer versionKey : sortedKeys) {
-            if (versionKey > curVersion) {
+            if (versionKey > curVersion && versionKey <= targetVersion) {
                 JSONObject upgrade = upgDict.get(versionKey);
 
                 JSONArray statementsJson = upgrade.has("statement") ? upgrade.getJSONArray("statements") : new JSONArray();
