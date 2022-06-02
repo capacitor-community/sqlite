@@ -41,7 +41,9 @@ public class UtilsUpgrade {
             if (versionKey > curVersion && versionKey <= targetVersion) {
                 JSONObject upgrade = upgDict.get(versionKey);
 
-                JSONArray statementsJson = upgrade.has("statement") ? upgrade.getJSONArray("statements") : new JSONArray();
+                JSONArray statementsJson = upgrade.has("statements")
+                        ? upgrade.getJSONArray("statements")
+                        : new JSONArray();
 
                 List<String> statements = new ArrayList<String>();
 
@@ -55,7 +57,7 @@ public class UtilsUpgrade {
                 }
 
                 try {
-                    executeStatementsProcess(db, (String[]) statements.toArray());
+                    executeStatementsProcess(db, statements.toArray(new String[0]));
 
                     db.getDb().setVersion(versionKey);
                 } catch (Exception e) {
