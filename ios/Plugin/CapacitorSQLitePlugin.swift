@@ -123,6 +123,26 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         }
     }
 
+    // MARK: - ClearEncryptionSecret
+
+    @objc func clearEncryptionSecret(_ call: CAPPluginCall) {
+
+        do {
+            try implementation?.clearEncryptionSecret()
+            retHandler.rResult(call: call)
+            return
+        } catch CapacitorSQLiteError.failed(let message) {
+            let msg = "ClearEncryptionSecret: \(message)"
+            retHandler.rResult(call: call, message: msg)
+            return
+        } catch let error {
+            retHandler.rResult(
+                call: call,
+                message: "ClearEncryptionSecret: \(error)")
+            return
+        }
+    }
+
     // MARK: - CreateConnection
 
     @objc func createConnection(_ call: CAPPluginCall) {

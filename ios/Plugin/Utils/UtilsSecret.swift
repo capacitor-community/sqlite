@@ -13,7 +13,8 @@ enum UtilsSecretError: Error {
     case setPassphrase(message: String)
     case changePassphrase(message: String)
     case setEncryptionSecret(message: String)
-    case  changeEncryptionSecret(message: String)
+    case changeEncryptionSecret(message: String)
+    case clearEncryptionSecret(message: String)
 }
 
 let oldAccount: String = "CapacitorSQLitePlugin"
@@ -240,4 +241,22 @@ class UtilsSecret {
     }
     // swiftlint:enable function_body_length
 
+    // MARK: - ClearEncryptionSecret
+
+    class func clearEncryptionSecret(prefix: String, databaseLocation: String) throws {
+        do {
+            if prefix.isEmpty {
+                let msg: String = "keychain prefix must not be empty"
+                throw UtilsSecretError.setEncryptionSecret(message: msg)
+            }
+            // clear encrypted passphrase
+            let account = "\(prefix)_\(oldAccount)"
+            if !getPassphrase(account: account).isEmpty {
+                try setPassphrase(account: account, passphrase: "")
+            }
+        } catch UtilsSecretError.setPassphrase(let message) {
+            throw UtilsSecretError.clearEncryptionSecret(message: message)
+        }
+
+    }
 }

@@ -231,6 +231,32 @@ enum CapacitorSQLiteError: Error {
     // swiftlint:enable no_space_in_method_call
     // swiftlint:enable function_body_length
 
+    // MARK: - ClearEncryptionSecret
+
+    @objc public func clearEncryptionSecret() throws {
+        if isInit {
+            if isEncryption {
+                do {
+                    // close all connections
+                    try closeAllConnections()
+                    // set encryption secret
+                    try UtilsSecret
+                        .clearEncryptionSecret(prefix: prefixKeychain,
+                                               databaseLocation: databaseLocation)
+                    return
+                } catch UtilsSecretError.clearEncryptionSecret(let message) {
+                    throw CapacitorSQLiteError.failed(message: message)
+                } catch let error {
+                    throw CapacitorSQLiteError.failed(message: "\(error)")
+                }
+            } else {
+                throw CapacitorSQLiteError.failed(message: "No Encryption set in capacitor.config")
+            }
+        } else {
+            throw CapacitorSQLiteError.failed(message: initMessage)
+        }
+    }
+
     // MARK: - getNCDatabasePath
 
     @objc public func getNCDatabasePath(_ folderPath: String, dbName: String ) throws -> String {
