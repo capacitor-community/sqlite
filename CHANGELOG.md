@@ -1,3 +1,9 @@
+# 3.5.1-2 (2022-05-31)
+
+### Bug Fixes
+
+ - Fix No error thrown when table does not exist for Electron issue#277
+
 # 3.5.1-1 (2022-05-16)
 
 ### Chore
@@ -8,7 +14,7 @@
 
 ### Bug Fixes
 
- - DELETE FROM does not work #271 (victorybiz)
+ - DELETE FROM does not work issue#271 (victorybiz)
  
 # 3.5.0 (2022-05-09)
 

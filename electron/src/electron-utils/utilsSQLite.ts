@@ -410,16 +410,37 @@ export class UtilsSQLite {
       if (values != null && values.length > 0) {
         mVal = await this.replaceUndefinedByNull(values);
       }
-      if (mVal.length > 0) {
-        await db.run(sqlStmt, mVal);
-      } else {
-        await db.exec(sqlStmt);
-      }
+
+      await this.runExec(db, sqlStmt, mVal);
+
       lastId = await this.getLastId(db);
       return Promise.resolve(lastId);
+
     } catch (err) {
-      return Promise.reject(`PrepareRun: ${err}`);
+        return Promise.reject(`PrepareRun: ${err}`);
     }
+  }
+
+  private async runExec(db: any, stmt: string, values: any[] = []): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (values != null && values.length > 0) {
+        db.run(stmt, values, (err: any) => {
+          if (err) {
+             reject(err.message);
+          } else {
+            resolve();
+          }
+        });
+      } else {
+        db.exec(stmt, (err: any) => {
+          if (err) {
+            reject(err.message);
+          } else {
+            resolve();
+          }
+        });
+      }
+    });
   }
   /**
    * replaceUndefinedByNull
