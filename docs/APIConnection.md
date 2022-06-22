@@ -149,18 +149,16 @@ Change the passphrase in a secure store
 ### addUpgradeStatement(...)
 
 ```typescript
-addUpgradeStatement(database: string, fromVersion: number, toVersion: number, statement: string, set?: capSQLiteSet[] | undefined) => Promise<void>
+addUpgradeStatement(database: string, toVersion: number, statements: string[]) => Promise<void>
 ```
 
 Add the upgrade Statement for database version upgrading
 
-| Param             | Type                        |
-| ----------------- | --------------------------- |
-| **`database`**    | <code>string</code>         |
-| **`fromVersion`** | <code>number</code>         |
-| **`toVersion`**   | <code>number</code>         |
-| **`statement`**   | <code>string</code>         |
-| **`set`**         | <code>capSQLiteSet[]</code> |
+| Param            | Type                  |
+| ---------------- | --------------------- |
+| **`database`**   | <code>string</code>   |
+| **`toVersion`**  | <code>number</code>   |
+| **`statements`** | <code>string[]</code> |
 
 **Since:** 2.9.0 refactor
 
@@ -562,14 +560,6 @@ Delete Old Cordova databases
 | Prop         | Type                 | Description                                   |
 | ------------ | -------------------- | --------------------------------------------- |
 | **`result`** | <code>boolean</code> | result set to true when successful else false |
-
-
-#### capSQLiteSet
-
-| Prop            | Type                | Description                      |
-| --------------- | ------------------- | -------------------------------- |
-| **`statement`** | <code>string</code> | A statement                      |
-| **`values`**    | <code>any[]</code>  | the data values list as an Array |
 
 
 #### Map

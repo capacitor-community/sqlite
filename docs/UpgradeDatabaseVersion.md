@@ -2,7 +2,7 @@
 <h2 align="center">Upgrade Database Version DOCUMENTATION</h2>
 <p align="center"><strong><code>@capacitor-community/sqlite</code></strong></p>
 
-An API method has been added `addUpgradeStatement` to define the new structure of the database.
+An API method has been added `addUpgradeStatement` to define the new structure of the database as a list of incremental upgrades. Every upgrade is executed over the previus version.
 
 It has to be called prior to open the database with the new version number
 
@@ -11,9 +11,30 @@ ie: assuming `this._SQLiteService` is referring to the sqlite plugin and the cur
 ```js
 ...
 
-let result:any = await this._SQLiteService.addUpgradeStatement("test-sqlite",
-[{fromVersion: 1, toVersion: 2, statement: schemaStmt, set: setArray}]);
-result = await this._SQLiteService.openDB("test-sqlite",false,"no-encryption",2);
+let result:any = await this._SQLiteService.addUpgradeStatement(
+  "test-sqlite",
+  [
+    {
+      toVersion: 1, // Any number you want as long as it's in ascending order. Version 0 is an empty database
+      statements: [
+        schemaStmt1,
+        schemaStmt2,
+        schemaStmt3,
+        // ...
+      ]
+    },
+    {
+      toVersion: 2, // Any number you want as long as it's in ascending order. Version 0 is an empty database
+      statements: [
+        schemaStmt4,
+        schemaStmt5,
+        schemaStmt6,
+        // ...
+      ]
+    },
+  ]
+);
+result = await this._SQLiteService.openDB("my-database", false, "no-encryption", 2);
 console.log('openDB result.result ' + result.result);
 if(result.result) {
     ...
@@ -22,141 +43,79 @@ if(result.result) {
 
 ## Usage
 
-As input parameters for the `addUpgradeStatement`, one must defined: - fromVersion : current database version - toVersion: new database version to be created - statement: a number of statements describing the new structure of database version (including table's definition even for those which doesn't change). - set: set of statements (`INSERT` and `UPDATE`) to upload only new data in the database
+As input parameters for the `addUpgradeStatement`, one must defined:
+
+- `database`: database name
+- `upgrade`: array of upgrades. Each upgrade is defined as:
+  - `toVersion`: new database version
+  - `statements`: an array of incremental statements describing the changes to the new structure of database version. Only statements to execute over the previus database version.
 
 ### Example
 
-Assuming the Version 1 of the database was created as follows:
+Assuming the following version upgrade definition:
 
 ```js
-let result: any = await this._SQLiteService.openDB('test-updversion');
-if (result.result) {
-  // create tables
-  const sqlcmd: string = `
-      BEGIN TRANSACTION;
-      CREATE TABLE IF NOT EXISTS users (
-          id INTEGER PRIMARY KEY NOT NULL,
-          email TEXT UNIQUE NOT NULL,
-          name TEXT,
-          company TEXT,
-          size FLOAT,
-          age INTEGER,
-          last_modified INTEGER DEFAULT (strftime('%s', 'now'))    
-      );
-      CREATE INDEX IF NOT EXISTS users_index_name ON users (name);
-      CREATE INDEX IF NOT EXISTS users_index_last_modified ON users (last_modified);
-      CREATE TRIGGER IF NOT EXISTS users_trigger_last_modified
-      AFTER UPDATE ON users
-      FOR EACH ROW WHEN NEW.last_modified <= OLD.last_modified
-      BEGIN
-          UPDATE users SET last_modified= (strftime('%s', 'now')) WHERE id=OLD.id;
-      END;
-      COMMIT TRANSACTION;
-    `;
-  result = await this._SQLiteService.execute(sqlcmd);
-  if (result.changes.changes === 0 || result.changes.changes === 1) {
-    // Insert some Users
-    const row: Array<Array<any>> = [
-      ['Whiteley', 'Whiteley.com', 30],
-      ['Jones', 'Jones.com', 44],
-    ];
-    let sqlcmd: string = `
-        BEGIN TRANSACTION;
-        DELETE FROM users;
-        INSERT INTO users (name,email,age) VALUES ("${row[0][0]}","${row[0][1]}",${row[0][2]});
-        INSERT INTO users (name,email,age) VALUES ("${row[1][0]}","${row[1][1]}",${row[1][2]});
-        COMMIT TRANSACTION;
-        `;
-    await this._SQLiteService.execute(sqlcmd);
-    // Close the Database
-    await this._SQLiteService.close('test-updversion');
-  }
-} else {
-  console.log('*** Error: Database test-updversion not opened');
-}
-```
-
-Upgrading to Version 2 will be done as below
-
-        WARNING do not need to include these SQL commands
-
-```js
-        PRAGMA foreign_keys = OFF;
-        BEGIN TRANSACTION;
-        COMMIT TRANSACTION;
-        PRAGMA foreign_keys = ON;
-```
-
-        they are managed by the plugin
-
-```js
-const schemaStmt: string = `
-    CREATE TABLE users (
+// Usually version 1 will create schema
+const version1Statements: string[] = [
+  `CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY NOT NULL,
       email TEXT UNIQUE NOT NULL,
       name TEXT,
       company TEXT,
-      country TEXT,
+      size FLOAT,
       age INTEGER,
       last_modified INTEGER DEFAULT (strftime('%s', 'now'))
-    );
-    CREATE TABLE messages (
-      id INTEGER PRIMARY KEY NOT NULL,
-      userid INTEGER,
-      title TEXT NOT NULL,
-      body TEXT NOT NULL,
-      last_modified INTEGER DEFAULT (strftime('%s', 'now')),
-      FOREIGN KEY (userid) REFERENCES users(id) ON DELETE SET DEFAULT
-    );
-    CREATE INDEX users_index_name ON users (name);
-    CREATE INDEX users_index_last_modified ON users (last_modified);
-    CREATE INDEX messages_index_title ON messages (title);
-    CREATE INDEX messages_index_last_modified ON messages (last_modified);
-    CREATE TRIGGER users_trigger_last_modified
+  );`,
+
+  `CREATE INDEX IF NOT EXISTS users_index_name ON users (name);`,
+
+  `CREATE INDEX IF NOT EXISTS users_index_last_modified ON users (last_modified);`,
+
+  `CREATE TRIGGER IF NOT EXISTS users_trigger_last_modified
     AFTER UPDATE ON users
-    FOR EACH ROW WHEN NEW.last_modified <= OLD.last_modified
-    BEGIN
-        UPDATE users SET last_modified= (strftime('%s', 'now')) WHERE id=OLD.id;
-    END;
-    CREATE TRIGGER messages_trigger_last_modified
-    AFTER UPDATE ON messages
-    FOR EACH ROW WHEN NEW.last_modified <= OLD.last_modified
-    BEGIN
-        UPDATE messages SET last_modified= (strftime('%s', 'now')) WHERE id=OLD.id;
-    END;
-    `
-const setArray: Array<any> = [
-    { statement:"INSERT INTO messages (userid,title,body) VALUES (?,?,?);",
-    values:[
-      [1,"test message 1","content test message 1"],
-      [2,"test message 2","content test message 2"],
-      [1,"test message 3","content test message 3"]
-    ]
-    },
-    { statement:"UPDATE users SET country = ?  WHERE id = ?;",
-    values:["United Kingdom",1]
-    },
-    { statement:"UPDATE users SET country = ?  WHERE id = ?;",
-    values:["Australia",2]
-    },
-]
+      FOR EACH ROW WHEN NEW.last_modified <= OLD.last_modified
+        BEGIN
+          UPDATE users SET last_modified= (strftime('%s', 'now')) WHERE id=OLD.id;
+        END;`,
+];
+
+// Next versions can create new tables, alter existing tables, add data, update data, etc
+const version2Statements: string[] = [
+  `ALTER TABLE users ADD COLUMN country TEXT;`,
+];
+
 // call addUpgradeStatement
-let result:any = await this._SQLiteService.addUpgradeStatement({
-    database: "test-updversion",
-    upgrade: [{
-        fromVersion: 1,
-        toVersion: 2,
-        statement: schemaStmt,
-        set: setArray
-    }]
+let result: any = await this._SQLiteService.addUpgradeStatement({
+  database: 'my-database',
+  upgrade: [
+    {
+      toVersion: 1,
+      statements: version1Statements,
+    },
+    {
+      toVersion: 2,
+      statements: version2Statements,
+    },
+  ],
 });
+```
+
+Opening a database as follows:
+
+```js
 // open the database
-result = await this._SQLiteService.openDB("test-updversion",false,"no-encryption",2);
+result = await this._SQLiteService.openDB("my-database", false, "no-encryption", 2);
 if(result.result) {
-console.log("*** Database test-updversion Opened");
-    ...
+  console.log("*** Database my-database Opened");
+  ...
 }
 ```
+
+The following scenarios may occur:
+
+- Opens a Version 0 database (empty database). Will execute `version1Statements` and `version2Statements` upgrade statements.
+- Opens a Version 1 database. Will execute `version2Statements` upgrade statements.
+- Opens a Version 2 database. Will not execute any upgrade statements (already on version 2).
 
 ## Upgrading Database Version Process
 
@@ -166,30 +125,11 @@ console.log("*** Database test-updversion Opened");
 
 ### Plugin openDB process flow
 
--> backup the current version file backup-YOUR_DB_NAME
-
--> backup all existing tables "tableName" in "temp_tableName"
-
--> Drop all Indexes
-
--> Drop all Triggers
-
--> Create new tables from upgrade.statement
-
--> Create the list of table's common fields
-
--> Update the new table's data from old table's data
-
--> Drop \_temp_tables
-
--> Do some cleanup
-
--> Execute the set of new table's data
-
--> update database version
-
--> update syncDate if any
-
--> process failed restore the backup file
-
--> delete the backup file
+- Backup the current version file backup-YOUR_DB_NAME
+- For each version between currentVersion and targetVersion
+  - Starts transaction
+  - Execute version statements
+  - Commit transaction
+  - Update database version
+- If process failed, restore the backup file
+- Delete the backup file
