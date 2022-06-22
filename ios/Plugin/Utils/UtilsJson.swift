@@ -145,9 +145,9 @@ class UtilsJson {
     throws -> JsonNamesTypes {
         var ret: JsonNamesTypes = JsonNamesTypes(names: [], types: [])
         var msg: String = "Error: getTableColumnNamesTypes "
-        var query: String = "PRAGMA table_info("
+        var query: String = "PRAGMA table_info('"
         query.append(tableName)
-        query.append(");")
+        query.append("');")
         do {
             var resQuery =  try mDB.selectSQL(sql: query, values: [])
             if resQuery.count > 0 {

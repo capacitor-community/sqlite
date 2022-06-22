@@ -487,7 +487,9 @@ class UtilsSQLCipher {
         var sqlStmt = sql
         do {
             let isLast: Bool = try UtilsJson.isLastModified(mDB: mDB)
-            if isLast {
+            let isDel: Bool = try UtilsJson.isSqlDeleted(mDB: mDB)
+            if isLast && isDel {
+                // Replace DELETE by UPDATE and set sql_deleted to 1
                 if let range: Range<String.Index> = sql
                     .range(of: "WHERE", options: .caseInsensitive) {
                     let index: Int = sql
@@ -514,6 +516,8 @@ class UtilsSQLCipher {
         } catch UtilsSQLCipherError.findReferenciesAndUpdate(let message) {
             throw UtilsSQLCipherError.deleteSQL(message: message)
         } catch UtilsJsonError.isLastModified(let message) {
+            throw UtilsSQLCipherError.deleteSQL(message: message)
+        } catch UtilsJsonError.isSqlDeleted(let message) {
             throw UtilsSQLCipherError.deleteSQL(message: message)
         }
     }
