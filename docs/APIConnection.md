@@ -14,6 +14,7 @@
 * [`isSecretStored()`](#issecretstored)
 * [`setEncryptionSecret(...)`](#setencryptionsecret)
 * [`changeEncryptionSecret(...)`](#changeencryptionsecret)
+* [`clearEncryptionSecret()`](#clearencryptionsecret)
 * [`addUpgradeStatement(...)`](#addupgradestatement)
 * [`createConnection(...)`](#createconnection)
 * [`isConnection(...)`](#isconnection)
@@ -142,6 +143,19 @@ Change the passphrase in a secure store
 | **`oldpassphrase`** | <code>string</code> |
 
 **Since:** 3.0.0-beta.13
+
+--------------------
+
+
+### clearEncryptionSecret()
+
+```typescript
+clearEncryptionSecret() => Promise<void>
+```
+
+Clear the passphrase in a secure store
+
+**Since:** 3.5.1-3
 
 --------------------
 

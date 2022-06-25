@@ -175,6 +175,30 @@ public class CapacitorSQLitePlugin extends Plugin {
         }
     }
 
+    /**
+     * ClearEncryptionSecret
+     * clear the passphrase secret for a database
+     *
+     * @param call
+     */
+    @PluginMethod
+    public void clearEncryptionSecret(PluginCall call) {
+        if (implementation != null) {
+            try {
+                implementation.clearEncryptionSecret();
+                rHandler.retResult(call, null, null);
+                return;
+            } catch (Exception e) {
+                String msg = "ClearEncryptionSecret: " + e.getMessage();
+                rHandler.retResult(call, null, msg);
+                return;
+            }
+        } else {
+            rHandler.retResult(call, null, loadMessage);
+            return;
+        }
+    }
+
     @PluginMethod
     public void getNCDatabasePath(PluginCall call) {
         String folderPath = null;

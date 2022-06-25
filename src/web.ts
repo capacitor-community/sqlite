@@ -490,6 +490,11 @@ export class CapacitorSQLiteWeb
     throw this.unimplemented('Not implemented on web.');
   }
 
+  async clearEncryptionSecret(): Promise<void> {
+    console.log('clearEncryptionSecret');
+    throw this.unimplemented('Not implemented on web.');
+  }
+
   async getNCDatabasePath(
     options: capNCDatabasePathOptions,
   ): Promise<capNCDatabasePathResult> {

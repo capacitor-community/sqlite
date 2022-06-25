@@ -263,6 +263,25 @@ public class CapacitorSQLite {
         }
     }
 
+    /**
+     * ClearEncryptionSecret
+     * @throws Exception
+     */
+    public void clearEncryptionSecret() throws Exception {
+        if (isEncryption) {
+            try {
+                // close all connections
+                closeAllConnections();
+                // set encryption secret
+                uSecret.clearEncryptionSecret();
+            } catch (Exception e) {
+                throw new Exception(e.getMessage());
+            }
+        } else {
+            throw new Exception("No Encryption set in capacitor.config");
+        }
+    }    
+
     public String getNCDatabasePath(String folderPath, String database) throws Exception {
         try {
             String databasePath = uNCDatabase.getNCDatabasePath(context, folderPath, database);

@@ -111,6 +111,23 @@ public class UtilsSecret {
         }
     }
 
+    /**
+     * ClearEncryptionSecret
+     * @throws Exception
+     */
+    public void clearEncryptionSecret() throws Exception {
+        try {
+            // test if Encryption secret is already set
+            String savedPassPhrase = getPassphrase();
+            if (savedPassPhrase != null && savedPassPhrase.length() > 0) {
+                // Clear encrypted passphrase in sharedPreferences
+                clearPassphrase();
+            }
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
+        }
+    }
+
     public void setPassphrase(String passphrase) {
         sharedPreferences.edit().putString("secret", passphrase).apply();
     }
@@ -118,5 +135,9 @@ public class UtilsSecret {
     public String getPassphrase() {
         String passphrase = sharedPreferences.getString("secret", "");
         return passphrase;
+    }
+
+    public void clearPassphrase() {
+        sharedPreferences.edit().remove("secret").commit();
     }
 }

@@ -1,3 +1,9 @@
+# 3.5.1-3
+
+### Added Features
+
+ - added method `clearEncryptionSecret` to reset a previously saved passphrase in the keychain (issue #283)
+
 # 3.5.1-2 (2022-05-31)
 
 ### Bug Fixes

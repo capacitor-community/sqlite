@@ -48,6 +48,13 @@ export interface CapacitorSQLitePlugin {
    * @since 3.0.0-beta.13
    */
   changeEncryptionSecret(options: capChangeSecretOptions): Promise<void>;
+  /**
+   * Clear the passphrase in the secure store
+   *
+   * @return Promise<void>
+   * @since 3.5.1-3
+   */
+  clearEncryptionSecret(): Promise<void>;
 
   /**
    * create a database connection
@@ -797,6 +804,12 @@ export interface ISQLiteConnection {
     oldpassphrase: string,
   ): Promise<void>;
   /**
+   * Clear the passphrase in a secure store
+   * @returns Promise<void>
+   * @since 3.5.1-3
+   */
+  clearEncryptionSecret(): Promise<void>;
+  /**
    * Add the upgrade Statement for database version upgrading
    * @param database
    * @param fromVersion
@@ -1036,6 +1049,14 @@ export class SQLiteConnection implements ISQLiteConnection {
         passphrase: passphrase,
         oldpassphrase: oldpassphrase,
       });
+      return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async clearEncryptionSecret(): Promise<void> {
+    try {
+      await this.sqlite.clearEncryptionSecret();
       return Promise.resolve();
     } catch (err) {
       return Promise.reject(err);
