@@ -668,7 +668,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   }
 
   ////////////////////////////////
-  //// UNIMPLEMENTED MTEHODS
+  //// UNIMPLEMENTED METHODS
   ////////////////////////////////
 
   async getMigratableDbList(
@@ -711,6 +711,11 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
   async changeEncryptionSecret(options: capChangeSecretOptions): Promise<void> {
     console.log(`${JSON.stringify(options)}`);
+    throw new Error('Method not implemented.');
+  }
+
+  async clearEncryptionSecret(): Promise<void> {
+    console.log('clearEncryptionSecret');
     throw new Error('Method not implemented.');
   }
 

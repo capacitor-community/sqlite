@@ -421,18 +421,21 @@ export class UtilsSQLite {
 
       lastId = await this.getLastId(db);
       return Promise.resolve(lastId);
-
     } catch (err) {
-        return Promise.reject(`PrepareRun: ${err}`);
+      return Promise.reject(`PrepareRun: ${err}`);
     }
   }
 
-  private async runExec(db: any, stmt: string, values: any[] = []): Promise<void> {
+  private async runExec(
+    db: any,
+    stmt: string,
+    values: any[] = [],
+  ): Promise<void> {
     return new Promise((resolve, reject) => {
       if (values != null && values.length > 0) {
         db.run(stmt, values, (err: any) => {
           if (err) {
-             reject(err.message);
+            reject(err.message);
           } else {
             resolve();
           }

@@ -280,7 +280,7 @@ public class CapacitorSQLite {
         } else {
             throw new Exception("No Encryption set in capacitor.config");
         }
-    }    
+    }
 
     public String getNCDatabasePath(String folderPath, String database) throws Exception {
         try {

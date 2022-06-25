@@ -52,7 +52,7 @@ export interface CapacitorSQLitePlugin {
    * Clear the passphrase in the secure store
    *
    * @return Promise<void>
-   * @since 3.5.1-3
+   * @since 3.5.1
    */
   clearEncryptionSecret(): Promise<void>;
 
@@ -806,7 +806,7 @@ export interface ISQLiteConnection {
   /**
    * Clear the passphrase in a secure store
    * @returns Promise<void>
-   * @since 3.5.1-3
+   * @since 3.5.1
    */
   clearEncryptionSecret(): Promise<void>;
   /**

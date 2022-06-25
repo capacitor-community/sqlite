@@ -155,7 +155,7 @@ clearEncryptionSecret() => Promise<void>
 
 Clear the passphrase in a secure store
 
-**Since:** 3.5.1-3
+**Since:** 3.5.1
 
 --------------------
 

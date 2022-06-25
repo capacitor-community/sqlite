@@ -1,8 +1,12 @@
-# 3.5.1-3
+# 3.5.1 (2022-06-25)
 
 ### Added Features
 
- - added method `clearEncryptionSecret` to reset a previously saved passphrase in the keychain (issue #283)
+ - added method `clearEncryptionSecret` to reset a previously saved passphrase in the keychain (issue #283). Thanks to the contributioin of chriswep
+
+### Bug Fixes
+
+ - Fix #271 for iOS & added support for table name containing dash/hyphen. Thanks to the contributiion of victorybiz
 
 # 3.5.1-2 (2022-05-31)
 
