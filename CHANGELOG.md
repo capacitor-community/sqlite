@@ -1,3 +1,9 @@
+# 3.5.2-dev1 (2022-07-07)
+
+### Test Features
+
+ - test `jeep-sqlite` with `sql.js@1.7.0`
+ 
 # 3.5.1 (2022-06-25)
 
 ### Added Features
