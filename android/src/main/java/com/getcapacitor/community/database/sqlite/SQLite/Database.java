@@ -786,7 +786,7 @@ public class Database {
                     throw new Exception(e.getMessage());
                 }
             } else {
-                throw new Exception("No last_modified column in tables");
+                throw new Exception("No last_modified/sql_deleted columns in tables");
             }
         } else {
             retObj.put("changes", Integer.valueOf(0));
@@ -891,10 +891,13 @@ public class Database {
         inJson.setEncrypted(_encrypted);
         inJson.setMode(mode);
         try {
-            // set the last export date
-            Date date = new Date();
-            long syncTime = date.getTime() / 1000L;
-            toJson.setLastExportDate(this, syncTime);
+            boolean isSyncTable = _uJson.isTableExists(this, "sync_table");
+            if (isSyncTable) {
+                // set the last export date
+                Date date = new Date();
+                long syncTime = date.getTime() / 1000L;
+                toJson.setLastExportDate(this, syncTime);
+            }
             // launch the export process
             JsonSQLite retJson = toJson.createExportObject(this, inJson);
             //        retJson.print();

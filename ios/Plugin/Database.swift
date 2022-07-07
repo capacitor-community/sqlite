@@ -558,14 +558,20 @@ class Database {
         do {
             let date = Date()
             let syncTime: Int = Int(date.timeIntervalSince1970)
-            // Set the last exported date
-            try ExportToJson.setLastExportDate(mDB: self, sTime: syncTime)
+            let isExists: Bool = try UtilsJson.isTableExists(
+                mDB: self, tableName: "sync_table")
+            if isExists {
+                // Set the last exported date
+                try ExportToJson.setLastExportDate(mDB: self, sTime: syncTime)
+            }
             // Launch the export process
             let data: [String: Any] = [
                 "dbName": dbName, "encrypted": self.encrypted,
                 "expMode": expMode, "version": dbVersion]
             retObj = try ExportToJson
                 .createExportObject(mDB: self, data: data)
+        } catch UtilsJsonError.tableNotExists(let message) {
+            throw DatabaseError.exportToJson(message: message)
         } catch ExportToJsonError.setLastExportDate(let message) {
             throw DatabaseError.exportToJson(message: message)
         } catch ExportToJsonError.createExportObject(let message) {

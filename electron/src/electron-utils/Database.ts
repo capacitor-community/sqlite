@@ -259,7 +259,7 @@ export class Database {
             throw new Error(`CreateSyncTable: failed changes < 0`);
           }
         } else {
-          throw new Error('No last_modified column in tables');
+          throw new Error('No last_modified/sql_deleted columns in tables');
         }
       } else {
         changes = 0;
@@ -589,11 +589,17 @@ export class Database {
     this.ensureDatabaseIsOpen();
 
     try {
-      await this.exportToJsonUtil.setLastExportDate(
+      const isTable = await this.jsonUtil.isTableExists(
         this.database,
-        new Date().toISOString(),
+        this._isDbOpen,
+        'sync_table',
       );
-
+      if (isTable) {
+        await this.exportToJsonUtil.setLastExportDate(
+          this.database,
+          new Date().toISOString(),
+        );
+      }
       const jsonResult: JsonSQLite = await this.exportToJsonUtil.createExportObject(
         this.database,
         inJson,
