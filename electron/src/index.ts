@@ -527,7 +527,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
       return;
     } else {
-      throw new Error('CopyFromAssets: assets/databases folder does not exist');
+      throw new Error(`CopyFromAssets: assets/databases folder does not exist: [${assetsDbPath}]`);
     }
   }
 
@@ -541,7 +541,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     if (files.length > 0) {
       return { values: files };
     } else {
-      throw new Error(`isTableExists: No databases found`);
+      throw new Error(`isTableExists: No databases found in [${pathDatabase}]`);
     }
   }
 
