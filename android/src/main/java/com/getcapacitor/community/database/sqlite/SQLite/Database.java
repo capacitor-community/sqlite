@@ -26,6 +26,8 @@ import com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLite;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Dictionary;
 import java.util.Hashtable;
@@ -545,27 +547,59 @@ public class Database {
      */
     public void findReferencesAndUpdate(Database mDB, String tableName, String whereStmt, ArrayList<Object> values) throws Exception {
         try {
-            JSArray references = getReferences(mDB, tableName);
-            for (int j = 0; j < references.length(); j++) {
+            ArrayList<String> references = getReferences(mDB, tableName);
+            if (references.size() == 0) {
+                return;
+            }
+            String tableNameWithRefs = references.get(references.size() - 1);
+            references.remove(references.size() - 1);
+            for (String refe : references) {
                 // get the tableName of the reference
-                String refTable = getReferenceTableName(references.getJSONObject(j).getString("sql"));
+                String refTable = getReferenceTableName(refe);
                 if (refTable.length() <= 0) {
                     continue;
                 }
-                // get the columnName
-                String colName = getReferenceColumnName(references.getJSONObject(j).getString("sql"));
-                if (refTable.length() <= 0) {
+                // get the withRefsNames
+                String[] withRefsNames = getWithRefsColumnName(refe);
+                if (withRefsNames.length <= 0) {
+                    continue;
+                }
+                // get the columnNames
+                String[] colNames = getReferencedColumnName(refe);
+                if (colNames.length <= 0) {
                     continue;
                 }
                 // update the where clause
-                String uWhereStmt = updateWhere(whereStmt, colName);
+                String uWhereStmt = updateWhere(whereStmt, withRefsNames, colNames);
 
                 if (uWhereStmt.length() <= 0) {
                     continue;
                 }
+                String updTableName = tableNameWithRefs;
+                String[] updColNames = colNames;
+                if (tableNameWithRefs.equals(tableName)) {
+                    updTableName = refTable;
+                    updColNames = withRefsNames;
+                }
                 //update sql_deleted for this reference
-                String stmt = "UPDATE " + refTable + " SET sql_deleted = 1 " + uWhereStmt;
-                long lastId = prepareSQL(stmt, values, false);
+                String stmt = "UPDATE " + updTableName + " SET sql_deleted = 1 " + uWhereStmt;
+                ArrayList<Object> selValues = new ArrayList<Object>();
+                if (values != null && values.size() > 0) {
+                    String[] arrVal = whereStmt.split("\\?");
+                    if (arrVal[arrVal.length - 1].equals(";")) {
+                        Arrays.copyOf(arrVal, arrVal.length - 1);
+                    }
+                    for (int j = 0; j < arrVal.length; j++) {
+                        for (String updVal : updColNames) {
+                            int idxVal = arrVal[j].indexOf(updVal);
+                            if (idxVal > -1) {
+                                selValues.add(values.get(j));
+                            }
+                        }
+                    }
+                }
+
+                long lastId = prepareSQL(stmt, selValues, false);
                 if (lastId == -1) {
                     String msg = "UPDATE sql_deleted failed for references " + "table: " + refTable + ";";
                     throw new Exception(msg);
@@ -587,47 +621,104 @@ public class Database {
      */
     public String getReferenceTableName(String refValue) {
         String tableName = "";
-        if (refValue.length() > 0 && refValue.substring(0, 12).equalsIgnoreCase("CREATE TABLE")) {
-            Integer oPar = refValue.indexOf("(");
-            tableName = refValue.substring(13, oPar).trim();
-        }
+        if (refValue.length() > 0) {
+            String[] arr = refValue.split("(?i)REFERENCES", -1);
+            if (arr.length == 2) {
+                int oPar = arr[1].indexOf("(");
 
+                tableName = arr[1].substring(0, oPar).trim();
+            }
+        }
         return tableName;
     }
 
     /**
-     * GetReferenceColumnName method
+     * GetWithRefsColumnName
      *
      * @param refValue
      * @return
      */
-    public String getReferenceColumnName(String refValue) {
-        String colName = "";
+    public String[] getWithRefsColumnName(String refValue) {
+        String[] colNames = new String[0];
         if (refValue.length() > 0) {
-            Integer index = refValue.toLowerCase().indexOf("FOREIGN KEY".toLowerCase());
-            String stmt = refValue.substring(index + 12);
-            Integer oPar = stmt.indexOf("(");
-            Integer cPar = stmt.indexOf(")");
-            colName = stmt.substring(oPar + 1, cPar).trim();
+            String[] arr = refValue.split("(?i)REFERENCES", -1);
+            if (arr.length == 2) {
+                int oPar = arr[0].indexOf("(");
+                int cPar = arr[0].indexOf(")");
+                String colStr = arr[0].substring(oPar + 1, cPar).trim();
+                colNames = colStr.split(",");
+            }
         }
-        return colName;
+        return colNames;
+    }
+
+    /**
+     * GetReferencedColumnName method
+     *
+     * @param refValue
+     * @return
+     */
+    public String[] getReferencedColumnName(String refValue) {
+        String[] colNames = new String[0];
+        if (refValue.length() > 0) {
+            String[] arr = refValue.split("(?i)REFERENCES", -1);
+            if (arr.length == 2) {
+                int oPar = arr[1].indexOf("(");
+                int cPar = arr[1].indexOf(")");
+                String colStr = arr[1].substring(oPar + 1, cPar).trim();
+                colNames = colStr.split(",");
+            }
+        }
+        return colNames;
     }
 
     /**
      * UpdateWhere method
      *
      * @param whStmt
-     * @param colName
+     * @param withRefsNames
+     * @param colNames
      * @return
      */
-    public String updateWhere(String whStmt, String colName) {
+    public String updateWhere(String whStmt, String[] withRefsNames, String[] colNames) {
         String whereStmt = "";
         if (whStmt.length() > 0) {
             Integer index = whStmt.toLowerCase().indexOf("WHERE".toLowerCase());
             String stmt = whStmt.substring(index + 6);
-            Integer fEqual = stmt.indexOf("=");
-            String whereColName = stmt.substring(0, fEqual).trim();
-            whereStmt = whStmt.replaceFirst(whereColName, colName);
+            if (withRefsNames.length == colNames.length) {
+                for (int i = 0; i < withRefsNames.length; i++) {
+                    String colType = "withRefsNames";
+                    int idx = stmt.indexOf(withRefsNames[i]);
+                    if (idx == -1) {
+                        idx = stmt.indexOf(colNames[i]);
+                        colType = "colNames";
+                    }
+                    if (idx > -1) {
+                        String valStr = "";
+                        int fEqual = stmt.indexOf("=", idx);
+                        if (fEqual > -1) {
+                            int iAnd = stmt.indexOf("AND", fEqual);
+                            int ilAnd = stmt.indexOf("and", fEqual);
+                            if (iAnd > -1) {
+                                valStr = (stmt.substring(fEqual + 1, iAnd - 1)).trim();
+                            } else if (ilAnd > -1) {
+                                valStr = (stmt.substring(fEqual + 1, ilAnd - 1)).trim();
+                            } else {
+                                valStr = (stmt.substring(fEqual + 1)).trim();
+                            }
+                            if (i > 0) {
+                                whereStmt += " AND ";
+                            }
+                            if (colType.equals("withRefsNames")) {
+                                whereStmt += colNames[i] + " = " + valStr;
+                            } else {
+                                whereStmt += withRefsNames[i] + " = " + valStr;
+                            }
+                        }
+                    }
+                }
+                whereStmt = "WHERE " + whereStmt;
+            }
         }
         return whereStmt;
     }
@@ -640,19 +731,47 @@ public class Database {
      * @return
      * @throws Exception
      */
-    public JSArray getReferences(Database mDB, String tableName) throws Exception {
+    public ArrayList<String> getReferences(Database mDB, String tableName) throws Exception {
         String sqlStmt =
             "SELECT sql FROM sqlite_master " +
-            "WHERE sql LIKE('%REFERENCES%') AND " +
+            "WHERE sql LIKE('%FOREIGN KEY%') AND sql LIKE('%REFERENCES%') AND " +
             "sql LIKE('%" +
             tableName +
             "%') AND sql LIKE('%ON DELETE%');";
         try {
             JSArray references = mDB.selectSQL(sqlStmt, new ArrayList<Object>());
-            return references;
+            ArrayList<String> retRefs = new ArrayList<String>();
+            if (references.length() > 0) {
+                retRefs = getRefs(references.getJSONObject(0).getString("sql"));
+            }
+            return retRefs;
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         }
+    }
+
+    /**
+     * GetRefs
+     *
+     * @param str
+     * @return
+     * @throws Exception
+     */
+    private ArrayList<String> getRefs(String str) throws Exception {
+        ArrayList<String> retRefs = new ArrayList<String>();
+        String[] arrFor = str.split("(?i)FOREIGN KEY", -1);
+        // Loop through Foreign Keys
+        for (int i = 1; i < arrFor.length; i++) {
+            retRefs.add((arrFor[i].split("(?i)ON DELETE", -1))[0].trim());
+        }
+        // find table name with references
+        if (str.substring(0, 12).toLowerCase().equals("CREATE TABLE".toLowerCase())) {
+            int oPar = str.indexOf("(");
+            String tableName = str.substring(13, oPar).trim();
+            retRefs.add(tableName);
+        }
+
+        return retRefs;
     }
 
     /**
