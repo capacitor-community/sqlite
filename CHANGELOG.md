@@ -1,3 +1,9 @@
+# 3.5.2 (2022-08-02)
+
+### Bug Fixes
+
+ - Problems with DELETE FROM #285
+
 # 3.5.2-dev2 (2022-07-07)
 
 ### Bug Fixes
