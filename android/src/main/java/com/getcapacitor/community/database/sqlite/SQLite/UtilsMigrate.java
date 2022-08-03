@@ -76,7 +76,7 @@ public class UtilsMigrate {
         String pathDB = new File(context.getFilesDir().getParentFile(), "databases").getAbsolutePath();
         if (folderPath.equals("default")) {
             pathFiles = pathDB;
-        } else if (folderPath.equals("cache")) {
+        } else if (folderPath.equalsIgnoreCase("cache")) {
             pathFiles = context.getCacheDir().getAbsolutePath();
         } else {
             String[] arr = folderPath.split("/", 2);
