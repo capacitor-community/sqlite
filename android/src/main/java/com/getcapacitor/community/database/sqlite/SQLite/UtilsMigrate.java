@@ -74,7 +74,11 @@ public class UtilsMigrate {
     public String getFolder(Context context, String folderPath) throws Exception {
         String pathFiles = context.getFilesDir().getAbsolutePath();
         String pathDB = new File(context.getFilesDir().getParentFile(), "databases").getAbsolutePath();
-        if (!folderPath.equals("default")) {
+        if (folderPath.equals("default")) {
+            pathFiles = pathDB;
+        } else if (folderPath.equalsIgnoreCase("cache")) {
+            pathFiles = context.getCacheDir().getAbsolutePath();
+        } else {
             String[] arr = folderPath.split("/", 2);
             if (arr.length == 2) {
                 if (arr[0].equals("files")) {
@@ -85,8 +89,6 @@ public class UtilsMigrate {
                     throw new Exception("Folder " + folderPath + " not allowed");
                 }
             }
-        } else {
-            pathFiles = pathDB;
         }
         return pathFiles;
     }
