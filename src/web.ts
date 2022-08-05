@@ -476,6 +476,11 @@ export class CapacitorSQLiteWeb
     throw this.unimplemented('Not implemented on web.');
   }
 
+  async moveDatabasesAndAddSuffix(options: capSQLitePathOptions): Promise<void> {
+    console.log('moveDatabasesAndAddSuffix', options);
+    throw this.unimplemented('Not implemented on web.');
+  }
+
   async isSecretStored(): Promise<capSQLiteResult> {
     throw this.unimplemented('Not implemented on web.');
   }

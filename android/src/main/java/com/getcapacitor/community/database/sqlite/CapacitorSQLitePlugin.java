@@ -738,6 +738,40 @@ public class CapacitorSQLitePlugin extends Plugin {
     }
 
     /**
+     * DeleteOldDatabases Method
+     * Delete Old Cordova plugin databases
+     */
+    @PluginMethod
+    public void moveDatabasesAndAddSuffix(PluginCall call) {
+        String folderPath;
+        JSArray dbList;
+        if (!call.getData().has("folderPath")) {
+            folderPath = "default";
+        } else {
+            folderPath = call.getString("folderPath");
+        }
+        if (!call.getData().has("dbNameList")) {
+            dbList = new JSArray();
+        } else {
+            dbList = call.getArray("dbNameList");
+        }
+        if (implementation != null) {
+            try {
+                implementation.moveDatabasesAndAddSuffix(folderPath, dbList);
+                rHandler.retResult(call, null, null);
+                return;
+            } catch (Exception e) {
+                String msg = "moveDatabasesAndAddSuffix: " + e.getMessage();
+                rHandler.retResult(call, null, msg);
+                return;
+            }
+        } else {
+            rHandler.retResult(call, null, loadMessage);
+            return;
+        }
+    }
+
+    /**
      * Execute Method
      * Execute SQL statements provided in a String
      *

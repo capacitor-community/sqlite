@@ -269,6 +269,12 @@ export interface CapacitorSQLitePlugin {
    */
   deleteOldDatabases(options: capSQLitePathOptions): Promise<void>;
   /**
+   * Moves databases to the location the plugin can read them, and adds sqlite suffix
+   * This resembles calling addSQLiteSuffix and deleteOldDatabases, but it is more performant as it doesn't copy but moves the files
+   * @param options: capSQLitePathOptions
+   */
+  moveDatabasesAndAddSuffix(options: capSQLitePathOptions): Promise<void>;
+  /**
    * Check Connection Consistency JS <=> Native
    * return true : consistency, connections are opened
    * return false : no consistency, connections are closed
@@ -991,6 +997,13 @@ export interface ISQLiteConnection {
    * @since 3.0.0-beta.5
    */
   deleteOldDatabases(folderPath?: string, dbNameList?: string[]): Promise<void>;
+  /**
+   * Moves databases to the location the plugin can read them, and adds sqlite suffix
+   * This resembles calling addSQLiteSuffix and deleteOldDatabases, but it is more performant as it doesn't copy but moves the files
+   * @param folderPath the origin from where to move the databases
+   * @param dbNameList the names of the databases to move, check out the getMigratableDbList to get a list, an empty list will result in copying all the databases with '.db' extension.
+   */
+  moveDatabasesAndAddSuffix(folderPath?: string, dbNameList?: string[]): Promise<void>;
 }
 /**
  * SQLiteConnection Class
@@ -1321,6 +1334,17 @@ export class SQLiteConnection implements ISQLiteConnection {
     } catch (err) {
       return Promise.reject(err);
     }
+  }
+
+  async moveDatabasesAndAddSuffix(folderPath?: string,
+    dbNameList?: string[],
+  ): Promise<void> {
+    const path: string = folderPath ? folderPath : 'default';
+    const dbList: string[] = dbNameList ? dbNameList : [];
+    return this.sqlite.moveDatabasesAndAddSuffix({
+      folderPath: path,
+      dbNameList: dbList,
+    });
   }
 }
 

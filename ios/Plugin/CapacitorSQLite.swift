@@ -1341,6 +1341,32 @@ enum CapacitorSQLiteError: Error {
             throw CapacitorSQLiteError.failed(message: initMessage)
         }
     }
+
+    // MARK: - moveDatabasesAndAddSuffix
+
+    @objc func moveDatabasesAndAddSuffix(_ folderPath: String, dbList: [String]) throws {
+        if isInit {
+            do {
+                try UtilsMigrate
+                    .moveDatabasesAndAddSuffix(databaseLocation: databaseLocation,
+                                               folderPath: folderPath, 
+                                               dbList: dbList)
+                return
+            } catch UtilsMigrateError.moveDatabasesAndAddSuffix(let message) {
+                var msg: String = "moveDatabasesAndAddSuffix:"
+                msg.append(" \(message)")
+                throw CapacitorSQLiteError.failed(message: msg)
+
+            } catch let error {
+                var msg: String = "moveDatabasesAndAddSuffix:"
+                msg.append(" \(error)")
+                throw CapacitorSQLiteError.failed(message: msg)
+            }
+        } else {
+            throw CapacitorSQLiteError.failed(message: initMessage)
+        }
+    }
+
     class func getDatabaseName(dbName: String) -> String {
         var retName: String = dbName
         if !retName.contains("/") {
