@@ -238,7 +238,7 @@ class UtilsMigrate {
                         if !toFile.isEmpty {
                             let uFrom: URL = dbPathURL.appendingPathComponent(fromFile)
                             let uTo: URL = databaseURL.appendingPathComponent(toFile)
-                            try FileManager.default.moveItem(atPath: uFrom.path, toPath: uTo.path)
+                            try UtilsFile.moveFile(pathName: uFrom.path, toPathName: uTo.path, overwrite: true)
                         }
                     }
                 }
