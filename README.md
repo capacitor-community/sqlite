@@ -485,6 +485,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <a href="https://github.com/joewoodhouse"><img src="https://github.com/joewoodhouse.png?size=100" width="50" height="50" /></a>
   <a href="https://github.com/antoniovlx"><img src="https://github.com/antoniovlx.png?size=100" width="50" height="50" /></a>
   <a href="https://github.com/HarelM"><img src="https://github.com/HarelM.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/rdlabo"><img src="https://github.com/rdlabo.png?size=100" width="50" height="50" /></a>
 </p>
 
 <!-- markdownlint-enable -->
