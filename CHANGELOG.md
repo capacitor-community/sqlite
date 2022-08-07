@@ -1,3 +1,18 @@
+# 3.7.0 (2022-08-07)
+
+### Chore
+
+ - Update to @capacitor/core 3.7.0
+ - Update to @capacitor/ios 3.7.0
+ - Update to @capacitor/android 3.7.0
+
+### Bug Fixes
+
+ - fix issue#299 (PR joewoodhouse)
+ - adding some messages for improving error in electron #304
+ - Allow copying databases from the cache folder #303
+ - Add move databases #307
+
 # 3.5.2 (2022-08-02)
 
 ### Bug Fixes

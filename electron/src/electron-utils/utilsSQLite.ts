@@ -316,7 +316,10 @@ export class UtilsSQLite {
         const sqlStmts: string[] = sqlStmt.split(';');
         const resArr: string[] = [];
         for (const stmt of sqlStmts) {
-          const trimStmt = stmt.trim().substring(0, 11).toUpperCase();
+          const trimStmt = stmt
+            .trim()
+            .substring(0, Math.min(stmt.trim().length, 11))
+            .toUpperCase();
           if (
             trimStmt === 'DELETE FROM' &&
             stmt.toLowerCase().includes('WHERE'.toLowerCase())

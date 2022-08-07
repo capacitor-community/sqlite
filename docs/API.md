@@ -149,6 +149,7 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 * [`getMigratableDbList(...)`](#getmigratabledblist)
 * [`addSQLiteSuffix(...)`](#addsqlitesuffix)
 * [`deleteOldDatabases(...)`](#deleteolddatabases)
+* [`moveDatabasesAndAddSuffix(...)`](#movedatabasesandaddsuffix)
 * [`checkConnectionsConsistency(...)`](#checkconnectionsconsistency)
 * [`getNCDatabasePath(...)`](#getncdatabasepath)
 * [`createNCConnection(...)`](#createncconnection)
@@ -803,6 +804,22 @@ Delete Old Cordova databases
 | **`options`** | <code><a href="#capsqlitepathoptions">capSQLitePathOptions</a></code> | : <a href="#capsqlitepathoptions">capSQLitePathOptions</a> |
 
 **Since:** 3.0.0-beta.5
+
+--------------------
+
+
+### moveDatabasesAndAddSuffix(...)
+
+```typescript
+moveDatabasesAndAddSuffix(options: capSQLitePathOptions) => Promise<void>
+```
+
+Moves databases to the location the plugin can read them, and adds sqlite suffix
+This resembles calling addSQLiteSuffix and deleteOldDatabases, but it is more performant as it doesn't copy but moves the files
+
+| Param         | Type                                                                  | Description                                                |
+| ------------- | --------------------------------------------------------------------- | ---------------------------------------------------------- |
+| **`options`** | <code><a href="#capsqlitepathoptions">capSQLitePathOptions</a></code> | : <a href="#capsqlitepathoptions">capSQLitePathOptions</a> |
 
 --------------------
 

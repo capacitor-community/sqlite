@@ -16,7 +16,6 @@ extension String {
                 searchStartIndex = self.index(self.startIndex, offsetBy: fIdx)
             }
         }
-        
 
         while searchStartIndex < self.endIndex,
               let range = self.range(of: string, options: .caseInsensitive, range: searchStartIndex..<self.endIndex),
