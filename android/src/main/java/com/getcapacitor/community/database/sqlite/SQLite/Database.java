@@ -331,7 +331,7 @@ public class Database {
                 for (String cmd : statements) {
                     if (!cmd.endsWith(";")) cmd += ";";
                     String nCmd = cmd;
-                    String trimCmd = nCmd.trim().substring(0, Math.min(nCmd.trim().length(), 11)).toUpperCase();
+                    String trimCmd = nCmd.trim().substring(0, Math.min(nCmd.trim().length(),11)).toUpperCase();
                     if (trimCmd.equals("DELETE FROM") && nCmd.toLowerCase().contains("WHERE".toLowerCase())) {
                         String whereStmt = nCmd.trim();
                         nCmd = deleteSQL(this, whereStmt, new ArrayList<Object>());

@@ -329,7 +329,7 @@ No configuration required for this plugin
 | deleteDatabase              | ✅      | ✅  | ✅        | ✅  |
 | importFromJson              | ✅      | ✅  | ✅        | ✅  |
 | exportToJson                | ✅      | ✅  | ✅        | ✅  |
-| deleteExportedRows          | ✅      | ✅  | ✅        | ✅  | NEW in 3.4.3-2
+| deleteExportedRows          | ✅      | ✅  | ✅        | ✅  |
 | createSyncTable             | ✅      | ✅  | ✅        | ✅  |
 | setSyncDate                 | ✅      | ✅  | ✅        | ✅  |
 | getSyncDate                 | ✅      | ✅  | ✅        | ✅  |
@@ -349,6 +349,7 @@ No configuration required for this plugin
 | isSecretStored              | ✅      | ✅  | ❌        | ❌  |
 | setEncryptionSecret         | ✅      | ✅  | ❌        | ❌  |
 | changeEncryptionSecret      | ✅      | ✅  | ❌        | ❌  |
+| clearEncryptionSecret       | ✅      | ✅  | ❌        | ❌  |
 | initWebStore                | ❌      | ❌  | ❌        | ✅  |
 | saveToStore                 | ❌      | ❌  | ❌        | ✅  |
 | getNCDatabasePath           | ✅      | ✅  | ❌        | ❌  |
@@ -466,6 +467,9 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <a href="https://github.com/dragermrb"><img src="https://github.com/dragermrb.png?size=100" width="50" height="50" /></a>
   <a href="https://github.com/iamcco"><img src="https://github.com/iamcco.png?size=100" width="50" height="50" /></a>
   <a href="https://github.com/eltociear"><img src="https://github.com/eltociear.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/joewoodhouse"><img src="https://github.com/joewoodhouse.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/antoniovlx"><img src="https://github.com/antoniovlx.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/HarelM"><img src="https://github.com/HarelM.png?size=100" width="50" height="50" /></a>
 </p>
 
 <!-- markdownlint-enable -->
