@@ -671,6 +671,21 @@ public class CapacitorSQLite {
     }
 
     /**
+     *
+     * @param folderPath
+     * @throws Exception
+     */
+    public void moveDatabasesAndAddSuffix(String folderPath, JSArray dbList) throws Exception {
+        try {
+            ArrayList<String> mDbList = uSqlite.stringJSArrayToArrayList(dbList);
+            uMigrate.moveDatabasesAndAddSuffix(context, folderPath, mDbList);
+            return;
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
+        }
+    }
+
+    /**
      * Execute
      * @param dbName
      * @param statements

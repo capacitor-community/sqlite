@@ -345,6 +345,7 @@ No configuration required for this plugin
 | getMigratableDbList         | ✅      | ✅  | ❌        | ❌  |
 | addSQLiteSuffix             | ✅      | ✅  | ❌        | ❌  |
 | deleteOldDatabases          | ✅      | ✅  | ❌        | ❌  |
+| moveDatabasesAndAddSuffix   | ✅      | ✅  | ❌        | ❌  |
 | checkConnectionsConsistency | ✅      | ✅  | ✅        | ✅  |
 | isSecretStored              | ✅      | ✅  | ❌        | ❌  |
 | setEncryptionSecret         | ✅      | ✅  | ❌        | ❌  |

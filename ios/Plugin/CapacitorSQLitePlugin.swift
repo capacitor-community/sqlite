@@ -549,6 +549,35 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         }
     }
 
+    // MARK: - moveDatabasesAndAddSuffix
+
+    @objc func moveDatabasesAndAddSuffix(_ call: CAPPluginCall) {
+        let folderPath: String = call.getString("folderPath") ?? "default"
+        let dbJsList: JSArray = call.getArray("dbNameList") ?? []
+        var dbList: [String] = []
+        if dbJsList.count > 0 {
+            for dbName in dbJsList {
+                if let name = dbName as? String {
+                    dbList.append(name)
+                }
+            }
+        }
+        do {
+            try implementation?.moveDatabasesAndAddSuffix(folderPath, dbList: dbList)
+            retHandler.rResult(call: call)
+            return
+        } catch CapacitorSQLiteError.failed(let message) {
+            let msg = "moveDatabasesAndAddSuffix: \(message)"
+            retHandler.rResult(call: call, message: msg)
+            return
+        } catch let error {
+            retHandler.rResult(
+                call: call,
+                message: "moveDatabasesAndAddSuffix: \(error)")
+            return
+        }
+    }
+
     // MARK: - Execute
 
     @objc func execute(_ call: CAPPluginCall) {
