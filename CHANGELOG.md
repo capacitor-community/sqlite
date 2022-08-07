@@ -1,3 +1,15 @@
+# 4.0.0-1 (2022-08-07)
+
+### Chore
+
+ - Update to @capacitor/core 4.0.1
+ - Update to @capacitor/ios 4.0.1
+ - Update to @capacitor/android 4.0.1
+
+### Bug Fixes
+
+ - Fix After adding the plugin Android compilation fails #301
+
 # 3.7.0 (2022-08-07)
 
 ### Chore

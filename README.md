@@ -26,6 +26,20 @@
 | ----------------- | ----------------------------------------- | ------ |
 | Quéau Jean Pierre | [jepiqueau](https://github.com/jepiqueau) |        |
 
+## CAPACITOR 4 (Master)
+
+🚨 Release 4.0.0-1 all platforms ->> 🚨
+  This is a tentative of implementing @Capacitor/core@4.0.1 proposed by rdlabo (Masahiko Sakakibara). 
+  For those who want to try it do
+  ```
+  npm install @capacitor-community/sqlite@next
+  ```
+  Revert quickly any issue by clearly mentionning V4 in the title of the issue.
+
+  Thanks for your help in testing
+
+🚨 Release 4.0.0-1 <<- 🚨
+
 ## CAPACITOR 3 (Master)
 
 🚨 Release 3.4.3-3 all platforms ->> 🚨

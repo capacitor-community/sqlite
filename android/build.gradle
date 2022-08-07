@@ -32,6 +32,9 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    packagingOptions {
+        exclude 'build-data.properties'
+    }
     lintOptions {
         abortOnError false
     }
