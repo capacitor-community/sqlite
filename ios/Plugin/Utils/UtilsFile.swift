@@ -149,7 +149,7 @@ class UtilsFile {
                 dbPathURL = try UtilsFile.getApplicationURL().absoluteURL
             } else if first[0] == "Library" {
                 dbPathURL = try UtilsFile.getLibraryURL().absoluteURL
-            }  else if first[0].caseInsensitiveCompare("cache") == .orderedSame {
+            } else if first[0].caseInsensitiveCompare("cache") == .orderedSame {
                 dbPathURL = try UtilsFile.getCacheURL().absoluteURL
             } else if first[0] == "Documents" || first[0] == "default" {
                 dbPathURL = databaseURL
@@ -241,7 +241,7 @@ class UtilsFile {
             throw UtilsFileError.getApplicationPathFailed
         }
     }
-    
+
     // MARK: - getCacheURL
 
     class func getCacheURL() throws -> URL {

@@ -1003,7 +1003,10 @@ export interface ISQLiteConnection {
    * @param folderPath the origin from where to move the databases
    * @param dbNameList the names of the databases to move, check out the getMigratableDbList to get a list, an empty list will result in copying all the databases with '.db' extension.
    */
-  moveDatabasesAndAddSuffix(folderPath?: string, dbNameList?: string[]): Promise<void>;
+  moveDatabasesAndAddSuffix(
+    folderPath?: string,
+    dbNameList?: string[],
+  ): Promise<void>;
 }
 /**
  * SQLiteConnection Class
@@ -1336,7 +1339,8 @@ export class SQLiteConnection implements ISQLiteConnection {
     }
   }
 
-  async moveDatabasesAndAddSuffix(folderPath?: string,
+  async moveDatabasesAndAddSuffix(
+    folderPath?: string,
     dbNameList?: string[],
   ): Promise<void> {
     const path: string = folderPath ? folderPath : 'default';

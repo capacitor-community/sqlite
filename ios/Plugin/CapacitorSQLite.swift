@@ -1349,7 +1349,7 @@ enum CapacitorSQLiteError: Error {
             do {
                 try UtilsMigrate
                     .moveDatabasesAndAddSuffix(databaseLocation: databaseLocation,
-                                               folderPath: folderPath, 
+                                               folderPath: folderPath,
                                                dbList: dbList)
                 return
             } catch UtilsMigrateError.moveDatabasesAndAddSuffix(let message) {

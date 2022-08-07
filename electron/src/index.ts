@@ -527,7 +527,9 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
       return;
     } else {
-      throw new Error(`CopyFromAssets: assets/databases folder does not exist:[${assetsDbPath}]`);
+      throw new Error(
+        `CopyFromAssets: assets/databases folder does not exist:[${assetsDbPath}]`,
+      );
     }
   }
 
@@ -683,6 +685,12 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     throw new Error('Method not implemented.');
   }
   async deleteOldDatabases(options: capSQLitePathOptions): Promise<void> {
+    console.log(`${JSON.stringify(options)}`);
+    throw new Error('Method not implemented.');
+  }
+  async moveDatabasesAndAddSuffix(
+    options: capSQLitePathOptions,
+  ): Promise<void> {
     console.log(`${JSON.stringify(options)}`);
     throw new Error('Method not implemented.');
   }

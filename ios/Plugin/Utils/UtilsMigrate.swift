@@ -193,12 +193,12 @@ class UtilsMigrate {
     // swiftlint:enable cyclomatic_complexity
     // swiftlint:enable function_body_length
 
-        // MARK: - moveDatabasesAndAddSuffix
+    // MARK: - moveDatabasesAndAddSuffix
 
     // swiftlint:disable function_body_length
     // swiftlint:disable cyclomatic_complexity
     class func moveDatabasesAndAddSuffix(databaseLocation: String, folderPath: String,
-                               dbList: [String]) throws {
+                                         dbList: [String]) throws {
         var fromFile: String = ""
         var toFile: String = ""
         do {
@@ -221,7 +221,7 @@ class UtilsMigrate {
                 for file: String in mDbList {
                     if !file.contains("SQLite.db") {
                         fromFile = file
-                        toFile = "";
+                        toFile = ""
                         if dbList.count > 0 {
                             if dbList.contains(fromFile) {
                                 if String(file.suffix(3)) == ".db" {

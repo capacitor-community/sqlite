@@ -55,10 +55,10 @@
     "prepublishOnly": "npm run build && npm run build-electron && npm run docgen"
   },
   "devDependencies": {
-    "@capacitor/android": "^3.5.1",
-    "@capacitor/core": "^3.5.1",
+    "@capacitor/android": "^3.7.0",
+    "@capacitor/core": "^3.7.0",
     "@capacitor/docgen": "^0.0.17",
-    "@capacitor/ios": "^3.5.1",
+    "@capacitor/ios": "^3.7.0",
     "@ionic/eslint-config": "^0.3.0",
     "@ionic/prettier-config": "^1.0.1",
     "@ionic/swiftlint-config": "^1.1.2",
