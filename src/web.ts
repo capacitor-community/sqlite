@@ -34,7 +34,8 @@ import type {
 
 export class CapacitorSQLiteWeb
   extends WebPlugin
-  implements CapacitorSQLitePlugin {
+  implements CapacitorSQLitePlugin
+{
   private jeepSqliteElement: any = null;
   private isWebStoreOpen = false;
 
@@ -125,9 +126,8 @@ export class CapacitorSQLiteWeb
     this.ensureWebstoreIsOpen();
 
     try {
-      const versionResult: capVersionResult = await this.jeepSqliteElement.getVersion(
-        options,
-      );
+      const versionResult: capVersionResult =
+        await this.jeepSqliteElement.getVersion(options);
       return versionResult;
     } catch (err) {
       throw new Error(`${err}`);
@@ -140,9 +140,8 @@ export class CapacitorSQLiteWeb
     this.ensureJeepSqliteIsAvailable();
 
     try {
-      const consistencyResult: capSQLiteResult = await this.jeepSqliteElement.checkConnectionsConsistency(
-        options,
-      );
+      const consistencyResult: capSQLiteResult =
+        await this.jeepSqliteElement.checkConnectionsConsistency(options);
       return consistencyResult;
     } catch (err) {
       throw new Error(`${err}`);
@@ -166,9 +165,8 @@ export class CapacitorSQLiteWeb
     this.ensureWebstoreIsOpen();
 
     try {
-      const tableListResult: capSQLiteValues = await this.jeepSqliteElement.getTableList(
-        options,
-      );
+      const tableListResult: capSQLiteValues =
+        await this.jeepSqliteElement.getTableList(options);
       return tableListResult;
     } catch (err) {
       throw new Error(`${err}`);
@@ -180,9 +178,8 @@ export class CapacitorSQLiteWeb
     this.ensureWebstoreIsOpen();
 
     try {
-      const executeResult: capSQLiteChanges = await this.jeepSqliteElement.execute(
-        options,
-      );
+      const executeResult: capSQLiteChanges =
+        await this.jeepSqliteElement.execute(options);
       return executeResult;
     } catch (err) {
       throw new Error(`${err}`);
@@ -194,9 +191,8 @@ export class CapacitorSQLiteWeb
     this.ensureWebstoreIsOpen();
 
     try {
-      const executeResult: capSQLiteChanges = await this.jeepSqliteElement.executeSet(
-        options,
-      );
+      const executeResult: capSQLiteChanges =
+        await this.jeepSqliteElement.executeSet(options);
       return executeResult;
     } catch (err) {
       throw new Error(`${err}`);
@@ -234,9 +230,8 @@ export class CapacitorSQLiteWeb
     this.ensureWebstoreIsOpen();
 
     try {
-      const dbExistsResult: capSQLiteResult = await this.jeepSqliteElement.isDBExists(
-        options,
-      );
+      const dbExistsResult: capSQLiteResult =
+        await this.jeepSqliteElement.isDBExists(options);
       return dbExistsResult;
     } catch (err) {
       throw new Error(`${err}`);
@@ -248,9 +243,8 @@ export class CapacitorSQLiteWeb
     this.ensureWebstoreIsOpen();
 
     try {
-      const isDBOpenResult: capSQLiteResult = await this.jeepSqliteElement.isDBOpen(
-        options,
-      );
+      const isDBOpenResult: capSQLiteResult =
+        await this.jeepSqliteElement.isDBOpen(options);
       return isDBOpenResult;
     } catch (err) {
       throw new Error(`${err}`);
@@ -262,9 +256,8 @@ export class CapacitorSQLiteWeb
     this.ensureWebstoreIsOpen();
 
     try {
-      const isDatabaseResult: capSQLiteResult = await this.jeepSqliteElement.isDatabase(
-        options,
-      );
+      const isDatabaseResult: capSQLiteResult =
+        await this.jeepSqliteElement.isDatabase(options);
       return isDatabaseResult;
     } catch (err) {
       throw new Error(`${err}`);
@@ -318,9 +311,8 @@ export class CapacitorSQLiteWeb
     this.ensureWebstoreIsOpen();
 
     try {
-      const importFromJsonResult: capSQLiteChanges = await this.jeepSqliteElement.importFromJson(
-        options,
-      );
+      const importFromJsonResult: capSQLiteChanges =
+        await this.jeepSqliteElement.importFromJson(options);
       return importFromJsonResult;
     } catch (err) {
       throw new Error(`${err}`);
@@ -332,9 +324,8 @@ export class CapacitorSQLiteWeb
     this.ensureWebstoreIsOpen();
 
     try {
-      const exportToJsonResult: capSQLiteJson = await this.jeepSqliteElement.exportToJson(
-        options,
-      );
+      const exportToJsonResult: capSQLiteJson =
+        await this.jeepSqliteElement.exportToJson(options);
       return exportToJsonResult;
     } catch (err) {
       throw new Error(`${err}`);
@@ -345,9 +336,8 @@ export class CapacitorSQLiteWeb
     this.ensureWebstoreIsOpen();
 
     try {
-      const createSyncTableResult: capSQLiteChanges = await this.jeepSqliteElement.createSyncTable(
-        options,
-      );
+      const createSyncTableResult: capSQLiteChanges =
+        await this.jeepSqliteElement.createSyncTable(options);
       return createSyncTableResult;
     } catch (err) {
       throw new Error(`${err}`);
@@ -370,9 +360,8 @@ export class CapacitorSQLiteWeb
     this.ensureWebstoreIsOpen();
 
     try {
-      const getSyncDateResult: capSQLiteSyncDate = await this.jeepSqliteElement.getSyncDate(
-        options,
-      );
+      const getSyncDateResult: capSQLiteSyncDate =
+        await this.jeepSqliteElement.getSyncDate(options);
       return getSyncDateResult;
     } catch (err) {
       throw new Error(`${err}`);
@@ -418,7 +407,8 @@ export class CapacitorSQLiteWeb
     this.ensureWebstoreIsOpen();
 
     try {
-      const databaseListResult: capSQLiteValues = await this.jeepSqliteElement.getDatabaseList();
+      const databaseListResult: capSQLiteValues =
+        await this.jeepSqliteElement.getDatabaseList();
       return databaseListResult;
     } catch (err) {
       throw new Error(`${err}`);

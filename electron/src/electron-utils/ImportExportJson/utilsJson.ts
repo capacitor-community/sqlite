@@ -247,10 +247,8 @@ export class UtilsJson {
       }
 
       // Get the column names and types
-      const tableNamesTypes: any = await this.sqliteUtil.getTableColumnNamesTypes(
-        mDB,
-        table.name,
-      );
+      const tableNamesTypes: any =
+        await this.sqliteUtil.getTableColumnNamesTypes(mDB, table.name);
       const tableColumnTypes: string[] = tableNamesTypes.types;
       const tableColumnNames: string[] = tableNamesTypes.names;
       if (tableColumnTypes.length === 0) {

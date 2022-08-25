@@ -47,13 +47,16 @@ export class UtilsFile {
     this.osType = this.Os.type();
     switch (this.osType) {
       case 'Darwin':
-        this.pathDB = this.capConfig.plugins.CapacitorSQLite.electronMacLocation;
+        this.pathDB =
+          this.capConfig.plugins.CapacitorSQLite.electronMacLocation;
         break;
       case 'Linux':
-        this.pathDB = this.capConfig.plugins.CapacitorSQLite.electronLinuxLocation;
+        this.pathDB =
+          this.capConfig.plugins.CapacitorSQLite.electronLinuxLocation;
         break;
       case 'Windows_NT':
-        this.pathDB = this.capConfig.plugins.CapacitorSQLite.electronWindowsLocation;
+        this.pathDB =
+          this.capConfig.plugins.CapacitorSQLite.electronWindowsLocation;
         break;
       default:
         console.log('other operating system');

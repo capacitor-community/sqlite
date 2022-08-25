@@ -1,3 +1,7 @@
+# 4.0.1 (2022-08-25)
+
+  - publish as `latest` release in npm
+
 # 4.0.0-1 (2022-08-07)
 
 ### Chore

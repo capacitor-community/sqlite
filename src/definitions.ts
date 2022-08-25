@@ -1156,12 +1156,11 @@ export class SQLiteConnection implements ISQLiteConnection {
     database: string,
   ): Promise<capNCDatabasePathResult> {
     try {
-      const databasePath: capNCDatabasePathResult = await this.sqlite.getNCDatabasePath(
-        {
+      const databasePath: capNCDatabasePathResult =
+        await this.sqlite.getNCDatabasePath({
           path,
           database,
-        },
-      );
+        });
       return Promise.resolve(databasePath);
     } catch (err) {
       return Promise.reject(err);
@@ -1240,9 +1239,8 @@ export class SQLiteConnection implements ISQLiteConnection {
   async checkConnectionsConsistency(): Promise<capSQLiteResult> {
     try {
       const keys = [...this._connectionDict.keys()];
-      const res: capSQLiteResult = await this.sqlite.checkConnectionsConsistency(
-        { dbNames: keys },
-      );
+      const res: capSQLiteResult =
+        await this.sqlite.checkConnectionsConsistency({ dbNames: keys });
       if (!res.result) this._connectionDict = new Map();
       return Promise.resolve(res);
     } catch (err) {

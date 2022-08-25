@@ -2,7 +2,7 @@
 <h3 align="center">SQLITE DATABASE</h3>
 <p align="center"><strong><code>@capacitor-community/sqlite</code></strong></p>
 <br>
-<p align="center" style="font-size:50px;color:red"><strong>CAPACITOR 3</strong></p><br>
+<p align="center" style="font-size:50px;color:red"><strong>CAPACITOR 4</strong></p><br>
 
 <p align="center">
   Capacitor community plugin for Native and Electron SQLite Databases. In Native databases could be encrypted with SQLCipher
@@ -28,6 +28,17 @@
 
 ## CAPACITOR 4 (Master)
 
+🚨 Release 4.0.1 all platforms ->> 🚨
+
+  As no any issues where opened against version 4.0.0-1 using Capacitor 4,
+  Developers can now install it as normal
+
+  ```
+  npm install @capacitor-community/sqlite@latest
+  ```  
+
+🚨 Release 4.0.1 <<- 🚨
+
 🚨 Release 4.0.0-1 all platforms ->> 🚨
   This is a tentative of implementing @Capacitor/core@4.0.1 proposed by rdlabo (Masahiko Sakakibara). 
   For those who want to try it do
@@ -40,7 +51,7 @@
 
 🚨 Release 4.0.0-1 <<- 🚨
 
-## CAPACITOR 3 (Master)
+## CAPACITOR 3 (v3.7.0)
 
 🚨 Release 3.4.3-3 all platforms ->> 🚨
 

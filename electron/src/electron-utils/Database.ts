@@ -600,10 +600,8 @@ export class Database {
           new Date().toISOString(),
         );
       }
-      const jsonResult: JsonSQLite = await this.exportToJsonUtil.createExportObject(
-        this.database,
-        inJson,
-      );
+      const jsonResult: JsonSQLite =
+        await this.exportToJsonUtil.createExportObject(this.database, inJson);
       const keys = Object.keys(jsonResult);
       if (keys.length === 0) {
         const msg =
