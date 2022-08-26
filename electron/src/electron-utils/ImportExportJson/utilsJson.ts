@@ -701,6 +701,7 @@ export class UtilsJson {
       'column',
       'value',
       'foreignkey',
+      'primarykey',
       'constraint',
     ];
     if (
@@ -713,6 +714,7 @@ export class UtilsJson {
       if (key === 'column' && typeof obj[key] != 'string') return false;
       if (key === 'value' && typeof obj[key] != 'string') return false;
       if (key === 'foreignkey' && typeof obj[key] != 'string') return false;
+      if (key === 'primarykey' && typeof obj[key] != 'string') return false;
       if (key === 'constraint' && typeof obj[key] != 'string') return false;
     }
     return true;

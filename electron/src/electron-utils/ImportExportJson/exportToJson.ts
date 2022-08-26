@@ -354,17 +354,29 @@ export class ExportToJson {
       // first word as key
       for (const sc of sch) {
         const row: string[] = [];
-        const scht: string = sc.trim();
+        const scht: string = sc.replace(/\n/g, '').trim();
         row[0] = scht.substring(0, scht.indexOf(' '));
         row[1] = scht.substring(scht.indexOf(' ') + 1);
 
         const jsonRow: JsonColumn = {} as JsonColumn;
         if (row[0].toUpperCase() === 'FOREIGN') {
-          const oPar: number = sc.indexOf('(');
-          const cPar: number = sc.indexOf(')');
-          row[0] = sc.substring(oPar + 1, cPar);
-          row[1] = sc.substring(cPar + 2);
+          const oPar: number = scht.indexOf('(');
+          const cPar: number = scht.indexOf(')');
+          const fk = scht.substring(oPar + 1, cPar);
+          const fknames: string[] = fk.split('§');
+          row[0] = fknames.join(',');
+          row[0] = row[0].replace(/, /g, ',');
+          row[1] = scht.substring(cPar + 2);
           jsonRow['foreignkey'] = row[0];
+        } else if (row[0].toUpperCase() === 'PRIMARY') {
+          const oPar: number = scht.indexOf('(');
+          const cPar: number = scht.indexOf(')');
+          const pk: string = scht.substring(oPar + 1, cPar);
+          const pknames: string[] = pk.split('§');
+          row[0] = 'CPK_' + pknames.join('_');
+          row[0] = row[0].replace(/_ /g, '_');
+          row[1] = scht;
+          jsonRow['constraint'] = row[0];
         } else if (row[0].toUpperCase() === 'CONSTRAINT') {
           const tRow: string[] = [];
           const row1t: string = row[1].trim();

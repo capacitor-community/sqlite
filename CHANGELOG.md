@@ -1,3 +1,15 @@
+# 4.1.0-1 (2022-08-26)
+
+### Chore
+
+ - Update to @capacitor/core 4.1.0
+ - Update to @capacitor/ios 4.1.0
+ - Update to @capacitor/android 4.1.0
+
+### Bug Fixes
+
+ - Composite primary key - export/import problem
+ 
 # 4.0.1 (2022-08-25)
 
   - publish as `latest` release in npm

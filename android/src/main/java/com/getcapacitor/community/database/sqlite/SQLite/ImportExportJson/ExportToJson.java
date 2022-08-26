@@ -346,21 +346,37 @@ public class ExportToJson {
             // for each element of the array split the
             // first word as key
             for (int j = 0; j < sch.length; j++) {
-                String[] row = sch[j].trim().split(" ", 2);
+                String sc = sch[j].replaceAll("\n", "").trim();
+                String[] row = sc.trim().split(" ", 2);
                 JsonColumn jsonRow = new JsonColumn();
-                if (row[0].toUpperCase().equals("FOREIGN")) {
-                    Integer oPar = sch[j].indexOf("(");
-                    Integer cPar = sch[j].indexOf(")");
-                    row[0] = sch[j].substring(oPar + 1, cPar);
-                    row[1] = sch[j].substring(cPar + 2);
-                    jsonRow.setForeignkey(row[0]);
-                } else if (row[0].toUpperCase().equals("CONSTRAINT")) {
-                    String[] tRow = row[1].trim().split(" ", 2);
-                    row[0] = tRow[0];
-                    jsonRow.setConstraint(row[0]);
-                    row[1] = tRow[1];
-                } else {
-                    jsonRow.setColumn(row[0]);
+                Integer oPar;
+                Integer cPar;
+                switch (row[0].toUpperCase()) {
+                    case "FOREIGN":
+                        oPar = sc.indexOf("(");
+                        cPar = sc.indexOf(")");
+                        String fk = sc.substring(oPar + 1, cPar);
+                        row[0] = fk.replaceAll("§", ",");
+                        row[1] = sc.substring(cPar + 2);
+                        jsonRow.setForeignkey(row[0]);
+                        break;
+                    case "PRIMARY":
+                        oPar = sc.indexOf("(");
+                        cPar = sc.indexOf(")");
+                        String pk = sc.substring(oPar + 1, cPar);
+                        row[0] = "CPK_" + pk.replaceAll("§", "_");
+                        row[0] = row[0].replaceAll("_ ", "_");
+                        row[1] = sc.substring(cPar + 2);
+                        jsonRow.setConstraint(row[0]);
+                        break;
+                    case "CONSTRAINT":
+                        String[] tRow = row[1].trim().split(" ", 2);
+                        row[0] = tRow[0];
+                        jsonRow.setConstraint(row[0]);
+                        row[1] = tRow[1];
+                        break;
+                    default:
+                        jsonRow.setColumn(row[0]);
                 }
                 jsonRow.setValue(row[1].replaceAll("§", ","));
                 schema.add(jsonRow);
