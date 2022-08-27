@@ -323,6 +323,7 @@ You can you add the following code to `app/build.gradle`:
         exclude 'build-data.properties'
     }
 ```
+See [#301](https://github.com/capacitor-community/sqlite/issues/301) and [SO](https://stackoverflow.com/questions/63291529/how-to-fix-more-than-one-file-was-found-with-os-independent-path-build-data-pro] for more information.
 
 ### Electron
 
