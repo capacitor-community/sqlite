@@ -315,6 +315,14 @@ npx cap open ios
 ```
 npx cap open android
 ```
+In case you get the following error:
+`x files found with path 'build-data.properties'.`
+You can you add the following code to `app/build.gradle`:
+```
+    packagingOptions {
+        exclude 'build-data.properties'
+    }
+```
 
 ### Electron
 
