@@ -32,7 +32,10 @@ For more info on releases:
 
  - [info_releases](https://github.com/capacitor-community/sqlite/blob/master/info_releases.md)
 
- - [changelog]https://github.com/capacitor-community/sqlite/blob/master/changelog.md
+ - [changelog](https://github.com/capacitor-community/sqlite/blob/master/CHANGELOG.md)
+
+ - [issues](https://github.com/capacitor-community/sqlite/issues)
+
 
 The test has been achieved on:
 
@@ -155,15 +158,6 @@ See [#301](https://github.com/capacitor-community/sqlite/issues/301) and [SO](ht
 ```
 npx cap open @capacitor-community/electron
 ```
-
-## Readme previous releases
-
-[previous releases](https://github.com/capacitor-community/sqlite/readme_previous_release.md)
-
-## Issues
-
-[issues](https://github.com/capacitor-community/sqlite/issues)
-
 
 ## Configuration
 
