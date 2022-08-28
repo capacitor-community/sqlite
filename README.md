@@ -26,78 +26,51 @@
 | ----------------- | ----------------------------------------- | ------ |
 | Quéau Jean Pierre | [jepiqueau](https://github.com/jepiqueau) |        |
 
-## CAPACITOR 4 (Master)
+To install:
+```
+npm install @capacitor-community/sqlite
+npx cap sync
+```
 
-For more info on releases:
+## More Reading:
 
- - [info_releases](https://github.com/capacitor-community/sqlite/blob/master/info_releases.md)
+ - [Releases](https://github.com/capacitor-community/sqlite/blob/master/info_releases.md)
+ - [Changelog](https://github.com/capacitor-community/sqlite/blob/master/CHANGELOG.md)
+ - [Issues](https://github.com/capacitor-community/sqlite/issues)
+ - [Capacitor documentation](https://capacitorjs.com/docs/)
+ - [Datatypes In SQLite Version 3](https://www.sqlite.org/datatype3.html)
 
- - [changelog](https://github.com/capacitor-community/sqlite/blob/master/CHANGELOG.md)
 
- - [issues](https://github.com/capacitor-community/sqlite/issues)
-
-
-The test has been achieved on:
-
-- a [Ionic/Angular app](https://github.com/jepiqueau/angular-sqlite-app-starter)
-
-- a [Ionic/React app](https://github.com/jepiqueau/react-sqlite-app-starter)
-
-- a [Ionic/Vue app](https://github.com/jepiqueau/vue-sqlite-app-starter)
-
-- a [React Vite app](https://github.com/jepiqueau/react-vite-sqlite-app)
-
-- a [Vue Vite app](https://github.com/jepiqueau/vuevite-app)
-
-- a [Vue TypeORM app](https://github.com/jepiqueau/vue-typeorm-app)
-
-- a [SolidJS Vite app](https://github.com/jepiqueau/capacitor-solid-sqlite)
-
-## Browser Support
+## Web Quirks
 
 The plugin follows the guidelines from the `Capacitor Team`,
 
 - [Capacitor Browser Support](https://capacitorjs.com/docs/v3/web#browser-support)
 
-meaning that it will not work in IE11 without additional JavaScript transformations, e.g. with [Babel](https://babeljs.io/).
-
-## Installation
-
-```bash
-npm install @capacitor-community/sqlite
-npm run build
-npx cap add android
-npx cap add ios
-npx cap add @capacitor-community/electron
-```
-
-and do when you update 
-
-```bash
-npx cap sync
-npx cap sync @capacitor-community/electron
-```
-
-### Web
+Meaning that it will not work in IE11 without additional JavaScript transformations, e.g. with [Babel](https://babeljs.io/).
+You'll need the usual capacitor/android/react npm script to build and copy the assets folder.
 
 #### For Angular framework
 
-- copy manually the file `sql-wasm.wasm` from `node_modules/sql.js/dist/sql-wasm.wasm` to the `src/assets` folder of YOUR_APP 
+- Copy manually the file `sql-wasm.wasm` from `node_modules/sql.js/dist/sql-wasm.wasm` to the `src/assets` folder of YOUR_APP 
 
 #### For Vue & React frameworks
 
-- copy manually the file `sql-wasm.wasm` from `node_modules/sql.js/dist/sql-wasm.wasm` to the `public/assets` folder of YOUR_APP 
+- Copy manually the file `sql-wasm.wasm` from `node_modules/sql.js/dist/sql-wasm.wasm` to the `public/assets` folder of YOUR_APP 
 
-### IOS
+## Android Quirks
 
-- on iOS, no further steps needed.
+In case you get the following error when building your app in Android Studio:
+`x files found with path 'build-data.properties'.`
+You can you add the following code to `app/build.gradle`:
+```
+    packagingOptions {
+        exclude 'build-data.properties'
+    }
+```
+See [#301](https://github.com/capacitor-community/sqlite/issues/301) and [SO question](https://stackoverflow.com/questions/63291529/how-to-fix-more-than-one-file-was-found-with-os-independent-path-build-data-pro) for more information.
 
-### Android
-
-- On Android, no further steps needed.
-
-
-### Electron
+## Electron Quirks
 
 - On Electron, go to the Electron folder of YOUR_APPLICATION
 
@@ -106,64 +79,14 @@ cd electron
 npm install --save sqlite3
 npm install --save jszip
 npm install --save-dev @types/sqlite3
-npm run build
 ```
 
-## Build & Run
+## IOS Quirks
 
-```
-npm run build
-npx cap copy
-npx cap copy web
-npx cap copy @capacitor-community/electron
-```
+- on iOS, no further steps needed.
 
-### Web
-- Angular
-```
-ionic serve
-```
-- Vue
-```
-npm run serve
-```
-- React
-```
-npm run start
-```
 
-### IOS
-
-```
-npx cap open ios
-```
-
-### Android
-
-```
-npx cap open android
-```
-In case you get the following error:
-`x files found with path 'build-data.properties'.`
-You can you add the following code to `app/build.gradle`:
-```
-    packagingOptions {
-        exclude 'build-data.properties'
-    }
-```
-See [#301](https://github.com/capacitor-community/sqlite/issues/301) and [SO](https://stackoverflow.com/questions/63291529/how-to-fix-more-than-one-file-was-found-with-os-independent-path-build-data-pro] for more information.
-
-### Electron
-
-```
-npx cap open @capacitor-community/electron
-```
-
-## Configuration
-
-No configuration required for this plugin
-
-## Supported methods
+## Supported Methods by Platform
 
 | Name                        | Android | iOS | Electron | Web |
 | :-------------------------- | :------ | :-- | :------- | :-- |
@@ -212,46 +135,35 @@ No configuration required for this plugin
 | isNCDatabase                | ✅      | ✅  | ❌        | ❌  |
 | transaction                 | ✅      | ✅  | ✅        | ✅  |
 
-## Supported SQLite Types
 
- -[Datatypes In SQLite Version 3](https://www.sqlite.org/datatype3.html)
+## Documentation & APIs
 
-## Documentation
+- [API](https://github.com/capacitor-community/sqlite/blob/master/docs/API.md)
 
-### API
+- [API Connection Wrapper](https://github.com/capacitor-community/sqlite/blob/master/docs/APIConnection.md)
 
-- [API_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/API.md)
+- [API DB Connection Wrapper](https://github.com/capacitor-community/sqlite/blob/master/docs/APIDBConnection.md)
 
-- [API_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/APIConnection.md)
+- [Import-Export Json](https://github.com/capacitor-community/sqlite/blob/master/docs/ImportExportJson.md)
 
-- [API_DB_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/APIDBConnection.md)
+- [Upgrade Database Version](https://github.com/capacitor-community/sqlite/blob/master/docs/UpgradeDatabaseVersion.md)
 
-- [ImportExportJson_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/ImportExportJson.md)
+- [Migrating Cordova Databases](https://github.com/capacitor-community/sqlite/blob/master/docs/MigratingCordovaDatabases.md)
 
-- [UpgradeDatabaseVersion_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/UpgradeDatabaseVersion.md)
+- [Type ORM](https://github.com/capacitor-community/sqlite/blob/master/docs/TypeORM-Usage.md)
 
-- [MigratingCordovaDatabases_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/MigratingCordovaDatabases.md)
+- [Web Usage](https://github.com/capacitor-community/sqlite/blob/master/docs/Web-Usage.md)
 
-- [TypeORM_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/TypeORM-Usage.md)
+- [Non Conformed Databases](https://github.com/capacitor-community/sqlite/blob/master/docs/NonConformedDatabases.md)
 
-- [Web_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Web-Usage.md)
-
-- [Non_Conformed_Databases_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/NonConformedDatabases.md)
-
-- [Biometric_Authentication](https://github.com/capacitor-community/sqlite/blob/master/docs/Biometric-Authentication.md)
-
-### Framework's Usage 
-
-- [Ionic/Angular_Usage_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-Angular-Usage.md)
-
-- [Ionic/React_Usage_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-React-Usage.md)
-
-- [Ionic/Vue_Usage_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-Vue-Usage.md)
+- [Biometric Authentication](https://github.com/capacitor-community/sqlite/blob/master/docs/Biometric-Authentication.md)
 
 
-## Applications demonstrating the use of the plugin
+## Applications demonstrating the use of the plugin and related documentation
 
 ### Ionic/Angular
+
+- [Ionic/Angular Usage Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-Angular-Usage.md)
 
 - [angular-sqlite-app-starter](https://github.com/jepiqueau/angular-sqlite-app-starter)
 
@@ -259,14 +171,17 @@ No configuration required for this plugin
 
 ### Ionic/React
 
+- [Ionic/React Usage Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-React-Usage.md)
+
 - [react-sqlite-app-starter](https://github.com/jepiqueau/react-sqlite-app-starter)
 
 ### React+Vite
 
 - [react-vite-sqlite-app](https://github.com/jepiqueau/react-vite-sqlite-app)
 
-
 ### Ionic/Vue
+
+- [Ionic/Vue Usage Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-Vue-Usage.md)
 
 - [vue-sqlite-app-starter](https://github.com/jepiqueau/vue-sqlite-app-starter)
 
@@ -282,10 +197,9 @@ No configuration required for this plugin
 
 - [solidjs-vite-sqlite-app](https://github.com/jepiqueau/capacitor-solid-sqlite)
 
+### Vue TypeORM app
 
-## Usage
-
-- [see capacitor documentation](https://capacitor.ionicframework.com/docs/getting-started/with-ionic)
+- [vue-typeorm-app](https://github.com/jepiqueau/vue-typeorm-app)
 
 
 ## Dependencies
@@ -303,28 +217,27 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
 <p align="center">
-  <a href="https://github.com/jepiqueau"><img src="https://github.com/jepiqueau.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/paulantoine2"><img src="https://github.com/paulantoine2.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/karyfars"><img src="https://github.com/karyfars.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/chriswep"><img src="https://github.com/chriswep.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/nirajhinge"><img src="https://github.com/nirajhinge.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/digaus"><img src="https://github.com/digaus.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/IT-MikeS"><img src="https://github.com/IT-MikeS.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/peakcool"><img src="https://github.com/peakcool.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/gion-andri"><img src="https://github.com/gion-andri.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/robingenz"><img src="https://github.com/robingenz.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/dewald-els"><img src="https://github.com/dewald-els.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/joewoodhouse"><img src="https://github.com/joewoodhouse.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/ptasheq"><img src="https://github.com/ptasheq.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/victorybiz"><img src="https://github.com/victorybiz.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/tobiasmuecksch"><img src="https://github.com/tobiasmuecksch.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/dragermrb"><img src="https://github.com/dragermrb.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/iamcco"><img src="https://github.com/iamcco.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/eltociear"><img src="https://github.com/eltociear.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/joewoodhouse"><img src="https://github.com/joewoodhouse.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/antoniovlx"><img src="https://github.com/antoniovlx.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/HarelM"><img src="https://github.com/HarelM.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/rdlabo"><img src="https://github.com/rdlabo.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/jepiqueau" title="jepiqueau"><img src="https://github.com/jepiqueau.png?size=100" width="50" height="50"/></a>
+  <a href="https://github.com/paulantoine2" title="paulantoine2"><img src="https://github.com/paulantoine2.png?size=100" width="50" height="50" alt=""/></a>
+  <a href="https://github.com/karyfars" title="karyfars"><img src="https://github.com/karyfars.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/chriswep" title="chriswep"><img src="https://github.com/chriswep.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/nirajhinge" title="nirajhinge"><img src="https://github.com/nirajhinge.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/digaus" title="digaus"><img src="https://github.com/digaus.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/IT-MikeS" title="IT-MikeS"><img src="https://github.com/IT-MikeS.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/peakcool" title="peakcool"><img src="https://github.com/peakcool.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/gion-andri" title="gion-andri"><img src="https://github.com/gion-andri.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/robingenz" title="robingenz"><img src="https://github.com/robingenz.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/dewald-els" title="dewald-els"><img src="https://github.com/dewald-els.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/joewoodhouse" title="joewoodhouse"><img src="https://github.com/joewoodhouse.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/ptasheq" title="ptasheq"><img src="https://github.com/ptasheq.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/victorybiz" title="victorybiz"><img src="https://github.com/victorybiz.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/tobiasmuecksch" title="tobiasmuecksch"><img src="https://github.com/tobiasmuecksch.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/dragermrb" title="dragermrb"><img src="https://github.com/dragermrb.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/iamcco" title="iamcco"><img src="https://github.com/iamcco.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/eltociear" title="eltociear"><img src="https://github.com/eltociear.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/antoniovlx" title="antoniovlx"><img src="https://github.com/antoniovlx.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/HarelM" title="HarelM"><img src="https://github.com/HarelM.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/rdlabo" title="rdlabo"><img src="https://github.com/rdlabo.png?size=100" width="50" height="50" /></a>
 </p>
 
 <!-- markdownlint-enable -->
