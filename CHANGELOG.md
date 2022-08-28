@@ -1,3 +1,9 @@
+# 4.1.0-2 (2022-08-28)
+
+### Bug Fixes
+
+ - Clean up the README.md
+
 # 4.1.0-1 (2022-08-26)
 
 ### Chore
