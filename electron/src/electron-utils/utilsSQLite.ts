@@ -18,10 +18,6 @@ export class UtilsSQLite {
   ): Promise<any> {
     const msg = 'OpenOrCreateDatabase: ';
     // open sqlite3 database
-    /*    const mDB: any = new this.JSQlite.Database(pathDB, {
-      verbose: console.log,
-    });
-    */
     const mDB: any = new this.SQLite3.Database(pathDB, {
       verbose: console.log,
     });
@@ -325,9 +321,7 @@ export class UtilsSQLite {
             stmt.toLowerCase().includes('WHERE'.toLowerCase())
           ) {
             const whereStmt = `${stmt.trim()};`;
-            console.log(`in utilsSQLite execute whereStmt ${whereStmt}`);
             const rStmt = await this.deleteSQL(mDB, whereStmt, []);
-            console.log(`in utilsSQLite execute rStmt ${rStmt}`);
             resArr.push(rStmt);
           } else {
             resArr.push(stmt);
@@ -335,7 +329,6 @@ export class UtilsSQLite {
         }
         sqlStmt = resArr.join(';');
       }
-      console.log(`in utilsSQLite execute sqlStmt ${sqlStmt}`);
 
       await this.execDB(mDB, sqlStmt);
       changes = (await this.dbChanges(mDB)) - initChanges;
@@ -442,7 +435,6 @@ export class UtilsSQLite {
     return new Promise((resolve, reject) => {
       if (values != null && values.length > 0) {
         ``;
-        console.log(`in runExec stmt: ${stmt} values: ${values}`);
         db.run(stmt, values, (err: any) => {
           if (err) {
             console.log(`in runExec err1: ${JSON.stringify(err)}`);
@@ -506,7 +498,6 @@ export class UtilsSQLite {
           .substring('DELETE FROM'.length)
           .trim();
         sqlStmt = `UPDATE ${tableName} SET sql_deleted = 1 ${clauseStmt}`;
-        console.log(`in deleteSQL sqlStmt: ${sqlStmt}`);
         // Find REFERENCES if any and update the sql_deleted column
         await this.findReferencesAndUpdate(db, tableName, clauseStmt, values);
       }
@@ -535,24 +526,19 @@ export class UtilsSQLite {
         return;
       }
       const tableNameWithRefs = references.pop();
-      console.log(`references: ${references}`);
-      console.log(`tableNameWithRefs: ${tableNameWithRefs}`);
       for (const refe of references) {
         // get the tableName of the reference
         const refTable: string = await this.getReferenceTableName(refe);
         if (refTable.length <= 0) {
           continue;
         }
-        console.log(`refTable: ${refTable}`);
         // get the with references columnName
         const withRefsNames: string[] = await this.getWithRefsColumnName(refe);
-        console.log(`withRefsNames: ${withRefsNames}`);
         if (withRefsNames.length <= 0) {
           continue;
         }
         // get the referenced columnName
         const colNames: string[] = await this.getReferencedColumnName(refe);
-        console.log(`colNames: ${colNames}`);
         if (colNames.length <= 0) {
           continue;
         }
@@ -562,8 +548,6 @@ export class UtilsSQLite {
           withRefsNames,
           colNames,
         );
-        console.log(`whereStmt: ${whereStmt}`);
-        console.log(`uWhereStmt: ${uWhereStmt}`);
         if (uWhereStmt.length <= 0) {
           continue;
         }
@@ -573,32 +557,23 @@ export class UtilsSQLite {
           updTableName = refTable;
           updColNames = withRefsNames;
         }
-        console.log(`updTableName: ${updTableName}`);
-        console.log(`updColNames: ${updColNames}`);
 
         //update sql_deleted for this reference
         const stmt: string =
           'UPDATE ' + updTableName + ' SET sql_deleted = 1 ' + uWhereStmt;
-        console.log(`stmt: ${stmt}`);
-        console.log(`values: ${values}`);
         if (values != null && values.length > 0) {
           const mVal: any[] = await this.replaceUndefinedByNull(values);
           let arrVal: string[] = whereStmt.split('?');
           if (arrVal[arrVal.length - 1] === ';') arrVal = arrVal.slice(0, -1);
-          console.log(`arrVal: ${arrVal}`);
           const selValues: any[] = [];
           for (const [j, val] of arrVal.entries()) {
-            console.log(`j: ${j} val: ${val}`);
             for (const updVal of updColNames) {
               const idxVal = val.indexOf(updVal);
-              console.log(`updVal: ${updVal} idxVal ${idxVal}`);
               if (idxVal > -1) {
                 selValues.push(mVal[j]);
               }
             }
           }
-          console.log(`*** stmt: ${selValues}`);
-          console.log(`*** selValues: ${selValues}`);
           await db.run(stmt, selValues);
         } else {
           await db.exec(stmt);
