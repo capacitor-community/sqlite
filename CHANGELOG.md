@@ -1,3 +1,10 @@
+# 4.1.0-5 (2022-08-29)
+
+### Bug Fixes
+
+ - Fix getAssetsDatabasesPath reading capacitor.config.ts (Electron)
+ - Remove console.log statements (Electron)
+
 # 4.1.0-4 (2022-08-29)
 
 ### Bug Fixes
