@@ -14,6 +14,7 @@
 * [`isSecretStored()`](#issecretstored)
 * [`setEncryptionSecret(...)`](#setencryptionsecret)
 * [`changeEncryptionSecret(...)`](#changeencryptionsecret)
+* [`clearEncryptionSecret()`](#clearencryptionsecret)
 * [`addUpgradeStatement(...)`](#addupgradestatement)
 * [`createConnection(...)`](#createconnection)
 * [`isConnection(...)`](#isconnection)
@@ -36,6 +37,7 @@
 * [`getMigratableDbList(...)`](#getmigratabledblist)
 * [`addSQLiteSuffix(...)`](#addsqlitesuffix)
 * [`deleteOldDatabases(...)`](#deleteolddatabases)
+* [`moveDatabasesAndAddSuffix(...)`](#movedatabasesandaddsuffix)
 * [Interfaces](#interfaces)
 
 </docgen-index>
@@ -142,6 +144,19 @@ Change the passphrase in a secure store
 | **`oldpassphrase`** | <code>string</code> |
 
 **Since:** 3.0.0-beta.13
+
+--------------------
+
+
+### clearEncryptionSecret()
+
+```typescript
+clearEncryptionSecret() => Promise<void>
+```
+
+Clear the passphrase in a secure store
+
+**Since:** 3.5.1
 
 --------------------
 
@@ -541,6 +556,23 @@ Delete Old Cordova databases
 | **`dbNameList`** | <code>string[]</code> | since 3.2.4-1 |
 
 **Since:** 3.0.0-beta.5
+
+--------------------
+
+
+### moveDatabasesAndAddSuffix(...)
+
+```typescript
+moveDatabasesAndAddSuffix(folderPath?: string | undefined, dbNameList?: string[] | undefined) => Promise<void>
+```
+
+Moves databases to the location the plugin can read them, and adds sqlite suffix
+This resembles calling addSQLiteSuffix and deleteOldDatabases, but it is more performant as it doesn't copy but moves the files
+
+| Param            | Type                  | Description                                                                                                                                                       |
+| ---------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`folderPath`** | <code>string</code>   | the origin from where to move the databases                                                                                                                       |
+| **`dbNameList`** | <code>string[]</code> | the names of the databases to move, check out the getMigratableDbList to get a list, an empty list will result in copying all the databases with '.db' extension. |
 
 --------------------
 

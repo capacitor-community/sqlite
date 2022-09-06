@@ -526,7 +526,9 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
       return;
     } else {
-      throw new Error('CopyFromAssets: assets/databases folder does not exist');
+      throw new Error(
+        `CopyFromAssets: assets/databases folder does not exist:[${assetsDbPath}]`,
+      );
     }
   }
 
@@ -540,7 +542,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     if (files.length > 0) {
       return { values: files };
     } else {
-      throw new Error(`isTableExists: No databases found`);
+      throw new Error(`isTableExists: No databases found in [${pathDatabase}]`);
     }
   }
 
@@ -667,7 +669,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   }
 
   ////////////////////////////////
-  //// UNIMPLEMENTED MTEHODS
+  //// UNIMPLEMENTED METHODS
   ////////////////////////////////
 
   async getMigratableDbList(
@@ -682,6 +684,12 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     throw new Error('Method not implemented.');
   }
   async deleteOldDatabases(options: capSQLitePathOptions): Promise<void> {
+    console.log(`${JSON.stringify(options)}`);
+    throw new Error('Method not implemented.');
+  }
+  async moveDatabasesAndAddSuffix(
+    options: capSQLitePathOptions,
+  ): Promise<void> {
     console.log(`${JSON.stringify(options)}`);
     throw new Error('Method not implemented.');
   }
@@ -710,6 +718,11 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
   async changeEncryptionSecret(options: capChangeSecretOptions): Promise<void> {
     console.log(`${JSON.stringify(options)}`);
+    throw new Error('Method not implemented.');
+  }
+
+  async clearEncryptionSecret(): Promise<void> {
+    console.log('clearEncryptionSecret');
     throw new Error('Method not implemented.');
   }
 

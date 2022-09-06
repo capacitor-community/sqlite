@@ -25,8 +25,9 @@ enum UtilsSQLCipherError: Error {
     case execute(message: String)
     case prepareSQL(message: String)
     case deleteSQL(message: String)
-    case findReferenciesAndUpdate(message: String)
-    case getReferencies(message: String)
+    case findReferencesAndUpdate(message: String)
+    case getReferences(message: String)
+    case getRefs(message: String)
     case querySQL(message: String)
     case fetchColumnInfo(message: String)
     case deleteDB(message: String)
@@ -487,7 +488,9 @@ class UtilsSQLCipher {
         var sqlStmt = sql
         do {
             let isLast: Bool = try UtilsJson.isLastModified(mDB: mDB)
-            if isLast {
+            let isDel: Bool = try UtilsJson.isSqlDeleted(mDB: mDB)
+            if isLast && isDel {
+                // Replace DELETE by UPDATE and set sql_deleted to 1
                 if let range: Range<String.Index> = sql
                     .range(of: "WHERE", options: .caseInsensitive) {
                     let index: Int = sql
@@ -501,174 +504,322 @@ class UtilsSQLCipher {
                     sqlStmt = "UPDATE \(tableName) SET sql_deleted = 1 "
                     sqlStmt += clauseStmt
                     // Find REFERENCIES if any and update the sql_deleted column
-                    try findReferenciesAndUpdate(mDB: mDB,
-                                                 tableName: tableName,
-                                                 whereStmt: clauseStmt,
-                                                 values: values)
+                    try findReferencesAndUpdate(mDB: mDB,
+                                                tableName: tableName,
+                                                whereStmt: clauseStmt,
+                                                values: values)
                 } else {
                     let msg: String = "deleteSQL cannot find a WHERE clause"
                     throw UtilsSQLCipherError.deleteSQL(message: msg)
                 }
             }
             return sqlStmt
-        } catch UtilsSQLCipherError.findReferenciesAndUpdate(let message) {
+        } catch UtilsSQLCipherError.findReferencesAndUpdate(let message) {
             throw UtilsSQLCipherError.deleteSQL(message: message)
         } catch UtilsJsonError.isLastModified(let message) {
+            throw UtilsSQLCipherError.deleteSQL(message: message)
+        } catch UtilsJsonError.isSqlDeleted(let message) {
             throw UtilsSQLCipherError.deleteSQL(message: message)
         }
     }
 
     // MARK: - findReferencesAndUpdate
 
-    class func findReferenciesAndUpdate(mDB: Database, tableName: String,
-                                        whereStmt: String,
-                                        values: [Any]) throws {
+    // swiftlint:disable function_body_length
+    // swiftlint:disable cyclomatic_complexity
+    class func findReferencesAndUpdate(mDB: Database, tableName: String,
+                                       whereStmt: String,
+                                       values: [Any]) throws {
         do {
-            let referencies = try getReferencies(mDB: mDB,
-                                                 tableName: tableName)
-            if referencies.count <= 0 {
+            var references = try getReferences(mDB: mDB,
+                                               tableName: tableName)
+            if references.count <= 0 {
                 return
             }
-            // Loop through referencies
-            for ref in referencies {
+            guard let tableNameWithRefs = references.last else {
+                return
+            }
+            references.removeLast()
+            // Loop through references
+            for ref in references {
                 // get the tableName of the references
                 let refTable: String = getReferencesTableName(value: ref)
                 if refTable.count <= 0 {
                     continue
                 }
+                // get the with ref columnName
+                let withRefsNames: [String] = getWithRefsColumnName(value: ref)
+                if withRefsNames.count <= 0 {
+                    continue
+                }
                 // get the columnName
-                let colName: String = getReferencesColumnName(value: ref)
-                if colName.count <= 0 {
+                let colNames: [String] = getReferencesColumnName(value: ref)
+                if colNames.count <= 0 {
                     continue
                 }
                 // update the where clause
                 let uWhereStmt: String = updateWhere(whStmt: whereStmt,
-                                                     colName: colName)
+                                                     withRefs: withRefsNames,
+                                                     colNames: colNames)
 
                 if uWhereStmt.count <= 0 {
                     continue
                 }
+                var updTableName: String = tableNameWithRefs
+                var updColNames: [String] = colNames
+                if tableNameWithRefs == tableName {
+                    updTableName = refTable
+                    updColNames = withRefsNames
+                }
                 //update sql_deleted for this references
-                let stmt = "UPDATE \(refTable) SET sql_deleted = 1 " +
+                let stmt = "UPDATE \(updTableName) SET sql_deleted = 1 " +
                     uWhereStmt
+                var selValues: [Any] = []
+                if !values.isEmpty {
+                    var arrVal: [String] =  whereStmt.components(separatedBy: "?")
+                    if arrVal[arrVal.count - 1] == ";" {
+                        arrVal.removeLast()
+                    }
+                    for (jdx, val) in arrVal.enumerated() {
+                        for updVal in updColNames {
+                            let indices: [Int] = val.indicesOf(string: updVal)
+                            if indices.count > 0 {
+                                selValues.append(values[jdx])
+                            }
+                        }
+                    }
+                }
+
                 let lastId = try prepareSQL(mDB: mDB, sql: stmt,
-                                            values: values, fromJson: false)
+                                            values: selValues,
+                                            fromJson: false)
                 if lastId == -1 {
                     let msg = "UPDATE sql_deleted failed for references " +
                         "table: \(refTable) "
                     throw UtilsSQLCipherError
-                    .findReferenciesAndUpdate(message: msg)
+                    .findReferencesAndUpdate(message: msg)
                 }
             }
             return
         } catch UtilsSQLCipherError.prepareSQL(let message) {
             throw UtilsSQLCipherError
-            .findReferenciesAndUpdate(message: message)
+            .findReferencesAndUpdate(message: message)
         } catch UtilsSQLCipherError.querySQL(let message) {
             throw UtilsSQLCipherError
-            .findReferenciesAndUpdate(message: message)
+            .findReferencesAndUpdate(message: message)
         }
 
     }
+    // swiftlint:enable cyclomatic_complexity
+    // swiftlint:enable function_body_length
 
-    // MARK: - getReferencies
+    // MARK: - getReferences
 
-    class func getReferencies(mDB: Database, tableName: String)
-    throws -> [[String: Any]] {
-        // find the REFERENCIES
+    class func getReferences(mDB: Database, tableName: String)
+    throws -> [String] {
+        // find the REFERENCES
         var sqlStmt = "SELECT sql FROM sqlite_master "
-        sqlStmt += "WHERE sql LIKE('%REFERENCES%') AND "
+        sqlStmt += "WHERE sql LIKE('%FOREIGN KEY%') AND "
+        sqlStmt += "sql LIKE('%REFERENCES%') AND "
         sqlStmt += "sql LIKE('%\(tableName)%') AND sql LIKE('%ON DELETE%');"
         do {
-            var referencies: [[String: Any]] = try querySQL(mDB: mDB,
-                                                            sql: sqlStmt,
-                                                            values: [])
-            if referencies.count > 1 {
-                referencies.removeFirst()
+            var references: [[String: Any]] = try querySQL(mDB: mDB,
+                                                           sql: sqlStmt,
+                                                           values: [])
+            var retRefs: [String] = []
+            if references.count > 1 {
+                references.removeFirst()
+                if let refValue = references[0]["sql"] as? String {
+                    retRefs = try getRefs(str: refValue)
+                }
             }
-            return referencies
+            return retRefs
+        } catch UtilsSQLCipherError.getRefs(let message) {
+            throw UtilsSQLCipherError
+            .getReferences(message: message)
         } catch UtilsSQLCipherError.querySQL(let message) {
             throw UtilsSQLCipherError
-            .getReferencies(message: message)
+            .getReferences(message: message)
         }
+    }
+    class func getRefs(str: String) throws -> [String] {
+        var retRefs: [String] = []
+        let indicesFK: [Int] = str.indicesOf(string: "FOREIGN KEY")
+        let indicesOD: [Int] = str.indicesOf(string: "ON DELETE")
+        if indicesFK.count > 0 && indicesOD.count > 0
+            && indicesFK.count != indicesOD.count {
+            let msg: String = "Indices of FOREIGN KEY and ON DELETE not equal"
+            throw UtilsSQLCipherError.getRefs(message: msg)
+
+        }
+        for (idx, iFK) in indicesFK.enumerated() {
+            let ref: String = String(str.stringRange(fromIdx: iFK + 11,
+                                                     toIdx: indicesOD[idx]))
+                .trimmingLeadingAndTrailingSpaces()
+            retRefs.append(ref)
+        }
+
+        if let range: Range<String.Index> = str
+            .range(of: "CREATE TABLE", options: .caseInsensitive) {
+            let index: Int = str
+                .distance(from: str.startIndex, to: range.lowerBound)
+            let stmt = String(str.stringRange(fromIdx: index + 13,
+                                              toIdx: str.count))
+            if let oPar = stmt.firstIndex(of: "(") {
+                let idx: Int = stmt.distance(from: stmt.startIndex, to: oPar)
+                let tableName: String = String(stmt.stringRange(fromIdx: 0,
+                                                                toIdx: idx))
+                    .trimmingLeadingAndTrailingSpaces()
+                retRefs.append(tableName)
+            }
+        }
+
+        return retRefs
     }
 
     // MARK: - getReferencesTableName
 
-    class func getReferencesTableName(value: [String: Any]) -> String {
+    class func getReferencesTableName(value: String) -> String {
 
         var tableName: String = ""
-        if let refValue = value["sql"] as? String {
-
-            if let range: Range<String.Index> = refValue
-                .range(of: "CREATE TABLE", options: .caseInsensitive) {
-                let index: Int = refValue
-                    .distance(from: refValue.startIndex, to: range.lowerBound)
-                let stmt = String(refValue.stringRange(fromIdx: index + 13,
-                                                       toIdx: refValue.count))
-                if let oPar = stmt.firstIndex(of: "(") {
-                    let idx: Int = stmt.distance(from: stmt.startIndex, to: oPar)
-                    tableName = String(stmt.stringRange(fromIdx: 0, toIdx: idx))
-                        .trimmingLeadingAndTrailingSpaces()
-                }
+        if value.isEmpty {
+            return tableName
+        }
+        let indicesRef: [Int] = value.indicesOf(string: "REFERENCES")
+        if indicesRef.count > 0 {
+            let val: String = String(value.stringRange(
+                                        fromIdx: indicesRef[0] + 10,
+                                        toIdx: value.count))
+            if let oPar = val.firstIndex(of: "(") {
+                let idx: Int = val.distance(from: val.startIndex, to: oPar)
+                tableName = String(val.stringRange(fromIdx: 0,
+                                                   toIdx: idx))
+                    .trimmingLeadingAndTrailingSpaces()
             }
         }
         return tableName
     }
 
-    // MARK: - getReferencesColumnName
+    // MARK: - getWithRefColumnName
 
-    class func getReferencesColumnName(value: [String: Any]) -> String {
+    class func getWithRefsColumnName(value: String) -> [String] {
 
-        var colName: String = ""
-        if let refValue = value["sql"] as? String {
+        var colNames: [String] = []
+        if value.isEmpty {
+            return colNames
+        }
+        let indicesRef: [Int] = value.indicesOf(string: "REFERENCES")
+        if indicesRef.count > 0 {
+            let val: String = String(value.stringRange(
+                                        fromIdx: 0,
+                                        toIdx: indicesRef[0] - 1))
+            if let oPar = val.firstIndex(of: "(") {
+                let idxOPar: Int = val.distance(from: val.startIndex, to: oPar)
+                if let cPar = val.firstIndex(of: ")") {
+                    let idxCPar: Int = val.distance(from: val.startIndex,
+                                                    to: cPar)
 
-            if let range: Range<String.Index> = refValue
-                .range(of: "FOREIGN KEY", options: .caseInsensitive) {
-                let index: Int = refValue
-                    .distance(from: refValue.startIndex, to: range.lowerBound)
-                let stmt = String(refValue.stringRange(fromIdx: index + 12,
-                                                       toIdx: refValue.count))
-                if let oPar = stmt.firstIndex(of: "(") {
-                    let idxOPar: Int = stmt.distance(from: stmt.startIndex,
-                                                     to: oPar) + 1
-                    if let cPar = stmt.firstIndex(of: ")") {
-                        let idxCPar: Int = stmt
-                            .distance(from: stmt.startIndex,
-                                      to: cPar)
-                        colName = String(stmt.stringRange(fromIdx: idxOPar,
-                                                          toIdx: idxCPar))
-                            .trimmingLeadingAndTrailingSpaces()
-
-                    }
+                    let colStr: String = String(val
+                                                    .stringRange(fromIdx: idxOPar + 1,
+                                                                 toIdx: idxCPar))
+                        .trimmingLeadingAndTrailingSpaces()
+                    colNames = colStr.split(separator: ",").map(String.init)
                 }
             }
         }
-
-        return colName
+        return colNames
     }
+    // MARK: - getReferencesColumnName
 
-    class func updateWhere(whStmt: String, colName: String) -> String {
-        var whereStmt = ""
-        if let range: Range<String.Index> = whStmt
-            .range(of: "WHERE", options: .caseInsensitive) {
-            let index: Int = whStmt
-                .distance(from: whStmt.startIndex, to: range.lowerBound)
-            let stmt = String(whStmt.stringRange(fromIdx: index + 6,
-                                                 toIdx: whStmt.count))
-            if let fEqual = stmt.firstIndex(of: "=") {
-                let idxfEqual: Int = stmt.distance(from: stmt.startIndex,
-                                                   to: fEqual)
-                let whereColName = String(stmt.stringRange(fromIdx: 0,
-                                                           toIdx: idxfEqual))
-                    .trimmingLeadingAndTrailingSpaces()
-                whereStmt = whStmt.replacingOccurrences(of: whereColName, with: colName)
+    class func getReferencesColumnName(value: String) -> [String] {
 
+        var colNames: [String] = []
+        if value.isEmpty {
+            return colNames
+        }
+        let indicesRef: [Int] = value.indicesOf(string: "REFERENCES")
+        if indicesRef.count > 0 {
+            let val: String = String(value.stringRange(
+                                        fromIdx: indicesRef[0] + 10,
+                                        toIdx: value.count))
+            if let oPar = val.firstIndex(of: "(") {
+                let idxOPar: Int = val.distance(from: val.startIndex, to: oPar)
+                if let cPar = val.firstIndex(of: ")") {
+                    let idxCPar: Int = val.distance(from: val.startIndex,
+                                                    to: cPar)
+
+                    let colStr: String = String(val
+                                                    .stringRange(fromIdx: idxOPar + 1,
+                                                                 toIdx: idxCPar))
+                        .trimmingLeadingAndTrailingSpaces()
+                    colNames = colStr.split(separator: ",").map(String.init)
+
+                }
             }
         }
+        return colNames
+    }
 
+    // swiftlint:disable function_body_length
+    class func updateWhere(whStmt: String, withRefs: [String],
+                           colNames: [String]) -> String {
+        var whereStmt = ""
+        if whStmt.count > 0 {
+            let indicesWhere: [Int] = whStmt.indicesOf(string: "WHERE")
+            if indicesWhere.count == 0 {
+                return whereStmt
+            }
+            var stmt: String = String(whStmt.stringRange(
+                                        fromIdx: indicesWhere[0] + 6,
+                                        toIdx: whStmt.count))
+            if withRefs.count == colNames.count {
+                for (idx, wRf) in withRefs.enumerated() {
+                    var colType: String = "withRefsNames"
+                    var idxs: [Int] = stmt.indicesOf(string: wRf)
+                    if idxs.count == 0 {
+                        idxs = stmt.indicesOf(string: colNames[idx])
+                        colType = "colNames"
+                    }
+                    if idxs.count > 0 {
+                        var valStr: String = ""
+                        let indicesEqual: [Int] = stmt
+                            .indicesOf(string: "=",
+                                       fromIdx: idxs[0])
+
+                        if indicesEqual.count > 0 {
+                            let indicesAnd: [Int] = stmt
+                                .indicesOf(string: "AND",
+                                           fromIdx: indicesEqual[0])
+                            if indicesAnd.count > 0 {
+                                valStr = String(stmt.stringRange(
+                                                    fromIdx: indicesEqual[0] + 1,
+                                                    toIdx: indicesAnd[0] - 1))
+                                stmt = String(stmt.stringRange(
+                                                fromIdx: indicesAnd[0] + 3,
+                                                toIdx: stmt.count))
+                            } else {
+                                valStr = String(stmt.stringRange(
+                                                    fromIdx: indicesEqual[0] + 1,
+                                                    toIdx: stmt.count))
+                            }
+                            if idx > 0 {
+                                whereStmt += " AND "
+                            }
+                            if colType == "withRefsNames" {
+                                whereStmt += colNames[idx] + " = " + valStr
+                            } else {
+                                whereStmt += withRefs[idx] + " = " + valStr
+                            }
+                        }
+                    }
+
+                }
+                whereStmt = "WHERE " + whereStmt
+            }
+        }
         return whereStmt
     }
+    // swiftlint:enable function_body_length
 
     // MARK: - querySQL
 

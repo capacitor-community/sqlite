@@ -24,6 +24,7 @@ export class UtilsFile {
     const idx: number = dir.indexOf('\\');
     if (idx != -1) this.sep = '\\';
     this.appPath = this.Electron.app.getAppPath();
+
     const rawdata = this.NodeFs.readFileSync(
       this.Path.resolve(this.appPath, 'package.json'),
     );
@@ -47,13 +48,16 @@ export class UtilsFile {
     this.osType = this.Os.type();
     switch (this.osType) {
       case 'Darwin':
-        this.pathDB = this.capConfig.plugins.CapacitorSQLite.electronMacLocation;
+        this.pathDB =
+          this.capConfig.plugins.CapacitorSQLite.electronMacLocation;
         break;
       case 'Linux':
-        this.pathDB = this.capConfig.plugins.CapacitorSQLite.electronLinuxLocation;
+        this.pathDB =
+          this.capConfig.plugins.CapacitorSQLite.electronLinuxLocation;
         break;
       case 'Windows_NT':
-        this.pathDB = this.capConfig.plugins.CapacitorSQLite.electronWindowsLocation;
+        this.pathDB =
+          this.capConfig.plugins.CapacitorSQLite.electronWindowsLocation;
         break;
       default:
         console.log('other operating system');
@@ -123,16 +127,17 @@ export class UtilsFile {
    */
   public getAssetsDatabasesPath(): string {
     let retPath = '';
-    const rawdata = this.NodeFs.readFileSync(
-      this.Path.resolve(this.appPath, 'capacitor.config.json'),
-    );
-    const webDir = JSON.parse(rawdata).webDir;
+    const webDir = this.capConfig.webDir;
     const dir = webDir === 'www' ? 'src' : 'public';
+    let mAppPath = this.appPath;
+    if (this.Path.basename(this.appPath) === "electron") {
+      mAppPath = this.Path.dirname(this.appPath);
+    }
     retPath = this.Path.resolve(
-      this.appPath,
+      mAppPath,
       dir,
       'assets',
-      this.pathDB.toLowerCase(),
+      'databases'
     );
     return retPath;
   }

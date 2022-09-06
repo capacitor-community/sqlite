@@ -20,6 +20,7 @@ enum UtilsFileError: Error {
     case getDatabasesURLFailed
     case getApplicationPathFailed
     case getApplicationURLFailed
+    case getCacheURLFailed
     case getLibraryPathFailed
     case getLibraryURLFailed
     case getFileListFailed
@@ -148,6 +149,8 @@ class UtilsFile {
                 dbPathURL = try UtilsFile.getApplicationURL().absoluteURL
             } else if first[0] == "Library" {
                 dbPathURL = try UtilsFile.getLibraryURL().absoluteURL
+            } else if first[0].caseInsensitiveCompare("cache") == .orderedSame {
+                dbPathURL = try UtilsFile.getCacheURL().absoluteURL
             } else if first[0] == "Documents" || first[0] == "default" {
                 dbPathURL = databaseURL
             } else {
@@ -236,6 +239,19 @@ class UtilsFile {
         } else {
             print("Error: getApplicationPath did not find the application folder")
             throw UtilsFileError.getApplicationPathFailed
+        }
+    }
+
+    // MARK: - getCacheURL
+
+    class func getCacheURL() throws -> URL {
+        if let path: String = NSSearchPathForDirectoriesInDomains(
+            .cachesDirectory, .userDomainMask, true
+        ).first {
+            return NSURL(fileURLWithPath: path) as URL
+        } else {
+            print("Error: getCacheURL did not find the cache folder")
+            throw UtilsFileError.getCacheURLFailed
         }
     }
 

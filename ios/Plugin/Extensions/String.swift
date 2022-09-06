@@ -8,12 +8,17 @@
 import Foundation
 
 extension String {
-    public func indicesOf(string: String) -> [Int] {
+    public func indicesOf(string: String, fromIdx: Int? = 0) -> [Int] {
         var indices = [Int]()
         var searchStartIndex = self.startIndex
+        if let fIdx = fromIdx {
+            if fIdx != 0 {
+                searchStartIndex = self.index(self.startIndex, offsetBy: fIdx)
+            }
+        }
 
         while searchStartIndex < self.endIndex,
-              let range = self.range(of: string, range: searchStartIndex..<self.endIndex),
+              let range = self.range(of: string, options: .caseInsensitive, range: searchStartIndex..<self.endIndex),
               !range.isEmpty {
             let index = distance(from: self.startIndex, to: range.lowerBound)
             indices.append(index)

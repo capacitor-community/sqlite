@@ -231,6 +231,32 @@ enum CapacitorSQLiteError: Error {
     // swiftlint:enable no_space_in_method_call
     // swiftlint:enable function_body_length
 
+    // MARK: - ClearEncryptionSecret
+
+    @objc public func clearEncryptionSecret() throws {
+        if isInit {
+            if isEncryption {
+                do {
+                    // close all connections
+                    try closeAllConnections()
+                    // set encryption secret
+                    try UtilsSecret
+                        .clearEncryptionSecret(prefix: prefixKeychain,
+                                               databaseLocation: databaseLocation)
+                    return
+                } catch UtilsSecretError.clearEncryptionSecret(let message) {
+                    throw CapacitorSQLiteError.failed(message: message)
+                } catch let error {
+                    throw CapacitorSQLiteError.failed(message: "\(error)")
+                }
+            } else {
+                throw CapacitorSQLiteError.failed(message: "No Encryption set in capacitor.config")
+            }
+        } else {
+            throw CapacitorSQLiteError.failed(message: initMessage)
+        }
+    }
+
     // MARK: - getNCDatabasePath
 
     @objc public func getNCDatabasePath(_ folderPath: String, dbName: String ) throws -> String {
@@ -1313,6 +1339,32 @@ enum CapacitorSQLiteError: Error {
             throw CapacitorSQLiteError.failed(message: initMessage)
         }
     }
+
+    // MARK: - moveDatabasesAndAddSuffix
+
+    @objc func moveDatabasesAndAddSuffix(_ folderPath: String, dbList: [String]) throws {
+        if isInit {
+            do {
+                try UtilsMigrate
+                    .moveDatabasesAndAddSuffix(databaseLocation: databaseLocation,
+                                               folderPath: folderPath,
+                                               dbList: dbList)
+                return
+            } catch UtilsMigrateError.moveDatabasesAndAddSuffix(let message) {
+                var msg: String = "moveDatabasesAndAddSuffix:"
+                msg.append(" \(message)")
+                throw CapacitorSQLiteError.failed(message: msg)
+
+            } catch let error {
+                var msg: String = "moveDatabasesAndAddSuffix:"
+                msg.append(" \(error)")
+                throw CapacitorSQLiteError.failed(message: msg)
+            }
+        } else {
+            throw CapacitorSQLiteError.failed(message: initMessage)
+        }
+    }
+
     class func getDatabaseName(dbName: String) -> String {
         var retName: String = dbName
         if !retName.contains("/") {

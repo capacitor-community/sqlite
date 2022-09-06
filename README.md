@@ -2,7 +2,7 @@
 <h3 align="center">SQLITE DATABASE</h3>
 <p align="center"><strong><code>@capacitor-community/sqlite</code></strong></p>
 <br>
-<p align="center" style="font-size:50px;color:red"><strong>CAPACITOR 3</strong></p><br>
+<p align="center" style="font-size:50px;color:red"><strong>CAPACITOR 4</strong></p><br>
 
 <p align="center">
   Capacitor community plugin for Native and Electron SQLite Databases. In Native databases could be encrypted with SQLCipher
@@ -26,225 +26,51 @@
 | ----------------- | ----------------------------------------- | ------ |
 | Quéau Jean Pierre | [jepiqueau](https://github.com/jepiqueau) |        |
 
-## CAPACITOR 3 (Master)
+To install:
+```
+npm install @capacitor-community/sqlite
+npx cap sync
+```
 
-🚨 Release 3.4.3-3 all platforms ->> 🚨
+## More Reading:
 
-The main change is related to the delete table's rows when a synchronization table exists as well as a last_mofidied table's column, allowing for database synchronization of the local database with a remote server database.
-
-- All existing triggers to YOUR_TABLE_NAME_trigger_last_modified must be modified as follows
-  ```
-  CREATE TRIGGER YOUR_TABLE_NAME_trigger_last_modified
-    AFTER UPDATE ON YOUR_TABLE_NAME
-    FOR EACH ROW WHEN NEW.last_modified < OLD.last_modified
-    BEGIN
-        UPDATE YOUR_TABLE_NAME SET last_modified= (strftime('%s', 'now')) WHERE id=OLD.id;
-    END;
-  ```
-- an new column `sql_deleted` must be added to each of your tables as
-  ```
-  sql_deleted BOOLEAN DEFAULT 0 CHECK (sql_deleted IN (0, 1))
-  ```
-  This column will be autommatically set to 1 when you will use a `DELETE FROM ...` sql statement in the `execute`, `run` or `executeSet` methods.
-
-- In the JSON object that you provide to `importFromJson`, all the deleted rows in your remote server database's tables must have the `sql_deleted` column set to 1. This will indicate to the import process to physically delete the corresponding rows in your local database. All the others rows must have the `sql_deleted` column set to 0. 
-
-- In the JSON object outputs by the `exportToJson`, all the deleted rows in your local database have got the `sql_deleted` column set to 1 to help in your synchronization management process with the remote server database. A system `last_exported_date` is automatically saved in the synchronization table at the start of the export process flow.
-
-- On successful completion of your synchronization management process with the remote server database, you must 
-  - Set a new synchronization date (as `(new Date()).toISOString()`) with the `setSyncDate` method.
-  - Execute the `deleteExportedRows` method which physically deletes all table's rows having 1 as value for the `sql_deleted` column prior to the `last_exported_date` in your local database.
-
-An example of using this new feature is given in [solidjs-vite-sqlite-app](https://github.com/jepiqueau/capacitor-solid-sqlite). It has been used to test the validity of the implementation.
+ - [Releases](https://github.com/capacitor-community/sqlite/blob/master/info_releases.md)
+ - [Changelog](https://github.com/capacitor-community/sqlite/blob/master/CHANGELOG.md)
+ - [Issues](https://github.com/capacitor-community/sqlite/issues)
+ - [Capacitor documentation](https://capacitorjs.com/docs/)
+ - [Datatypes In SQLite Version 3](https://www.sqlite.org/datatype3.html)
 
 
-🚨 Release 3.4.3-3 <<- 🚨
-
-🚨 Release 3.4.2-4 ->> 🚨
-!!!! DO NOT USE IT !!!!
-🚨 Release 3.4.2-4 <<- 🚨
-
-🚨 Since release 3.4.2-3 ->> 🚨
-
- - **overwrite** boolean parameter has been added to the Json Object (default false) 
-   - `true` : delete the physically the database whatever the version is.
-   - `false`: 
-      - re-importing a database with the same `version` number will do nothing, keeping the existing database and will return `changes = 0`
-      - re-importing a database with a lower `version` number will throw an error `ImportFromJson: Cannot import a version lower than `
-
- - During an import in `full` mode the `Foreign Key` constraint has been turn off before dropping the tables and turn back on after
-
-🚨 Since release 3.4.2-3 <<- 🚨
-🚨 Since release 3.4.1 ->> 🚨
-  Databases location for Electron can be set in `the config.config.ts` as followed:
-
-  - for sharing databases between users:
-
-    ``` 
-    plugins: {
-      CapacitorSQLite: {
-        electronMacLocation: "/YOUR_DATABASES_PATH",
-        electronWindowsLocation: "C:\\ProgramData\\CapacitorDatabases",
-        electronLinuxLocation: "/home/CapacitorDatabases"
-      }
-    }
-    ``` 
-
-  - for only the user in its Home folder
-
-    ``` 
-    Plugins: {
-      CapacitorSQLite: {
-        electronMacLocation: "Databases",
-        electronWindowsLocation: "Databases",
-        electronLinuxLocation: "Databases"
-      }
-    }
-    ``` 
-
-  For existing databases, YOU MUST COPY old databases to the new location
-  You MUST remove the Electron folder and add it again with
-
-  ``` 
-  npx cap add @capacitor-community/electron
-  npm run build 
-  cd electron
-  npm i --save sqlite3
-  npm i --save @types:sqlite3
-  npm run rebuild
-  cd ..
-  npx cap sync @capacitor-community/electron
-  npm run build
-  npx cap copy @capacitor-community/electron
-  npx cap open @capacitor-community/electron
-  ``` 
-🚨 Since release 3.4.1 <<- 🚨
-
-🚨 Since release 3.4.1-1 ->> 🚨
-
-  - add iosIsEncryption, androidIsEncryption in capacitor.config.ts
-    When your application use only `non-encrypted databases` set those parameter to false then iOS KeyChain & Android MasterKey are not defined.
-    
-🚨 Since release 3.4.1-1 <<- 🚨
-
-🚨 Since release 3.4.0-2 ->> 🚨 
-
-- iOS & Android only
-  Adding biometric FaceID/TouchID to secure the pass phrase in the Keychain/SharedPreferences stores. see:
-   [Biometric_Authentication](https://github.com/capacitor-community/sqlite/blob/master/docs/Biometric-Authentication.md)
-
-- iOS only
-  Fix identical pass phrase stored in the Keychain for differents applications using the plugin by adding an application prefix to the Keychain account.
-  Before the account `"CapacitorSQLitePlugin"` was used and was the same for all applications.
-  Now by adding `iosKeychainPrefix: 'YOUR_APP_NAME'`in the `capacitor.config.ts` of your application,
-  the account will be `"YOUR_APP_NAME_CapacitorSQLitePlugin"`
-  If you were having a pass phrase stored, first modify the `capacitor.config.ts` and then run the command `isSecretStored` which will manage the upgrade of the Keychain account. 
-🚨 Since release 3.4.0-2 <<- 🚨
-
-🚨 Since release 3.3.3-2 ->> 🚨
-
-  - iOS only
-    Support for a database location not visible to iTunes and backed up to iCloud.
-    For this you must add to the `const config: CapacitorConfig` of the `capacitor.config.ts` file of your application the following:
-    ```ts
-      plugins: {
-        CapacitorSQLite: {
-          "iosDatabaseLocation": "Library/CapacitorDatabase"
-        }
-      }
-    ``` 
-    Pre-existing databases from the `Documents` folder will be moved to the new folder `Library/CapacitorDatabase` and your application will work as before.
-    If you do not modify the `capacitor.config.ts` file of your application the databases will still reside in the `Documents` folder
-
-🚨 Since release 3.3.3-2 <<- 🚨
-
-🚨 Since release 3.2.5-2 ->> 🚨
-
-  - support zip file in copyFromAssets method
-  - add optional `overwrite` parameter (true/false) default to true
-
-🚨 Since release 3.2.5-2 <<- 🚨
-
-🚨 Since release 3.2.3-1 ->> 🚨
-
-The `initWebStore` and `saveToStore` methods have been added to the Web platform.
- - The `initWebStore` has been added to fix the issue#172 and since then is `MANDATORY`
-  ```js
-  ...
-  if(platform === "web") {
-    await customElements.whenDefined('jeep-sqlite');
-    const jeepSqliteEl = document.querySelector('jeep-sqlite');
-    if(jeepSqliteEl != null) {
-      await sqliteConnection.initWebStore()
-      ...
-    }
-  }
-  ...
-  ```
- - the `saveToStore` allows to perform intermediate save of the database in case the browser needs to delete the cache.
- 
-🚨 Since release 3.2.3-1 <<- 🚨
-
-The test has been achieved on:
-
-- a [Ionic/Angular app](https://github.com/jepiqueau/angular-sqlite-app-starter)
-
-- a [Ionic/React app](https://github.com/jepiqueau/react-sqlite-app-starter)
-
-- a [Ionic/Vue app](https://github.com/jepiqueau/vue-sqlite-app-starter)
-
-- a [React Vite app](https://github.com/jepiqueau/react-vite-sqlite-app)
-
-- a [Vue Vite app](https://github.com/jepiqueau/vuevite-app)
-
-- a [Vue TypeORM app](https://github.com/jepiqueau/vue-typeorm-app)
-
-
-## Browser Support
+## Web Quirks
 
 The plugin follows the guidelines from the `Capacitor Team`,
 
 - [Capacitor Browser Support](https://capacitorjs.com/docs/v3/web#browser-support)
 
-meaning that it will not work in IE11 without additional JavaScript transformations, e.g. with [Babel](https://babeljs.io/).
-
-## Installation
-
-```bash
-npm install @capacitor-community/sqlite
-npm run build
-npx cap add android
-npx cap add ios
-npx cap add @capacitor-community/electron
-```
-
-and do when you update 
-
-```bash
-npx cap sync
-npx cap sync @capacitor-community/electron
-```
-
-### Web
+Meaning that it will not work in IE11 without additional JavaScript transformations, e.g. with [Babel](https://babeljs.io/).
+You'll need the usual capacitor/android/react npm script to build and copy the assets folder.
 
 #### For Angular framework
 
-- copy manually the file `sql-wasm.wasm` from `node_modules/sql.js/dist/sql-wasm.wasm` to the `src/assets` folder of YOUR_APP 
+- Copy manually the file `sql-wasm.wasm` from `node_modules/sql.js/dist/sql-wasm.wasm` to the `src/assets` folder of YOUR_APP 
 
 #### For Vue & React frameworks
 
-- copy manually the file `sql-wasm.wasm` from `node_modules/sql.js/dist/sql-wasm.wasm` to the `public/assets` folder of YOUR_APP 
+- Copy manually the file `sql-wasm.wasm` from `node_modules/sql.js/dist/sql-wasm.wasm` to the `public/assets` folder of YOUR_APP 
 
-### IOS
+## Android Quirks
 
-- on iOS, no further steps needed.
+In case you get the following error when building your app in Android Studio:
+`x files found with path 'build-data.properties'.`
+You can you add the following code to `app/build.gradle`:
+```
+    packagingOptions {
+        exclude 'build-data.properties'
+    }
+```
+See [#301](https://github.com/capacitor-community/sqlite/issues/301) and [SO question](https://stackoverflow.com/questions/63291529/how-to-fix-more-than-one-file-was-found-with-os-independent-path-build-data-pro) for more information.
 
-### Android
-
-- On Android, no further steps needed.
-
-
-### Electron
+## Electron Quirks
 
 - On Electron, go to the Electron folder of YOUR_APPLICATION
 
@@ -253,64 +79,14 @@ cd electron
 npm install --save sqlite3
 npm install --save jszip
 npm install --save-dev @types/sqlite3
-npm run build
 ```
 
-## Build & Run
+## IOS Quirks
 
-```
-npm run build
-npx cap copy
-npx cap copy web
-npx cap copy @capacitor-community/electron
-```
-
-### Web
-- Angular
-```
-ionic serve
-```
-- Vue
-```
-npm run serve
-```
-- React
-```
-npm run start
-```
-
-### IOS
-
-```
-npx cap open ios
-```
-
-### Android
-
-```
-npx cap open android
-```
-
-### Electron
-
-```
-npx cap open @capacitor-community/electron
-```
-
-## Readme previous releases
-
-[previous releases](https://github.com/capacitor-community/sqlite/readme_previous_release.md)
-
-## Issues
-
-[issues](https://github.com/capacitor-community/sqlite/issues)
+- on iOS, no further steps needed.
 
 
-## Configuration
-
-No configuration required for this plugin
-
-## Supported methods
+## Supported Methods by Platform
 
 | Name                        | Android | iOS | Electron | Web |
 | :-------------------------- | :------ | :-- | :------- | :-- |
@@ -329,7 +105,7 @@ No configuration required for this plugin
 | deleteDatabase              | ✅      | ✅  | ✅        | ✅  |
 | importFromJson              | ✅      | ✅  | ✅        | ✅  |
 | exportToJson                | ✅      | ✅  | ✅        | ✅  |
-| deleteExportedRows          | ✅      | ✅  | ✅        | ✅  | NEW in 3.4.3-2
+| deleteExportedRows          | ✅      | ✅  | ✅        | ✅  |
 | createSyncTable             | ✅      | ✅  | ✅        | ✅  |
 | setSyncDate                 | ✅      | ✅  | ✅        | ✅  |
 | getSyncDate                 | ✅      | ✅  | ✅        | ✅  |
@@ -345,10 +121,12 @@ No configuration required for this plugin
 | getMigratableDbList         | ✅      | ✅  | ❌        | ❌  |
 | addSQLiteSuffix             | ✅      | ✅  | ❌        | ❌  |
 | deleteOldDatabases          | ✅      | ✅  | ❌        | ❌  |
+| moveDatabasesAndAddSuffix   | ✅      | ✅  | ❌        | ❌  |
 | checkConnectionsConsistency | ✅      | ✅  | ✅        | ✅  |
 | isSecretStored              | ✅      | ✅  | ❌        | ❌  |
 | setEncryptionSecret         | ✅      | ✅  | ❌        | ❌  |
 | changeEncryptionSecret      | ✅      | ✅  | ❌        | ❌  |
+| clearEncryptionSecret       | ✅      | ✅  | ❌        | ❌  |
 | initWebStore                | ❌      | ❌  | ❌        | ✅  |
 | saveToStore                 | ❌      | ❌  | ❌        | ✅  |
 | getNCDatabasePath           | ✅      | ✅  | ❌        | ❌  |
@@ -357,46 +135,35 @@ No configuration required for this plugin
 | isNCDatabase                | ✅      | ✅  | ❌        | ❌  |
 | transaction                 | ✅      | ✅  | ✅        | ✅  |
 
-## Supported SQLite Types
 
- -[Datatypes In SQLite Version 3](https://www.sqlite.org/datatype3.html)
+## Documentation & APIs
 
-## Documentation
+- [API](https://github.com/capacitor-community/sqlite/blob/master/docs/API.md)
 
-### API
+- [API Connection Wrapper](https://github.com/capacitor-community/sqlite/blob/master/docs/APIConnection.md)
 
-- [API_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/API.md)
+- [API DB Connection Wrapper](https://github.com/capacitor-community/sqlite/blob/master/docs/APIDBConnection.md)
 
-- [API_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/APIConnection.md)
+- [Import-Export Json](https://github.com/capacitor-community/sqlite/blob/master/docs/ImportExportJson.md)
 
-- [API_DB_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/APIDBConnection.md)
+- [Upgrade Database Version](https://github.com/capacitor-community/sqlite/blob/master/docs/UpgradeDatabaseVersion.md)
 
-- [ImportExportJson_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/ImportExportJson.md)
+- [Migrating Cordova Databases](https://github.com/capacitor-community/sqlite/blob/master/docs/MigratingCordovaDatabases.md)
 
-- [UpgradeDatabaseVersion_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/UpgradeDatabaseVersion.md)
+- [Type ORM](https://github.com/capacitor-community/sqlite/blob/master/docs/TypeORM-Usage.md)
 
-- [MigratingCordovaDatabases_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/MigratingCordovaDatabases.md)
+- [Web Usage](https://github.com/capacitor-community/sqlite/blob/master/docs/Web-Usage.md)
 
-- [TypeORM_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/TypeORM-Usage.md)
+- [Non Conformed Databases](https://github.com/capacitor-community/sqlite/blob/master/docs/NonConformedDatabases.md)
 
-- [Web_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Web-Usage.md)
-
-- [Non_Conformed_Databases_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/NonConformedDatabases.md)
-
-- [Biometric_Authentication](https://github.com/capacitor-community/sqlite/blob/master/docs/Biometric-Authentication.md)
-
-### Framework's Usage 
-
-- [Ionic/Angular_Usage_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-Angular-Usage.md)
-
-- [Ionic/React_Usage_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-React-Usage.md)
-
-- [Ionic/Vue_Usage_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-Vue-Usage.md)
+- [Biometric Authentication](https://github.com/capacitor-community/sqlite/blob/master/docs/Biometric-Authentication.md)
 
 
-## Applications demonstrating the use of the plugin
+## Applications demonstrating the use of the plugin and related documentation
 
 ### Ionic/Angular
+
+- [Ionic/Angular Usage Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-Angular-Usage.md)
 
 - [angular-sqlite-app-starter](https://github.com/jepiqueau/angular-sqlite-app-starter)
 
@@ -404,14 +171,17 @@ No configuration required for this plugin
 
 ### Ionic/React
 
+- [Ionic/React Usage Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-React-Usage.md)
+
 - [react-sqlite-app-starter](https://github.com/jepiqueau/react-sqlite-app-starter)
 
 ### React+Vite
 
 - [react-vite-sqlite-app](https://github.com/jepiqueau/react-vite-sqlite-app)
 
-
 ### Ionic/Vue
+
+- [Ionic/Vue Usage Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-Vue-Usage.md)
 
 - [vue-sqlite-app-starter](https://github.com/jepiqueau/vue-sqlite-app-starter)
 
@@ -427,10 +197,9 @@ No configuration required for this plugin
 
 - [solidjs-vite-sqlite-app](https://github.com/jepiqueau/capacitor-solid-sqlite)
 
+### Vue TypeORM app
 
-## Usage
-
-- [see capacitor documentation](https://capacitor.ionicframework.com/docs/getting-started/with-ionic)
+- [vue-typeorm-app](https://github.com/jepiqueau/vue-typeorm-app)
 
 
 ## Dependencies
@@ -448,24 +217,27 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
 <p align="center">
-  <a href="https://github.com/jepiqueau"><img src="https://github.com/jepiqueau.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/paulantoine2"><img src="https://github.com/paulantoine2.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/karyfars"><img src="https://github.com/karyfars.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/chriswep"><img src="https://github.com/chriswep.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/nirajhinge"><img src="https://github.com/nirajhinge.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/digaus"><img src="https://github.com/digaus.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/IT-MikeS"><img src="https://github.com/IT-MikeS.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/peakcool"><img src="https://github.com/peakcool.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/gion-andri"><img src="https://github.com/gion-andri.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/robingenz"><img src="https://github.com/robingenz.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/dewald-els"><img src="https://github.com/dewald-els.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/joewoodhouse"><img src="https://github.com/joewoodhouse.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/ptasheq"><img src="https://github.com/ptasheq.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/victorybiz"><img src="https://github.com/victorybiz.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/tobiasmuecksch"><img src="https://github.com/tobiasmuecksch.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/dragermrb"><img src="https://github.com/dragermrb.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/iamcco"><img src="https://github.com/iamcco.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/eltociear"><img src="https://github.com/eltociear.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/jepiqueau" title="jepiqueau"><img src="https://github.com/jepiqueau.png?size=100" width="50" height="50"/></a>
+  <a href="https://github.com/paulantoine2" title="paulantoine2"><img src="https://github.com/paulantoine2.png?size=100" width="50" height="50" alt=""/></a>
+  <a href="https://github.com/karyfars" title="karyfars"><img src="https://github.com/karyfars.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/chriswep" title="chriswep"><img src="https://github.com/chriswep.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/nirajhinge" title="nirajhinge"><img src="https://github.com/nirajhinge.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/digaus" title="digaus"><img src="https://github.com/digaus.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/IT-MikeS" title="IT-MikeS"><img src="https://github.com/IT-MikeS.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/peakcool" title="peakcool"><img src="https://github.com/peakcool.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/gion-andri" title="gion-andri"><img src="https://github.com/gion-andri.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/robingenz" title="robingenz"><img src="https://github.com/robingenz.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/dewald-els" title="dewald-els"><img src="https://github.com/dewald-els.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/joewoodhouse" title="joewoodhouse"><img src="https://github.com/joewoodhouse.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/ptasheq" title="ptasheq"><img src="https://github.com/ptasheq.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/victorybiz" title="victorybiz"><img src="https://github.com/victorybiz.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/tobiasmuecksch" title="tobiasmuecksch"><img src="https://github.com/tobiasmuecksch.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/dragermrb" title="dragermrb"><img src="https://github.com/dragermrb.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/iamcco" title="iamcco"><img src="https://github.com/iamcco.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/eltociear" title="eltociear"><img src="https://github.com/eltociear.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/antoniovlx" title="antoniovlx"><img src="https://github.com/antoniovlx.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/HarelM" title="HarelM"><img src="https://github.com/HarelM.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/rdlabo" title="rdlabo"><img src="https://github.com/rdlabo.png?size=100" width="50" height="50" /></a>
 </p>
 
 <!-- markdownlint-enable -->

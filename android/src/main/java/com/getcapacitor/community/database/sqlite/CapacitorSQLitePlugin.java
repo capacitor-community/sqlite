@@ -175,6 +175,30 @@ public class CapacitorSQLitePlugin extends Plugin {
         }
     }
 
+    /**
+     * ClearEncryptionSecret
+     * clear the passphrase secret for a database
+     *
+     * @param call
+     */
+    @PluginMethod
+    public void clearEncryptionSecret(PluginCall call) {
+        if (implementation != null) {
+            try {
+                implementation.clearEncryptionSecret();
+                rHandler.retResult(call, null, null);
+                return;
+            } catch (Exception e) {
+                String msg = "ClearEncryptionSecret: " + e.getMessage();
+                rHandler.retResult(call, null, msg);
+                return;
+            }
+        } else {
+            rHandler.retResult(call, null, loadMessage);
+            return;
+        }
+    }
+
     @PluginMethod
     public void getNCDatabasePath(PluginCall call) {
         String folderPath = null;
@@ -704,6 +728,40 @@ public class CapacitorSQLitePlugin extends Plugin {
                 return;
             } catch (Exception e) {
                 String msg = "deleteOldDatabases: " + e.getMessage();
+                rHandler.retResult(call, null, msg);
+                return;
+            }
+        } else {
+            rHandler.retResult(call, null, loadMessage);
+            return;
+        }
+    }
+
+    /**
+     * DeleteOldDatabases Method
+     * Delete Old Cordova plugin databases
+     */
+    @PluginMethod
+    public void moveDatabasesAndAddSuffix(PluginCall call) {
+        String folderPath;
+        JSArray dbList;
+        if (!call.getData().has("folderPath")) {
+            folderPath = "default";
+        } else {
+            folderPath = call.getString("folderPath");
+        }
+        if (!call.getData().has("dbNameList")) {
+            dbList = new JSArray();
+        } else {
+            dbList = call.getArray("dbNameList");
+        }
+        if (implementation != null) {
+            try {
+                implementation.moveDatabasesAndAddSuffix(folderPath, dbList);
+                rHandler.retResult(call, null, null);
+                return;
+            } catch (Exception e) {
+                String msg = "moveDatabasesAndAddSuffix: " + e.getMessage();
                 rHandler.retResult(call, null, msg);
                 return;
             }

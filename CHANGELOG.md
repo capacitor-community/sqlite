@@ -1,3 +1,99 @@
+# 4.1.0-5 (2022-08-29)
+
+### Bug Fixes
+
+ - Fix getAssetsDatabasesPath reading capacitor.config.ts (Electron)
+ - Remove console.log statements (Electron)
+
+# 4.1.0-4 (2022-08-29)
+
+### Bug Fixes
+
+ - Redesign of the README.md
+
+# 4.1.0-3 (2022-08-28)
+
+### Bug Fixes
+
+ - Fix README.md
+
+# 4.1.0-2 (2022-08-28)
+
+### Bug Fixes
+
+ - Clean up the README.md
+
+# 4.1.0-1 (2022-08-26)
+
+### Chore
+
+ - Update to @capacitor/core 4.1.0
+ - Update to @capacitor/ios 4.1.0
+ - Update to @capacitor/android 4.1.0
+
+### Bug Fixes
+
+ - Composite primary key - export/import problem
+ 
+# 4.0.1 (2022-08-25)
+
+  - publish as `latest` release in npm
+
+# 4.0.0-1 (2022-08-07)
+
+### Chore
+
+ - Update to @capacitor/core 4.0.1
+ - Update to @capacitor/ios 4.0.1
+ - Update to @capacitor/android 4.0.1
+
+### Bug Fixes
+
+ - Fix After adding the plugin Android compilation fails #301
+
+# 3.7.0 (2022-08-07)
+
+### Chore
+
+ - Update to @capacitor/core 3.7.0
+ - Update to @capacitor/ios 3.7.0
+ - Update to @capacitor/android 3.7.0
+
+### Bug Fixes
+
+ - fix issue#299 (PR joewoodhouse)
+ - adding some messages for improving error in electron #304
+ - Allow copying databases from the cache folder #303
+ - Add move databases #307
+
+# 3.5.2 (2022-08-02)
+
+### Bug Fixes
+
+ - Problems with DELETE FROM #285
+
+# 3.5.2-dev2 (2022-07-07)
+
+### Bug Fixes
+
+ - Fix call of setLastExportDate only if sync_table exists
+
+# 3.5.2-dev1 (2022-07-07)
+
+### Test Features
+
+ - test `jeep-sqlite` with `sql.js@1.7.0`
+
+# 3.5.1 (2022-06-25)
+
+### Added Features
+
+ - added method `clearEncryptionSecret` to reset a previously saved passphrase in the keychain (issue #283). Thanks to the contributioin of chriswep
+
+### Bug Fixes
+
+ - Fix #271 for iOS & added support for table name containing dash/hyphen. Thanks to the contributiion of victorybiz
+
 # 3.5.1-2 (2022-05-31)
 
 ### Bug Fixes

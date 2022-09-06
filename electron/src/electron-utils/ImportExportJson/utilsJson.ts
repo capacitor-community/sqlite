@@ -247,10 +247,8 @@ export class UtilsJson {
       }
 
       // Get the column names and types
-      const tableNamesTypes: any = await this.sqliteUtil.getTableColumnNamesTypes(
-        mDB,
-        table.name,
-      );
+      const tableNamesTypes: any =
+        await this.sqliteUtil.getTableColumnNamesTypes(mDB, table.name);
       const tableColumnTypes: string[] = tableNamesTypes.types;
       const tableColumnNames: string[] = tableNamesTypes.names;
       if (tableColumnTypes.length === 0) {
@@ -703,6 +701,7 @@ export class UtilsJson {
       'column',
       'value',
       'foreignkey',
+      'primarykey',
       'constraint',
     ];
     if (
@@ -715,6 +714,7 @@ export class UtilsJson {
       if (key === 'column' && typeof obj[key] != 'string') return false;
       if (key === 'value' && typeof obj[key] != 'string') return false;
       if (key === 'foreignkey' && typeof obj[key] != 'string') return false;
+      if (key === 'primarykey' && typeof obj[key] != 'string') return false;
       if (key === 'constraint' && typeof obj[key] != 'string') return false;
     }
     return true;

@@ -819,6 +819,7 @@ class ExportToJson {
     // MARK: - ExportToJson - CreateSchema
 
     // swiftlint:disable function_body_length
+    // swiftlint:disable cyclomatic_complexity
     class func createSchema(stmt: String) throws -> [[String: String]] {
         var retSchema: [[String: String]] = []
         // get the sqlStmt between the parenthesis sqlStmt
@@ -836,14 +837,8 @@ class ExportToJson {
                         var row = rstr.split(separator: " ", maxSplits: 1)
                         if  row.count == 2 {
                             var columns: [String: String] = [:]
-                            if String(row[0]).uppercased() != "FOREIGN" && String(row[0]).uppercased() != "CONSTRAINT" {
-                                columns["column"] =  String(row[0])
-                            } else if String(row[0]).uppercased() == "CONSTRAINT" {
-                                let tRow = row[1].split(separator: " ", maxSplits: 1)
-                                row[0] = tRow[0]
-                                columns["constraint"] = String(row[0])
-                                row[1] = tRow[1]
-                            } else {
+                            switch String(row[0]).uppercased() {
+                            case "FOREIGN":
                                 guard let oPar = rstr.firstIndex(of: "(")
                                 else {
                                     var msg: String = "Create Schema "
@@ -860,9 +855,45 @@ class ExportToJson {
                                 }
                                 row[0] = rstr[rstr.index(
                                                 after: oPar)..<cPar]
-                                row[1] = rstr[rstr.index(
-                                                cPar, offsetBy: 2)..<rstr.endIndex]
+                                row[1] = rstr[rstr.index(cPar,
+                                                         offsetBy: 2)..<rstr.endIndex]
                                 columns["foreignkey"] = String(row[0])
+                                    .replacingOccurrences(of: "§",
+                                                          with: ",")
+                                    .replacingOccurrences(of: ", ",
+                                                          with: ",")
+                            case "PRIMARY":
+                                guard let oPar = rstr.firstIndex(of: "(")
+                                else {
+                                    var msg: String = "Create Schema "
+                                    msg.append("PRIMARY KEY no '('")
+                                    throw ExportToJsonError
+                                    .createSchema(message: msg)
+                                }
+                                guard let cPar = rstr.firstIndex(of: ")")
+                                else {
+                                    var msg: String = "Create Schema "
+                                    msg.append("PRIMARY KEY no ')'")
+                                    throw ExportToJsonError
+                                    .createSchema(message: msg)
+                                }
+                                row[0] = rstr[rstr.index(
+                                                after: oPar)..<cPar]
+                                row[1] = rstr[rstr.index(rstr.startIndex,
+                                                         offsetBy: 0)..<rstr.endIndex]
+                                columns["constraint"] = "CPK_" + String(row[0])
+                                    .replacingOccurrences(of: "§",
+                                                          with: "_")
+                                    .replacingOccurrences(of: "_ ",
+                                                          with: "_")
+                            case "CONSTRAINT":
+                                let tRow = row[1].split(separator: " ",
+                                                        maxSplits: 1)
+                                row[0] = tRow[0]
+                                columns["constraint"] = String(row[0])
+                                row[1] = tRow[1]
+                            default:
+                                columns["column"] =  String(row[0])
                             }
                             columns["value"] = String(row[1]).replacingOccurrences(of: "§", with: ",")
                             retSchema.append(columns)
@@ -886,6 +917,7 @@ class ExportToJson {
         }
         return retSchema
     }
+    // swiftlint:enable cyclomatic_complexity
     // swiftlint:enable function_body_length
 
     // MARK: - ExportToJson - CreateIndexes

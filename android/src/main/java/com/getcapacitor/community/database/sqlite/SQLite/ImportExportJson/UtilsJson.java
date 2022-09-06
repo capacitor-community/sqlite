@@ -275,7 +275,7 @@ public class UtilsJson {
         JSObject ret = new JSObject();
         ArrayList<String> names = new ArrayList<String>();
         ArrayList<String> types = new ArrayList<String>();
-        String query = new StringBuilder("PRAGMA table_info(").append(tableName).append(");").toString();
+        String query = new StringBuilder("PRAGMA table_info('").append(tableName).append("');").toString();
         try {
             JSArray resQuery = mDb.selectSQL(query, new ArrayList<Object>());
             List<JSObject> lQuery = resQuery.toList();

@@ -48,6 +48,13 @@ export interface CapacitorSQLitePlugin {
    * @since 3.0.0-beta.13
    */
   changeEncryptionSecret(options: capChangeSecretOptions): Promise<void>;
+  /**
+   * Clear the passphrase in the secure store
+   *
+   * @return Promise<void>
+   * @since 3.5.1
+   */
+  clearEncryptionSecret(): Promise<void>;
 
   /**
    * create a database connection
@@ -261,6 +268,12 @@ export interface CapacitorSQLitePlugin {
    * @since 3.0.0-beta.5
    */
   deleteOldDatabases(options: capSQLitePathOptions): Promise<void>;
+  /**
+   * Moves databases to the location the plugin can read them, and adds sqlite suffix
+   * This resembles calling addSQLiteSuffix and deleteOldDatabases, but it is more performant as it doesn't copy but moves the files
+   * @param options: capSQLitePathOptions
+   */
+  moveDatabasesAndAddSuffix(options: capSQLitePathOptions): Promise<void>;
   /**
    * Check Connection Consistency JS <=> Native
    * return true : consistency, connections are opened
@@ -795,6 +808,12 @@ export interface ISQLiteConnection {
     oldpassphrase: string,
   ): Promise<void>;
   /**
+   * Clear the passphrase in a secure store
+   * @returns Promise<void>
+   * @since 3.5.1
+   */
+  clearEncryptionSecret(): Promise<void>;
+  /**
    * Add the upgrade Statement for database version upgrading
    * @param database
    * @param toVersion
@@ -973,6 +992,16 @@ export interface ISQLiteConnection {
    * @since 3.0.0-beta.5
    */
   deleteOldDatabases(folderPath?: string, dbNameList?: string[]): Promise<void>;
+  /**
+   * Moves databases to the location the plugin can read them, and adds sqlite suffix
+   * This resembles calling addSQLiteSuffix and deleteOldDatabases, but it is more performant as it doesn't copy but moves the files
+   * @param folderPath the origin from where to move the databases
+   * @param dbNameList the names of the databases to move, check out the getMigratableDbList to get a list, an empty list will result in copying all the databases with '.db' extension.
+   */
+  moveDatabasesAndAddSuffix(
+    folderPath?: string,
+    dbNameList?: string[],
+  ): Promise<void>;
 }
 /**
  * SQLiteConnection Class
@@ -1031,6 +1060,14 @@ export class SQLiteConnection implements ISQLiteConnection {
         passphrase: passphrase,
         oldpassphrase: oldpassphrase,
       });
+      return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async clearEncryptionSecret(): Promise<void> {
+    try {
+      await this.sqlite.clearEncryptionSecret();
       return Promise.resolve();
     } catch (err) {
       return Promise.reject(err);
@@ -1110,12 +1147,11 @@ export class SQLiteConnection implements ISQLiteConnection {
     database: string,
   ): Promise<capNCDatabasePathResult> {
     try {
-      const databasePath: capNCDatabasePathResult = await this.sqlite.getNCDatabasePath(
-        {
+      const databasePath: capNCDatabasePathResult =
+        await this.sqlite.getNCDatabasePath({
           path,
           database,
-        },
-      );
+        });
       return Promise.resolve(databasePath);
     } catch (err) {
       return Promise.reject(err);
@@ -1194,9 +1230,8 @@ export class SQLiteConnection implements ISQLiteConnection {
   async checkConnectionsConsistency(): Promise<capSQLiteResult> {
     try {
       const keys = [...this._connectionDict.keys()];
-      const res: capSQLiteResult = await this.sqlite.checkConnectionsConsistency(
-        { dbNames: keys },
-      );
+      const res: capSQLiteResult =
+        await this.sqlite.checkConnectionsConsistency({ dbNames: keys });
       if (!res.result) this._connectionDict = new Map();
       return Promise.resolve(res);
     } catch (err) {
@@ -1291,6 +1326,18 @@ export class SQLiteConnection implements ISQLiteConnection {
     } catch (err) {
       return Promise.reject(err);
     }
+  }
+
+  async moveDatabasesAndAddSuffix(
+    folderPath?: string,
+    dbNameList?: string[],
+  ): Promise<void> {
+    const path: string = folderPath ? folderPath : 'default';
+    const dbList: string[] = dbNameList ? dbNameList : [];
+    return this.sqlite.moveDatabasesAndAddSuffix({
+      folderPath: path,
+      dbNameList: dbList,
+    });
   }
 }
 
