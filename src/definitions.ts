@@ -755,10 +755,8 @@ export interface capJsonProgressListener {
   progress?: string;
 }
 export interface capSQLiteVersionUpgrade {
-  fromVersion: number;
   toVersion: number;
-  statement: string;
-  set?: capSQLiteSet[];
+  statements: string[];
 }
 
 /**
@@ -818,7 +816,6 @@ export interface ISQLiteConnection {
   /**
    * Add the upgrade Statement for database version upgrading
    * @param database
-   * @param fromVersion
    * @param toVersion
    * @param statement
    * @param set
@@ -827,10 +824,8 @@ export interface ISQLiteConnection {
    */
   addUpgradeStatement(
     database: string,
-    fromVersion: number,
     toVersion: number,
-    statement: string,
-    set?: capSQLiteSet[],
+    statements: string[],
   ): Promise<void>;
   /**
    * Create a connection to a database
@@ -1080,16 +1075,12 @@ export class SQLiteConnection implements ISQLiteConnection {
   }
   async addUpgradeStatement(
     database: string,
-    fromVersion: number,
     toVersion: number,
-    statement: string,
-    set?: capSQLiteSet[],
+    statements: string[],
   ): Promise<void> {
     const upgrade: capSQLiteVersionUpgrade = {
-      fromVersion,
       toVersion,
-      statement,
-      set: set ? set : [],
+      statements,
     };
     try {
       if (database.endsWith('.db')) database = database.slice(0, -3);

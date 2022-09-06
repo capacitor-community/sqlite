@@ -1170,12 +1170,10 @@ Check if a non conformed database exists without connection
 
 #### capSQLiteVersionUpgrade
 
-| Prop              | Type                        |
-| ----------------- | --------------------------- |
-| **`fromVersion`** | <code>number</code>         |
-| **`toVersion`**   | <code>number</code>         |
-| **`statement`**   | <code>string</code>         |
-| **`set`**         | <code>capSQLiteSet[]</code> |
+| Prop             | Type                  |
+| ---------------- | --------------------- |
+| **`toVersion`**  | <code>number</code>   |
+| **`statements`** | <code>string[]</code> |
 
 
 #### capSQLiteFromAssetsOptions

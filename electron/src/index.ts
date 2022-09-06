@@ -485,19 +485,18 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     const versionUpgradeKeys = Object.keys(firstUpgrade);
 
     if (
-      !versionUpgradeKeys.includes('fromVersion') ||
       !versionUpgradeKeys.includes('toVersion') ||
-      !versionUpgradeKeys.includes('statement')
+      !versionUpgradeKeys.includes('statements')
     ) {
       throw new Error('Must provide an upgrade capSQLiteVersionUpgrade Object');
     }
 
-    if (typeof firstUpgrade.fromVersion != 'number') {
-      throw new Error('upgrade.fromVersion must be a number');
+    if (typeof firstUpgrade.toVersion != 'number') {
+      throw new Error('upgrade.toVersion must be a number');
     }
 
     const upgradeVersionDict: Record<number, capSQLiteVersionUpgrade> = {};
-    upgradeVersionDict[firstUpgrade.fromVersion] = firstUpgrade;
+    upgradeVersionDict[firstUpgrade.toVersion] = firstUpgrade;
     this.versionUpgrades[dbName] = upgradeVersionDict;
 
     return;

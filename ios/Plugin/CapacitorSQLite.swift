@@ -1146,23 +1146,21 @@ enum CapacitorSQLiteError: Error {
             var upgDict: [String: Any] = [:]
             for dict in upgrade {
                 let keys = dict.keys
-                if !(keys.contains("fromVersion")) ||
-                    !(keys.contains("toVersion")) ||
-                    !(keys.contains("statement")) {
+                if !(keys.contains("toVersion")) || !(keys.contains("statements")) {
                     var msg: String = "upgrade must have keys in "
-                    msg.append("{fromVersion,toVersion,statement}")
+                    msg.append("{toVersion,statements}")
                     throw CapacitorSQLiteError.failed(message: msg)
                 }
                 for (key, value) in dict {
                     upgDict[key] = value
                 }
             }
-            guard let fromVersion = upgDict["fromVersion"] as? Int else {
-                let msg: String = "fromVersion key must be an Int"
+            guard let toVersion = upgDict["toVersion"] as? Int else {
+                let msg: String = "toVersion key must be an Int"
                 throw CapacitorSQLiteError.failed(message: msg)
             }
             let upgVersionDict: [Int: [String: Any]] =
-                [fromVersion: upgDict]
+                [toVersion: upgDict]
             return upgVersionDict
         } else {
             throw CapacitorSQLiteError.failed(message: initMessage)

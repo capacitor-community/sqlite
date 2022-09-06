@@ -101,11 +101,15 @@ export class Database {
         Object.keys(this.upgradeVersionDict).length > 0
       ) {
         try {
+          await this.fileUtil.copyFileName(
+            this.dbName,
+            `backup-${this.dbName}`,
+          );
+
           // execute the upgrade flow process
           await this.upgradeUtil.onUpgrade(
             this.database,
             this.upgradeVersionDict,
-            this.dbName,
             curVersion,
             this.version,
           );

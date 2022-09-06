@@ -244,27 +244,22 @@ export class SQLiteService {
 
     /**
      * addUpgradeStatement
-     * @param database 
-     * @param fromVersion 
-     * @param toVersion 
-     * @param statement 
-     * @param set 
+     * @param database
+     * @param toVersion
+     * @param statements
      */
-    async addUpgradeStatement(database:string, fromVersion: number,
-                              toVersion: number, statement: string,
-                              set?: capSQLiteSet[])
+    async addUpgradeStatement(database:string, toVersion: number, statements: string)
                                         : Promise<void> {
         if(this.sqlite != null) {
             try {
-                await this.sqlite.addUpgradeStatement(database, fromVersion, toVersion,
-                                                      statement, set ? set : []);
+                await this.sqlite.addUpgradeStatement(database, toVersion, statement);
                 return Promise.resolve();
             } catch (err) {
                 return Promise.reject(new Error(err));
             }
         } else {
             return Promise.reject(new Error(`no connection open for ${database}`));
-        }                             
+        }
     }
     /**
      * get a non-conformed database path
