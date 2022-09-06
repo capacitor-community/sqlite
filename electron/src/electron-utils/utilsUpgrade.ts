@@ -26,15 +26,21 @@ export class UtilsUpgrade {
     for (const versionKey of sortedKeys) {
       if (versionKey > curVersion && versionKey <= targetVersion) {
         const statements = vUpgDict[versionKey].statements;
-
         if (statements.length === 0) {
           return Promise.reject('onUpgrade: statements not given');
         }
 
         try {
+          // set Foreign Keys Off
+          await this.sqliteUtil.setForeignKeyConstraintsEnabled(mDB, false);
+          const initChanges = await this.sqliteUtil.dbChanges(mDB);
           await this.executeStatementsProcess(mDB, statements);
 
           await this.sqliteUtil.setVersion(mDB, versionKey);
+          // set Foreign Keys On
+          await this.sqliteUtil.setForeignKeyConstraintsEnabled(mDB, true);
+          const changes = (await this.sqliteUtil.dbChanges(mDB)) - initChanges;
+          return Promise.resolve(changes);
         } catch (err) {
           return Promise.reject(`onUpgrade: ${err}`);
         }
@@ -50,18 +56,18 @@ export class UtilsUpgrade {
     mDB: any,
     statements: string[],
   ): Promise<void> {
-    await this.sqliteUtil.beginTransaction(mDB, mDB._isDbOpen);
+    await this.sqliteUtil.beginTransaction(mDB, true);
 
     try {
       for (const statement of statements) {
         await this.sqliteUtil.execute(mDB, statement, false);
       }
 
-      await this.sqliteUtil.commitTransaction(mDB, mDB._isDbOpen);
+      await this.sqliteUtil.commitTransaction(mDB, true);
 
       return Promise.resolve();
     } catch (err) {
-      await this.sqliteUtil.rollbackTransaction(mDB, mDB._isDbOpen);
+      await this.sqliteUtil.rollbackTransaction(mDB, true);
 
       return Promise.reject(`ExecuteStatementProcess: ${err}`);
     }

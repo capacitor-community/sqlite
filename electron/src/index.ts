@@ -498,7 +498,6 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     const upgradeVersionDict: Record<number, capSQLiteVersionUpgrade> = {};
     upgradeVersionDict[firstUpgrade.toVersion] = firstUpgrade;
     this.versionUpgrades[dbName] = upgradeVersionDict;
-
     return;
   }
 
