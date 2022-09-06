@@ -39,7 +39,7 @@ npx cap sync
  - [Issues](https://github.com/capacitor-community/sqlite/issues)
  - [Capacitor documentation](https://capacitorjs.com/docs/)
  - [Datatypes In SQLite Version 3](https://www.sqlite.org/datatype3.html)
-
+ - [IncrementalUpgradeDatabaseVersion](https://capacitorjs.com/docs/IncrementalUpgradeDatabaseVersion.md)
 
 ## Web Quirks
 
@@ -111,7 +111,7 @@ npm install --save-dev @types/sqlite3
 | getSyncDate                 | ✅      | ✅  | ✅        | ✅  |
 | isJsonValid                 | ✅      | ✅  | ✅        | ✅  |
 | isDBExists                  | ✅      | ✅  | ✅        | ✅  |
-| addUpgradeStatement         | ✅      | ✅  | ✅        | ✅  |
+| addUpgradeStatement         | ✅      | ✅  | ✅        | ✅  | Modified 4.1.0-6
 | copyFromAssets              | ✅      | ✅  | ✅        | ✅  |
 | isDBOpen                    | ✅      | ✅  | ✅        | ✅  |
 | isDatabase                  | ✅      | ✅  | ✅        | ✅  |
