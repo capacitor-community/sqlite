@@ -1,8 +1,8 @@
-# 4.1.0-6 (2022-09-06)
+# 4.1.0-6 (2022-09-07)
 
 ### Added Features
 
- - Android,iOS & Electron Only Replace addUpgradeStatement witn the new database incremental upgrade version. see new doc [IncrementalUpgradeDatabaseVersion](https://capacitorjs.com/docs/IncrementalUpgradeDatabaseVersion.md)
+ - Replace addUpgradeStatement with the new database incremental upgrade version. see new doc [IncrementalUpgradeDatabaseVersion](https://capacitorjs.com/docs/IncrementalUpgradeDatabaseVersion.md)
 
 # 4.1.0-5 (2022-08-29)
 

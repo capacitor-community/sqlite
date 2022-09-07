@@ -2,7 +2,7 @@
 <h2 align="center">Upgrade Database Version DOCUMENTATION</h2>
 <p align="center"><strong><code>@capacitor-community/sqlite</code></strong></p>
 
-An API method has been added `addUpgradeStatement` to define the new structure of the database as a list of incremental upgrades. Every upgrade is executed over the previus version.
+The API method `addUpgradeStatement` has been modified to define the new structure of the database as a list of incremental upgrades. Every upgrade is executed over the previous version.
 
 It has to be called prior to open the database with the new version number
 
