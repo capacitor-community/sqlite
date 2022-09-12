@@ -130,15 +130,10 @@ export class UtilsFile {
     const webDir = this.capConfig.webDir;
     const dir = webDir === 'www' ? 'src' : 'public';
     let mAppPath = this.appPath;
-    if (this.Path.basename(this.appPath) === "electron") {
+    if (this.Path.basename(this.appPath) === 'electron') {
       mAppPath = this.Path.dirname(this.appPath);
     }
-    retPath = this.Path.resolve(
-      mAppPath,
-      dir,
-      'assets',
-      'databases'
-    );
+    retPath = this.Path.resolve(mAppPath, dir, 'assets', 'databases');
     return retPath;
   }
   /**

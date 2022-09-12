@@ -1,3 +1,9 @@
+# 4.1.0-7 (2022-09-12)
+
+### Added Features
+
+ - add readonly mode to connection (iOS & Android only). So one read&write and one readonly connections could be opened on the same database.
+
 # 4.1.0-6 (2022-09-07)
 
 ### Added Features

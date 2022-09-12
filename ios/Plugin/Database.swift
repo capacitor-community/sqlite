@@ -46,9 +46,11 @@ class Database {
     var ncDB: Bool = false
 
     // MARK: - Init
-    init(databaseLocation: String, databaseName: String, encrypted: Bool,
-         isEncryption: Bool, account: String, mode: String, version: Int,
-         vUpgDict: [Int: [String: Any]] = [:]) throws {
+    init(databaseLocation: String, databaseName: String,
+         encrypted: Bool, isEncryption: Bool,
+         account: String, mode: String, version: Int, readonly: Bool,
+         vUpgDict: [Int: [String: Any]] = [:]
+    ) throws {
         self.dbVersion = version
         self.encrypted = encrypted
         self.isEncryption = isEncryption
@@ -57,6 +59,7 @@ class Database {
         self.mode = mode
         self.vUpgDict = vUpgDict
         self.databaseLocation = databaseLocation
+        self.readOnly = readonly
         if databaseName.contains("/")  &&
             databaseName.suffix(9) != "SQLite.db" {
             self.readOnly = true
@@ -133,7 +136,7 @@ class Database {
             try UtilsSQLCipher
                 .setForeignKeyConstraintsEnabled(mDB: self,
                                                  toggle: true)
-            if !ncDB {
+            if !ncDB && !self.readOnly {
                 let curVersion: Int = try UtilsSQLCipher.getVersion(mDB: self)
 
                 if dbVersion > curVersion && vUpgDict.count > 0 {

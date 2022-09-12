@@ -183,7 +183,7 @@ Add the upgrade Statement for database version upgrading
 ### createConnection(...)
 
 ```typescript
-createConnection(database: string, encrypted: boolean, mode: string, version: number) => Promise<SQLiteDBConnection>
+createConnection(database: string, encrypted: boolean, mode: string, version: number, readonly: boolean) => Promise<SQLiteDBConnection>
 ```
 
 Create a connection to a database
@@ -194,6 +194,7 @@ Create a connection to a database
 | **`encrypted`** | <code>boolean</code> |
 | **`mode`**      | <code>string</code>  |
 | **`version`**   | <code>number</code>  |
+| **`readonly`**  | <code>boolean</code> |
 
 **Returns:** <code>Promise&lt;SQLiteDBConnection&gt;</code>
 
@@ -205,14 +206,15 @@ Create a connection to a database
 ### isConnection(...)
 
 ```typescript
-isConnection(database: string) => Promise<capSQLiteResult>
+isConnection(database: string, readonly: boolean) => Promise<capSQLiteResult>
 ```
 
 Check if a connection exists
 
-| Param          | Type                |
-| -------------- | ------------------- |
-| **`database`** | <code>string</code> |
+| Param          | Type                 |
+| -------------- | -------------------- |
+| **`database`** | <code>string</code>  |
+| **`readonly`** | <code>boolean</code> |
 
 **Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
 
@@ -224,14 +226,15 @@ Check if a connection exists
 ### retrieveConnection(...)
 
 ```typescript
-retrieveConnection(database: string) => Promise<SQLiteDBConnection>
+retrieveConnection(database: string, readonly: boolean) => Promise<SQLiteDBConnection>
 ```
 
 Retrieve an existing database connection
 
-| Param          | Type                |
-| -------------- | ------------------- |
-| **`database`** | <code>string</code> |
+| Param          | Type                 |
+| -------------- | -------------------- |
+| **`database`** | <code>string</code>  |
+| **`readonly`** | <code>boolean</code> |
 
 **Returns:** <code>Promise&lt;SQLiteDBConnection&gt;</code>
 
@@ -258,14 +261,15 @@ Retrieve all database connections
 ### closeConnection(...)
 
 ```typescript
-closeConnection(database: string) => Promise<void>
+closeConnection(database: string, readonly: boolean) => Promise<void>
 ```
 
 Close a database connection
 
-| Param          | Type                |
-| -------------- | ------------------- |
-| **`database`** | <code>string</code> |
+| Param          | Type                 |
+| -------------- | -------------------- |
+| **`database`** | <code>string</code>  |
+| **`readonly`** | <code>boolean</code> |
 
 **Since:** 2.9.0 refactor
 

@@ -56,7 +56,6 @@ export class UtilsUpgrade {
     mDB: any,
     statements: string[],
   ): Promise<void> {
-
     try {
       await this.sqliteUtil.beginTransaction(mDB, true);
       for (const statement of statements) {

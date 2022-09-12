@@ -9,6 +9,7 @@
 <docgen-index>
 
 * [`getConnectionDBName()`](#getconnectiondbname)
+* [`getConnectionReadOnly()`](#getconnectionreadonly)
 * [`open()`](#open)
 * [`close()`](#close)
 * [`getUrl()`](#geturl)
@@ -50,6 +51,21 @@ Get SQLite DB Connection DB name
 **Returns:** <code>string</code>
 
 **Since:** 2.9.0 refactor
+
+--------------------
+
+
+### getConnectionReadOnly()
+
+```typescript
+getConnectionReadOnly() => boolean
+```
+
+Get SQLite DB Connection read-only mode
+
+**Returns:** <code>boolean</code>
+
+**Since:** 4.1.0
 
 --------------------
 

@@ -284,7 +284,7 @@ public class CapacitorSQLitePlugin extends Plugin {
         dbName = call.getString("database");
         dbVersion = call.getInt("version", 1);
 
-        boolean encrypted = call.getBoolean("encrypted", false);
+        Boolean encrypted = call.getBoolean("encrypted", false);
         if (encrypted) {
             inMode = call.getString("mode", "no-encryption");
             if (
@@ -299,10 +299,11 @@ public class CapacitorSQLitePlugin extends Plugin {
         } else {
             inMode = "no-encryption";
         }
+        boolean readOnly = call.getBoolean("readonly", false);
         Dictionary<Integer, JSONObject> upgDict = versionUpgrades.get(dbName);
         if (implementation != null) {
             try {
-                implementation.createConnection(dbName, encrypted, inMode, dbVersion, upgDict);
+                implementation.createConnection(dbName, encrypted, inMode, dbVersion, upgDict, readOnly);
                 rHandler.retResult(call, null, null);
                 return;
             } catch (Exception e) {
@@ -330,9 +331,10 @@ public class CapacitorSQLitePlugin extends Plugin {
             return;
         }
         String dbName = call.getString("database");
+        Boolean readOnly = call.getBoolean("readonly", false);
         if (implementation != null) {
             try {
-                implementation.open(dbName);
+                implementation.open(dbName, readOnly);
                 rHandler.retResult(call, null, null);
                 return;
             } catch (Exception e) {
@@ -360,9 +362,10 @@ public class CapacitorSQLitePlugin extends Plugin {
             return;
         }
         String dbName = call.getString("database");
+        Boolean readOnly = call.getBoolean("readonly", false);
         if (implementation != null) {
             try {
-                implementation.close(dbName);
+                implementation.close(dbName, readOnly);
                 rHandler.retResult(call, null, null);
                 return;
             } catch (Exception e) {
@@ -390,9 +393,10 @@ public class CapacitorSQLitePlugin extends Plugin {
             return;
         }
         String dbName = call.getString("database");
+        Boolean readOnly = call.getBoolean("readonly", false);
         if (implementation != null) {
             try {
-                String res = implementation.getUrl(dbName);
+                String res = implementation.getUrl(dbName, readOnly);
                 rHandler.retUrl(call, res, null);
                 return;
             } catch (Exception e) {
@@ -420,9 +424,10 @@ public class CapacitorSQLitePlugin extends Plugin {
             return;
         }
         String dbName = call.getString("database");
+        Boolean readOnly = call.getBoolean("readonly", false);
         if (implementation != null) {
             try {
-                Integer res = implementation.getVersion(dbName);
+                Integer res = implementation.getVersion(dbName, readOnly);
                 rHandler.retVersion(call, res, null);
                 return;
             } catch (Exception e) {
@@ -480,9 +485,10 @@ public class CapacitorSQLitePlugin extends Plugin {
             return;
         }
         String dbName = call.getString("database");
+        Boolean readOnly = call.getBoolean("readonly", false);
         if (implementation != null) {
             try {
-                implementation.closeConnection(dbName);
+                implementation.closeConnection(dbName, readOnly);
                 rHandler.retResult(call, null, null);
                 return;
             } catch (Exception e) {
@@ -602,9 +608,10 @@ public class CapacitorSQLitePlugin extends Plugin {
             return;
         }
         String tableName = call.getString("table");
+        Boolean readOnly = call.getBoolean("readonly", false);
         if (implementation != null) {
             try {
-                Boolean res = implementation.isTableExists(dbName, tableName);
+                Boolean res = implementation.isTableExists(dbName, tableName, readOnly);
                 rHandler.retResult(call, res, null);
                 return;
             } catch (Exception e) {
@@ -794,10 +801,11 @@ public class CapacitorSQLitePlugin extends Plugin {
         }
         String statements = call.getString("statements");
         Boolean transaction = call.getBoolean("transaction", true);
+        Boolean readOnly = call.getBoolean("readonly", false);
 
         if (implementation != null) {
             try {
-                JSObject res = implementation.execute(dbName, statements, transaction);
+                JSObject res = implementation.execute(dbName, statements, transaction, readOnly);
                 rHandler.retChanges(call, res, null);
                 return;
             } catch (Exception e) {
@@ -852,9 +860,10 @@ public class CapacitorSQLitePlugin extends Plugin {
             }
         }
         Boolean transaction = call.getBoolean("transaction", true);
+        Boolean readOnly = call.getBoolean("readonly", false);
         if (implementation != null) {
             try {
-                JSObject res = implementation.executeSet(dbName, set, transaction);
+                JSObject res = implementation.executeSet(dbName, set, transaction, readOnly);
                 rHandler.retChanges(call, res, null);
                 return;
             } catch (Exception e) {
@@ -898,9 +907,10 @@ public class CapacitorSQLitePlugin extends Plugin {
         JSArray values = call.getArray("values");
 
         Boolean transaction = call.getBoolean("transaction", true);
+        Boolean readOnly = call.getBoolean("readonly", false);
         if (implementation != null) {
             try {
-                JSObject res = implementation.run(dbName, statement, values, transaction);
+                JSObject res = implementation.run(dbName, statement, values, transaction, readOnly);
                 rHandler.retChanges(call, res, null);
                 return;
             } catch (Exception e) {
@@ -940,9 +950,10 @@ public class CapacitorSQLitePlugin extends Plugin {
             return;
         }
         JSArray values = call.getArray("values");
+        Boolean readOnly = call.getBoolean("readonly", false);
         if (implementation != null) {
             try {
-                JSArray res = implementation.query(dbName, statement, values);
+                JSArray res = implementation.query(dbName, statement, values, readOnly);
                 rHandler.retValues(call, res, null);
                 return;
             } catch (Exception e) {
@@ -964,9 +975,10 @@ public class CapacitorSQLitePlugin extends Plugin {
             return;
         }
         String dbName = call.getString("database");
+        Boolean readOnly = call.getBoolean("readonly", false);
         if (implementation != null) {
             try {
-                JSArray res = implementation.getTableList(dbName);
+                JSArray res = implementation.getTableList(dbName, readOnly);
                 rHandler.retValues(call, res, null);
                 return;
             } catch (Exception e) {
@@ -994,10 +1006,11 @@ public class CapacitorSQLitePlugin extends Plugin {
             return;
         }
         String dbName = call.getString("database");
+        Boolean readOnly = call.getBoolean("readonly", false);
 
         if (implementation != null) {
             try {
-                Boolean res = implementation.isDBExists(dbName);
+                Boolean res = implementation.isDBExists(dbName, readOnly);
                 rHandler.retResult(call, res, null);
                 return;
             } catch (Exception e) {
@@ -1025,9 +1038,10 @@ public class CapacitorSQLitePlugin extends Plugin {
             return;
         }
         String dbName = call.getString("database");
+        Boolean readOnly = call.getBoolean("readonly", false);
         if (implementation != null) {
             try {
-                Boolean res = implementation.isDBOpen(dbName);
+                Boolean res = implementation.isDBOpen(dbName, readOnly);
                 rHandler.retResult(call, res, null);
                 return;
             } catch (Exception e) {
@@ -1055,9 +1069,10 @@ public class CapacitorSQLitePlugin extends Plugin {
             return;
         }
         String dbName = call.getString("database");
+        Boolean readOnly = call.getBoolean("readonly", false);
         if (implementation != null) {
             try {
-                implementation.deleteDatabase(dbName);
+                implementation.deleteDatabase(dbName, readOnly);
                 rHandler.retResult(call, null, null);
                 return;
             } catch (Exception e) {
@@ -1087,9 +1102,10 @@ public class CapacitorSQLitePlugin extends Plugin {
             return;
         }
         String dbName = call.getString("database");
+        Boolean readOnly = call.getBoolean("readonly", false);
         if (implementation != null) {
             try {
-                JSObject res = implementation.createSyncTable(dbName);
+                JSObject res = implementation.createSyncTable(dbName, readOnly);
                 rHandler.retChanges(call, res, null);
                 return;
             } catch (Exception e) {
@@ -1124,9 +1140,10 @@ public class CapacitorSQLitePlugin extends Plugin {
             return;
         }
         String syncDate = call.getString("syncdate");
+        Boolean readOnly = call.getBoolean("readonly", false);
         if (implementation != null) {
             try {
-                implementation.setSyncDate(dbName, syncDate);
+                implementation.setSyncDate(dbName, syncDate, readOnly);
                 rHandler.retResult(call, null, null);
                 return;
             } catch (Exception e) {
@@ -1156,9 +1173,10 @@ public class CapacitorSQLitePlugin extends Plugin {
             return;
         }
         String dbName = call.getString("database");
+        Boolean readOnly = call.getBoolean("readonly", false);
         if (implementation != null) {
             try {
-                long syncDate = implementation.getSyncDate(dbName);
+                long syncDate = implementation.getSyncDate(dbName, readOnly);
                 rHandler.retSyncDate(call, syncDate, null);
                 return;
             } catch (Exception e) {
@@ -1300,10 +1318,11 @@ public class CapacitorSQLitePlugin extends Plugin {
             rHandler.retJSObject(call, retObj, msg);
             return;
         }
+        Boolean readOnly = call.getBoolean("readonly", false);
 
         if (implementation != null) {
             try {
-                JSObject res = implementation.exportToJson(dbName, expMode);
+                JSObject res = implementation.exportToJson(dbName, expMode, readOnly);
                 rHandler.retJSObject(call, res, null);
                 return;
             } catch (Exception e) {
@@ -1327,9 +1346,10 @@ public class CapacitorSQLitePlugin extends Plugin {
             return;
         }
         String dbName = call.getString("database");
+        Boolean readOnly = call.getBoolean("readonly", false);
         if (implementation != null) {
             try {
-                implementation.deleteExportedRows(dbName);
+                implementation.deleteExportedRows(dbName, readOnly);
                 rHandler.retResult(call, null, null);
                 return;
             } catch (Exception e) {

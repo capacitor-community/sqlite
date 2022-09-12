@@ -922,9 +922,10 @@ Check if a non conformed database exists without connection
 
 #### capSQLiteOptions
 
-| Prop           | Type                | Description       |
-| -------------- | ------------------- | ----------------- |
-| **`database`** | <code>string</code> | The database name |
+| Prop           | Type                 | Description                                      |
+| -------------- | -------------------- | ------------------------------------------------ |
+| **`database`** | <code>string</code>  | The database name                                |
+| **`readonly`** | <code>boolean</code> | Set to true (database in read-only mode) / false |
 
 
 #### capSQLiteResult
@@ -957,6 +958,7 @@ Check if a non conformed database exists without connection
 | **`version`**   | <code>number</code>  | The database version                                                       |
 | **`encrypted`** | <code>boolean</code> | Set to true (database encryption) / false                                  |
 | **`mode`**      | <code>string</code>  | Set the mode for database encryption ["encryption", "secret", "newsecret"] |
+| **`readonly`**  | <code>boolean</code> | Set to true (database in read-only mode) / false                           |
 
 
 #### capEchoResult

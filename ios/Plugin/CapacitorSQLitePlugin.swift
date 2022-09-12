@@ -162,6 +162,8 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             retHandler.rResult(call: call, message: msg)
             return
         }
+        let readOnly: Bool = call.getBool("readonly") ?? false
+
         var upgDict: [Int: [String: Any]] = [:]
         if let cUpgDict = versionUpgrades[dbName] {
             upgDict = cUpgDict
@@ -171,7 +173,8 @@ public class CapacitorSQLitePlugin: CAPPlugin {
                                                  encrypted: encrypted,
                                                  mode: inMode,
                                                  version: version,
-                                                 vUpgDict: upgDict)
+                                                 vUpgDict: upgDict,
+                                                 readonly: readOnly)
             retHandler.rResult(call: call)
             return
         } catch CapacitorSQLiteError.failed(let message) {
@@ -195,8 +198,9 @@ public class CapacitorSQLitePlugin: CAPPlugin {
                 message: "Open: Must provide a database name")
             return
         }
+        let readOnly: Bool = call.getBool("readonly") ?? false
         do {
-            try implementation?.open(dbName)
+            try implementation?.open(dbName, readonly: readOnly)
             retHandler.rResult(call: call)
             return
         } catch CapacitorSQLiteError.failed(let message) {
@@ -220,8 +224,9 @@ public class CapacitorSQLitePlugin: CAPPlugin {
                 message: "Close: Must provide a database name")
             return
         }
+        let readOnly: Bool = call.getBool("readonly") ?? false
         do {
-            try implementation?.close(dbName)
+            try implementation?.close(dbName, readonly: readOnly)
             retHandler.rResult(call: call)
             return
         } catch CapacitorSQLiteError.failed(let message) {
@@ -245,8 +250,11 @@ public class CapacitorSQLitePlugin: CAPPlugin {
                 message: "GetUrl: Must provide a database name")
             return
         }
+        let readOnly: Bool = call.getBool("readonly") ?? false
         do {
-            let res: String = try implementation?.getUrl(dbName) ?? ""
+            let res: String = try implementation?.getUrl(dbName,
+                                                         readonly: readOnly) ?? ""
+
             if res.count > 0 {
                 retHandler.rUrl(call: call, ret: res)
                 return
@@ -278,9 +286,10 @@ public class CapacitorSQLitePlugin: CAPPlugin {
                 message: "getVersion: Must provide a database name")
             return
         }
+        let readOnly: Bool = call.getBool("readonly") ?? false
         do {
             if let version: NSNumber = try implementation?
-                .getVersion(dbName) {
+                .getVersion(dbName, readonly: readOnly) {
                 retHandler.rVersion(call: call, ret: version)
                 return
             } else {
@@ -309,8 +318,9 @@ public class CapacitorSQLitePlugin: CAPPlugin {
                 message: "CloseConnection: Must provide a database name")
             return
         }
+        let readOnly: Bool = call.getBool("readonly") ?? false
         do {
-            try implementation?.closeConnection(dbName)
+            try implementation?.closeConnection(dbName, readonly: readOnly)
             retHandler.rResult(call: call)
             return
         } catch CapacitorSQLiteError.failed(let message) {
@@ -396,8 +406,11 @@ public class CapacitorSQLitePlugin: CAPPlugin {
                 message: "IsTableExists: Must provide a table name")
             return
         }
+        let readOnly: Bool = call.getBool("readonly") ?? false
         do {
-            let res = try implementation?.isTableExists(dbName, tableName: tableName)
+            let res = try implementation?.isTableExists(dbName,
+                                                        tableName: tableName,
+                                                        readonly: readOnly)
             var bRes: Bool = false
             if res == 1 {
                 bRes = true
@@ -425,8 +438,10 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
 
         }
+        let readOnly: Bool = call.getBool("readonly") ?? false
         do {
-            let res = try implementation?.getTableList(dbName) ?? []
+            let res = try implementation?.getTableList(dbName,
+                                                       readonly: readOnly) ?? []
             retHandler.rValues(call: call, ret: res)
             return
         } catch CapacitorSQLiteError.failed(let message) {
@@ -597,10 +612,11 @@ public class CapacitorSQLitePlugin: CAPPlugin {
                 message: msg)
             return
         }
+        let readOnly: Bool = call.getBool("readonly") ?? false
         do {
             if let res = try implementation?
                 .execute(dbName, statements: statements,
-                         transaction: transaction) {
+                         transaction: transaction, readonly: readOnly) {
                 retHandler.rChanges(call: call, ret: res)
                 return
             } else {
@@ -660,9 +676,11 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             }
         }
         let transaction: Bool = call.getBool("transaction") ?? true
+        let readOnly: Bool = call.getBool("readonly") ?? false
         do {
             if let res = try implementation?.executeSet(dbName, set: set,
-                                                        transaction: transaction) {
+                                                        transaction: transaction,
+                                                        readonly: readOnly) {
                 retHandler.rChanges(call: call, ret: res)
                 return
             } else {
@@ -714,12 +732,14 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
         let transaction: Bool = call.getBool("transaction") ?? true
+        let readOnly: Bool = call.getBool("readonly") ?? false
         do {
             if let res = try
                 implementation?.run(dbName,
                                     statement: statement,
                                     values: values,
-                                    transaction: transaction) {
+                                    transaction: transaction,
+                                    readonly: readOnly) {
                 retHandler.rChanges(call: call, ret: res)
                 return
             } else {
@@ -772,11 +792,13 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
 
         }
+        let readOnly: Bool = call.getBool("readonly") ?? false
         do {
             if let res: [[String: Any]] = try
                 implementation?.query(dbName,
                                       statement: statement,
-                                      values: values) {
+                                      values: values,
+                                      readonly: readOnly) {
                 retHandler.rValues(call: call, ret: res)
                 return
             } else {
@@ -811,8 +833,9 @@ public class CapacitorSQLitePlugin: CAPPlugin {
                 message: "isDBExists: Must provide a database name")
             return
         }
+        let readOnly: Bool = call.getBool("readonly") ?? false
         do {
-            let res = try implementation?.isDBExists(dbName)
+            let res = try implementation?.isDBExists(dbName, readonly: readOnly)
             var bRes: Bool = false
             if res == 1 {
                 bRes = true
@@ -841,8 +864,9 @@ public class CapacitorSQLitePlugin: CAPPlugin {
                 message: "idDBOpen: Must provide a database name")
             return
         }
+        let readOnly: Bool = call.getBool("readonly") ?? false
         do {
-            let res = try implementation?.isDBOpen(dbName)
+            let res = try implementation?.isDBOpen(dbName, readonly: readOnly)
             var bRes: Bool = false
             if res == 1 {
                 bRes = true
@@ -870,8 +894,9 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             retHandler.rResult(call: call, message: msg)
             return
         }
+        let readOnly: Bool = call.getBool("readonly") ?? false
         do {
-            try implementation?.deleteDatabase(dbName)
+            try implementation?.deleteDatabase(dbName, readonly: readOnly)
             retHandler.rResult(call: call)
             return
         } catch CapacitorSQLiteError.failed(let message) {
@@ -966,10 +991,12 @@ public class CapacitorSQLitePlugin: CAPPlugin {
                                    message: msg)
             return
         }
+        let readOnly: Bool = call.getBool("readonly") ?? false
 
         do {
             let res: [String: Any] = try implementation?
-                .exportToJson(dbName, expMode: expMode) ?? [:]
+                .exportToJson(dbName, expMode: expMode,
+                              readonly: readOnly) ?? [:]
             retHandler.rJsonSQLite(call: call, ret: res)
             return
         } catch CapacitorSQLiteError.failed(let message) {
@@ -995,8 +1022,9 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             retHandler.rResult(call: call, message: msg)
             return
         }
+        let readOnly: Bool = call.getBool("readonly") ?? false
         do {
-            try implementation?.deleteExportedRows(dbName)
+            try implementation?.deleteExportedRows(dbName, readonly: readOnly)
             retHandler.rResult(call: call)
             return
         } catch CapacitorSQLiteError.failed(let message) {
@@ -1021,9 +1049,10 @@ public class CapacitorSQLitePlugin: CAPPlugin {
                     "Must provide a database name")
             return
         }
+        let readOnly: Bool = call.getBool("readonly") ?? false
         do {
             let res: NSNumber = try implementation?
-                .createSyncTable(dbName) ?? -1
+                .createSyncTable(dbName, readonly: readOnly) ?? -1
             retHandler.rChanges(call: call,
                                 ret: ["changes": Int(truncating: res)])
             return
@@ -1056,8 +1085,10 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             retHandler.rResult(call: call, message: msg)
             return
         }
+        let readOnly: Bool = call.getBool("readonly") ?? false
         do {
-            try implementation?.setSyncDate( dbName, syncDate: syncDate)
+            try implementation?.setSyncDate( dbName, syncDate: syncDate,
+                                             readonly: readOnly)
             retHandler.rResult(call: call)
             return
         } catch CapacitorSQLiteError.failed(let message) {
@@ -1080,8 +1111,10 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             retHandler.rSyncDate(call: call, ret: 0, message: msg)
             return
         }
+        let readOnly: Bool = call.getBool("readonly") ?? false
         do {
-            let res: NSNumber = try implementation?.getSyncDate( dbName) ?? 0
+            let res: NSNumber = try implementation?
+                .getSyncDate( dbName, readonly: readOnly) ?? 0
             retHandler.rSyncDate(call: call,
                                  ret: Int64(truncating: res))
             return

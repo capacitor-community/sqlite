@@ -90,9 +90,12 @@ npm install --save-dev @types/sqlite3
 
 | Name                        | Android | iOS | Electron | Web |
 | :-------------------------- | :------ | :-- | :------- | :-- |
-| createConnection            | ✅      | ✅  | ✅        | ✅  |
-| closeConnection             | ✅      | ✅  | ✅        | ✅  |
-| isConnection                | ✅      | ✅  | ✅        | ✅  |
+| createConnection (ReadWrite)| ✅      | ✅  | ✅        | ✅  |
+| createConnection (ReadOnly) | ✅      | ✅  | ❌        | ❌  | since 4.1.0-7
+| closeConnection (ReadWrite) | ✅      | ✅  | ✅        | ✅  |
+| closeConnection (ReadOnly)  | ✅      | ✅  | ❌        | ❌  | since 4.1.0-7
+| isConnection (ReadWrite)    | ✅      | ✅  | ✅        | ✅  |
+| isConnection (ReadOnly)     | ✅      | ✅  | ❌        | ❌  | since 4.1.0-7
 | open (non-encrypted DB)     | ✅      | ✅  | ✅        | ✅  |
 | open (encrypted DB)         | ✅      | ✅  | ❌        | ❌  |
 | close                       | ✅      | ✅  | ✅        | ✅  |

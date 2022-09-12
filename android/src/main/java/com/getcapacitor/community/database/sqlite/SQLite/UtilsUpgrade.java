@@ -1,16 +1,13 @@
 package com.getcapacitor.community.database.sqlite.SQLite;
 
 import android.util.Log;
-
 import com.getcapacitor.JSObject;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Dictionary;
 import java.util.List;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class UtilsUpgrade {
 
@@ -26,12 +23,8 @@ public class UtilsUpgrade {
      * @param targetVersion
      * @throws Exception
      */
-    public void onUpgrade(
-            Database db,
-            Dictionary<Integer, JSONObject> upgDict,
-            Integer curVersion,
-            Integer targetVersion
-    ) throws Exception {
+    public void onUpgrade(Database db, Dictionary<Integer, JSONObject> upgDict, Integer curVersion, Integer targetVersion)
+        throws Exception {
         Log.i(TAG, "UtilsUpgrade.onUpgrade: " + curVersion + " => " + targetVersion);
 
         List<Integer> sortedKeys = Collections.list(upgDict.keys());
@@ -41,9 +34,7 @@ public class UtilsUpgrade {
             if (versionKey > curVersion && versionKey <= targetVersion) {
                 JSONObject upgrade = upgDict.get(versionKey);
 
-                JSONArray statementsJson = upgrade.has("statements")
-                        ? upgrade.getJSONArray("statements")
-                        : new JSONArray();
+                JSONArray statementsJson = upgrade.has("statements") ? upgrade.getJSONArray("statements") : new JSONArray();
 
                 List<String> statements = new ArrayList<String>();
 

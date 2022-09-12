@@ -9,26 +9,15 @@ import static android.database.Cursor.FIELD_TYPE_STRING;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
-
 import androidx.sqlite.db.SimpleSQLiteQuery;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 import androidx.sqlite.db.SupportSQLiteStatement;
-
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.ExportToJson;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.ImportFromJson;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.JsonSQLite;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.UtilsJson;
-
-import net.sqlcipher.Cursor;
-import net.sqlcipher.database.SQLiteDatabase;
-import net.sqlcipher.database.SQLiteException;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -38,6 +27,12 @@ import java.util.Date;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
+import net.sqlcipher.Cursor;
+import net.sqlcipher.database.SQLiteDatabase;
+import net.sqlcipher.database.SQLiteException;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class Database {
 
@@ -50,6 +45,7 @@ public class Database {
     private final Boolean _encrypted;
     private final Boolean _isEncryption;
     private final SharedPreferences _sharedPreferences;
+    private final Boolean _readOnly;
     private final File _file;
     private final int _version;
     private final GlobalSQLite _globVar;
@@ -67,14 +63,15 @@ public class Database {
     private Boolean ncDB = false;
 
     public Database(
-            Context context,
-            String dbName,
-            Boolean encrypted,
-            String mode,
-            int version,
-            Boolean isEncryption,
-            Dictionary<Integer, JSONObject> vUpgObject,
-            SharedPreferences sharedPreferences
+        Context context,
+        String dbName,
+        Boolean encrypted,
+        String mode,
+        int version,
+        Boolean isEncryption,
+        Dictionary<Integer, JSONObject> vUpgObject,
+        SharedPreferences sharedPreferences,
+        Boolean readonly
     ) {
         this._context = context;
         this._dbName = dbName;
@@ -84,6 +81,7 @@ public class Database {
         this._version = version;
         this._vUpgObject = vUpgObject;
         this._sharedPreferences = sharedPreferences;
+        this._readOnly = readonly;
         if (dbName.contains("/") && dbName.endsWith("SQLite.db")) {
             this.ncDB = true;
             this._file = new File(dbName);
@@ -154,8 +152,8 @@ public class Database {
         int curVersion;
 
         String password = _uSecret != null && _encrypted && (_mode.equals("secret") || _mode.equals("encryption"))
-                ? _uSecret.getPassphrase()
-                : "";
+            ? _uSecret.getPassphrase()
+            : "";
         if (_mode.equals("encryption")) {
             if (_isEncryption) {
                 try {
@@ -170,7 +168,7 @@ public class Database {
             }
         }
         try {
-            if (!isNCDB()) {
+            if (!isNCDB() && !this._readOnly) {
                 _db = SQLiteDatabase.openOrCreateDatabase(_file, password, null);
             } else {
                 _db = SQLiteDatabase.openDatabase(String.valueOf(_file), "", null, SQLiteDatabase.OPEN_READONLY);
@@ -187,52 +185,54 @@ public class Database {
                         _db = null;
                         throw new Exception(msg);
                     }
-                    if (!isNCDB()) {
+                    if (isNCDB() || this._readOnly) {
+                            _isOpen = true;
+                            return;
+                     }
+                     try {
+                        curVersion = _db.getVersion(); // default 0
+                    } catch (IllegalStateException e) {
+                        String msg = "Failed in get/setVersion " + e.getMessage();
+                        Log.v(TAG, msg);
+                        close();
+                        _db = null;
+                        throw new Exception(msg);
+                    } catch (SQLiteException e) {
+                        String msg = "Failed in setVersion " + e.getMessage();
+                        Log.v(TAG, msg);
+                        close();
+                        _db = null;
+                        throw new Exception(msg);
+                    }
+                    if (_version > curVersion && _vUpgObject != null && _vUpgObject.size() > 0) {
+                        //                           if (_vUpgObject != null && _vUpgObject.size() > 0) {
                         try {
-                            curVersion = _db.getVersion(); // default 0
-                        } catch (IllegalStateException e) {
-                            String msg = "Failed in get/setVersion " + e.getMessage();
-                            Log.v(TAG, msg);
-                            close();
-                            _db = null;
-                            throw new Exception(msg);
-                        } catch (SQLiteException e) {
-                            String msg = "Failed in setVersion " + e.getMessage();
-                            Log.v(TAG, msg);
-                            close();
-                            _db = null;
-                            throw new Exception(msg);
-                        }
-                        if (_version > curVersion && _vUpgObject != null && _vUpgObject.size() > 0) {
-                            //                           if (_vUpgObject != null && _vUpgObject.size() > 0) {
-                            try {
-                                this._uFile.copyFile(_context, _dbName, "backup-" + _dbName);
+                            this._uFile.copyFile(_context, _dbName, "backup-" + _dbName);
 
-                                _uUpg.onUpgrade(this, _vUpgObject, curVersion, _version);
+                            _uUpg.onUpgrade(this, _vUpgObject, curVersion, _version);
 
-                                boolean ret = _uFile.deleteBackupDB(_context, _dbName);
-                                if (!ret) {
-                                    String msg = "Failed in deleteBackupDB backup-\" + _dbName";
-                                    Log.v(TAG, msg);
-                                    close();
-                                    _db = null;
-                                    throw new Exception(msg);
-                                }
-                            } catch (Exception e) {
-                                // restore DB
-                                boolean ret = _uFile.restoreDatabase(_context, _dbName);
-                                String msg = e.getMessage();
-                                if (!ret) msg += "Failed in restoreDatabase " + _dbName;
+                            boolean ret = _uFile.deleteBackupDB(_context, _dbName);
+                            if (!ret) {
+                                String msg = "Failed in deleteBackupDB backup-\" + _dbName";
                                 Log.v(TAG, msg);
                                 close();
                                 _db = null;
                                 throw new Exception(msg);
                             }
+                        } catch (Exception e) {
+                            // restore DB
+                            boolean ret = _uFile.restoreDatabase(_context, _dbName);
+                            String msg = e.getMessage();
+                            if (!ret) msg += "Failed in restoreDatabase " + _dbName;
+                            Log.v(TAG, msg);
+                            close();
+                            _db = null;
+                            throw new Exception(msg);
                         }
-                        _isOpen = true;
-                        return;
                     }
-                } else {
+                    _isOpen = true;
+                    return;
+                 } else {
                     _isOpen = false;
                     _db = null;
                     throw new Exception("Database not opened");
@@ -778,19 +778,20 @@ public class Database {
                 JSObject row = new JSObject();
                 for (int i = 0; i < c.getColumnCount(); i++) {
                     String colName = c.getColumnName(i);
+                    int index = c.getColumnIndex(colName);
                     int type = c.getType(i);
                     switch (type) {
                         case FIELD_TYPE_STRING:
-                            row.put(colName, c.getString(c.getColumnIndex(colName)));
+                            row.put(colName, c.getString(index));
                             break;
                         case FIELD_TYPE_INTEGER:
-                            row.put(colName, c.getLong(c.getColumnIndex(colName)));
+                            row.put(colName, c.getLong(index));
                             break;
                         case FIELD_TYPE_FLOAT:
-                            row.put(colName, c.getDouble(c.getColumnIndex(colName)));
+                            row.put(colName, c.getDouble(index));
                             break;
                         case FIELD_TYPE_BLOB:
-                            row.put(colName, c.getBlob(c.getColumnIndex(colName)));
+                            row.put(colName, c.getBlob(index));
                             break;
                         case FIELD_TYPE_NULL:
                             row.put(colName, JSONObject.NULL);
@@ -879,8 +880,8 @@ public class Database {
                 Date date = new Date();
                 long syncTime = date.getTime() / 1000L;
                 String[] statements = {
-                        "CREATE TABLE IF NOT EXISTS sync_table (" + "id INTEGER PRIMARY KEY NOT NULL," + "sync_date INTEGER);",
-                        "INSERT INTO sync_table (sync_date) VALUES ('" + syncTime + "');"
+                    "CREATE TABLE IF NOT EXISTS sync_table (" + "id INTEGER PRIMARY KEY NOT NULL," + "sync_date INTEGER);",
+                    "INSERT INTO sync_table (sync_date) VALUES ('" + syncTime + "');"
                 };
                 try {
                     retObj = execute(statements);
@@ -935,7 +936,7 @@ public class Database {
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
             Date date = formatter.parse(syncDate.replaceAll("Z$", "+0000"));
             long syncTime = date.getTime() / 1000L;
-            String[] statements = {"UPDATE sync_table SET sync_date = " + syncTime + " WHERE id = 1;"};
+            String[] statements = { "UPDATE sync_table SET sync_date = " + syncTime + " WHERE id = 1;" };
             retObj = execute(statements);
             if (retObj.getInteger("changes") != Integer.valueOf(-1)) {
                 return;
@@ -1021,8 +1022,7 @@ public class Database {
         } catch (Exception e) {
             Log.e(TAG, "Error: exportToJson " + e.getMessage());
             throw new Exception(e.getMessage());
-        } finally {
-        }
+        } finally {}
     }
 
     /**
