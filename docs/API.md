@@ -1011,6 +1011,7 @@ Check if a non conformed database exists without connection
 | **`database`**    | <code>string</code>  | The database name                                   |               |
 | **`statements`**  | <code>string</code>  | The batch of raw SQL statements as string           |               |
 | **`transaction`** | <code>boolean</code> | Enable / Disable transactions default Enable (true) | 3.0.0-beta.10 |
+| **`readonly`**    | <code>boolean</code> | ReadOnly / ReadWrite default ReadWrite (false)      | 4.1.0-7       |
 
 
 #### capSQLiteSetOptions
@@ -1020,6 +1021,7 @@ Check if a non conformed database exists without connection
 | **`database`**    | <code>string</code>         | The database name                                         |               |
 | **`set`**         | <code>capSQLiteSet[]</code> | The batch of raw SQL statements as Array of capSQLLiteSet |               |
 | **`transaction`** | <code>boolean</code>        | Enable / Disable transactions default Enable (true)       | 3.0.0-beta.10 |
+| **`readonly`**    | <code>boolean</code>        | ReadOnly / ReadWrite default ReadWrite (false)            | 4.1.0-7       |
 
 
 #### capSQLiteSet
@@ -1038,6 +1040,7 @@ Check if a non conformed database exists without connection
 | **`statement`**   | <code>string</code>  | A statement                                         |               |
 | **`values`**      | <code>any[]</code>   | A set of values for a statement                     |               |
 | **`transaction`** | <code>boolean</code> | Enable / Disable transactions default Enable (true) | 3.0.0-beta.10 |
+| **`readonly`**    | <code>boolean</code> | ReadOnly / ReadWrite default ReadWrite (false)      | 4.1.0-7       |
 
 
 #### capSQLiteValues
@@ -1049,19 +1052,21 @@ Check if a non conformed database exists without connection
 
 #### capSQLiteQueryOptions
 
-| Prop            | Type                | Description                                     | Since         |
-| --------------- | ------------------- | ----------------------------------------------- | ------------- |
-| **`database`**  | <code>string</code> | The database name                               |               |
-| **`statement`** | <code>string</code> | A statement                                     |               |
-| **`values`**    | <code>any[]</code>  | A set of values for a statement Change to any[] | 3.0.0-beta.11 |
+| Prop            | Type                 | Description                                     | Since         |
+| --------------- | -------------------- | ----------------------------------------------- | ------------- |
+| **`database`**  | <code>string</code>  | The database name                               |               |
+| **`statement`** | <code>string</code>  | A statement                                     |               |
+| **`values`**    | <code>any[]</code>   | A set of values for a statement Change to any[] | 3.0.0-beta.11 |
+| **`readonly`**  | <code>boolean</code> | ReadOnly / ReadWrite default ReadWrite (false)  | 4.1.0-7       |
 
 
 #### capSQLiteTableOptions
 
-| Prop           | Type                | Description       |
-| -------------- | ------------------- | ----------------- |
-| **`database`** | <code>string</code> | The database name |
-| **`table`**    | <code>string</code> | The table name    |
+| Prop           | Type                 | Description                                    | Since   |
+| -------------- | -------------------- | ---------------------------------------------- | ------- |
+| **`database`** | <code>string</code>  | The database name                              |         |
+| **`table`**    | <code>string</code>  | The table name                                 |         |
+| **`readonly`** | <code>boolean</code> | ReadOnly / ReadWrite default ReadWrite (false) | 4.1.0-7 |
 
 
 #### capSQLiteImportOptions
@@ -1141,18 +1146,20 @@ Check if a non conformed database exists without connection
 
 #### capSQLiteExportOptions
 
-| Prop                 | Type                | Description                                             |
-| -------------------- | ------------------- | ------------------------------------------------------- |
-| **`database`**       | <code>string</code> | The database name                                       |
-| **`jsonexportmode`** | <code>string</code> | Set the mode to export JSON Object: "full" or "partial" |
+| Prop                 | Type                 | Description                                             | Since   |
+| -------------------- | -------------------- | ------------------------------------------------------- | ------- |
+| **`database`**       | <code>string</code>  | The database name                                       |         |
+| **`jsonexportmode`** | <code>string</code>  | Set the mode to export JSON Object: "full" or "partial" |         |
+| **`readonly`**       | <code>boolean</code> | ReadOnly / ReadWrite default ReadWrite (false)          | 4.1.0-7 |
 
 
 #### capSQLiteSyncDateOptions
 
-| Prop           | Type                | Description                                                    |
-| -------------- | ------------------- | -------------------------------------------------------------- |
-| **`database`** | <code>string</code> | The database name                                              |
-| **`syncdate`** | <code>string</code> | Set the synchronization date Format yyyy-MM-dd'T'HH:mm:ss.SSSZ |
+| Prop           | Type                 | Description                                                    | Since   |
+| -------------- | -------------------- | -------------------------------------------------------------- | ------- |
+| **`database`** | <code>string</code>  | The database name                                              |         |
+| **`syncdate`** | <code>string</code>  | Set the synchronization date Format yyyy-MM-dd'T'HH:mm:ss.SSSZ |         |
+| **`readonly`** | <code>boolean</code> | ReadOnly / ReadWrite default ReadWrite (false)                 | 4.1.0-7 |
 
 
 #### capSQLiteSyncDate

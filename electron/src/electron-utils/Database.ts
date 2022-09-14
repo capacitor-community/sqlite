@@ -18,6 +18,7 @@ export class Database {
   //  private _encrypted: boolean;
   //  private _mode: string;
   private version: number;
+  private readonly: boolean;
   private pathDB: string;
   private fileUtil: UtilsFile = new UtilsFile();
   private sqliteUtil: UtilsSQLite = new UtilsSQLite();
@@ -35,12 +36,14 @@ export class Database {
     //    encrypted: boolean,
     //    mode: string,
     version: number,
+    readonly: boolean,
     upgDict: Record<number, capSQLiteVersionUpgrade>,
   ) {
     this.dbName = dbName;
     //    this._encrypted = encrypted;
     //    this._mode = mode;
     this.version = version;
+    this.readonly = readonly;
     this.upgradeVersionDict = upgDict;
     this.pathDB = this.fileUtil.getFilePath(dbName);
     this._isDbOpen = false;
@@ -89,38 +92,40 @@ export class Database {
       this.database = await this.sqliteUtil.openOrCreateDatabase(
         this.pathDB /*,
         password,*/,
-      );
-
-      const curVersion: number = await this.sqliteUtil.getVersion(
-        this.database,
+        this.readonly,
       );
       this._isDbOpen = true;
+      if (!this.readonly) {
+        const curVersion: number = await this.sqliteUtil.getVersion(
+          this.database,
+        );
 
-      if (
-        this.version > curVersion &&
-        Object.keys(this.upgradeVersionDict).length > 0
-      ) {
-        try {
-          await this.fileUtil.copyFileName(
-            this.dbName,
-            `backup-${this.dbName}`,
-          );
-
-          // execute the upgrade flow process
-          await this.upgradeUtil.onUpgrade(
-            this.database,
-            this.upgradeVersionDict,
-            curVersion,
-            this.version,
-          );
-          // delete the backup database
-          await this.fileUtil.deleteFileName(`backup-${this.dbName}`);
-        } catch (err) {
-          // restore the database from backup
+        if (
+          this.version > curVersion &&
+          Object.keys(this.upgradeVersionDict).length > 0
+        ) {
           try {
-            await this.fileUtil.restoreFileName(this.dbName, 'backup');
+            await this.fileUtil.copyFileName(
+              this.dbName,
+              `backup-${this.dbName}`,
+            );
+
+            // execute the upgrade flow process
+            await this.upgradeUtil.onUpgrade(
+              this.database,
+              this.upgradeVersionDict,
+              curVersion,
+              this.version,
+            );
+            // delete the backup database
+            await this.fileUtil.deleteFileName(`backup-${this.dbName}`);
           } catch (err) {
-            throw new Error(`Open: ${err}`);
+            // restore the database from backup
+            try {
+              await this.fileUtil.restoreFileName(this.dbName, 'backup');
+            } catch (err) {
+              throw new Error(`Open: ${err}`);
+            }
           }
         }
       }

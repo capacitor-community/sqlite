@@ -421,6 +421,12 @@ export interface capSQLiteExecuteOptions {
    * @since 3.0.0-beta.10
    */
   transaction?: boolean;
+  /**
+   * ReadOnly / ReadWrite
+   * default ReadWrite (false)
+   * @since 4.1.0-7
+   */
+  readonly?: boolean;
 }
 export interface capSQLiteSetOptions {
   /**
@@ -437,7 +443,13 @@ export interface capSQLiteSetOptions {
    * @since 3.0.0-beta.10
    */
   transaction?: boolean;
-}
+  /**
+   * ReadOnly / ReadWrite
+   * default ReadWrite (false)
+   * @since 4.1.0-7
+   */
+  readonly?: boolean;
+  }
 export interface capSQLiteRunOptions {
   /**
    * The database name
@@ -457,7 +469,13 @@ export interface capSQLiteRunOptions {
    * @since 3.0.0-beta.10
    */
   transaction?: boolean;
-}
+  /**
+   * ReadOnly / ReadWrite
+   * default ReadWrite (false)
+   * @since 4.1.0-7
+   */
+  readonly?: boolean;
+  }
 export interface capSQLiteQueryOptions {
   /**
    * The database name
@@ -473,7 +491,13 @@ export interface capSQLiteQueryOptions {
    * @since 3.0.0-beta.11
    */
   values?: any[];
-}
+  /**
+   * ReadOnly / ReadWrite
+   * default ReadWrite (false)
+   * @since 4.1.0-7
+   */
+  readonly?: boolean;
+  }
 export interface capSQLiteImportOptions {
   /**
    * Set the JSON object to import
@@ -492,6 +516,12 @@ export interface capSQLiteExportOptions {
    *
    */
   jsonexportmode?: string;
+  /**
+   * ReadOnly / ReadWrite
+   * default ReadWrite (false)
+   * @since 4.1.0-7
+   */
+  readonly?: boolean;
 }
 export interface capSQLiteFromAssetsOptions {
   /**
@@ -511,6 +541,12 @@ export interface capSQLiteSyncDateOptions {
    * Format yyyy-MM-dd'T'HH:mm:ss.SSSZ
    */
   syncdate?: string;
+  /**
+   * ReadOnly / ReadWrite
+   * default ReadWrite (false)
+   * @since 4.1.0-7
+   */
+  readonly?: boolean;
 }
 export interface capSQLiteSet {
   /**
@@ -555,6 +591,12 @@ export interface capSQLiteTableOptions {
    * The table name
    */
   table?: string;
+  /**
+   * ReadOnly / ReadWrite
+   * default ReadWrite (false)
+   * @since 4.1.0-7
+   */
+  readonly?: boolean;
 }
 export interface capEchoResult {
   /**

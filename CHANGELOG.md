@@ -1,3 +1,9 @@
+# 4.1.0-8 (2022-09-14)
+
+### Added Features
+
+ - add readonly mode to connection (Electron). So one read&write and one readonly connections could be opened on the same database.
+
 # 4.1.0-7 (2022-09-12)
 
 ### Added Features

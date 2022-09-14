@@ -1,6 +1,9 @@
+const SQLITE_OPEN_READONLY = 1
+
 export class UtilsSQLite {
   //  public JSQlite: any;
   public SQLite3: any;
+
 
   constructor() {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -15,12 +18,21 @@ export class UtilsSQLite {
   public async openOrCreateDatabase(
     pathDB: string /*,
     password: string,*/,
+    readonly: boolean,
   ): Promise<any> {
     const msg = 'OpenOrCreateDatabase: ';
     // open sqlite3 database
-    const mDB: any = new this.SQLite3.Database(pathDB, {
-      verbose: console.log,
-    });
+    let mDB: any
+    if(!readonly) {
+      mDB = new this.SQLite3.Database(pathDB, {
+        verbose: console.log,
+      });
+    } else {
+      mDB = new this.SQLite3.Database(pathDB, SQLITE_OPEN_READONLY, {
+        verbose: console.log,
+      });
+
+    }
     if (mDB != null) {
       try {
         await this.dbChanges(mDB);
