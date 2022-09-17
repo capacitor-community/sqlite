@@ -516,9 +516,15 @@ public class CapacitorSQLitePlugin extends Plugin {
             return;
         }
         JSArray dbNames = call.getArray("dbNames");
+        if (!call.getData().has("openModes")) {
+            String msg = "CheckConnectionsConsistency: Must provide a " + "openModes Array";
+            rHandler.retResult(call, null, msg);
+            return;
+        }
+        JSArray openModes = call.getArray("openModes");
         if (implementation != null) {
             try {
-                Boolean res = implementation.checkConnectionsConsistency(dbNames);
+                Boolean res = implementation.checkConnectionsConsistency(dbNames, openModes);
                 rHandler.retResult(call, res, null);
                 return;
             } catch (Exception e) {

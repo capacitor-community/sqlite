@@ -67,9 +67,8 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
         ? options.mode
         : 'no-encryption';
     */
-    const readonly: boolean =
-      options.readonly ? options.readonly: false;
-   
+    const readonly: boolean = options.readonly ? options.readonly : false;
+
     let upgrades: Record<number, capSQLiteVersionUpgrade> = {};
     const versionUpgradeKeys: string[] = Object.keys(this.versionUpgrades);
 
@@ -79,7 +78,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     ) {
       upgrades = this.versionUpgrades[dbName];
     }
-    const connName = readonly ? "RO_" + dbName : "RW_" + dbName;
+    const connName = readonly ? 'RO_' + dbName : 'RW_' + dbName;
 
     const databaseConnection: Database = new Database(
       dbName + 'SQLite.db',
@@ -97,9 +96,8 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   }
   async closeConnection(options: capSQLiteOptions): Promise<void> {
     const dbName: string = this.getOptionValue(options, 'database');
-    const readonly: boolean =
-      options.readonly ? options.readonly: false;
-    const connName = readonly ? "RO_" + dbName : "RW_" + dbName;
+    const readonly: boolean = options.readonly ? options.readonly : false;
+    const connName = readonly ? 'RO_' + dbName : 'RW_' + dbName;
     const database = this.getDatabaseConnectionOrThrowError(connName);
 
     if (database.isDBOpen()) {
@@ -127,9 +125,8 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
   async open(options: capSQLiteOptions): Promise<void> {
     const dbName: string = this.getOptionValue(options, 'database');
-    const readonly: boolean =
-      options.readonly ? options.readonly: false;
-    const connName = readonly ? "RO_" + dbName : "RW_" + dbName;
+    const readonly: boolean = options.readonly ? options.readonly : false;
+    const connName = readonly ? 'RO_' + dbName : 'RW_' + dbName;
     const database = this.getDatabaseConnectionOrThrowError(connName);
 
     try {
@@ -142,9 +139,8 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
   async close(options: capSQLiteOptions): Promise<void> {
     const dbName: string = this.getOptionValue(options, 'database');
-    const readonly: boolean =
-      options.readonly ? options.readonly: false;
-    const connName = readonly ? "RO_" + dbName : "RW_" + dbName;
+    const readonly: boolean = options.readonly ? options.readonly : false;
+    const connName = readonly ? 'RO_' + dbName : 'RW_' + dbName;
     const database = this.getDatabaseConnectionOrThrowError(connName);
 
     if (database.isDBOpen()) {
@@ -162,9 +158,8 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
   async getVersion(options: capSQLiteOptions): Promise<capVersionResult> {
     const dbName: string = this.getOptionValue(options, 'database');
-    const readonly: boolean =
-      options.readonly ? options.readonly: false;
-    const connName = readonly ? "RO_" + dbName : "RW_" + dbName;
+    const readonly: boolean = options.readonly ? options.readonly : false;
+    const connName = readonly ? 'RO_' + dbName : 'RW_' + dbName;
     const database = this.getDatabaseConnectionOrThrowError(connName);
 
     if (database.isDBOpen()) {
@@ -185,9 +180,8 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
   async getTableList(options: capSQLiteOptions): Promise<capSQLiteValues> {
     const dbName: string = this.getOptionValue(options, 'database');
-    const readonly: boolean =
-      options.readonly ? options.readonly: false;
-    const connName = readonly ? "RO_" + dbName : "RW_" + dbName;
+    const readonly: boolean = options.readonly ? options.readonly : false;
+    const connName = readonly ? 'RO_' + dbName : 'RW_' + dbName;
     const database = this.getDatabaseConnectionOrThrowError(connName);
 
     if (database.isDBOpen()) {
@@ -214,16 +208,15 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       'transaction',
       true,
     );
-    const readonly: boolean =
-    options.readonly ? options.readonly: false;
+    const readonly: boolean = options.readonly ? options.readonly : false;
 
-    const connName = "RW_" + dbName;
+    const connName = 'RW_' + dbName;
 
     const database = this.getDatabaseConnectionOrThrowError(connName);
 
     if (database.isDBOpen()) {
       if (readonly) {
-        const msg = "not allowed in read-only mode ";
+        const msg = 'not allowed in read-only mode ';
         throw new Error(`Execute: ${msg}`);
       }
       try {
@@ -255,10 +248,9 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       true,
     );
 
-    const readonly: boolean =
-    options.readonly ? options.readonly: false;
+    const readonly: boolean = options.readonly ? options.readonly : false;
 
-    const connName = "RW_" + dbName;
+    const connName = 'RW_' + dbName;
 
     const database = this.getDatabaseConnectionOrThrowError(connName);
     for (const sStmt of setOfStatements) {
@@ -271,7 +263,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
     if (database.isDBOpen()) {
       if (readonly) {
-        const msg = "not allowed in read-only mode ";
+        const msg = 'not allowed in read-only mode ';
         throw new Error(`ExecuteSet failed: ${msg}`);
       }
 
@@ -305,16 +297,15 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       true,
     );
 
-    const readonly: boolean =
-    options.readonly ? options.readonly: false;
+    const readonly: boolean = options.readonly ? options.readonly : false;
 
-    const connName = "RW_" + dbName;
+    const connName = 'RW_' + dbName;
 
     const database = this.getDatabaseConnectionOrThrowError(connName);
 
     if (database.isDBOpen()) {
       if (readonly) {
-        const msg = "not allowed in read-only mode ";
+        const msg = 'not allowed in read-only mode ';
         throw new Error(`Run failed: ${msg}`);
       }
       try {
@@ -341,9 +332,8 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     if (statement.length === 0) {
       throw new Error('Query: Statement may not be an empty string.');
     }
-    const readonly: boolean =
-      options.readonly ? options.readonly: false;
-    const connName = readonly ? "RO_" + dbName : "RW_" + dbName;
+    const readonly: boolean = options.readonly ? options.readonly : false;
+    const connName = readonly ? 'RO_' + dbName : 'RW_' + dbName;
     const database = this.getDatabaseConnectionOrThrowError(connName);
 
     if (database.isDBOpen()) {
@@ -362,30 +352,28 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   async isDBExists(options: capSQLiteOptions): Promise<capSQLiteResult> {
     const dbName: string = this.getOptionValue(options, 'database');
 
-    const readonly: boolean =
-      options.readonly ? options.readonly: false;
-    const connName = readonly ? "RO_" + dbName : "RW_" + dbName;
+    const readonly: boolean = options.readonly ? options.readonly : false;
+    const connName = readonly ? 'RO_' + dbName : 'RW_' + dbName;
     this.getDatabaseConnectionOrThrowError(connName);
 
-//    if (database.isDBOpen()) {
- 
-      const isExists: boolean = this.fileUtil.isFileExists(dbName + 'SQLite.db');
-      return { result: isExists };
-//    } else {
-//      const msg = `Database ${dbName} not opened`;
-//     throw new Error(`isDBExists: ${msg}`);
-//    }
+    //    if (database.isDBOpen()) {
+
+    const isExists: boolean = this.fileUtil.isFileExists(dbName + 'SQLite.db');
+    return { result: isExists };
+    //    } else {
+    //      const msg = `Database ${dbName} not opened`;
+    //     throw new Error(`isDBExists: ${msg}`);
+    //    }
   }
 
   async isDBOpen(options: capSQLiteOptions): Promise<capSQLiteResult> {
     const dbName: string = this.getOptionValue(options, 'database');
-    const readonly: boolean =
-      options.readonly ? options.readonly: false;
-    const connName = readonly ? "RO_" + dbName : "RW_" + dbName;
+    const readonly: boolean = options.readonly ? options.readonly : false;
+    const connName = readonly ? 'RO_' + dbName : 'RW_' + dbName;
     const database = this.getDatabaseConnectionOrThrowError(connName);
 
-      const isOpen: boolean = database.isDBOpen();
-      return { result: isOpen };
+    const isOpen: boolean = database.isDBOpen();
+    return { result: isOpen };
   }
   async isDatabase(options: capSQLiteOptions): Promise<capSQLiteResult> {
     const dbName: string = this.getOptionValue(options, 'database');
@@ -400,13 +388,11 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     const dbName: string = this.getOptionValue(options, 'database');
     const tableName: string = this.getOptionValue(options, 'table');
 
-    const readonly: boolean =
-      options.readonly ? options.readonly: false;
-    const connName = readonly ? "RO_" + dbName : "RW_" + dbName;
+    const readonly: boolean = options.readonly ? options.readonly : false;
+    const connName = readonly ? 'RO_' + dbName : 'RW_' + dbName;
     const database = this.getDatabaseConnectionOrThrowError(connName);
 
     if (database.isDBOpen()) {
-
       try {
         const isTableExistsResult: boolean = await database.isTableExists(
           tableName,
@@ -423,15 +409,14 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
   async deleteDatabase(options: capSQLiteOptions): Promise<void> {
     const dbName: string = this.getOptionValue(options, 'database');
-    const readonly: boolean =
-    options.readonly ? options.readonly: false;
+    const readonly: boolean = options.readonly ? options.readonly : false;
 
-    const connName = "RW_" + dbName;
+    const connName = 'RW_' + dbName;
 
     const database = this.getDatabaseConnectionOrThrowError(connName);
 
     if (readonly) {
-      const msg = "not allowed in read-only mode ";
+      const msg = 'not allowed in read-only mode ';
       throw new Error(`DeleteDatabase failed: ${msg}`);
     }
 
@@ -519,13 +504,11 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   async exportToJson(options: capSQLiteExportOptions): Promise<capSQLiteJson> {
     const dbName: string = this.getOptionValue(options, 'database');
     const exportMode: string = this.getOptionValue(options, 'jsonexportmode');
-    const readonly: boolean =
-      options.readonly ? options.readonly: false;
-    const connName = readonly ? "RO_" + dbName : "RW_" + dbName;
+    const readonly: boolean = options.readonly ? options.readonly : false;
+    const connName = readonly ? 'RO_' + dbName : 'RW_' + dbName;
     const database = this.getDatabaseConnectionOrThrowError(connName);
 
     if (database.isDBOpen()) {
-
       try {
         const exportJsonResult: any = await database.exportJson(exportMode);
         const resultKeys = Object.keys(exportJsonResult);
@@ -546,16 +529,15 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
   async createSyncTable(options: capSQLiteOptions): Promise<capSQLiteChanges> {
     const dbName: string = this.getOptionValue(options, 'database');
-    const readonly: boolean =
-    options.readonly ? options.readonly: false;
+    const readonly: boolean = options.readonly ? options.readonly : false;
 
-    const connName = "RW_" + dbName;
+    const connName = 'RW_' + dbName;
 
     const database = this.getDatabaseConnectionOrThrowError(connName);
 
     if (database.isDBOpen()) {
       if (readonly) {
-        const msg = "not allowed in read-only mode ";
+        const msg = 'not allowed in read-only mode ';
         throw new Error(`CreateSyncTable failed: ${msg}`);
       }
       try {
@@ -575,16 +557,15 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     const dbName: string = this.getOptionValue(options, 'database');
     const syncDate: string = this.getOptionValue(options, 'syncdate');
 
-    const readonly: boolean =
-    options.readonly ? options.readonly: false;
+    const readonly: boolean = options.readonly ? options.readonly : false;
 
-    const connName = "RW_" + dbName;
+    const connName = 'RW_' + dbName;
 
     const database = this.getDatabaseConnectionOrThrowError(connName);
 
     if (database.isDBOpen()) {
       if (readonly) {
-        const msg = "not allowed in read-only mode ";
+        const msg = 'not allowed in read-only mode ';
         throw new Error(`SetSyncDate failed: ${msg}`);
       }
 
@@ -602,9 +583,8 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
   async getSyncDate(options: capSQLiteOptions): Promise<capSQLiteSyncDate> {
     const dbName: string = this.getOptionValue(options, 'database');
-    const readonly: boolean =
-      options.readonly ? options.readonly: false;
-    const connName = readonly ? "RO_" + dbName : "RW_" + dbName;
+    const readonly: boolean = options.readonly ? options.readonly : false;
+    const connName = readonly ? 'RO_' + dbName : 'RW_' + dbName;
     const database = this.getDatabaseConnectionOrThrowError(connName);
 
     if (database.isDBOpen()) {
@@ -622,16 +602,15 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
   async deleteExportedRows(options: capSQLiteOptions): Promise<void> {
     const dbName: string = this.getOptionValue(options, 'database');
-    const readonly: boolean =
-    options.readonly ? options.readonly: false;
+    const readonly: boolean = options.readonly ? options.readonly : false;
 
-    const connName = "RW_" + dbName;
+    const connName = 'RW_' + dbName;
 
     const database = this.getDatabaseConnectionOrThrowError(connName);
 
     if (database.isDBOpen()) {
       if (readonly) {
-        const msg = "not allowed in read-only mode ";
+        const msg = 'not allowed in read-only mode ';
         throw new Error(`DeleteExportedRows: ${msg}`);
       }
       try {
@@ -721,13 +700,17 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     options: capAllConnectionsOptions,
   ): Promise<capSQLiteResult> {
     const dbNames: string[] = this.getOptionValue(options, 'dbNames');
-
+    const openModes: string[] = this.getOptionValue(options, 'openModes');
     const checkConsistencyResult: capSQLiteResult = {} as capSQLiteResult;
     checkConsistencyResult.result = false;
+    const dbConns: string[] = [];
+    dbNames.forEach((value, i) => {
+      dbConns.push(`${openModes[i]}_${value}`);
+    });
 
     try {
       let inConnectionsSet: Set<string> = new Set(Object.keys(this.databases));
-      const outConnectionSet: Set<string> = new Set(dbNames);
+      const outConnectionSet: Set<string> = new Set(dbConns);
       if (outConnectionSet.size === 0) {
         await this.resetDbDict(Object.keys(this.databases));
         return Promise.resolve(checkConsistencyResult);
@@ -741,7 +724,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
           if (!Array.from(outConnectionSet.keys()).includes(key)) {
             const opt: capSQLiteOptions = {} as capSQLiteOptions;
             let readonly = false;
-            if (key.substring(0,3) === "RO_") {
+            if (key.substring(0, 3) === 'RO_') {
               readonly = true;
             }
             opt.database = key.substring(3);
@@ -777,7 +760,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       for (const key of keys) {
         const opt: capSQLiteOptions = {} as capSQLiteOptions;
         let readonly = false;
-        if (key.substring(0,3) === "RO_") {
+        if (key.substring(0, 3) === 'RO_') {
           readonly = true;
         }
         opt.database = key.substring(3);

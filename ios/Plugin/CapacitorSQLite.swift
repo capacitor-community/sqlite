@@ -482,30 +482,38 @@ enum CapacitorSQLiteError: Error {
 
     // MARK: - CheckConnectionsConsistency
 
-    @objc public func checkConnectionsConsistency(_ dbNames: [String]) throws ->  NSNumber {
+    @objc public func checkConnectionsConsistency(_ dbNames: [String],
+                                                  openModes: [String])
+    throws ->  NSNumber {
         if isInit {
             var keys: [String] = Array(self.dbDict.keys)
+            var idx: Int = 0
+            var conns: [String] = []
+            for name in dbNames {
+                conns.append("\(openModes[idx])_\(name)")
+                idx = idx + 1
+            }
             do {
-                if dbNames.count == 0 {
+                if conns.count == 0 {
                     try closeAllConnections()
                     return 0
                 }
-                if keys.count < dbNames.count {
+                if keys.count < conns.count {
                     // not solvable inconsistency
                     try closeAllConnections()
                     return 0
                 }
-                if keys.count > dbNames.count {
+                if keys.count > conns.count {
                     for key in keys {
-                        if !dbNames.contains(key) {
+                        if !conns.contains(key) {
                             self.dbDict.removeValue(forKey: key)
                         }
                     }
                 }
                 keys = Array(self.dbDict.keys)
-                if keys.count == dbNames.count {
+                if keys.count == conns.count {
                     let set1 = Set(keys)
-                    let set2 = Set(dbNames)
+                    let set2 = Set(conns)
                     let arr = Array(set1.symmetricDifference(set2))
                     if arr.count == 0 {
                         return 1
@@ -794,7 +802,7 @@ enum CapacitorSQLiteError: Error {
 
     // MARK: - isDBOpen
 
-   @objc func isDBOpen(_ dbName: String, readonly: Bool) throws -> NSNumber {
+    @objc func isDBOpen(_ dbName: String, readonly: Bool) throws -> NSNumber {
         if isInit {
             let mDbName = CapacitorSQLite.getDatabaseName(dbName: dbName)
             let connName: String = readonly ? "RO_\(mDbName)" : "RW_\(mDbName)"

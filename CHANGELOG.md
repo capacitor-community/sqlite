@@ -1,3 +1,13 @@
+# 4.1.0 (2022-09-17)
+
+### Added Features
+
+ - add readonly mode to connection (Web) through the use of jeep-sqlite. 
+
+### Bug Fixes
+
+ - Fix checkConnectionsConsistency for mode readwrite and readonly
+
 # 4.1.0-8 (2022-09-14)
 
 ### Added Features

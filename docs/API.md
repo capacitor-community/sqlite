@@ -1202,9 +1202,10 @@ Check if a non conformed database exists without connection
 
 #### capAllConnectionsOptions
 
-| Prop          | Type                  | Description                   | Since         |
-| ------------- | --------------------- | ----------------------------- | ------------- |
-| **`dbNames`** | <code>string[]</code> | the dbName of all connections | 3.0.0-beta.10 |
+| Prop            | Type                  | Description                                                      | Since         |
+| --------------- | --------------------- | ---------------------------------------------------------------- | ------------- |
+| **`dbNames`**   | <code>string[]</code> | the dbName of all connections                                    | 3.0.0-beta.10 |
+| **`openModes`** | <code>string[]</code> | the openMode ("RW" read&write, "RO" readonly) of all connections | 4.1.0         |
 
 
 #### capNCDatabasePathResult

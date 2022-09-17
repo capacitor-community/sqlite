@@ -1,9 +1,8 @@
-const SQLITE_OPEN_READONLY = 1
+const SQLITE_OPEN_READONLY = 1;
 
 export class UtilsSQLite {
   //  public JSQlite: any;
   public SQLite3: any;
-
 
   constructor() {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -22,8 +21,8 @@ export class UtilsSQLite {
   ): Promise<any> {
     const msg = 'OpenOrCreateDatabase: ';
     // open sqlite3 database
-    let mDB: any
-    if(!readonly) {
+    let mDB: any;
+    if (!readonly) {
       mDB = new this.SQLite3.Database(pathDB, {
         verbose: console.log,
       });
@@ -31,7 +30,6 @@ export class UtilsSQLite {
       mDB = new this.SQLite3.Database(pathDB, SQLITE_OPEN_READONLY, {
         verbose: console.log,
       });
-
     }
     if (mDB != null) {
       try {

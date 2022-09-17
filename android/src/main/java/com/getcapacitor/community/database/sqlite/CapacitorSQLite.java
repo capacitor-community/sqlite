@@ -537,10 +537,15 @@ public class CapacitorSQLite {
         }
     }
 
-    public Boolean checkConnectionsConsistency(JSArray dbNames) throws Exception {
+    public Boolean checkConnectionsConsistency(JSArray dbNames, JSArray openModes) throws Exception {
         Set<String> keys = new HashSet<String>(Collections.list(dbDict.keys()));
         String msg = "All Native Connections released";
-        Set<String> conns = new HashSet<String>(uSqlite.stringJSArrayToArrayList(dbNames));
+        JSArray nameDBs = new JSArray();
+        for (Integer i = 0; i < dbNames.length(); i++) {
+            String name = openModes.getString(i) + "_" + dbNames.getString(i);
+            nameDBs.put(name);
+        }
+        Set<String> conns = new HashSet<String>(uSqlite.stringJSArrayToArrayList(nameDBs));
         try {
             if (conns.size() == 0) {
                 closeAllConnections();

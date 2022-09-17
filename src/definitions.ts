@@ -368,6 +368,11 @@ export interface capAllConnectionsOptions {
    * @since 3.0.0-beta.10
    */
   dbNames?: string[];
+  /**
+   * the openMode ("RW" read&write, "RO" readonly) of all connections
+   * @since 4.1.0
+   */
+  openModes?: string[];
 }
 export interface capSQLiteOptions {
   /**
@@ -449,7 +454,7 @@ export interface capSQLiteSetOptions {
    * @since 4.1.0-7
    */
   readonly?: boolean;
-  }
+}
 export interface capSQLiteRunOptions {
   /**
    * The database name
@@ -475,7 +480,7 @@ export interface capSQLiteRunOptions {
    * @since 4.1.0-7
    */
   readonly?: boolean;
-  }
+}
 export interface capSQLiteQueryOptions {
   /**
    * The database name
@@ -497,7 +502,7 @@ export interface capSQLiteQueryOptions {
    * @since 4.1.0-7
    */
   readonly?: boolean;
-  }
+}
 export interface capSQLiteImportOptions {
   /**
    * Set the JSON object to import
@@ -1291,8 +1296,8 @@ export class SQLiteConnection implements ISQLiteConnection {
     try {
       for (const key of this._connectionDict.keys()) {
         const database = key.substring(3);
-        const readonly = key.substring(0,3) === ("RO_") ? true : false;
-        await this.sqlite.closeConnection({ database , readonly});
+        const readonly = key.substring(0, 3) === 'RO_' ? true : false;
+        await this.sqlite.closeConnection({ database, readonly });
         delDict.set(key, null);
       }
 
@@ -1307,8 +1312,17 @@ export class SQLiteConnection implements ISQLiteConnection {
   async checkConnectionsConsistency(): Promise<capSQLiteResult> {
     try {
       const keys = [...this._connectionDict.keys()];
+      const openModes = [];
+      const dbNames = [];
+      for (const key of keys) {
+        openModes.push(key.substring(0, 2));
+        dbNames.push(key.substring(3));
+      }
       const res: capSQLiteResult =
-        await this.sqlite.checkConnectionsConsistency({ dbNames: keys });
+        await this.sqlite.checkConnectionsConsistency({
+          dbNames: dbNames,
+          openModes: openModes,
+        });
       if (!res.result) this._connectionDict = new Map();
       return Promise.resolve(res);
     } catch (err) {

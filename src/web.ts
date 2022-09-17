@@ -140,6 +140,9 @@ export class CapacitorSQLiteWeb
     this.ensureJeepSqliteIsAvailable();
 
     try {
+      console.log(
+        `in web checkConnectionsConsistency: ${JSON.stringify(options)}`,
+      );
       const consistencyResult: capSQLiteResult =
         await this.jeepSqliteElement.checkConnectionsConsistency(options);
       return consistencyResult;

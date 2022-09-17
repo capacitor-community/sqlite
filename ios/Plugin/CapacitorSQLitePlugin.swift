@@ -346,8 +346,17 @@ public class CapacitorSQLitePlugin: CAPPlugin {
                     "Connection Array")
             return
         }
+        guard let openModes = call.options["openModes"] as? [String] else {
+            retHandler.rResult(
+                call: call,
+                message: "CheckConnectionsConsistency: Must provide a " +
+                    "OpenModes Array")
+            return
+        }
         do {
-            let res = try implementation?.checkConnectionsConsistency(dbNames)
+            let res = try implementation?
+                .checkConnectionsConsistency(dbNames,
+                                             openModes: openModes)
             var bRes: Bool = false
             if res == 1 {
                 bRes = true

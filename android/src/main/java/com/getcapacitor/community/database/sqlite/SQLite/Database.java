@@ -186,10 +186,10 @@ public class Database {
                         throw new Exception(msg);
                     }
                     if (isNCDB() || this._readOnly) {
-                            _isOpen = true;
-                            return;
-                     }
-                     try {
+                        _isOpen = true;
+                        return;
+                    }
+                    try {
                         curVersion = _db.getVersion(); // default 0
                     } catch (IllegalStateException e) {
                         String msg = "Failed in get/setVersion " + e.getMessage();
@@ -232,7 +232,7 @@ public class Database {
                     }
                     _isOpen = true;
                     return;
-                 } else {
+                } else {
                     _isOpen = false;
                     _db = null;
                     throw new Exception("Database not opened");
