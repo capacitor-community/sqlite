@@ -12,8 +12,12 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.community.database.sqlite.SQLite.Database;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.JsonSQLite;
 import com.getcapacitor.community.database.sqlite.SQLite.SqliteConfig;
+
+import java.util.Collections;
 import java.util.Dictionary;
 import java.util.Hashtable;
+import java.util.List;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -1220,7 +1224,18 @@ public class CapacitorSQLitePlugin extends Plugin {
         if (implementation != null) {
             try {
                 Dictionary<Integer, JSONObject> upgDict = implementation.addUpgradeStatement(upgrade);
-                versionUpgrades.put(dbName, upgDict);
+
+                if (versionUpgrades.get(dbName) != null){
+                    List<Integer> keys = Collections.list(upgDict.keys());
+                        for (Integer versionKey : keys) {
+                        JSONObject upgObj = upgDict.get(versionKey);
+
+                        versionUpgrades.get(dbName).put(versionKey, upgObj);
+                    }
+                } else {
+                    versionUpgrades.put(dbName, upgDict);
+                }
+
                 rHandler.retResult(call, null, null);
                 return;
             } catch (Exception e) {

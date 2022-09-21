@@ -19,6 +19,7 @@ export class UtilsUpgrade {
     curVersion: number,
     targetVersion: number,
   ): Promise<number> {
+    let changes;
     const sortedKeys: number[] = Object.keys(vUpgDict)
       .map(item => parseInt(item))
       .sort();
@@ -39,13 +40,14 @@ export class UtilsUpgrade {
           await this.sqliteUtil.setVersion(mDB, versionKey);
           // set Foreign Keys On
           await this.sqliteUtil.setForeignKeyConstraintsEnabled(mDB, true);
-          const changes = (await this.sqliteUtil.dbChanges(mDB)) - initChanges;
-          return Promise.resolve(changes);
+          changes = (await this.sqliteUtil.dbChanges(mDB)) - initChanges;
         } catch (err) {
           return Promise.reject(`onUpgrade: ${err}`);
         }
       }
     }
+
+    return Promise.resolve(changes);
   }
   /**
    * ExecuteStatementProcess

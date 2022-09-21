@@ -25,13 +25,14 @@ public class UtilsUpgrade {
      */
     public void onUpgrade(Database db, Dictionary<Integer, JSONObject> upgDict, Integer curVersion, Integer targetVersion)
         throws Exception {
-        Log.i(TAG, "UtilsUpgrade.onUpgrade: " + curVersion + " => " + targetVersion);
+        Log.i(TAG, "UtilsUpgrade.onUpgrade: from " + curVersion + " to " + targetVersion);
 
         List<Integer> sortedKeys = Collections.list(upgDict.keys());
         Collections.sort(sortedKeys);
 
         for (Integer versionKey : sortedKeys) {
             if (versionKey > curVersion && versionKey <= targetVersion) {
+                Log.i(TAG, "- UtilsUpgrade.onUpgrade toVersion: " + versionKey);
                 JSONObject upgrade = upgDict.get(versionKey);
 
                 JSONArray statementsJson = upgrade.has("statements") ? upgrade.getJSONArray("statements") : new JSONArray();
