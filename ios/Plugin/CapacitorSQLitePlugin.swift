@@ -1158,7 +1158,16 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             if let upgVersionDict: [Int: [String: Any]] = try
                 implementation?.addUpgradeStatement(dbName,
                                                     upgrade: upgrade) {
-                versionUpgrades = ["\(dbName)": upgVersionDict]
+                if (
+                    versionUpgrades[dbName] != nil
+                ){
+                    for (versionKey, upgObj) in upgVersionDict {
+                        versionUpgrades[dbName]![versionKey] = upgObj
+                    }
+                } else {
+                    versionUpgrades = ["\(dbName)": upgVersionDict]
+                }
+
                 retHandler.rResult(call: call)
                 return
             } else {

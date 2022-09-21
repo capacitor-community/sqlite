@@ -646,9 +646,14 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       throw new Error('upgrade.toVersion must be a number');
     }
 
-    const upgradeVersionDict: Record<number, capSQLiteVersionUpgrade> = {};
-    upgradeVersionDict[firstUpgrade.toVersion] = firstUpgrade;
-    this.versionUpgrades[dbName] = upgradeVersionDict;
+    if (this.versionUpgrades[dbName]) {
+      this.versionUpgrades[dbName][firstUpgrade.toVersion] = firstUpgrade;
+    } else {
+      const upgradeVersionDict: Record<number, capSQLiteVersionUpgrade> = {};
+      upgradeVersionDict[firstUpgrade.toVersion] = firstUpgrade;
+      this.versionUpgrades[dbName] = upgradeVersionDict;
+    }
+
     return;
   }
 
