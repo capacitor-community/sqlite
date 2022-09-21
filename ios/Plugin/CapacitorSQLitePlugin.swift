@@ -1314,6 +1314,13 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         }
 
     }
+    
+    // MARK: - GetFromHTTPRequest
+
+    @objc func getFromHTTPRequest(_ call: CAPPluginCall) {
+        call.unimplemented("Not implemented on iOS.")
+    }
+
 
     // MARK: - Add Observers
 

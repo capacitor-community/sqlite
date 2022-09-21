@@ -137,6 +137,7 @@ npm install --save-dev @types/sqlite3
 | closeNCConnection           | ✅      | ✅  | ❌        | ❌  |
 | isNCDatabase                | ✅      | ✅  | ❌        | ❌  |
 | transaction                 | ✅      | ✅  | ✅        | ✅  |
+| getFromHTTPRequest          | ❌      | ❌  | ✅        | ✅  | since 4.1.1
 
 
 ## Documentation & APIs

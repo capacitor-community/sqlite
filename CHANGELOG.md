@@ -1,3 +1,13 @@
+# 4.1.1 (2022-09-21)
+
+### Added Features
+
+ - add getFromHTTPRequest Electron and Web only issue#316.
+
+### Bug Fixes
+
+ - fix addUpgradeStatement doesn't create all versions when starting with an empty database issue#320 
+
 # 4.1.0 (2022-09-17)
 
 ### Added Features

@@ -31,6 +31,7 @@
 * [`importFromJson(...)`](#importfromjson)
 * [`isJsonValid(...)`](#isjsonvalid)
 * [`copyFromAssets(...)`](#copyfromassets)
+* [`getFromHTTPRequest(...)`](#getfromhttprequest)
 * [`isDatabase(...)`](#isdatabase)
 * [`isNCDatabase(...)`](#isncdatabase)
 * [`getDatabaseList()`](#getdatabaselist)
@@ -452,6 +453,22 @@ Copy databases from public/assets/databases folder to application databases fold
 | **`overwrite`** | <code>boolean</code> | since 3.2.5-2 |
 
 **Since:** 2.9.0 refactor
+
+--------------------
+
+
+### getFromHTTPRequest(...)
+
+```typescript
+getFromHTTPRequest(url?: string | undefined, overwrite?: boolean | undefined) => Promise<void>
+```
+
+| Param           | Type                 |
+| --------------- | -------------------- |
+| **`url`**       | <code>string</code>  |
+| **`overwrite`** | <code>boolean</code> |
+
+**Since:** 4.1.1
 
 --------------------
 

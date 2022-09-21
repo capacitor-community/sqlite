@@ -20,6 +20,7 @@ export default {
     'fs',
     'os',
     'jszip',
+    'node-fetch',
   ],
   plugins: [
     nodeResolve(),

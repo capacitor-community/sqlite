@@ -144,6 +144,7 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 * [`deleteExportedRows(...)`](#deleteexportedrows)
 * [`addUpgradeStatement(...)`](#addupgradestatement)
 * [`copyFromAssets(...)`](#copyfromassets)
+* [`getFromHTTPRequest(...)`](#getfromhttprequest)
 * [`getDatabaseList()`](#getdatabaselist)
 * [`getTableList(...)`](#gettablelist)
 * [`getMigratableDbList(...)`](#getmigratabledblist)
@@ -721,6 +722,23 @@ Copy databases from public/assets/databases folder to application databases fold
 --------------------
 
 
+### getFromHTTPRequest(...)
+
+```typescript
+getFromHTTPRequest(options: capSQLiteHTTPOptions) => Promise<void>
+```
+
+Get database or zipped database(s) from url
+
+| Param         | Type                                                                  | Description                                                |
+| ------------- | --------------------------------------------------------------------- | ---------------------------------------------------------- |
+| **`options`** | <code><a href="#capsqlitehttpoptions">capSQLiteHTTPOptions</a></code> | : <a href="#capsqlitehttpoptions">capSQLiteHTTPOptions</a> |
+
+**Since:** 4.1.1
+
+--------------------
+
+
 ### getDatabaseList()
 
 ```typescript
@@ -1189,6 +1207,14 @@ Check if a non conformed database exists without connection
 
 | Prop            | Type                 | Description                                                                      |
 | --------------- | -------------------- | -------------------------------------------------------------------------------- |
+| **`overwrite`** | <code>boolean</code> | Set the overwrite mode for the copy from assets "true"/"false" default to "true" |
+
+
+#### capSQLiteHTTPOptions
+
+| Prop            | Type                 | Description                                                                      |
+| --------------- | -------------------- | -------------------------------------------------------------------------------- |
+| **`url`**       | <code>string</code>  | The url of the database or the zipped database(s)                                |
 | **`overwrite`** | <code>boolean</code> | Set the overwrite mode for the copy from assets "true"/"false" default to "true" |
 
 

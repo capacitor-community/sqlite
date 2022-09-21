@@ -1395,6 +1395,17 @@ public class CapacitorSQLitePlugin extends Plugin {
         }
     }
 
+    /**
+     * GetFromHTTPRequest
+     * get a database or a zipped database from HTTP Request
+     *
+     * @param call
+     */
+    @PluginMethod
+    public void getFromHTTPRequest(PluginCall call) {
+        call.unimplemented("Not implemented on Android.");
+    }
+
     private void AddObserversToNotificationCenter() {
         NotificationCenter
             .defaultCenter()

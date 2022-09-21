@@ -15,6 +15,7 @@ import type {
   capSQLiteExecuteOptions,
   capSQLiteExportOptions,
   capSQLiteFromAssetsOptions,
+  capSQLiteHTTPOptions,
   capSQLiteImportOptions,
   capSQLiteJson,
   capSQLiteOptions,
@@ -399,6 +400,18 @@ export class CapacitorSQLiteWeb
 
     try {
       await this.jeepSqliteElement.copyFromAssets(options);
+      return;
+    } catch (err) {
+      throw new Error(`${err}`);
+    }
+  }
+
+  async getFromHTTPRequest(options: capSQLiteHTTPOptions): Promise<void> {
+    this.ensureJeepSqliteIsAvailable();
+    this.ensureWebstoreIsOpen();
+
+    try {
+      await this.jeepSqliteElement.getFromHTTPRequest(options);
       return;
     } catch (err) {
       throw new Error(`${err}`);

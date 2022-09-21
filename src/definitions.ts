@@ -235,6 +235,13 @@ export interface CapacitorSQLitePlugin {
    */
   copyFromAssets(options: capSQLiteFromAssetsOptions): Promise<void>;
   /**
+   * Get database or zipped database(s) from url
+   * @param options: capSQLiteHTTPOptions
+   * @returns Promise<void>
+   * @since 4.1.1
+   */
+  getFromHTTPRequest(options: capSQLiteHTTPOptions): Promise<void>;
+  /**
    * Get the database list
    * @returns Promise<capSQLiteValues>
    * @since 3.0.0-beta.5
@@ -529,6 +536,19 @@ export interface capSQLiteExportOptions {
   readonly?: boolean;
 }
 export interface capSQLiteFromAssetsOptions {
+  /**
+   * Set the overwrite mode for the copy from assets
+   * "true"/"false"  default to "true"
+   *
+   */
+  overwrite?: boolean;
+}
+export interface capSQLiteHTTPOptions {
+  /**
+   * The url of the database or the zipped database(s)
+   */
+  url?: string;
+
   /**
    * Set the overwrite mode for the copy from assets
    * "true"/"false"  default to "true"
@@ -1012,6 +1032,14 @@ export interface ISQLiteConnection {
    */
   copyFromAssets(overwrite?: boolean): Promise<void>;
   /**
+   *
+   * @param url
+   * @param overwrite
+   * @returns Promise<void>
+   * @since 4.1.1
+   */
+  getFromHTTPRequest(url?: string, overwrite?: boolean): Promise<void>;
+  /**
    * Check if a database exists
    * @param database
    * @returns Promise<capSQLiteResult>
@@ -1351,6 +1379,15 @@ export class SQLiteConnection implements ISQLiteConnection {
 
     try {
       await this.sqlite.copyFromAssets({ overwrite: mOverwrite });
+      return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async getFromHTTPRequest(url: string, overwrite?: boolean): Promise<void> {
+    const mOverwrite: boolean = overwrite != null ? overwrite : true;
+    try {
+      await this.sqlite.getFromHTTPRequest({ url, overwrite: mOverwrite });
       return Promise.resolve();
     } catch (err) {
       return Promise.reject(err);

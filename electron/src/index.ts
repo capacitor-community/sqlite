@@ -14,6 +14,7 @@ import type {
   capSQLiteExecuteOptions,
   capSQLiteExportOptions,
   capSQLiteFromAssetsOptions,
+  capSQLiteHTTPOptions,
   capSQLiteImportOptions,
   capSQLiteJson,
   capSQLiteOptions,
@@ -665,12 +666,13 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
       // loop through the database files
       dbList.forEach(async (db: string) => {
-        if (db.substring(db.length - 3) === '.db') {
+        if (this.fileUtil.getExtName(db) === '.db') {
           // for each copy the file to the Application database folder
           await this.fileUtil.copyFromAssetToDatabase(db, overwrite);
         }
-        if (db.substring(db.length - 4) === '.zip') {
-          await this.fileUtil.unzipDatabase(db, overwrite);
+        if (this.fileUtil.getExtName(db) === '.zip') {
+          const assetPath = this.fileUtil.getAssetsDatabasesPath();
+          await this.fileUtil.unzipDatabase(db, assetPath, overwrite);
         }
       });
 
@@ -678,6 +680,27 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     } else {
       throw new Error(
         `CopyFromAssets: assets/databases folder does not exist:[${assetsDbPath}]`,
+      );
+    }
+  }
+
+  async getFromHTTPRequest(options: capSQLiteHTTPOptions): Promise<void> {
+    const url: string = this.getOptionValue(options, 'url', '');
+    const overwrite: boolean = this.getOptionValue(options, 'overwrite', false);
+    if (url.length === 0) {
+      throw new Error(`getFromHTTPRequest: You must give a database url`);
+    }
+    const cachePath = this.fileUtil.getCachePath();
+    await this.fileUtil.downloadFileFromHTTP(url, cachePath);
+    if (this.fileUtil.getExtName(url) === '.zip') {
+      const zipName = `${this.fileUtil.getBaseName(url)}.zip`;
+      await this.fileUtil.unzipDatabase(zipName, cachePath, overwrite);
+    }
+    if (overwrite) {
+      await this.fileUtil.moveDatabaseFromCache();
+    } else {
+      throw new Error(
+        `getFromHTTPRequest: cannot move file from cache overwrite: ${overwrite}`,
       );
     }
   }

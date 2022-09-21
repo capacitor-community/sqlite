@@ -491,7 +491,7 @@ enum CapacitorSQLiteError: Error {
             var conns: [String] = []
             for name in dbNames {
                 conns.append("\(openModes[idx])_\(name)")
-                idx = idx + 1
+                idx += 1
             }
             do {
                 if conns.count == 0 {
