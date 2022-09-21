@@ -22,10 +22,12 @@ class UtilsUpgrade {
                    currentVersion: Int,
                    targetVersion: Int,
                    databaseLocation: String) throws {
-        print("UtilsUpgrade.onUpgrade: \(currentVersion) => \(targetVersion)")
+        print("UtilsUpgrade.onUpgrade: from \(currentVersion) to \(targetVersion)")
 
         for (versionKey, upgrade) in Array(upgDict).sorted(by: {$0.0 < $1.0}) {
             if versionKey > currentVersion && versionKey <= targetVersion {
+                print("- UtilsUpgrade.onUpgrade toVersion: \(versionKey)")
+                
                 guard let statements = upgrade["statements"] as? [String] else {
                     let msg: String = "Error: onUpgrade statements not given"
                     throw UtilsUpgradeError.onUpgradeFailed(message: msg)
