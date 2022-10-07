@@ -25,12 +25,13 @@ enum UtilsFileError: Error {
     case getLibraryURLFailed
     case getFileListFailed
     case copyFromAssetToDatabaseFailed(message: String)
-    case unzipFromAssetToDatabaseFailed(message: String)
+    case unzipToDatabaseFailed(message: String)
     case copyFromNamesFailed
     case getFolderURLFailed(message: String)
     case createDirFailed(message: String)
     case moveAllDBSQLiteFailed(message: String)
     case createDatabaseLocationFailed(message: String)
+    case getDatabaseLocationURLFailed(message: String)
 }
 // swiftlint:disable file_length
 // swiftlint:disable type_body_length
@@ -51,12 +52,17 @@ class UtilsFile {
                 // move all existing dbs from "Documents" to location folder
                 if location.prefix(9) != "Documents" &&
                     location.prefix(7) != "default" {
+                    let databaseURL: URL = try UtilsFile
+                        .getDatabasesUrl().absoluteURL
 
-                    try UtilsFile.moveAllDBSQLite(dirUrl: dirUrl)
+                    try UtilsFile.moveAllDBSQLite(fromURL: databaseURL,
+                                                  dirUrl: dirUrl)
                 }
             }
         } catch UtilsFileError.getFolderURLFailed(let message) {
             throw UtilsFileError.createDatabaseLocationFailed(message: message)
+        } catch UtilsFileError.getDatabasesURLFailed {
+            throw UtilsFileError.createDatabaseLocationFailed(message: "getDatabasesURLFailed")
         } catch UtilsFileError.moveAllDBSQLiteFailed(let message) {
             throw UtilsFileError.createDatabaseLocationFailed(message: message)
         } catch let error {
@@ -77,16 +83,15 @@ class UtilsFile {
 
     // MARK: - moveAllDBSQLite
 
-    class func moveAllDBSQLite(dirUrl: URL) throws {
+    class func moveAllDBSQLite(fromURL: URL, dirUrl: URL) throws {
         // get the db list from Documents folder
         do {
-            let databaseURL: URL = try UtilsFile
-                .getDatabasesUrl().absoluteURL
+
             let fileList: [String] = try UtilsFile
-                .getFileList(path: databaseURL.path,
+                .getFileList(path: fromURL.path,
                              ext: "SQLite.db")
             for file in fileList {
-                let fromFileURL: URL = databaseURL
+                let fromFileURL: URL = fromURL
                     .appendingPathComponent(file).absoluteURL
                 let toFileURL = dirUrl
                     .appendingPathComponent(file).absoluteURL
@@ -149,6 +154,8 @@ class UtilsFile {
                 dbPathURL = try UtilsFile.getApplicationURL().absoluteURL
             } else if first[0] == "Library" {
                 dbPathURL = try UtilsFile.getLibraryURL().absoluteURL
+            } else if first[0] == "tmp" {
+                dbPathURL = UtilsFile.getTmpURL().absoluteURL
             } else if first[0].caseInsensitiveCompare("cache") == .orderedSame {
                 dbPathURL = try UtilsFile.getCacheURL().absoluteURL
             } else if first[0] == "Documents" || first[0] == "default" {
@@ -216,6 +223,19 @@ class UtilsFile {
         }
     }
 
+    // MARK: - getDatabaseLocationURL
+
+    class func getDatabaseLocationURL(databaseLocation: String) throws -> URL {
+        do {
+            let url: URL = try UtilsFile
+                .getFolderURL(folderPath: databaseLocation)
+
+            return url
+        } catch UtilsFileError.getFolderURLFailed(let message) {
+            throw UtilsFileError.getDatabaseLocationURLFailed(message: message)
+        }
+    }
+
     // MARK: - getApplicationURL
 
     class func getApplicationURL() throws -> URL {
@@ -253,6 +273,12 @@ class UtilsFile {
             print("Error: getCacheURL did not find the cache folder")
             throw UtilsFileError.getCacheURLFailed
         }
+    }
+
+    // MARK: - getTmpURL
+
+    class func getTmpURL() -> URL {
+        return FileManager.default.temporaryDirectory
     }
 
     // MARK: - getLibraryURL
@@ -395,15 +421,14 @@ class UtilsFile {
 
     }
 
-    class func unzipFromAssetToDatabase(databaseLocation: String, zip: String,
-                                        overwrite: Bool) throws {
+    class func unzipToDatabase(fromURL: URL, databaseLocation: String, zip: String,
+                               overwrite: Bool) throws {
         do {
-            let zipAsset: URL = try getAssetsDatabasesPath()
-                .appendingPathComponent(zip)
+            let zipAsset: URL = fromURL.appendingPathComponent(zip)
             guard let archive = Archive(url: zipAsset, accessMode: .read) else {
                 let msg = "Error: Read Archive: \(zipAsset) failed"
                 print("\(msg)")
-                throw UtilsFileError.unzipFromAssetToDatabaseFailed(message: msg)
+                throw UtilsFileError.unzipToDatabaseFailed(message: msg)
             }
             let uDb: URL = try getFolderURL(folderPath: databaseLocation)
             for entry in archive {
@@ -421,20 +446,16 @@ class UtilsFile {
                 } catch {
                     let msg = "Error: Extracting \(entry.path) from archive failed \(error.localizedDescription)"
                     print("\(msg)")
-                    throw UtilsFileError.unzipFromAssetToDatabaseFailed(message: msg)
+                    throw UtilsFileError.unzipToDatabaseFailed(message: msg)
                 }
             }
-        } catch UtilsFileError.getAssetsDatabasesPathFailed {
-            let msg = "Error: getAssetsDatabasesPath Failed"
-            print("\(msg)")
-            throw UtilsFileError.unzipFromAssetToDatabaseFailed(message: msg)
         } catch UtilsFileError.getFolderURLFailed(let message) {
             print("Error: getFolderUrl Failed \(message)")
-            throw UtilsFileError.unzipFromAssetToDatabaseFailed(message: message)
+            throw UtilsFileError.unzipToDatabaseFailed(message: message)
         } catch let error {
             let msg = "Error: \(error)"
             print("\(msg)")
-            throw UtilsFileError.unzipFromAssetToDatabaseFailed(message: msg)
+            throw UtilsFileError.unzipToDatabaseFailed(message: msg)
         }
     }
 

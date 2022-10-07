@@ -1,3 +1,15 @@
+# 4.2.0 (2022-10-07)
+
+### Chore
+
+ - Update to @capacitor/core 4.1.0
+ - Update to @capacitor/ios 4.1.0
+ - Update to @capacitor/android 4.1.0
+
+### Added Features
+
+ - add getFromHTTPRequest iOS and Android issue#316.
+
 # 4.1.1 (2022-09-21)
 
 ### Added Features

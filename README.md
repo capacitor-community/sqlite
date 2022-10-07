@@ -16,7 +16,7 @@
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/dw/@capacitor-community/sqlite?style=flat-square" /></a>
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/v/@capacitor-community/sqlite?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-<a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-17-orange?style=flat-square" /></a>
+<a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-22-orange?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 </p>
 
@@ -78,6 +78,7 @@ See [#301](https://github.com/capacitor-community/sqlite/issues/301) and [SO que
 cd electron
 npm install --save sqlite3
 npm install --save jszip
+npm install --save node-fetch
 npm install --save-dev @types/sqlite3
 ```
 
@@ -137,7 +138,7 @@ npm install --save-dev @types/sqlite3
 | closeNCConnection           | ✅      | ✅  | ❌        | ❌  |
 | isNCDatabase                | ✅      | ✅  | ❌        | ❌  |
 | transaction                 | ✅      | ✅  | ✅        | ✅  |
-| getFromHTTPRequest          | ❌      | ❌  | ✅        | ✅  | since 4.1.1
+| getFromHTTPRequest          | ✅      | ✅  | ✅        | ✅  | since 4.2.0
 
 
 ## Documentation & APIs
@@ -210,7 +211,7 @@ npm install --save-dev @types/sqlite3
 
 The iOS and Android codes are using `SQLCipher` allowing for database encryption.
 The iOS codes is using `ZIPFoundation` for unzipping assets files
-The Electron code is using `sqlite3`.
+The Electron code is using `sqlite3` and `node-fetch` from 4.2.0.
 The Web code is using the Stencil component `jeep-sqlite` based on `sql.js`, `localforage`. and `jszip`  
 
 ## Contributors ✨
@@ -242,6 +243,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <a href="https://github.com/antoniovlx" title="antoniovlx"><img src="https://github.com/antoniovlx.png?size=100" width="50" height="50" /></a>
   <a href="https://github.com/HarelM" title="HarelM"><img src="https://github.com/HarelM.png?size=100" width="50" height="50" /></a>
   <a href="https://github.com/rdlabo" title="rdlabo"><img src="https://github.com/rdlabo.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/axkristiansen" title="rdlabo"><img src="https://github.com/axkristiansen.png?size=100" width="50" height="50" /></a>
 </p>
 
 <!-- markdownlint-enable -->

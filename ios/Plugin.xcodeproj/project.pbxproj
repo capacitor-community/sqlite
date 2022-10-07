@@ -22,6 +22,7 @@
 		2C3AF31A25B593E500C5EF2F /* UtilsUpgrade.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C3AF31925B593E500C5EF2F /* UtilsUpgrade.swift */; };
 		2C479B9225BD874C009B1A49 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C479B9125BD874C009B1A49 /* Security.framework */; };
 		2C772263262FF971000C65E9 /* String.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C772262262FF971000C65E9 /* String.swift */; };
+		2CB4368728EEEFF500C973AA /* UtilsDownloadFromHTTP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB4368628EEEFF500C973AA /* UtilsDownloadFromHTTP.swift */; };
 		2CB89AE327C57603001F464B /* BiometricIDAuthentication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB89AE227C57603001F464B /* BiometricIDAuthentication.swift */; };
 		2CB9B9342601EEE500743730 /* JsonSQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB9B9312601EEE500743730 /* JsonSQLite.swift */; };
 		2CB9B9352601EEE500743730 /* ImportFromJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB9B9322601EEE500743730 /* ImportFromJson.swift */; };
@@ -64,6 +65,7 @@
 		2C3AF31925B593E500C5EF2F /* UtilsUpgrade.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilsUpgrade.swift; sourceTree = "<group>"; };
 		2C479B9125BD874C009B1A49 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk/System/Library/Frameworks/Security.framework; sourceTree = DEVELOPER_DIR; };
 		2C772262262FF971000C65E9 /* String.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = String.swift; sourceTree = "<group>"; };
+		2CB4368628EEEFF500C973AA /* UtilsDownloadFromHTTP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilsDownloadFromHTTP.swift; sourceTree = "<group>"; };
 		2CB89AE227C57603001F464B /* BiometricIDAuthentication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiometricIDAuthentication.swift; sourceTree = "<group>"; };
 		2CB9B9312601EEE500743730 /* JsonSQLite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JsonSQLite.swift; sourceTree = "<group>"; };
 		2CB9B9322601EEE500743730 /* ImportFromJson.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImportFromJson.swift; sourceTree = "<group>"; };
@@ -127,6 +129,7 @@
 				2C3AF31925B593E500C5EF2F /* UtilsUpgrade.swift */,
 				2CC9CBC126413B9F002028BF /* UtilsSecret.swift */,
 				2C2352C3276C8195003978B4 /* UtilsNCDatabase.swift */,
+				2CB4368628EEEFF500C973AA /* UtilsDownloadFromHTTP.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -427,6 +430,7 @@
 				2F98D68224C9AAE500613A4C /* CapacitorSQLite.swift in Sources */,
 				2C772263262FF971000C65E9 /* String.swift in Sources */,
 				2CB9B93A2601EF3700743730 /* UtilsMigrate.swift in Sources */,
+				2CB4368728EEEFF500C973AA /* UtilsDownloadFromHTTP.swift in Sources */,
 				50ADFFA82020EE4F00D50D53 /* CapacitorSQLitePlugin.m in Sources */,
 				2C3AF31A25B593E500C5EF2F /* UtilsUpgrade.swift in Sources */,
 				2C3AF31225B5938500C5EF2F /* UtilsJson.swift in Sources */,

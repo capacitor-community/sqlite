@@ -17,6 +17,7 @@ import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.JsonSQ
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.UtilsJson;
 import com.getcapacitor.community.database.sqlite.SQLite.SqliteConfig;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsBiometric;
+import com.getcapacitor.community.database.sqlite.SQLite.UtilsDownloadFromHTTP;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsFile;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsMigrate;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsNCDatabase;
@@ -46,6 +47,7 @@ public class CapacitorSQLite {
     private final UtilsJson uJson = new UtilsJson();
     private final UtilsMigrate uMigrate = new UtilsMigrate();
     private final UtilsNCDatabase uNCDatabase = new UtilsNCDatabase();
+    private final UtilsDownloadFromHTTP uHTTP = new UtilsDownloadFromHTTP();
     private UtilsSecret uSecret;
     private SharedPreferences sharedPreferences = null;
     private MasterKey masterKeyAlias;
@@ -534,6 +536,14 @@ public class CapacitorSQLite {
         } else {
             String msg = "No available connection for database " + dbName;
             throw new Exception(msg);
+        }
+    }
+
+    public void getFromHTTPRequest(String url) throws Exception {
+        try {
+            uHTTP.download(context, url);
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
         }
     }
 

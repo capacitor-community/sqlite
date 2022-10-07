@@ -12,12 +12,10 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.community.database.sqlite.SQLite.Database;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.JsonSQLite;
 import com.getcapacitor.community.database.sqlite.SQLite.SqliteConfig;
-
 import java.util.Collections;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -1225,9 +1223,9 @@ public class CapacitorSQLitePlugin extends Plugin {
             try {
                 Dictionary<Integer, JSONObject> upgDict = implementation.addUpgradeStatement(upgrade);
 
-                if (versionUpgrades.get(dbName) != null){
+                if (versionUpgrades.get(dbName) != null) {
                     List<Integer> keys = Collections.list(upgDict.keys());
-                        for (Integer versionKey : keys) {
+                    for (Integer versionKey : keys) {
                         JSONObject upgObj = upgDict.get(versionKey);
 
                         versionUpgrades.get(dbName).put(versionKey, upgObj);
@@ -1362,7 +1360,7 @@ public class CapacitorSQLitePlugin extends Plugin {
         JSObject retObj = new JSObject();
         JsonSQLite retJson = new JsonSQLite();
         if (!call.getData().has("database")) {
-            String msg = "ExportToJson: Must provide a database name";
+            String msg = "DeleteExportedRows: Must provide a database name";
             rHandler.retResult(call, null, msg);
             return;
         }
@@ -1418,7 +1416,62 @@ public class CapacitorSQLitePlugin extends Plugin {
      */
     @PluginMethod
     public void getFromHTTPRequest(PluginCall call) {
-        call.unimplemented("Not implemented on Android.");
+        if (!call.getData().has("url")) {
+            String msg = "GetFromHTTPRequest: Must provide a database url";
+            rHandler.retResult(call, null, msg);
+            return;
+        }
+        String url = call.getString("url");
+        if (implementation != null) {
+            Runnable setHTTPRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+                    try {
+                        implementation.getFromHTTPRequest(url);
+                        getActivity()
+                            .runOnUiThread(
+                                new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        rHandler.retResult(call, null, null);
+                                        return;
+                                    }
+                                }
+                            );
+                    } catch (Exception e) {
+                        getActivity()
+                            .runOnUiThread(
+                                new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        String msg = "GetFromHTTPRequest: " + e.getMessage();
+                                        rHandler.retResult(call, null, msg);
+                                        return;
+                                    }
+                                }
+                            );
+                    }
+                }
+            };
+            Thread myHttpThread = new Thread(setHTTPRunnable);
+            myHttpThread.start();
+            while (myHttpThread.isAlive());
+            System.out.println("Thread Exiting!");
+            /*            try {
+                implementation.getFromHTTPRequest(url);
+                rHandler.retResult(call, null, null);
+                return;
+            } catch (Exception e) {
+                String msg = "GetFromHTTPRequest: " + e.getMessage();
+                rHandler.retResult(call, null, msg);
+                return;
+            }
+  */
+        } else {
+            rHandler.retResult(call, null, loadMessage);
+            return;
+        }
     }
 
     private void AddObserversToNotificationCenter() {

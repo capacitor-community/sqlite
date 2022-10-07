@@ -2,7 +2,9 @@ package com.getcapacitor.community.database.sqlite.SQLite;
 
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.os.Build;
 import android.util.Log;
+import androidx.annotation.RequiresApi;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -10,8 +12,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.FileChannel;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -31,6 +41,10 @@ public class UtilsFile {
         } else {
             return false;
         }
+    }
+
+    public String getDatabaseDirectoryPath(Context context) {
+        return context != null && context.getDatabasePath("x") != null ? context.getDatabasePath("x").getParent() : "";
     }
 
     public String[] getListOfFiles(Context context) {
@@ -61,6 +75,10 @@ public class UtilsFile {
 
     public Boolean deleteFile(String filePath, String dbName) {
         File file = new File(filePath, dbName);
+        return file.delete();
+    }
+
+    public Boolean deleteFile(File file) {
         return file.delete();
     }
 
@@ -99,7 +117,8 @@ public class UtilsFile {
                     if (isLast(fileName, ".zip")) {
                         // unzip file and extract databases
                         String zipPathName = assetsDatabasePath + "/" + fileName;
-                        unzipCopyDatabase(context, assetManager, zipPathName, assetsDatabasePath, overwrite);
+                        String databasePath = getDatabaseDirectoryPath(context);
+                        unzipCopyDatabase(databasePath, assetManager, zipPathName, overwrite);
                     }
                 }
                 return;
@@ -109,26 +128,33 @@ public class UtilsFile {
         }
     }
 
-    public void unzipCopyDatabase(Context context, AssetManager asm, String zipPath, String assetsDatabasePath, Boolean overwrite)
-        throws IOException {
-        InputStream is;
+    public void unzipCopyDatabase(String databasePath, AssetManager asm, String zipPath, Boolean overwrite) throws IOException {
+        InputStream is = null;
+        FileInputStream isF = null;
+        ZipInputStream zis;
         byte[] buffer = new byte[1024];
-        try {
-            is = asm.open(zipPath);
-            ZipInputStream zis = new ZipInputStream(is);
 
+        try {
+            if (asm != null) {
+                is = asm.open(zipPath);
+                zis = new ZipInputStream(is);
+            } else {
+                File zipFile = new File(zipPath);
+                isF = new FileInputStream(zipFile);
+                zis = new ZipInputStream(isF);
+            }
             ZipEntry ze = zis.getNextEntry();
             while (ze != null) {
                 String fileName = ze.getName();
                 if (isLast(fileName, ".db")) {
                     String toFileName = addSQLiteSuffix(fileName);
-                    boolean isExist = isFileExists(context, toFileName);
+                    String dbPath = databasePath + File.separator + toFileName;
+                    boolean isExist = isPathExists(dbPath);
                     if (!isExist || overwrite) {
                         if (overwrite && isExist) {
-                            deleteDatabase(context, toFileName);
+                            deleteFile(databasePath, toFileName);
                         }
-                        String toPathName = context.getDatabasePath(toFileName).getAbsolutePath();
-                        File newFile = new File(toPathName);
+                        File newFile = new File(dbPath);
                         System.out.println("Unzipping to " + newFile.getAbsolutePath());
                         FileOutputStream fos = new FileOutputStream(newFile);
                         int len;
@@ -145,7 +171,11 @@ public class UtilsFile {
             //close last ZipEntry
             zis.closeEntry();
             zis.close();
-            is.close();
+            if (asm != null && is != null) {
+                is.close();
+            } else if (isF != null) {
+                isF.close();
+            }
         } catch (IOException e) {
             throw new IOException("in unzipCopyDatabase " + e.getLocalizedMessage());
         }
@@ -292,6 +322,53 @@ public class UtilsFile {
             Log.e(TAG, msg);
             return false;
         }
+    }
+
+    public void moveAllDBs(File fromDir, File toDir) throws Exception {
+        // get the file List from fromDir
+        List<String> fileList;
+        String fromDirPath = fromDir.getAbsolutePath();
+        String toDirPath = toDir.getAbsolutePath();
+
+        try {
+            fileList = listDatabases(fromDir);
+            for (String fileName : fileList) {
+                // Check if the file exists in toDir
+                File toFile = new File(toDirPath, fileName);
+                Boolean isPath = isPathExists(toFile.getAbsolutePath());
+                if (isPath) {
+                    deleteFile(toFile);
+                }
+                File fromFile = new File(fromDirPath, fileName);
+
+                Boolean success = fromFile.renameTo(toFile);
+                if (!success) {
+                    throw new Exception("moveAllDBs: move file " + fileName + " failed");
+                }
+            }
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
+        }
+    }
+
+    public List<String> listDatabases(File fileDir) throws Exception {
+        List<String> fileList = new ArrayList<>();
+        if (!fileDir.exists()) {
+            throw new Exception("File " + fileDir.getAbsolutePath() + " does not exist");
+        }
+        if (!fileDir.isDirectory()) {
+            throw new Exception("File " + fileDir.getAbsolutePath() + " is not a directory");
+        }
+        File[] fList = fileDir.listFiles();
+        for (File file : fList) {
+            if (file.isFile()) {
+                String fileName = file.getName();
+                if (getFileExtension((fileName)).equals("db")) {
+                    fileList.add(fileName);
+                }
+            }
+        }
+        return fileList;
     }
 
     private static void copyFileFromFile(File sourceFile, File destFile) throws IOException {

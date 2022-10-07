@@ -1158,11 +1158,10 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             if let upgVersionDict: [Int: [String: Any]] = try
                 implementation?.addUpgradeStatement(dbName,
                                                     upgrade: upgrade) {
-                if (
-                    versionUpgrades[dbName] != nil
-                ){
+                if
+                    versionUpgrades[dbName] != nil {
                     for (versionKey, upgObj) in upgVersionDict {
-                        versionUpgrades[dbName]![versionKey] = upgObj
+                        versionUpgrades[dbName]?[versionKey] = upgObj
                     }
                 } else {
                     versionUpgrades = ["\(dbName)": upgVersionDict]
@@ -1323,13 +1322,42 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         }
 
     }
-    
+
     // MARK: - GetFromHTTPRequest
 
     @objc func getFromHTTPRequest(_ call: CAPPluginCall) {
-        call.unimplemented("Not implemented on iOS.")
-    }
+        guard let url = call.options["url"] as? String else {
+            retHandler.rResult(
+                call: call,
+                message: "GetFromHTTPRequest: Must provide a database url")
+            return
+        }
+        DispatchQueue.global(qos: .background).async {
 
+            do {
+                try self.implementation?.getFromHTTPRequest(call, url: url)
+                DispatchQueue.main.async {
+                    self.retHandler.rResult(call: call)
+                    return
+                }
+            } catch CapacitorSQLiteError.failed(let message) {
+
+                DispatchQueue.main.async {
+                    let msg = "GetFromHTTPRequest: \(message)"
+                    self.retHandler.rResult(call: call, message: msg)
+                    return
+                }
+            } catch let error {
+                DispatchQueue.main.async {
+                    let msg = "GetFromHTTPRequest: " +
+                        "\(error.localizedDescription)"
+                    self.retHandler.rResult(call: call, message: msg)
+                    return
+                }
+            }
+        }
+
+    }
 
     // MARK: - Add Observers
 
@@ -1380,31 +1408,28 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         config.iosIsEncryption = 1
         config.biometricAuth = 0
         config.iosKeychainPrefix = ""
-        if let keychainPrefix = getConfigValue("iosKeychainPrefix") as? String {
+        let configPlugin = getConfig()
+        if let keychainPrefix = configPlugin.getString("iosKeychainPrefix") {
             config.iosKeychainPrefix = keychainPrefix
         }
-        if let iosDatabaseLocation = getConfigValue("iosDatabaseLocation")
-            as? String {
+        if let iosDatabaseLocation = configPlugin.getString("iosDatabaseLocation") {
             config.iosDatabaseLocation = iosDatabaseLocation
         }
-        if let isEncryption = getConfigValue("iosIsEncryption") as? Bool {
-            if !isEncryption {
-                config.iosIsEncryption = 0
-            }
+        let isEncryption = configPlugin.getBoolean("iosIsEncryption", false)
+        if !isEncryption {
+            config.iosIsEncryption = 0
         }
         if config.iosIsEncryption == 1 {
-            if let iosBiometric = getConfigValue("iosBiometric") as? [String: Any] {
-                if let bioAuth = iosBiometric["biometricAuth"] as? Bool {
-                    if bioAuth {
-                        config.biometricAuth = 1
-                        if let bioTitle = iosBiometric["biometricTitle"] as? String {
-                            config.biometricTitle = bioTitle.count > 0
-                                ? bioTitle
-                                : "Biometric login for capacitor sqlite"
-                        }
+            let iosBiometric = configPlugin.getObject("iosBiometric")
+            if let bioAuth = iosBiometric?["biometricAuth"] as? Bool {
+                if bioAuth {
+                    config.biometricAuth = 1
+                    if let bioTitle = iosBiometric?["biometricTitle"] as? String {
+                        config.biometricTitle = bioTitle.count > 0
+                            ? bioTitle
+                            : "Biometric login for capacitor sqlite"
                     }
                 }
-
             }
         }
         return config

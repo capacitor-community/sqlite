@@ -10,6 +10,7 @@ enum CapacitorSQLiteError: Error {
     private var config: SqliteConfig
     private var dbDict: [String: Database] = [:]
     private var databaseLocation: String = "Documents"
+    private let retHandler: ReturnHandler = ReturnHandler()
     private var initMessage: String = ""
     private var isInit: Bool = false
     private var isEncryption: Bool = true
@@ -451,6 +452,33 @@ enum CapacitorSQLiteError: Error {
 
             } catch DatabaseError.open(let message) {
                 throw CapacitorSQLiteError.failed(message: message)
+            }
+        } else {
+            throw CapacitorSQLiteError.failed(message: initMessage)
+        }
+    }
+
+    // MARK: - GetFromHTTPRequest
+
+    @objc public func getFromHTTPRequest(_ call: CAPPluginCall, url: String) throws {
+        if isInit {
+
+            UtilsDownloadFromHTTP.download(databaseLocation: databaseLocation,
+                                           url: url) { ( result) in
+                switch result {
+                case .success(_):
+                    self.retHandler.rResult(call: call)
+                    return
+                case .failure(let error):
+
+                    if error == .downloadFromHTTPFailed {
+                        let msg = "Download from HTTP failed"
+                        self.retHandler.rResult(call: call, message: msg)
+                        return
+                    }
+
+                }
+
             }
         } else {
             throw CapacitorSQLiteError.failed(message: initMessage)
@@ -1246,9 +1274,9 @@ enum CapacitorSQLiteError: Error {
 
             // check if the assets/database folder exists
             do {
-                let assetsDbPath: URL = try
+                let assetsDbURL: URL = try
                     UtilsFile.getAssetsDatabasesPath()
-                let aPath: String = assetsDbPath.path
+                let aPath: String = assetsDbURL.path
                 let bRes: Bool = UtilsFile.isDirExist(dirPath: aPath)
                 if bRes {
                     // get the database files from assets
@@ -1274,9 +1302,11 @@ enum CapacitorSQLiteError: Error {
                     for zip in zipList {
                         // for each zip uncompress the file to the Application
                         // database folder
-                        _ = try UtilsFile
-                            .unzipFromAssetToDatabase(databaseLocation: databaseLocation,
-                                                      zip: zip, overwrite: overwrite)
+                        _ = try UtilsFile.unzipToDatabase(
+                            fromURL: assetsDbURL,
+                            databaseLocation: databaseLocation,
+                            zip: zip,
+                            overwrite: overwrite)
                     }
                     return
                 } else {
@@ -1285,7 +1315,7 @@ enum CapacitorSQLiteError: Error {
                 }
             } catch UtilsFileError.copyFromAssetToDatabaseFailed(let message) {
                 throw CapacitorSQLiteError.failed(message: message)
-            } catch UtilsFileError.unzipFromAssetToDatabaseFailed(let message) {
+            } catch UtilsFileError.unzipToDatabaseFailed(let message) {
                 throw CapacitorSQLiteError.failed(message: message)
             } catch let error {
                 let msg: String = "\(error)"
