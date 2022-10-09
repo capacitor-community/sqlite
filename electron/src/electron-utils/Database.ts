@@ -145,7 +145,7 @@ export class Database {
 
     this.database.close((err: Error) => {
       if (err) {
-        throw new Error('Close failed: ${this.dbName}  ${err}');
+        throw new Error(`Close failed: ${this.dbName}  ${err}`);
       }
       this._isDbOpen = false;
     });
