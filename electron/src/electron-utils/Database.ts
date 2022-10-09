@@ -1,7 +1,7 @@
 //import { GlobalSQLite } from '../GlobalSQLite';
 import type {
   capSQLiteVersionUpgrade,
-  JsonSQLite,
+  JsonSQLite
 } from '../../../src/definitions';
 
 import { ExportToJson } from './ImportExportJson/exportToJson';
