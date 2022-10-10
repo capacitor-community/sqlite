@@ -1,3 +1,11 @@
+# 4.2.1 (2022-10-10)
+
+### Bug Fixes
+
+ - fix Electron Windows file lock error issue#326 (PR from tobiasmuecksch)
+ - fix Electron db.close() error reporting issue#329 (PR from tobiasmuecksch)
+ - fix README for pnpm installation
+ 
 # 4.2.0 (2022-10-07)
 
 ### Chore

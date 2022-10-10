@@ -27,8 +27,21 @@
 | Quéau Jean Pierre | [jepiqueau](https://github.com/jepiqueau) |        |
 
 To install:
+
 ```
-npm install @capacitor-community/sqlite
+npm install --save @capacitor-community/sqlite
+npx cap sync
+```
+
+```
+yarn install --save @capacitor-community/sqlite
+npx cap sync
+```
+
+```
+pnpm install --save @capacitor-community/sqlite
+pnpm install --save @jeep-sqlite
+pnpm install --save sql.js
 npx cap sync
 ```
 
