@@ -1,7 +1,7 @@
 //import { GlobalSQLite } from '../GlobalSQLite';
 import type {
   capSQLiteVersionUpgrade,
-  JsonSQLite,
+  JsonSQLite
 } from '../../../src/definitions';
 
 import { ExportToJson } from './ImportExportJson/exportToJson';
@@ -143,12 +143,18 @@ export class Database {
   async close(): Promise<void> {
     this.ensureDatabaseIsOpen();
 
-    this.database.close((err: Error) => {
-      if (err) {
-        throw new Error(`Close failed: ${this.dbName}  ${err}`);
-      }
-      this._isDbOpen = false;
+    return new Promise((resolve, reject) => {
+      this.database.close((err: Error) => {
+        if (err) {
+          reject(new Error(`Close failed: ${this.dbName}  ${err}`));
+          return;
+        }
+
+        this._isDbOpen = false;
+        resolve();
+      });
     });
+
   }
 
   /**

@@ -1,3 +1,5 @@
+import { open } from 'node:fs/promises';
+
 export class UtilsFile {
   pathDB = 'Databases';
   Path: any = null;
@@ -347,6 +349,8 @@ export class UtilsFile {
       const isPath = this.isPathExists(filePath);
       if (isPath) {
         try {
+          await this.waitForFilePathLock(filePath);
+
           this.NodeFs.unlinkSync(filePath);
           return Promise.resolve();
         } catch (err) {
@@ -359,6 +363,62 @@ export class UtilsFile {
       return Promise.reject('DeleteFilePath: delete filePath' + 'failed');
     }
   }
+
+  public async waitForFilePathLock(filePath: string, timeoutMS: number = 4000): Promise<void> {
+    let timeIsOver: boolean = false;
+
+    setTimeout(() => {
+      timeIsOver = true;
+    }, timeoutMS);
+
+    return new Promise((resolve, reject) => {
+      const check = async () => {
+        if (timeIsOver) {
+          reject(
+            new Error(`WaitForFilePathLock: The resource is still locked / busy after ${timeoutMS} milliseconds.`)
+          );
+          return;
+        }
+
+        // check if path exists
+        const isPath = this.isPathExists(filePath);
+
+        // The file path does not exist. A non existant path cannot be locked.
+        if (!isPath) {
+          resolve();
+          return;
+        }
+
+        try {
+          const stream = await open(filePath, 'r+');
+
+          // We need to close the stream afterwards, because otherwise, we're locking the file
+          await stream.close();
+
+          resolve();
+        } catch (err) {
+          if (err.code === 'EBUSY') {
+            // The resource is busy. Retry in 100ms
+            setTimeout(() => {
+              check();
+            }, 100);
+            return;
+          } else if (err.code === 'ENOENT') {
+            // The file does not exist (anymore). So it cannot be locked.
+            resolve();
+            return;
+          } else {
+            // Something else went wrong.
+            reject(new Error(`WaitForFilePathLock: Error while checking the file: ${err}`));
+          }
+        }
+      }
+
+      check();
+    });
+
+  }
+
   /**
    * RenameFileName
    * @param fileName
