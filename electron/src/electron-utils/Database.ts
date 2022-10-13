@@ -364,7 +364,8 @@ export class Database {
 
     try {
       if (transaction) {
-        await this.sqliteUtil.beginTransaction(this.database, this._isDbOpen);
+        const mode: string = await this.sqliteUtil.getJournalMode(this.database);
+        await this.sqliteUtil.beginTransaction(this.database, this._isDbOpen, mode);
       }
 
       const changes = await this.sqliteUtil.execute(this.database, sql, false);
@@ -435,7 +436,8 @@ export class Database {
       initChanges = await this.sqliteUtil.dbChanges(this.database);
       // start a transaction
       if (transaction) {
-        await this.sqliteUtil.beginTransaction(this.database, this._isDbOpen);
+        const mode: string = await this.sqliteUtil.getJournalMode(this.database);
+        await this.sqliteUtil.beginTransaction(this.database, this._isDbOpen, mode);
       }
     } catch (err) {
       throw new Error(`RunSQL: ${err}`);
@@ -493,7 +495,8 @@ export class Database {
 
       // start a transaction
       if (transaction) {
-        await this.sqliteUtil.beginTransaction(this.database, this._isDbOpen);
+        const mode: string = await this.sqliteUtil.getJournalMode(this.database);
+        await this.sqliteUtil.beginTransaction(this.database, this._isDbOpen, mode);
       }
     } catch (err) {
       throw new Error(`ExecSet: ${err}`);

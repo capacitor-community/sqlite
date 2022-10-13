@@ -1,3 +1,9 @@
+# 4.2.2-1 (2022-10-13)
+
+### Bug Fixes
+
+ - trial to fix Electron WAL2 concurrent access 
+ 
 # 4.2.1 (2022-10-10)
 
 ### Bug Fixes

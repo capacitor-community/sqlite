@@ -189,20 +189,26 @@ export class UtilsSQLite {
    * BeginTransaction
    * @param db
    * @param isOpen
+   * @param mode
    */
-  public async beginTransaction(db: any, isOpen: boolean): Promise<void> {
-    return new Promise((resolve, reject) => {
+  public async beginTransaction(db: any, isOpen: boolean, mode: string): Promise<void> {
+    // eslint-disable-next-line no-async-promise-executor
+    return new Promise( (resolve, reject) => {
       const msg = 'BeginTransaction: ';
       if (!isOpen) {
         return Promise.reject(`${msg}database not opened`);
       }
-      const sql = 'BEGIN TRANSACTION;';
+      let sql = 'BEGIN TRANSACTION;';
+
+      if(mode.slice(0, 3) === "wal") {
+        sql = "BEGIN CONCURRENT";
+      }
       db.run(sql, (err: any) => {
         if (err) {
           reject(`${msg}${err.message}`);
         }
         resolve();
-      });
+      }); 
     });
   }
   /**
@@ -826,6 +832,24 @@ export class UtilsSQLite {
     } catch (err) {
       return Promise.reject(`isSqlDeleted: ${err}`);
     }
+  }
+  public async getJournalMode(mDB: any): Promise<string> {
+    let resQuery: any[] = [];
+    let retMode = "delete";
+    const query = `PRAGMA journal_mode;`;
+    try {
+      resQuery = await this.queryAll(mDB, query, []);
+      if (resQuery.length === 1) {
+        for (const query of resQuery) {
+          retMode = query.journal_mode;
+        }
+      }
+      return retMode;
+    } catch (err) {
+      return Promise.reject('GetJournalMode: ' + `${err}`);
+    }
+
+
   }
   /**
    * GetTableColumnNamesTypes

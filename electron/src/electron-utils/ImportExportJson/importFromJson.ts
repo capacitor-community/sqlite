@@ -45,7 +45,8 @@ export class ImportFromJson {
     try {
       initChanges = await this.sqliteUtil.dbChanges(mDB);
       // start a transaction
-      await this.sqliteUtil.beginTransaction(mDB, true);
+      const mode: string = await this.sqliteUtil.getJournalMode(mDB);
+      await this.sqliteUtil.beginTransaction(mDB, true, mode);
     } catch (err) {
       return Promise.reject(`createTablesData: ${err}`);
     }
@@ -102,7 +103,8 @@ export class ImportFromJson {
     try {
       initChanges = await this.sqliteUtil.dbChanges(mDB);
       // start a transaction
-      await this.sqliteUtil.beginTransaction(mDB, true);
+      const mode: string = await this.sqliteUtil.getJournalMode(mDB);
+      await this.sqliteUtil.beginTransaction(mDB, true, mode);
     } catch (err) {
       return Promise.reject(`createViews: ${err}`);
     }
