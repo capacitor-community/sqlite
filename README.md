@@ -20,6 +20,16 @@
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 </p>
 
+🚨 Release 4.2.2-1 ->> 🚨
+
+  ```
+  Please do not use it. it was a trial to implement BEGIN CONCURRENCY in Electron Platform to fix issue #258. It seems that sqlite3 does not offer this feature as well as PRAGMA journal_mode= wal2
+
+  If someone got some ideas on this, he is welcome.
+  ```  
+
+🚨 Release 4.2.2-1 <<- 🚨
+
 ## Maintainers
 
 | Maintainer        | GitHub                                    | Social |

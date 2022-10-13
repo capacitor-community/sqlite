@@ -201,8 +201,9 @@ export class UtilsSQLite {
       let sql = 'BEGIN TRANSACTION;';
 
       if(mode.slice(0, 3) === "wal") {
-        sql = "BEGIN CONCURRENT";
+        sql = "BEGIN CONCURRENT;";
       }
+      console.log(`$$$ in beginTransaction sql: ${sql}`);
       db.run(sql, (err: any) => {
         if (err) {
           reject(`${msg}${err.message}`);

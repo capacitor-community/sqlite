@@ -437,6 +437,7 @@ export class Database {
       // start a transaction
       if (transaction) {
         const mode: string = await this.sqliteUtil.getJournalMode(this.database);
+        console.log(`$$$ in runSQL mode: ${mode}`)
         await this.sqliteUtil.beginTransaction(this.database, this._isDbOpen, mode);
       }
     } catch (err) {
