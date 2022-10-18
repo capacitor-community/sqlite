@@ -1,3 +1,17 @@
+# 4.2.2 (2022-10-18)
+
+### Chore
+
+ - Update to @capacitor/core 4.2.0
+ - Update to @capacitor/ios 4.2.0
+ - Update to @capacitor/android 4.2.0
+
+### Bug Fixes
+
+ - Fix Write-Ahead logging 
+    - WAL journal_mode implemented for all platforms 
+    - WAL2 journal_mode available only for iOS and Android (default)
+
 # 4.2.2-1 (2022-10-13)
 
 🚨 NOT TO BE USED 🚨

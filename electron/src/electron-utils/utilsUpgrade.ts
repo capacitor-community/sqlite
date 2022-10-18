@@ -59,8 +59,7 @@ export class UtilsUpgrade {
     statements: string[],
   ): Promise<void> {
     try {
-      const mode: string = await this.sqliteUtil.getJournalMode(mDB);
-      await this.sqliteUtil.beginTransaction(mDB, true, mode);
+      await this.sqliteUtil.beginTransaction(mDB, true);
       for (const statement of statements) {
         await this.sqliteUtil.execute(mDB, statement, false);
       }

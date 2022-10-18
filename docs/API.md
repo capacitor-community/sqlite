@@ -91,6 +91,13 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 
 - the database is stored in Web browser INDEXEDDB storage as a `localforage` store under the `jeepSqliteStore` name and `databases` table name.
 
+## Write-Ahead Logging (WAL)
+
+ - Electron, Web platforms only WAL journal_mode is implemented
+
+ - Both WAL and WAL2 journal_mode are implemented
+
+ - Android WAL2 is set by default, so you do not need to set it up
 
 ## Error Return values
 
@@ -1312,7 +1319,7 @@ last_modified INTEGER DEFAULT (strftime('%s', 'now'))
 ...
 ...
 CREATE TRIGGER users_trigger_last_modified AFTER UPDATE ON [tableName]
-FOR EACH ROW WHEN NEW.last_modified <= OLD.last_modified
+FOR EACH ROW WHEN NEW.last_modified < OLD.last_modified
 BEGIN
    UPDATE [tableName] SET last_modified= (strftime('%s', 'now')) WHERE id=OLD.id;
 END;

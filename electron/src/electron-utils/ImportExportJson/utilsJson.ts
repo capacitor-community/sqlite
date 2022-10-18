@@ -81,8 +81,7 @@ export class UtilsJson {
     let changes = 0;
     try {
       // start a transaction
-      const mode: string = await this.sqliteUtil.getJournalMode(mDB);
-      await this.sqliteUtil.beginTransaction(mDB, true, mode);
+      await this.sqliteUtil.beginTransaction(mDB, true);
     } catch (err) {
       return Promise.reject(`CreateDatabaseSchema: ${err}`);
     }

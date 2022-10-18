@@ -365,7 +365,8 @@ export class Database {
     try {
       if (transaction) {
         const mode: string = await this.sqliteUtil.getJournalMode(this.database);
-        await this.sqliteUtil.beginTransaction(this.database, this._isDbOpen, mode);
+        console.log(`$$$ in executeSQL journal_mode: ${mode} $$$`)
+        await this.sqliteUtil.beginTransaction(this.database, this._isDbOpen);
       }
 
       const changes = await this.sqliteUtil.execute(this.database, sql, false);
@@ -437,8 +438,8 @@ export class Database {
       // start a transaction
       if (transaction) {
         const mode: string = await this.sqliteUtil.getJournalMode(this.database);
-        console.log(`$$$ in runSQL mode: ${mode}`)
-        await this.sqliteUtil.beginTransaction(this.database, this._isDbOpen, mode);
+        console.log(`$$$ in runSQL journal_mode: ${mode} $$$`)
+        await this.sqliteUtil.beginTransaction(this.database, this._isDbOpen);
       }
     } catch (err) {
       throw new Error(`RunSQL: ${err}`);
@@ -497,7 +498,8 @@ export class Database {
       // start a transaction
       if (transaction) {
         const mode: string = await this.sqliteUtil.getJournalMode(this.database);
-        await this.sqliteUtil.beginTransaction(this.database, this._isDbOpen, mode);
+        console.log(`$$$ in execSet journal_mode: ${mode} $$$`)
+        await this.sqliteUtil.beginTransaction(this.database, this._isDbOpen);
       }
     } catch (err) {
       throw new Error(`ExecSet: ${err}`);

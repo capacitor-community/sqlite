@@ -189,21 +189,16 @@ export class UtilsSQLite {
    * BeginTransaction
    * @param db
    * @param isOpen
-   * @param mode
    */
-  public async beginTransaction(db: any, isOpen: boolean, mode: string): Promise<void> {
+  public async beginTransaction(db: any, isOpen: boolean): Promise<void> {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise( (resolve, reject) => {
       const msg = 'BeginTransaction: ';
       if (!isOpen) {
         return Promise.reject(`${msg}database not opened`);
       }
-      let sql = 'BEGIN TRANSACTION;';
+      const sql = 'BEGIN TRANSACTION;';
 
-      if(mode.slice(0, 3) === "wal") {
-        sql = "BEGIN CONCURRENT;";
-      }
-      console.log(`$$$ in beginTransaction sql: ${sql}`);
       db.run(sql, (err: any) => {
         if (err) {
           reject(`${msg}${err.message}`);

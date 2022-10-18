@@ -73,7 +73,7 @@ const version1Statements: string[] = [
 
   `CREATE TRIGGER IF NOT EXISTS users_trigger_last_modified
     AFTER UPDATE ON users
-      FOR EACH ROW WHEN NEW.last_modified <= OLD.last_modified
+      FOR EACH ROW WHEN NEW.last_modified < OLD.last_modified
         BEGIN
           UPDATE users SET last_modified= (strftime('%s', 'now')) WHERE id=OLD.id;
         END;`,
