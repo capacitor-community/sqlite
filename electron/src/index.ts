@@ -35,6 +35,7 @@ import type {
 } from '../../src/definitions';
 
 import { Database } from './electron-utils/Database';
+import { GlobalSQLite } from './GlobalSQLite';
 import { UtilsJson } from './electron-utils/ImportExportJson/utilsJson';
 import { UtilsFile } from './electron-utils/utilsFile';
 
@@ -46,6 +47,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   private databases: { [databasename: string]: Database } = {};
   private fileUtil: UtilsFile = new UtilsFile();
   private jsonUtil: UtilsJson = new UtilsJson();
+  private globalUtil: GlobalSQLite = new GlobalSQLite();
 
   async createConnection(options: capConnectionOptions): Promise<void> {
     const optionKeys = Object.keys(options);
@@ -56,18 +58,19 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
     const dbName: string = options.database;
     const version: number = options.version ? options.version : 1;
-    /*    const encrypted = false;
-    const inMode = "no-encryption";
+    // const encrypted = false;
+    // const inMode = "no-encryption";
 
     const encrypted: boolean =
-      options.encrypted && this._osType === 'Darwin'
+      options.encrypted
         ? options.encrypted
         : false;
     const inMode: string =
-      options.mode && this._osType === 'Darwin'
-        ? options.mode
-        : 'no-encryption';
-    */
+      options.mode === "secret"
+        ? "secret"
+        : options.mode === "encryption"
+          ? "encryption"
+          : 'no-encryption';
     const readonly: boolean = options.readonly ? options.readonly : false;
 
     let upgrades: Record<number, capSQLiteVersionUpgrade> = {};
@@ -83,12 +86,12 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
     const databaseConnection: Database = new Database(
       dbName + 'SQLite.db',
-      /*        encrypted,
+      encrypted,
       inMode,
-      */
       version,
       readonly,
       upgrades,
+      this.globalUtil
     );
 
     this.databases[connName] = databaseConnection;
@@ -456,18 +459,19 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     const vJsonObj: JsonSQLite = jsonObj;
     const dbName = `${vJsonObj.database}SQLite.db`;
     const targetDbVersion: number = vJsonObj.version ?? 1;
-    const mode: string = vJsonObj.mode;
     const overwrite: boolean = vJsonObj.overwrite ?? false;
-    //    const encrypted: boolean = vJsonObj.encrypted ?? false;
-    //    const mode: string = encrypted ? 'secret' : 'no-encryption';
+    const encrypted: boolean = vJsonObj.encrypted ?? false;
+    const mode: string = vJsonObj.mode ?? 'no-encryption';
 
     // Create the database
     const database: Database = new Database(
       dbName,
-      /*encrypted, mode, */
+      encrypted,
+      mode,
       targetDbVersion,
       false,
       {},
+      this.globalUtil
     );
 
     try {
