@@ -257,7 +257,8 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <a href="https://github.com/antoniovlx" title="antoniovlx"><img src="https://github.com/antoniovlx.png?size=100" width="50" height="50" /></a>
   <a href="https://github.com/HarelM" title="HarelM"><img src="https://github.com/HarelM.png?size=100" width="50" height="50" /></a>
   <a href="https://github.com/rdlabo" title="rdlabo"><img src="https://github.com/rdlabo.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/axkristiansen" title="rdlabo"><img src="https://github.com/axkristiansen.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/axkristiansen" title="axkristiansen"><img src="https://github.com/axkristiansen.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/aeinn" title="aeinn"><img src="https://github.com/aeinn.png?size=100" width="50" height="50" /></a>
 </p>
 
 <!-- markdownlint-enable -->
