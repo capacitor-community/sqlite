@@ -34,8 +34,8 @@ import type {
   JsonSQLite,
 } from '../../src/definitions';
 
-import { Database } from './electron-utils/Database';
 import { GlobalSQLite } from './GlobalSQLite';
+import { Database } from './electron-utils/Database';
 import { UtilsJson } from './electron-utils/ImportExportJson/utilsJson';
 import { UtilsFile } from './electron-utils/utilsFile';
 
@@ -864,6 +864,56 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     return options[optionKey];
   }
 
+  async isSecretStored(): Promise<capSQLiteResult> {
+    if (this.globalUtil != null) {
+      let capSQLiteResult = { result: false };
+      if (this.globalUtil?.secret != null && this.globalUtil.secret !== 'sqlite secret') {
+        capSQLiteResult = { result: true };
+      }
+      return Promise.resolve(capSQLiteResult);
+    } else {
+      return Promise.reject(`isSecretStored: Failed check Secret.`);
+    }
+  }
+
+  async setEncryptionSecret(options: capSetSecretOptions): Promise<void> {
+    if (this.globalUtil != null) {
+      this.globalUtil.secret = options.passphrase;
+      Promise.resolve();
+    } else {
+      return Promise.reject(`setEncryptionSecret: Failed to set Secret.`);
+    }
+  }
+
+  async changeEncryptionSecret(options: capChangeSecretOptions): Promise<void> {
+    if (this.globalUtil != null) {
+      this.globalUtil.secret = options.oldpassphrase;
+      this.globalUtil.newsecret = options.passphrase;
+
+      // get the database folder
+      const pathDatabase = this.fileUtil.getDatabasesPath();
+      // get the list of databases
+      const files: string[] = await this.fileUtil.getFileList(pathDatabase);
+
+      files.forEach((dbName) => {
+        const connName = 'RW_' + dbName;
+        const database = this.getDatabaseConnectionOrThrowError(connName);
+        database.changeSecret();
+      })
+    } else {
+      return Promise.reject(`changeEncryptionSecret: Failed to change Secret.`);
+    }
+  }
+
+  async clearEncryptionSecret(): Promise<void> {
+    if (this.globalUtil != null) {
+      this.globalUtil.secret = '';
+      Promise.resolve();
+    } else {
+      return Promise.reject(`clearEncryptionSecret: Failed to clear Secret.`);
+    }
+  }
+
   ////////////////////////////////
   //// UNIMPLEMENTED METHODS
   ////////////////////////////////
@@ -900,25 +950,6 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
   async saveToStore(options: capSQLiteOptions): Promise<void> {
     console.log(`${JSON.stringify(options)}`);
-    throw new Error('Method not implemented.');
-  }
-
-  async isSecretStored(): Promise<capSQLiteResult> {
-    throw new Error('Method not implemented.');
-  }
-
-  async setEncryptionSecret(options: capSetSecretOptions): Promise<void> {
-    console.log(`${JSON.stringify(options)}`);
-    throw new Error('Method not implemented.');
-  }
-
-  async changeEncryptionSecret(options: capChangeSecretOptions): Promise<void> {
-    console.log(`${JSON.stringify(options)}`);
-    throw new Error('Method not implemented.');
-  }
-
-  async clearEncryptionSecret(): Promise<void> {
-    console.log('clearEncryptionSecret');
     throw new Error('Method not implemented.');
   }
 

@@ -90,10 +90,9 @@ See [#301](https://github.com/capacitor-community/sqlite/issues/301) and [SO que
 
 ```bash
 cd electron
-npm install --save sqlite3
+npm install --save @journeyapps/sqlcipher
 npm install --save jszip
 npm install --save node-fetch
-npm install --save-dev @types/sqlite3
 ```
 
 ## IOS Quirks
@@ -112,7 +111,7 @@ npm install --save-dev @types/sqlite3
 | isConnection (ReadWrite)    | ✅      | ✅  | ✅        | ✅  |
 | isConnection (ReadOnly)     | ✅      | ✅  | ✅        | ❌  | since 4.1.0-7
 | open (non-encrypted DB)     | ✅      | ✅  | ✅        | ✅  |
-| open (encrypted DB)         | ✅      | ✅  | ❌        | ❌  |
+| open (encrypted DB)         | ✅      | ✅  | ✅        | ❌  |
 | close                       | ✅      | ✅  | ✅        | ✅  |
 | getUrl                      | ✅      | ✅  | ❌        | ❌  |
 | getVersion                  | ✅      | ✅  | ✅        | ✅  |
@@ -141,10 +140,10 @@ npm install --save-dev @types/sqlite3
 | deleteOldDatabases          | ✅      | ✅  | ❌        | ❌  |
 | moveDatabasesAndAddSuffix   | ✅      | ✅  | ❌        | ❌  |
 | checkConnectionsConsistency | ✅      | ✅  | ✅        | ✅  |
-| isSecretStored              | ✅      | ✅  | ❌        | ❌  |
-| setEncryptionSecret         | ✅      | ✅  | ❌        | ❌  |
-| changeEncryptionSecret      | ✅      | ✅  | ❌        | ❌  |
-| clearEncryptionSecret       | ✅      | ✅  | ❌        | ❌  |
+| isSecretStored              | ✅      | ✅  | ✅        | ❌  |
+| setEncryptionSecret         | ✅      | ✅  | ✅        | ❌  |
+| changeEncryptionSecret      | ✅      | ✅  | ✅        | ❌  |
+| clearEncryptionSecret       | ✅      | ✅  | ✅        | ❌  |
 | initWebStore                | ❌      | ❌  | ❌        | ✅  |
 | saveToStore                 | ❌      | ❌  | ❌        | ✅  |
 | getNCDatabasePath           | ✅      | ✅  | ❌        | ❌  |
@@ -225,7 +224,7 @@ npm install --save-dev @types/sqlite3
 
 The iOS and Android codes are using `SQLCipher` allowing for database encryption.
 The iOS codes is using `ZIPFoundation` for unzipping assets files
-The Electron code is using `sqlite3` and `node-fetch` from 4.2.0.
+The Electron code is using `@journeyapps/sqlcipher` and `node-fetch` from 4.2.0.
 The Web code is using the Stencil component `jeep-sqlite` based on `sql.js`, `localforage`. and `jszip`  
 
 ## Contributors ✨

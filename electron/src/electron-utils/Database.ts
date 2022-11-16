@@ -1,8 +1,8 @@
-import { GlobalSQLite } from '../GlobalSQLite';
 import type {
   capSQLiteVersionUpgrade,
   JsonSQLite
 } from '../../../src/definitions';
+import { GlobalSQLite } from '../GlobalSQLite';
 
 import { ExportToJson } from './ImportExportJson/exportToJson';
 import { ImportFromJson } from './ImportExportJson/importFromJson';
@@ -156,7 +156,24 @@ export class Database {
     });
 
   }
-
+  /**
+   * ChangeSecret
+   * open the @journeyapps/sqlcipher sqlite3 database
+   * @returns Promise<void>
+   */
+  async changeSecret(): Promise<void> {
+    try {
+      if (this._mode === 'encryption') {
+        // change the password
+        const oPassword: string = this.globalUtil.secret;
+        const nPassword: string = this.globalUtil.newsecret;
+        await this.sqliteUtil.changePassword(this.pathDB, oPassword, nPassword);
+      }
+      return;
+    } catch (err) {
+      throw new Error(`Change secret: ${err}`);
+    }
+  }
   /**
    * GetVersion
    * get the database version
