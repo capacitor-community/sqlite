@@ -373,7 +373,7 @@ public class CapacitorSQLite {
                 true
             );
             if (db != null) {
-                dbDict.put(dbPath, db);
+                dbDict.put(connName, db);
                 return;
             } else {
                 String msg = "db is null";
