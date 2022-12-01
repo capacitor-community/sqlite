@@ -496,7 +496,7 @@ public class CapacitorSQLite {
      */
     public void closeNCConnection(String dbPath) throws Exception {
         String connName = "RO_" + dbPath;
-        Database db = dbDict.get(dbPath);
+        Database db = dbDict.get(connName);
         if (db != null) {
             if (db.isOpen()) {
                 try {
