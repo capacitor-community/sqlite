@@ -225,9 +225,9 @@ npm install --save-dev @types/sqlite3
 ## Dependencies
 
 The iOS and Android codes are using `SQLCipher` allowing for database encryption.
-The iOS codes is using `ZIPFoundation` for unzipping assets files
+The iOS codes is using `ZIPFoundation` for unzipping assets files.
 The Electron code is using `sqlite3` and `node-fetch` from 4.2.0.
-The Web code is using the Stencil component `jeep-sqlite` based on `sql.js`, `localforage`. and `jszip`  
+The Web code is using the Stencil component `jeep-sqlite` based on `sql.js`, `localforage`, and `jszip`.
 
 ## Contributors ✨
 
