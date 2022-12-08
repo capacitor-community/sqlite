@@ -1,7 +1,7 @@
 //import { GlobalSQLite } from '../GlobalSQLite';
 import type {
   capSQLiteVersionUpgrade,
-  JsonSQLite
+  JsonSQLite,
 } from '../../../src/definitions';
 
 import { ExportToJson } from './ImportExportJson/exportToJson';
@@ -154,7 +154,6 @@ export class Database {
         resolve();
       });
     });
-
   }
 
   /**
@@ -364,8 +363,10 @@ export class Database {
 
     try {
       if (transaction) {
-        const mode: string = await this.sqliteUtil.getJournalMode(this.database);
-        console.log(`$$$ in executeSQL journal_mode: ${mode} $$$`)
+        const mode: string = await this.sqliteUtil.getJournalMode(
+          this.database,
+        );
+        console.log(`$$$ in executeSQL journal_mode: ${mode} $$$`);
         await this.sqliteUtil.beginTransaction(this.database, this._isDbOpen);
       }
 
@@ -437,8 +438,10 @@ export class Database {
       initChanges = await this.sqliteUtil.dbChanges(this.database);
       // start a transaction
       if (transaction) {
-        const mode: string = await this.sqliteUtil.getJournalMode(this.database);
-        console.log(`$$$ in runSQL journal_mode: ${mode} $$$`)
+        const mode: string = await this.sqliteUtil.getJournalMode(
+          this.database,
+        );
+        console.log(`$$$ in runSQL journal_mode: ${mode} $$$`);
         await this.sqliteUtil.beginTransaction(this.database, this._isDbOpen);
       }
     } catch (err) {
@@ -497,8 +500,10 @@ export class Database {
 
       // start a transaction
       if (transaction) {
-        const mode: string = await this.sqliteUtil.getJournalMode(this.database);
-        console.log(`$$$ in execSet journal_mode: ${mode} $$$`)
+        const mode: string = await this.sqliteUtil.getJournalMode(
+          this.database,
+        );
+        console.log(`$$$ in execSet journal_mode: ${mode} $$$`);
         await this.sqliteUtil.beginTransaction(this.database, this._isDbOpen);
       }
     } catch (err) {

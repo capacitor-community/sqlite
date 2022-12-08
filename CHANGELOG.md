@@ -1,3 +1,16 @@
+# 4.5.0 (2022-12-08)
+
+### Chore
+
+ - Update to @capacitor/core 4.5.0
+ - Update to @capacitor/ios 4.5.0
+ - Update to @capacitor/android 4.5.0
+ - Update to jeep-sqlite 1.6.9
+
+### Bug Fixes
+
+ - Fix sortedKeys in onUpgrade Electron issue#353
+
 # 4.2.2 (2022-10-18)
 
 ### Chore

@@ -364,8 +364,11 @@ export class UtilsFile {
     }
   }
 
-  public async waitForFilePathLock(filePath: string, timeoutMS: number = 4000): Promise<void> {
-    let timeIsOver: boolean = false;
+  public async waitForFilePathLock(
+    filePath: string,
+    timeoutMS = 4000,
+  ): Promise<void> {
+    let timeIsOver = false;
 
     setTimeout(() => {
       timeIsOver = true;
@@ -375,7 +378,9 @@ export class UtilsFile {
       const check = async () => {
         if (timeIsOver) {
           reject(
-            new Error(`WaitForFilePathLock: The resource is still locked / busy after ${timeoutMS} milliseconds.`)
+            new Error(
+              `WaitForFilePathLock: The resource is still locked / busy after ${timeoutMS} milliseconds.`,
+            ),
           );
           return;
         }
@@ -409,14 +414,17 @@ export class UtilsFile {
             return;
           } else {
             // Something else went wrong.
-            reject(new Error(`WaitForFilePathLock: Error while checking the file: ${err}`));
+            reject(
+              new Error(
+                `WaitForFilePathLock: Error while checking the file: ${err}`,
+              ),
+            );
           }
         }
-      }
+      };
 
       check();
     });
-
   }
 
   /**

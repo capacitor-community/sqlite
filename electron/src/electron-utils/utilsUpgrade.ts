@@ -20,9 +20,9 @@ export class UtilsUpgrade {
     targetVersion: number,
   ): Promise<number> {
     let changes;
-    const sortedKeys: number[] = Object.keys(vUpgDict)
-      .map(item => parseInt(item))
-      .sort();
+    const sortedKeys: Int32Array = new Int32Array(
+      Object.keys(vUpgDict).map(item => parseInt(item)),
+    ).sort();
 
     for (const versionKey of sortedKeys) {
       if (versionKey > curVersion && versionKey <= targetVersion) {
