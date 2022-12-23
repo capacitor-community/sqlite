@@ -373,7 +373,7 @@ public class CapacitorSQLite {
                 true
             );
             if (db != null) {
-                dbDict.put(dbPath, db);
+                dbDict.put(connName, db);
                 return;
             } else {
                 String msg = "db is null";
@@ -496,7 +496,7 @@ public class CapacitorSQLite {
      */
     public void closeNCConnection(String dbPath) throws Exception {
         String connName = "RO_" + dbPath;
-        Database db = dbDict.get(dbPath);
+        Database db = dbDict.get(connName);
         if (db != null) {
             if (db.isOpen()) {
                 try {
