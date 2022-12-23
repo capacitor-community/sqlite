@@ -1,3 +1,15 @@
+# 4.6.0 (2022-12-23)
+
+### Chore
+
+ - Update to @capacitor/core 4.6.0
+ - Update to @capacitor/ios 4.6.0
+ - Update to @capacitor/android 4.6.0
+
+### Bug Fixes
+
+ - Fix createNCConnection and closeNCConnection in Android
+
 # 4.5.0 (2022-12-08)
 
 ### Chore
