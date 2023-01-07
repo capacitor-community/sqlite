@@ -92,7 +92,7 @@ See [#301](https://github.com/capacitor-community/sqlite/issues/301) and [SO que
 cd electron
 npm install --save sqlite3
 npm install --save jszip
-npm install --save node-fetch
+npm install --save node-fetch@2.6.7
 npm install --save-dev @types/sqlite3
 ```
 - **Important**: `node-fetch` version must be `<=2.6.7`; otherwise [you'll get an error](https://github.com/capacitor-community/sqlite/issues/349 "you'll get an error ERR_REQUIRE_ESM") running the app. 
@@ -189,6 +189,10 @@ npm install --save-dev @types/sqlite3
 
 - [angular-sqlite-synchronize-app](https://github.com/jepiqueau/angular-sqlite-synchronize-app)
 
+### Ionic/Angular TypeORM app
+
+- [ionic-sqlite-typeorm-app](https://github.com/jepiqueau/ionic-sqlite-typeorm-app)
+
 ### Ionic/React
 
 - [Ionic/React Usage Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-React-Usage.md)
@@ -213,13 +217,13 @@ npm install --save-dev @types/sqlite3
 
 - [vue-vite-sqlite-app](https://github.com/jepiqueau/vuevite-app)
 
-### SolidJS+Vite
-
-- [solidjs-vite-sqlite-app](https://github.com/jepiqueau/capacitor-solid-sqlite)
-
 ### Vue TypeORM app
 
 - [vue-typeorm-app](https://github.com/jepiqueau/vue-typeorm-app)
+
+### SolidJS+Vite
+
+- [solidjs-vite-sqlite-app](https://github.com/jepiqueau/capacitor-solid-sqlite)
 
 
 ## Dependencies

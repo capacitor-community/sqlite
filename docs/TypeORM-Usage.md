@@ -41,9 +41,13 @@ AppDataSource.initialize()
     });
     
 ```
+## Ionic/Vue app
 
-An example of a Ionic/Vue app has been developed `https://github.com/jepiqueau/vue-typeorm-app` demonstrating the use of TypeORM migrations and multiple connections. it will be enhanced in the future.
-It requires to add in or create a `vue.config.js` file the following
+An example of a Ionic/Vue app has been developed `https://github.com/jepiqueau/vue-typeorm-app` demonstrating the use of TypeORM with migrations and multiple connections. The migration files have been created manually, not using the TypeORM cli ( generate, create ). If one find the way of using the TypeORM cli he or she will be welcome to make a PR to this documentation and make a PR to the application.
+
+### Requirements
+
+In the vue.config.js, if it exists otherwise create a new file, add the following:
 
 ```js
 module.exports = {
@@ -65,4 +69,88 @@ module.exports = {
 	},
 }
 ```
+
+## Ionic/Angular app
+
+An example of a Ionic/Vue app has been developed `https://github.com/jepiqueau/ionic-sqlite-typeorm-app` demonstrating the use of TypeORM with migrations. The migration files have been created manually, not using the TypeORM cli ( generate, create ). If one find the way of using the TypeORM cli he or she will be welcome to make a PR to this documentation and make a PR to the application.
+
+### Requirements
+
+ - the `terser-webpack-plugin` has been installed and a `custom.webpack.config.js` file has been added to be able to use the migration.
+
+ ```js
+  var webpack = require('webpack');
+  var TerserPlugin = require('terser-webpack-plugin')
+
+  console.log('The custom config is used');
+  module.exports = {
+    optimization: {
+      minimize: true,
+      minimizer: [
+        new TerserPlugin({
+          terserOptions: {
+            keep_classnames: true,
+            keep_fnames: true,
+          },
+        }),
+      ],
+    },
+    plugins: [
+        new webpack.NormalModuleReplacementPlugin(/typeorm$/, function (result) {
+            result.request = result.request.replace(/typeorm/, "typeorm/browser");
+        })
+    ],
+  };
+ ```
+
+ - the `angular.json` has been modified
+
+    - replacing
+
+    ```json
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "www",
+    ```
+
+    - by
+
+    ```json
+      "architect": {
+        "build": {
+          "builder": "@angular-builders/custom-webpack:browser",
+          "options": {
+            "customWebpackConfig": {
+              "path": "./custom.webpack.config.js"
+            },
+            "allowedCommonJsDependencies": [
+              "debug",
+              "buffer",
+              "sha.js"
+            ],
+            "outputPath": "www",
+    ```
+
+    - and
+
+    ```json
+      "serve": {
+        "builder": "@angular-devkit/build-angular:dev-server",
+        "options": {
+          "browserTarget": "app:build"
+        },
+    ```
+
+    - by
+	
+    ```json
+      "serve": {
+        "builder": "@angular-builders/custom-webpack:dev-server",
+        "options": {
+          "browserTarget": "app:build"
+        },
+    ```
+
 
