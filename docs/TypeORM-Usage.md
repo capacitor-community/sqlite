@@ -43,7 +43,7 @@ AppDataSource.initialize()
 ```
 ## Ionic/Vue app
 
-An example of a Ionic/Vue app has been developed `https://github.com/jepiqueau/vue-typeorm-app` demonstrating the use of TypeORM with migrations and multiple connections. The migration files have been created manually, not using the TypeORM cli ( generate, create ). If one find the way of using the TypeORM cli he or she will be welcome to make a PR to this documentation and make a PR to the application.
+An example of a Ionic/Vue app has been developed https://github.com/jepiqueau/vue-typeorm-app demonstrating the use of TypeORM with migrations and multiple connections. The migration files have been created manually, not using the TypeORM cli ( generate, create ). If one find the way of using the TypeORM cli he or she will be welcome to make a PR to this documentation and make a PR to the application.
 
 ### Requirements
 
@@ -72,7 +72,7 @@ module.exports = {
 
 ## Ionic/Angular app
 
-An example of a Ionic/Vue app has been developed `https://github.com/jepiqueau/ionic-sqlite-typeorm-app` demonstrating the use of TypeORM with migrations. The migration files have been created manually, not using the TypeORM cli ( generate, create ). If one find the way of using the TypeORM cli he or she will be welcome to make a PR to this documentation and make a PR to the application.
+An example of a Ionic/Vue app has been developed https://github.com/jepiqueau/ionic-sqlite-typeorm-app demonstrating the use of TypeORM with migrations. The migration files have been created manually, not using the TypeORM cli ( generate, create ). If one find the way of using the TypeORM cli he or she will be welcome to make a PR to this documentation and make a PR to the application.
 
 ### Requirements
 
@@ -144,7 +144,7 @@ An example of a Ionic/Vue app has been developed `https://github.com/jepiqueau/i
     ```
 
     - by
-	
+
     ```json
       "serve": {
         "builder": "@angular-builders/custom-webpack:dev-server",
