@@ -171,7 +171,7 @@ public class Database {
             if (!isNCDB() && !this._readOnly) {
                 _db = SQLiteDatabase.openOrCreateDatabase(_file, password, null);
             } else {
-                _db = SQLiteDatabase.openDatabase(String.valueOf(_file), "", null, SQLiteDatabase.OPEN_READONLY);
+                _db = SQLiteDatabase.openDatabase(String.valueOf(_file), password, null, SQLiteDatabase.OPEN_READONLY);
             }
             if (_db != null) {
                 if (_db.isOpen()) {
