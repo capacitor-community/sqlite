@@ -35,7 +35,7 @@ npx cap sync
 ```
 
 ```
-yarn install --save @capacitor-community/sqlite
+yarn add @capacitor-community/sqlite
 npx cap sync
 ```
 
