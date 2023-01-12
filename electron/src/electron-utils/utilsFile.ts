@@ -344,14 +344,13 @@ export class UtilsFile {
    * @param filePath
    */
   public async deleteFilePath(filePath: string): Promise<void> {
-
     let unlinkRetries = 50000;
 
     /**
      * On windows, the file lock behaves unpredictable. Often it claims a databsae file is locked / busy, although
      * the file stream is already closed.
      * Even though we already checked the status with the `waitForFilePathLock()` method previously.
-     * 
+     *
      * The only way to handle this reliably is to retry deletion until it works.
      */
     const deleteFile = async () => {
@@ -365,7 +364,7 @@ export class UtilsFile {
           throw err;
         }
       }
-    }
+    };
 
     if (filePath.length !== 0) {
       // check if path exists
