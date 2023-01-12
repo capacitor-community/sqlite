@@ -11,6 +11,8 @@
  - fix(docs): use yarn add in favor of deprecated yarn install --save issue#362
  - fix open readonly encrypted database (Android) issue#364
  - fix file deletion for windows (Electron) issue#367
+ - improve code in docs issue#368
+
 
 # 4.6.0 (2022-12-23)
 
