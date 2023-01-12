@@ -1,3 +1,17 @@
+# 4.6.1-1 (2023-01-12)
+
+### Chore
+
+ - Update to @capacitor/core 4.6.1
+ - Update to @capacitor/ios 4.6.1
+ - Update to @capacitor/android 4.6.1
+
+### Bug Fixes
+
+ - fix(docs): use yarn add in favor of deprecated yarn install --save issue#362
+ - fix open readonly encrypted database (Android) issue#364
+ - fix file deletion for windows (Electron) issue#367
+
 # 4.6.0 (2022-12-23)
 
 ### Chore
