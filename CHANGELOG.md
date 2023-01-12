@@ -8,10 +8,10 @@
 
 ### Bug Fixes
 
- - fix(docs): use yarn add in favor of deprecated yarn install --save issue#362
- - fix open readonly encrypted database (Android) issue#364
- - fix file deletion for windows (Electron) issue#367
- - improve code in docs issue#368
+ - fix(docs): use yarn add in favor of deprecated yarn install --save issue#362 (PR from Sirs0ri)
+ - fix open readonly encrypted database (Android) issue#364 (PR from TheNovemberRain)
+ - fix file deletion for windows (Electron) issue#367 (PR from tobiasmuecksch)
+ - improve code in docs issue#368 (PR from fizdalf)
 
 
 # 4.6.0 (2022-12-23)
