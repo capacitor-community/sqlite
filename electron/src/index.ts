@@ -633,28 +633,30 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       'upgrade',
     );
 
-    const firstUpgrade = upgrades[0];
-    const versionUpgradeKeys = Object.keys(firstUpgrade);
-
-    if (
-      !versionUpgradeKeys.includes('toVersion') ||
-      !versionUpgradeKeys.includes('statements')
-    ) {
-      throw new Error('Must provide an upgrade capSQLiteVersionUpgrade Object');
+    for (const upgrade of upgrades) {
+      const versionUpgradeKeys = Object.keys(upgrade);
+      if (
+        !versionUpgradeKeys.includes('toVersion') ||
+        !versionUpgradeKeys.includes('statements')
+      ) {
+        throw new Error(
+          'Must provide an upgrade capSQLiteVersionUpgrade Object',
+        );
+      }
+      if (typeof upgrade.toVersion != 'number') {
+        throw new Error('upgrade.toVersion must be a number');
+      }
+      if (this.versionUpgrades[dbName]) {
+        this.versionUpgrades[dbName][upgrade.toVersion] = upgrade;
+      } else {
+        const upgradeVersionDict: Record<number, capSQLiteVersionUpgrade> = {};
+        upgradeVersionDict[upgrade.toVersion] = upgrade;
+        this.versionUpgrades[dbName] = upgradeVersionDict;
+      }
     }
-
-    if (typeof firstUpgrade.toVersion != 'number') {
-      throw new Error('upgrade.toVersion must be a number');
-    }
-
-    if (this.versionUpgrades[dbName]) {
-      this.versionUpgrades[dbName][firstUpgrade.toVersion] = firstUpgrade;
-    } else {
-      const upgradeVersionDict: Record<number, capSQLiteVersionUpgrade> = {};
-      upgradeVersionDict[firstUpgrade.toVersion] = firstUpgrade;
-      this.versionUpgrades[dbName] = upgradeVersionDict;
-    }
-
+    console.log(
+      `this.versionUpgrades: ${JSON.stringify(this.versionUpgrades)}`,
+    );
     return;
   }
 

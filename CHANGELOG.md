@@ -1,3 +1,9 @@
+# 4.6.1-2 (2023-01-15)
+
+### Bug Fixes
+
+ - fix addUpgradeStatement all platforms
+
 # 4.6.1-1 (2023-01-12)
 
 ### Chore

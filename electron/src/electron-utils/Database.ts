@@ -99,7 +99,10 @@ export class Database {
         const curVersion: number = await this.sqliteUtil.getVersion(
           this.database,
         );
-
+        console.log(`@@@@ this.readonly: ${this.readonly}`);
+        console.log(
+          `@@@@ this.version: ${this.version} curVersion: ${curVersion}`,
+        );
         if (
           this.version > curVersion &&
           Object.keys(this.upgradeVersionDict).length > 0

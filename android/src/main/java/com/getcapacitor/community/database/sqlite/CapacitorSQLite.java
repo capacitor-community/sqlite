@@ -1019,27 +1019,28 @@ public class CapacitorSQLite {
     public Dictionary<Integer, JSONObject> addUpgradeStatement(JSArray upgrade) throws Exception {
         Dictionary<Integer, JSONObject> upgDict = new Hashtable<>();
 
-        JSONObject upgObj = null;
-        try {
-            upgObj = (JSONObject) upgrade.get(0);
-        } catch (Exception e) {
-            String msg = "Must provide an upgrade statement " + e.getMessage();
-            throw new Exception(msg);
+        for (int i = 0; i < upgrade.length(); i++) {
+            JSONObject upgObj = null;
+            try {
+                upgObj = (JSONObject) upgrade.get(i);
+                if (upgObj == null || !upgObj.has("toVersion") || !upgObj.has("statements")) {
+                    String msg = "Must provide an upgrade statement";
+                    msg += " {toVersion,statement}";
+                    throw new Exception(msg);
+                }
+            } catch (Exception e) {
+                String msg = "Must provide an upgrade statement " + e.getMessage();
+                throw new Exception(msg);
+            }
+            try {
+                int toVersion = upgObj.getInt("toVersion");
+                upgDict.put(toVersion, upgObj);
+            } catch (Exception e) {
+                String msg = "Must provide toVersion as Integer" + e.getMessage();
+                throw new Exception(msg);
+            }
         }
-
-        if (upgObj == null || !upgObj.has("toVersion") || !upgObj.has("statements")) {
-            String msg = "Must provide an upgrade statement";
-            msg += " {toVersion,statement}";
-            throw new Exception(msg);
-        }
-        try {
-            int toVersion = upgObj.getInt("toVersion");
-            upgDict.put(toVersion, upgObj);
-            return upgDict;
-        } catch (Exception e) {
-            String msg = "Must provide toVersion as Integer" + e.getMessage();
-            throw new Exception(msg);
-        }
+        return upgDict;
     }
 
     public Boolean isJsonValid(String parsingData) throws Exception {
