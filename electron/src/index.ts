@@ -919,6 +919,12 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     console.log('clearEncryptionSecret');
     throw new Error('Method not implemented.');
   }
+  async checkEncryptionSecret(
+    options: capSetSecretOptions,
+  ): Promise<capSQLiteResult> {
+    console.log('checkEncryptionSecret', options);
+    throw new Error('Method not implemented.');
+  }
 
   async getNCDatabasePath(
     options: capNCDatabasePathOptions,

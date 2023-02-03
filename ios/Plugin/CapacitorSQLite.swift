@@ -258,6 +258,32 @@ enum CapacitorSQLiteError: Error {
         }
     }
 
+    // MARK: - CheckEncryptionSecret
+
+    @objc public func checkEncryptionSecret(passphrase: String) throws ->  NSNumber {
+        if isInit {
+            if isEncryption {
+                do {
+                    // close all connections
+                    try closeAllConnections()
+                    // check encryption secret
+                    let res: NSNumber = try UtilsSecret
+                        .checkEncryptionSecret(prefix: prefixKeychain,
+                                               passphrase: passphrase)
+                    return res
+                } catch UtilsSecretError.checkEncryptionSecret(let message) {
+                    throw CapacitorSQLiteError.failed(message: message)
+                } catch let error {
+                    throw CapacitorSQLiteError.failed(message: "\(error)")
+                }
+            } else {
+                throw CapacitorSQLiteError.failed(message: "No Encryption set in capacitor.config")
+            }
+        } else {
+            throw CapacitorSQLiteError.failed(message: initMessage)
+        }
+    }
+
     // MARK: - getNCDatabasePath
 
     @objc public func getNCDatabasePath(_ folderPath: String, dbName: String ) throws -> String {

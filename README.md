@@ -16,7 +16,7 @@
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/dw/@capacitor-community/sqlite?style=flat-square" /></a>
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/v/@capacitor-community/sqlite?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-<a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-28-orange?style=flat-square" /></a>
+<a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-29-orange?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 </p>
 
@@ -146,6 +146,7 @@ npm install --save-dev @types/sqlite3
 | setEncryptionSecret         | ✅      | ✅  | ❌        | ❌  |
 | changeEncryptionSecret      | ✅      | ✅  | ❌        | ❌  |
 | clearEncryptionSecret       | ✅      | ✅  | ❌        | ❌  |
+| checkEncryptionSecret       | ✅      | ✅  | ❌        | ❌  |
 | initWebStore                | ❌      | ❌  | ❌        | ✅  |
 | saveToStore                 | ❌      | ❌  | ❌        | ✅  |
 | getNCDatabasePath           | ✅      | ✅  | ❌        | ❌  |
@@ -185,7 +186,9 @@ npm install --save-dev @types/sqlite3
 
 - [Ionic/Angular Usage Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-Angular-Usage.md)
 
-- [angular-sqlite-app-starter](https://github.com/jepiqueau/angular-sqlite-app-starter)
+- [ionic-angular-sqlite-starter](https://github.com/jepiqueau/ionic-angular-sqlite-starter) Ionic 6 Angular SQLite CRUD operations.
+
+- [angular-sqlite-app-starter](https://github.com/jepiqueau/angular-sqlite-app-starter) This one is now more for testing the issues.
 
 - [angular-sqlite-synchronize-app](https://github.com/jepiqueau/angular-sqlite-synchronize-app)
 
@@ -269,6 +272,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <a href="https://github.com/Sirs0ri" title="Sirs0ri"><img src="https://github.com/Sirs0ri.png?size=100" width="50" height="50" /></a>
   <a href="https://github.com/TheNovemberRain" title="TheNovemberRain"><img src="https://github.com/TheNovemberRain.png?size=100" width="50" height="50" /></a>
   <a href="https://github.com/fizdalf" title="fizdalf"><img src="https://github.com/fizdalf.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/Micha-Richter" title="Micha-Richter"><img src="https://github.com/Micha-Richter.png?size=100" width="50" height="50" /></a>
 </p>
 
 

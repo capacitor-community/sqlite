@@ -201,6 +201,37 @@ public class CapacitorSQLitePlugin extends Plugin {
         }
     }
 
+    /**
+     * checkEncryptionSecret
+     * check a passphrase secret against the stored passphrase
+     *
+     * @param call
+     */
+    @PluginMethod
+    public void checkEncryptionSecret(PluginCall call) {
+        String passphrase = null;
+        if (!call.getData().has("passphrase")) {
+            String msg = "checkEncryptionSecret: Must provide a passphrase";
+            rHandler.retResult(call, null, msg);
+            return;
+        }
+        passphrase = call.getString("passphrase");
+        if (implementation != null) {
+            try {
+                Boolean res = implementation.checkEncryptionSecret(passphrase);
+                rHandler.retResult(call, res, null);
+                return;
+            } catch (Exception e) {
+                String msg = "CheckEncryptionSecret: " + e.getMessage();
+                rHandler.retResult(call, null, msg);
+                return;
+            }
+        } else {
+            rHandler.retResult(call, null, loadMessage);
+            return;
+        }
+    }
+
     @PluginMethod
     public void getNCDatabasePath(PluginCall call) {
         String folderPath = null;

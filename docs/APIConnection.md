@@ -15,6 +15,7 @@
 * [`setEncryptionSecret(...)`](#setencryptionsecret)
 * [`changeEncryptionSecret(...)`](#changeencryptionsecret)
 * [`clearEncryptionSecret()`](#clearencryptionsecret)
+* [`checkEncryptionSecret(...)`](#checkencryptionsecret)
 * [`addUpgradeStatement(...)`](#addupgradestatement)
 * [`createConnection(...)`](#createconnection)
 * [`isConnection(...)`](#isconnection)
@@ -158,6 +159,25 @@ clearEncryptionSecret() => Promise<void>
 Clear the passphrase in a secure store
 
 **Since:** 3.5.1
+
+--------------------
+
+
+### checkEncryptionSecret(...)
+
+```typescript
+checkEncryptionSecret(passphrase: string) => Promise<capSQLiteResult>
+```
+
+Check the passphrase stored in a secure store
+
+| Param            | Type                |
+| ---------------- | ------------------- |
+| **`passphrase`** | <code>string</code> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 4.6.1
 
 --------------------
 

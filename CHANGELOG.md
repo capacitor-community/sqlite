@@ -1,3 +1,14 @@
+# 4.6.1 (2023-02-03)
+
+### Added Features
+
+ - add checkEncryptionSecret #issue-request#370.
+ - add `ionic-angular-sqlite-starter`a new application starter for CRUD operations
+
+### Bug Fixes
+
+ - fix contributors paragraph ending correctly (PR Micha-Richter)
+
 # 4.6.1-2 (2023-01-15)
 
 ### Bug Fixes

@@ -508,6 +508,13 @@ export class CapacitorSQLiteWeb
     throw this.unimplemented('Not implemented on web.');
   }
 
+  async checkEncryptionSecret(
+    options: capSetSecretOptions,
+  ): Promise<capSQLiteResult> {
+    console.log('checkEncryptionPassPhrase', options);
+    throw this.unimplemented('Not implemented on web.');
+  }
+
   async getNCDatabasePath(
     options: capNCDatabasePathOptions,
   ): Promise<capNCDatabasePathResult> {

@@ -55,6 +55,14 @@ export interface CapacitorSQLitePlugin {
    * @since 3.5.1
    */
   clearEncryptionSecret(): Promise<void>;
+  /**
+   * Check encryption passphrase
+   *
+   * @return Promise<capSQLiteResult>
+   * @since 4.6.1
+   */
+
+  checkEncryptionSecret(options: capSetSecretOptions): Promise<capSQLiteResult>;
 
   /**
    * create a database connection
@@ -889,6 +897,13 @@ export interface ISQLiteConnection {
    */
   clearEncryptionSecret(): Promise<void>;
   /**
+   * Check the passphrase stored in a secure store
+   * @param passphrase
+   * @returns Promise<capSQLiteResult>
+   * @since 4.6.1
+   */
+  checkEncryptionSecret(passphrase: string): Promise<capSQLiteResult>;
+  /**
    * Add the upgrade Statement for database version upgrading
    * @param database
    * @param toVersion
@@ -1160,6 +1175,16 @@ export class SQLiteConnection implements ISQLiteConnection {
     try {
       await this.sqlite.clearEncryptionSecret();
       return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async checkEncryptionSecret(passphrase: string): Promise<capSQLiteResult> {
+    try {
+      const res: capSQLiteResult = await this.sqlite.checkEncryptionSecret({
+        passphrase: passphrase,
+      });
+      return Promise.resolve(res);
     } catch (err) {
       return Promise.reject(err);
     }

@@ -126,6 +126,7 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 * [`setEncryptionSecret(...)`](#setencryptionsecret)
 * [`changeEncryptionSecret(...)`](#changeencryptionsecret)
 * [`clearEncryptionSecret()`](#clearencryptionsecret)
+* [`checkEncryptionSecret(...)`](#checkencryptionsecret)
 * [`createConnection(...)`](#createconnection)
 * [`closeConnection(...)`](#closeconnection)
 * [`echo(...)`](#echo)
@@ -267,6 +268,25 @@ clearEncryptionSecret() => Promise<void>
 Clear the passphrase in the secure store
 
 **Since:** 3.5.1
+
+--------------------
+
+
+### checkEncryptionSecret(...)
+
+```typescript
+checkEncryptionSecret(options: capSetSecretOptions) => Promise<capSQLiteResult>
+```
+
+Check encryption passphrase
+
+| Param         | Type                                                                |
+| ------------- | ------------------------------------------------------------------- |
+| **`options`** | <code><a href="#capsetsecretoptions">capSetSecretOptions</a></code> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 4.6.1
 
 --------------------
 
