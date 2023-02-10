@@ -1,3 +1,15 @@
+# 4.6.2-1 (2023-02-10)
+
+### Chore
+
+ - Update to @capacitor/core 4.6.2
+ - Update to @capacitor/ios 4.6.2
+ - Update to @capacitor/android 4.6.2
+
+### Bug Fixes
+
+ - Failed to parse source map issue#374
+
 # 4.6.1 (2023-02-03)
 
 ### Added Features

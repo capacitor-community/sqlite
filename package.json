@@ -10,6 +10,7 @@
     "android/src/main/",
     "android/build.gradle",
     "dist/",
+    "src/",
     "ios/Plugin/",
     "electron/",
     "CapacitorCommunitySqlite.podspec"
@@ -55,10 +56,10 @@
     "prepublishOnly": "npm run build && npm run build-electron && npm run docgen"
   },
   "devDependencies": {
-    "@capacitor/android": "^4.6.1",
-    "@capacitor/core": "^4.6.1",
+    "@capacitor/android": "^4.6.2",
+    "@capacitor/core": "^4.6.2",
     "@capacitor/docgen": "^0.0.17",
-    "@capacitor/ios": "^4.6.1",
+    "@capacitor/ios": "^4.6.2",
     "@ionic/eslint-config": "^0.3.0",
     "@ionic/prettier-config": "^1.0.1",
     "@ionic/swiftlint-config": "^1.1.2",
