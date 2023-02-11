@@ -536,4 +536,17 @@ export class CapacitorSQLiteWeb
     console.log('isNCDatabase', options);
     throw this.unimplemented('Not implemented on web.');
   }
+
+  async isDatabaseEncrypted(options: capSQLiteOptions): Promise<capSQLiteResult> {
+    console.log('isDatabaseEncrypted', options);
+    throw this.unimplemented('Not implemented on web.');
+  }
+
+  async isInConfigEncryption(): Promise<capSQLiteResult> {
+    throw this.unimplemented('Not implemented on web.');
+  }
+
+  async isInConfigBiometricAuth(): Promise<capSQLiteResult> {
+    throw this.unimplemented('Not implemented on web.');
+  }
 }

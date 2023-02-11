@@ -41,6 +41,56 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         }
     }
 
+    // MARK: - IsInConfigEncryption
+
+    @objc func isInConfigEncryption(_ call: CAPPluginCall) {
+        var bRes: Bool = false
+        if self.config?.iosIsEncryption == 1 {
+            bRes = true
+        }
+
+        retHandler.rResult(call: call, ret: bRes)
+    }
+
+    // MARK: - IsInConfigBiometricAuth
+
+    @objc func isInConfigBiometricAuth(_ call: CAPPluginCall) {
+        var bRes: Bool = false
+        if self.config?.biometricAuth == 1 {
+            bRes = true
+        }
+
+        retHandler.rResult(call: call, ret: bRes)
+    }
+    // MARK: - IsDatabaseEncrypted
+
+    @objc func isDatabaseEncrypted(_ call: CAPPluginCall) {
+        guard let dbName = call.options["database"] as? String else {
+            retHandler.rResult(
+                call: call, ret: false,
+                message: "isDatabaseEncrypted: Must provide a database name")
+            return
+        }
+        do {
+            let res = try implementation?.isDatabaseEncrypted(dbName)
+            var bRes: Bool = false
+            if res == 1 {
+                bRes = true
+            }
+            retHandler.rResult(call: call, ret: bRes)
+        } catch CapacitorSQLiteError.failed(let message) {
+            let msg = "isDatabaseEncrypted: \(message)"
+            retHandler.rResult(call: call, message: msg)
+            return
+        } catch let error {
+            retHandler.rResult(
+                call: call,
+                message: "isDatabaseEncrypted: \(error)")
+            return
+        }
+
+    }
+
     // MARK: - IsSecretStored
 
     @objc func isSecretStored(_ call: CAPPluginCall) {

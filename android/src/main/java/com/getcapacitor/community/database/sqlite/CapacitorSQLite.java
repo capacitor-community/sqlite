@@ -13,6 +13,7 @@ import com.getcapacitor.JSObject;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.community.database.sqlite.SQLite.BiometricListener;
 import com.getcapacitor.community.database.sqlite.SQLite.Database;
+import com.getcapacitor.community.database.sqlite.SQLite.GlobalSQLite;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.JsonSQLite;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.UtilsJson;
 import com.getcapacitor.community.database.sqlite.SQLite.SqliteConfig;
@@ -21,6 +22,7 @@ import com.getcapacitor.community.database.sqlite.SQLite.UtilsDownloadFromHTTP;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsFile;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsMigrate;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsNCDatabase;
+import com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLCipher;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLite;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsSecret;
 import java.io.File;
@@ -37,6 +39,10 @@ import java.util.Set;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import static com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLCipher.State.UNENCRYPTED;
+import static com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLCipher.State.ENCRYPTED_GLOBAL_SECRET;
+import static com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLCipher.State.ENCRYPTED_SECRET;
+
 public class CapacitorSQLite {
 
     private static final String TAG = CapacitorSQLite.class.getName();
@@ -48,6 +54,8 @@ public class CapacitorSQLite {
     private final UtilsMigrate uMigrate = new UtilsMigrate();
     private final UtilsNCDatabase uNCDatabase = new UtilsNCDatabase();
     private final UtilsDownloadFromHTTP uHTTP = new UtilsDownloadFromHTTP();
+    private final GlobalSQLite globVar = new GlobalSQLite();
+    private final UtilsSQLCipher uCipher = new UtilsSQLCipher();
     private UtilsSecret uSecret;
     private SharedPreferences sharedPreferences = null;
     private MasterKey masterKeyAlias;
@@ -59,6 +67,7 @@ public class CapacitorSQLite {
     private final String biometricSubTitle;
     private final int VALIDITY_DURATION = 5;
     private final RetHandler rHandler = new RetHandler();
+ 
     private PluginCall call;
 
     public CapacitorSQLite(Context context, SqliteConfig config) throws Exception {
@@ -628,6 +637,33 @@ public class CapacitorSQLite {
     public Boolean isDatabase(String dbName) {
         dbName = getDatabaseName(dbName);
         return uFile.isFileExists(context, dbName + "SQLite.db");
+    }
+
+
+    /**
+     * IsDatabaseEncrypted
+     *
+     * @param dbName
+     * @return Boolean
+     * @throws Exception
+     */
+    public Boolean isDatabaseEncrypted(String dbName) throws Exception {
+        dbName = getDatabaseName(dbName);
+        File file = context.getDatabasePath(dbName + "SQLite.db");
+        if (uFile.isFileExists(context, dbName + "SQLite.db")) {
+            UtilsSQLCipher.State state = uCipher
+                        .getDatabaseState(context, file,
+                                        sharedPreferences, globVar);
+            if (state == ENCRYPTED_GLOBAL_SECRET || state == ENCRYPTED_SECRET) {
+                return true;
+            }
+            if (state == UNENCRYPTED) {
+                return false;
+            }
+            throw new Exception("Database unknown");
+        } else {
+            throw new Exception("Database does not exist");
+        }
     }
 
     /**

@@ -46,4 +46,7 @@ CAP_PLUGIN(CapacitorSQLitePlugin, "CapacitorSQLite",
            CAP_PLUGIN_METHOD(clearEncryptionSecret, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(getFromHTTPRequest, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(checkEncryptionSecret, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(isInConfigEncryption, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(isInConfigBiometricAuth, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(isDatabaseEncrypted, CAPPluginReturnPromise);
 )

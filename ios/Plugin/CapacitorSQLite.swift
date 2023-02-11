@@ -606,6 +606,34 @@ enum CapacitorSQLiteError: Error {
         }
     }
 
+    // MARK: - IsDatabaseEncrypted
+
+    @objc public func isDatabaseEncrypted(_ dbName: String) throws -> NSNumber {
+        if isInit {
+            let mDbName = CapacitorSQLite.getDatabaseName(dbName: dbName)
+            let isFileExists: Bool = UtilsFile
+                .isFileExist(databaseLocation: databaseLocation,
+                             fileName: mDbName + "SQLite.db")
+            if isFileExists {
+                let state: State = UtilsSQLCipher
+                        .getDatabaseState(databaseLocation: databaseLocation,
+                                          databaseName: mDbName + "SQLite.db",
+                                          account: account)
+                if state.rawValue == "ENCRYPTEDGLOBALSECRET" || state.rawValue == "ENCRYPTEDSECRET" {
+                    return 1;
+                }
+                if state.rawValue == "UNENCRYPTED" {
+                    return 0;
+                }
+                throw CapacitorSQLiteError.failed(message: "Database unknown")
+            } else {
+                throw CapacitorSQLiteError.failed(message: "Database does not exist")
+            }
+        } else {
+            throw CapacitorSQLiteError.failed(message: initMessage)
+        }
+    }
+
     // MARK: - IsNCDatabase
 
     @objc public func isNCDatabase(_ databasePath: String) throws -> NSNumber {

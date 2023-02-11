@@ -155,6 +155,9 @@ npm install --save-dev @types/sqlite3
 | isNCDatabase                | ✅      | ✅  | ❌        | ❌  |
 | transaction                 | ✅      | ✅  | ✅        | ✅  |
 | getFromHTTPRequest          | ✅      | ✅  | ✅        | ✅  | since 4.2.0
+| isDatabaseEncrypted         | ✅      | ✅  | ❌        | ❌  | since 4.6.2-2
+| isInConfigEncryption        | ✅      | ✅  | ❌        | ❌  | since 4.6.2-2
+| isInConfigBiometricAuth     | ✅      | ✅  | ❌        | ❌  | since 4.6.2-2
 
 
 ## Documentation & APIs

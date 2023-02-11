@@ -159,6 +159,25 @@ export interface CapacitorSQLitePlugin {
    */
   isDBOpen(options: capSQLiteOptions): Promise<capSQLiteResult>;
   /**
+   * Check if a SQLite database is encrypted
+   * @param options: capSQLiteOptions
+   * @returns Promise<capSQLiteResult>
+   * @since 4.6.2-2
+   */
+  isDatabaseEncrypted(options: capSQLiteOptions): Promise<capSQLiteResult>;
+  /**
+   * Check encryption value in capacitor.config
+   * @returns Promise<capSQLiteResult>
+   * @since 4.6.2-2
+   */
+  isInConfigEncryption(): Promise<capSQLiteResult>;
+  /**
+   * Check encryption value in capacitor.config
+   * @returns Promise<capSQLiteResult>
+   * @since 4.6.2-2
+   */
+  isInConfigBiometricAuth(): Promise<capSQLiteResult>;
+  /**
    * Check if a SQLite database exists without connection
    * @param options: capSQLiteOptions
    * @returns Promise<capSQLiteResult>
@@ -1055,6 +1074,25 @@ export interface ISQLiteConnection {
    */
   getFromHTTPRequest(url?: string, overwrite?: boolean): Promise<void>;
   /**
+   * Check if a SQLite database is encrypted
+   * @param options: capSQLiteOptions
+   * @returns Promise<capSQLiteResult>
+   * @since 4.6.2-2
+   */
+  isDatabaseEncrypted(database: string): Promise<capSQLiteResult>;
+  /**
+   * Check encryption value in capacitor.config
+   * @returns Promise<capSQLiteResult>
+   * @since 4.6.2-2
+   */
+  isInConfigEncryption(): Promise<capSQLiteResult>;
+  /**
+   * Check encryption value in capacitor.config
+   * @returns Promise<capSQLiteResult>
+   * @since 4.6.2-2
+   */
+  isInConfigBiometricAuth(): Promise<capSQLiteResult>;
+  /**
    * Check if a database exists
    * @param database
    * @returns Promise<capSQLiteResult>
@@ -1414,6 +1452,31 @@ export class SQLiteConnection implements ISQLiteConnection {
     try {
       await this.sqlite.getFromHTTPRequest({ url, overwrite: mOverwrite });
       return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async isDatabaseEncrypted(database: string): Promise<capSQLiteResult> {
+    if (database.endsWith('.db')) database = database.slice(0, -3);
+    try {
+      const res = await this.sqlite.isDatabaseEncrypted({ database: database });
+      return Promise.resolve(res);
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async isInConfigEncryption(): Promise<capSQLiteResult> {
+    try {
+      const res = await this.sqlite.isInConfigEncryption();
+      return Promise.resolve(res);
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async isInConfigBiometricAuth(): Promise<capSQLiteResult> {
+    try {
+      const res = await this.sqlite.isInConfigBiometricAuth();
+      return Promise.resolve(res);
     } catch (err) {
       return Promise.reject(err);
     }

@@ -947,4 +947,17 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     console.log('isNCDatabase', options);
     throw new Error('Method not implemented.');
   }
+
+  async isDatabaseEncrypted(options: capSQLiteOptions): Promise<capSQLiteResult> {
+    console.log('isDatabaseEncrypted', options);
+    throw new Error('Not implemented on web.');
+  }
+
+  async isInConfigEncryption(): Promise<capSQLiteResult> {
+    throw new Error('Not implemented on web.');
+  }
+
+  async isInConfigBiometricAuth(): Promise<capSQLiteResult> {
+    throw new Error('Not implemented on web.');
+  }
 }

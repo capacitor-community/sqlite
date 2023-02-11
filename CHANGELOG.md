@@ -1,3 +1,9 @@
+# 4.6.2-2 (2023-02-11)
+
+### Added Features
+
+ - add isDatabaseEncrypted, isInConfigEncryption, isInConfigBiometricAuth methods
+
 # 4.6.2-1 (2023-02-10)
 
 ### Chore
