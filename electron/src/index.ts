@@ -948,7 +948,9 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     throw new Error('Method not implemented.');
   }
 
-  async isDatabaseEncrypted(options: capSQLiteOptions): Promise<capSQLiteResult> {
+  async isDatabaseEncrypted(
+    options: capSQLiteOptions,
+  ): Promise<capSQLiteResult> {
     console.log('isDatabaseEncrypted', options);
     throw new Error('Not implemented on web.');
   }

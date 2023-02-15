@@ -1,5 +1,9 @@
 package com.getcapacitor.community.database.sqlite;
 
+import static com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLCipher.State.ENCRYPTED_GLOBAL_SECRET;
+import static com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLCipher.State.ENCRYPTED_SECRET;
+import static com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLCipher.State.UNENCRYPTED;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
@@ -39,10 +43,6 @@ import java.util.Set;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import static com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLCipher.State.UNENCRYPTED;
-import static com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLCipher.State.ENCRYPTED_GLOBAL_SECRET;
-import static com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLCipher.State.ENCRYPTED_SECRET;
-
 public class CapacitorSQLite {
 
     private static final String TAG = CapacitorSQLite.class.getName();
@@ -67,7 +67,7 @@ public class CapacitorSQLite {
     private final String biometricSubTitle;
     private final int VALIDITY_DURATION = 5;
     private final RetHandler rHandler = new RetHandler();
- 
+
     private PluginCall call;
 
     public CapacitorSQLite(Context context, SqliteConfig config) throws Exception {
@@ -639,7 +639,6 @@ public class CapacitorSQLite {
         return uFile.isFileExists(context, dbName + "SQLite.db");
     }
 
-
     /**
      * IsDatabaseEncrypted
      *
@@ -651,9 +650,7 @@ public class CapacitorSQLite {
         dbName = getDatabaseName(dbName);
         File file = context.getDatabasePath(dbName + "SQLite.db");
         if (uFile.isFileExists(context, dbName + "SQLite.db")) {
-            UtilsSQLCipher.State state = uCipher
-                        .getDatabaseState(context, file,
-                                        sharedPreferences, globVar);
+            UtilsSQLCipher.State state = uCipher.getDatabaseState(context, file, sharedPreferences, globVar);
             if (state == ENCRYPTED_GLOBAL_SECRET || state == ENCRYPTED_SECRET) {
                 return true;
             }

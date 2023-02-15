@@ -167,4 +167,11 @@ public class UtilsSecret {
     public void clearPassphrase() {
         sharedPreferences.edit().remove("secret").commit();
     }
+
+    public Boolean isPassphrase() {
+        if (!getPassphrase().isEmpty()) {
+            return true;
+        }
+        return false;
+    }
 }

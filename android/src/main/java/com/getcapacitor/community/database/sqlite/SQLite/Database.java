@@ -151,9 +151,13 @@ public class Database {
     public void open() throws Exception {
         int curVersion;
 
-        String password = _uSecret != null && _encrypted && (_mode.equals("secret") || _mode.equals("encryption"))
-            ? _uSecret.getPassphrase()
-            : "";
+        String password = "";
+        if (_encrypted && (_mode.equals("secret") || _mode.equals("encryption"))) {
+            if (!_uSecret.isPassphrase()) {
+                throw new Exception("No Passphrase stored");
+            }
+            password = _uSecret.getPassphrase();
+        }
         if (_mode.equals("encryption")) {
             if (_isEncryption) {
                 try {

@@ -1,3 +1,11 @@
+# 4.6.2-3 (2023-02-15)
+
+### Bug Fixes
+
+ - Keep database version number after encrypting a database (iOS)
+
+ - Encrypted Database isn't Encrypted when no Passphrase stored (iOS, Android) issue#375
+
 # 4.6.2-2 (2023-02-11)
 
 ### Added Features

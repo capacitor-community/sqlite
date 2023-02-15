@@ -616,14 +616,14 @@ enum CapacitorSQLiteError: Error {
                              fileName: mDbName + "SQLite.db")
             if isFileExists {
                 let state: State = UtilsSQLCipher
-                        .getDatabaseState(databaseLocation: databaseLocation,
-                                          databaseName: mDbName + "SQLite.db",
-                                          account: account)
+                    .getDatabaseState(databaseLocation: databaseLocation,
+                                      databaseName: mDbName + "SQLite.db",
+                                      account: account)
                 if state.rawValue == "ENCRYPTEDGLOBALSECRET" || state.rawValue == "ENCRYPTEDSECRET" {
-                    return 1;
+                    return 1
                 }
                 if state.rawValue == "UNENCRYPTED" {
-                    return 0;
+                    return 0
                 }
                 throw CapacitorSQLiteError.failed(message: "Database unknown")
             } else {

@@ -537,7 +537,9 @@ export class CapacitorSQLiteWeb
     throw this.unimplemented('Not implemented on web.');
   }
 
-  async isDatabaseEncrypted(options: capSQLiteOptions): Promise<capSQLiteResult> {
+  async isDatabaseEncrypted(
+    options: capSQLiteOptions,
+  ): Promise<capSQLiteResult> {
     console.log('isDatabaseEncrypted', options);
     throw this.unimplemented('Not implemented on web.');
   }

@@ -18,9 +18,10 @@ class UtilsEncryption {
 
     // swiftlint:disable function_body_length
     class func encryptDatabase(databaseLocation: String, filePath: String,
-                               password: String) throws -> Bool {
+                               password: String, version: Int) throws -> Bool {
         var ret: Bool = false
         var oDB: OpaquePointer?
+        var eDB: OpaquePointer?
         do {
             if UtilsFile.isFileExist(filePath: filePath) {
                 do {
@@ -34,7 +35,7 @@ class UtilsEncryption {
                         .openOrCreateDatabase(filename: tempPath,
                                               password: "",
                                               readonly: false)
-                    try _ = UtilsSQLCipher
+                    eDB = try UtilsSQLCipher
                         .openOrCreateDatabase(filename: filePath,
                                               password: password,
                                               readonly: false)
@@ -48,6 +49,13 @@ class UtilsEncryption {
                         try _ = UtilsFile
                             .deleteFile(fileName: "temp.db",
                                         databaseLocation: databaseLocation)
+                        // set the version
+                        let sqltr: String = "PRAGMA user_version = \(version);"
+                        if sqlite3_exec(eDB, sqltr, nil, nil, nil) != SQLITE_OK {
+                            throw UtilsEncryptionError
+                            .encryptionFailed(message: "set version to \(version) failed")
+                        }
+
                         ret = true
                     }
                     // close the db
