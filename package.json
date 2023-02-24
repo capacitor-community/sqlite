@@ -94,6 +94,6 @@
     }
   },
   "dependencies": {
-    "jeep-sqlite": "^1.7.0"
+    "jeep-sqlite": "^2.0.0"
   }
 }

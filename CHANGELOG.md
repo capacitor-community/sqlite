@@ -1,3 +1,11 @@
+# 4.6.2 (2023-02-24)
+
+### Chore
+
+  - Update to jeep-sqlite@2.0.0 with @stencil/core@3.00
+  - Update SQLCipher to 4.5.0 (iOS & Android only)
+  - Update to androidx.security:security-crypto:1.1.0-alpha05 (should fix issue#321)
+
 # 4.6.2-3 (2023-02-15)
 
 ### Bug Fixes
