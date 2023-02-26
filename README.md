@@ -46,6 +46,37 @@ pnpm install --save sql.js
 npx cap sync
 ```
 
+then add plugin to main `capacitor.config.json` file:
+
+```json
+{
+  "appId": "com.example.app",
+  "appName": "cap",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "plugins": {
+    "CapacitorSQLite": {
+      "iosDatabaseLocation": "Library/CapacitorDatabase",
+      "iosIsEncryption": false,
+      "iosKeychainPrefix": "cap",
+      "iosBiometric": {
+        "biometricAuth": false,
+        "biometricTitle" : "Biometric login for capacitor sqlite"
+      },
+      "androidIsEncryption": false,
+      "androidBiometric": {
+        "biometricAuth" : false,
+        "biometricTitle" : "Biometric login for capacitor sqlite",
+        "biometricSubTitle" : "Log in using your biometric"
+      },
+      "electronWindowsLocation": "C:\\ProgramData\\CapacitorDatabases",
+      "electronMacLocation": "YOUR_VOLUME/CapacitorDatabases",
+      "electronLinuxLocation": "Databases"
+    }
+  }
+}
+```
+
 ## More Reading:
 
  - [Releases](https://github.com/capacitor-community/sqlite/blob/master/info_releases.md)
@@ -101,6 +132,9 @@ npm install --save-dev @types/sqlite3
 
 - on iOS, no further steps needed.
 
+## full examples
+
+- [vite-vue](https://github.com/jepiqueau/vite-vue-sqlite-app)
 
 ## Supported Methods by Platform
 
