@@ -1,3 +1,16 @@
+# 4.6.3-1 (2023-02-26)
+
+### Chore
+
+ - Update to @capacitor/core 4.6.3
+ - Update to @capacitor/ios 4.6.3
+ - Update to @capacitor/android 4.6.3
+
+### Bug Fixes
+
+ - Update configure plugin section #381 by ws-rush
+ - Add link to vite-vue-sqlite-app
+
 # 4.6.2 (2023-02-24)
 
 ### Chore

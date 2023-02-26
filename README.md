@@ -105,16 +105,52 @@ You'll need the usual capacitor/android/react npm script to build and copy the a
 
 ## Android Quirks
 
-In case you get the following error when building your app in Android Studio:
-`x files found with path 'build-data.properties'.`
-You can you add the following code to `app/build.gradle`:
-```
-    packagingOptions {
-        exclude 'build-data.properties'
-    }
-```
-See [#301](https://github.com/capacitor-community/sqlite/issues/301) and [SO question](https://stackoverflow.com/questions/63291529/how-to-fix-more-than-one-file-was-found-with-os-independent-path-build-data-pro) for more information.
+ - In case you get the following error when building your app in Android Studio:
+  `x files found with path 'build-data.properties'.`
+  You can you add the following code to `app/build.gradle`:
+  ```
+      packagingOptions {
+          exclude 'build-data.properties'
+      }
+  ```
+  See [#301](https://github.com/capacitor-community/sqlite/issues/301) and [SO question](https://stackoverflow.com/questions/63291529/how-to-fix-more-than-one-file-was-found-with-os-independent-path-build-data-pro) for more information.
 
+ - Check/Add the following:
+    Gradle JDK version 11
+    Android Gradle Plugin Version 7.2.2
+    In variables.gradle
+
+      ```
+      minSdkVersion = 22
+      compileSdkVersion = 33
+      targetSdkVersion = 33
+      ```
+    In AndroidManifest.xml
+      ```
+          <application
+            android:allowBackup="false"
+            android:fullBackupContent="false"
+            android:dataExtractionRules="@xml/data_extraction_rules"
+      ```
+    In res/xml create a file `data_extraction_rules.xml` containing:
+      ```
+      <?xml version="1.0" encoding="utf-8"?>
+      <data-extraction-rules>
+          <cloud-backup>
+            <exclude domain="root" />
+            <exclude domain="database" />
+            <exclude domain="sharedpref" />
+            <exclude domain="external" />
+          </cloud-backup>
+          <device-transfer>
+            <exclude domain="root" />
+            <exclude domain="database" />
+            <exclude domain="sharedpref" />
+            <exclude domain="external" />
+          </device-transfer>
+      </data-extraction-rules>
+      ```
+      
 ## Electron Quirks
 
 - On Electron, go to the Electron folder of YOUR_APPLICATION
@@ -132,9 +168,6 @@ npm install --save-dev @types/sqlite3
 
 - on iOS, no further steps needed.
 
-## full examples
-
-- [vite-vue](https://github.com/jepiqueau/vite-vue-sqlite-app)
 
 ## Supported Methods by Platform
 
@@ -255,7 +288,7 @@ npm install --save-dev @types/sqlite3
 
 ### Vue+Vite
 
-- [vue-vite-sqlite-app](https://github.com/jepiqueau/vuevite-app)
+- [vite-vue-sqlite-app](https://github.com/jepiqueau/vite-vue-sqlite-app)
 
 ### Vue TypeORM app
 
@@ -310,6 +343,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <a href="https://github.com/TheNovemberRain" title="TheNovemberRain"><img src="https://github.com/TheNovemberRain.png?size=100" width="50" height="50" /></a>
   <a href="https://github.com/fizdalf" title="fizdalf"><img src="https://github.com/fizdalf.png?size=100" width="50" height="50" /></a>
   <a href="https://github.com/Micha-Richter" title="Micha-Richter"><img src="https://github.com/Micha-Richter.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/ws-rush" title="ws-rush"><img src="https://github.com/ws-rush.png?size=100" width="50" height="50" /></a>
 </p>
 
 
