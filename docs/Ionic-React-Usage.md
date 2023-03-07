@@ -43,6 +43,7 @@ To use the `react-sqlite-hook`as a singleton hook, the declaration must be done 
 ```ts
 ...
 import { useSQLite } from 'react-sqlite-hook';
+import React, { useState } from 'react';
 ...
 // Singleton SQLite Hook
 export let sqlite: any;
