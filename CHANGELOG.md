@@ -1,3 +1,10 @@
+# 4.6.3-2 (2023-03-10)
+
+### Bug Fixes
+
+ - Update Ionic-React-Usage.md PR#390 by eppineda
+ - Fix Foreign Key Support on Web Version (jeep-sqlite) issue#385
+
 # 4.6.3-1 (2023-02-26)
 
 ### Chore
