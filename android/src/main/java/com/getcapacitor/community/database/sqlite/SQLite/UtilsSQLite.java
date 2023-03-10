@@ -64,13 +64,15 @@ public class UtilsSQLite {
             StringBuilder builder = new StringBuilder();
             for (String s : array) {
                 String line = s.trim();
-                if (line.startsWith("--")) {
-                    // is a comment, do nothing
-                } else if (s.length() > 0) {
+                int idx = line.indexOf("--");
+                if(idx > -1) {
+                    line = line.substring(0, idx);
+                }
+                if(line.length() > 0) {
                     if (builder.length() > 0) {
                         builder.append(" ");
                     }
-                    builder.append(s);
+                    builder.append(line);
                 }
 
             }

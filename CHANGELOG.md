@@ -1,3 +1,11 @@
+# 4.6.3-3 (2023-03-10)
+
+### Bug Fixes
+
+- Fix Strip comment lines when using CapacitorSQLite.execute (Android} PR#387 by patdx
+- Fix CapacitorSQLite.execute on Android does not support comments issue#386
+- Add Comments within SQL statements in API.md
+
 # 4.6.3-2 (2023-03-10)
 
 ### Bug Fixes

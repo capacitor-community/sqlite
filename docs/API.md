@@ -91,6 +91,10 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 
 - the database is stored in Web browser INDEXEDDB storage as a `localforage` store under the `jeepSqliteStore` name and `databases` table name.
 
+## Comments within SQL statements
+
+ - see [Comments within SQL](https://www.techonthenet.com/sqlite/comments.php)
+
 ## Write-Ahead Logging (WAL)
 
  - Electron, Web platforms only WAL journal_mode is implemented
