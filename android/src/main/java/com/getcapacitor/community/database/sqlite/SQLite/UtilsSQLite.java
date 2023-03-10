@@ -63,7 +63,16 @@ public class UtilsSQLite {
             String[] array = sqlCmdArray[i].split("\n");
             StringBuilder builder = new StringBuilder();
             for (String s : array) {
-                builder.append(" ").append(s.trim());
+                String line = s.trim();
+                if (line.startsWith("--")) {
+                    // is a comment, do nothing
+                } else if (s.length() > 0) {
+                    if (builder.length() > 0) {
+                        builder.append(" ");
+                    }
+                    builder.append(s);
+                }
+
             }
             sqlCmdArray[i] = builder.toString();
         }
