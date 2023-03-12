@@ -1,3 +1,9 @@
+# 4.6.3-4 (2023-03-12)
+
+### Bug Fixes
+
+ - Remove logs in build (Web) issue#392
+ 
 # 4.6.3-3 (2023-03-10)
 
 ### Bug Fixes
