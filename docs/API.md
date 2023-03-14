@@ -95,6 +95,27 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 
  - see [Comments within SQL](https://www.techonthenet.com/sqlite/comments.php)
 
+## Unexpected behaviours
+
+Unexpected or erroneous behaviour users of this library have encountered.
+
+### 1. Running multiple update statements in one statement
+
+<ins>The Problem:</ins>
+
+In https://github.com/capacitor-community/sqlite/issues/393 a user of this library
+experienced bugs when running a statement that itself contained multiple update statements.
+
+The statement executed fine on the web version of this library (sql-wasm.wasm).
+
+But on android and IOS only some updates took place, some updates were ignored and did not take effect in the database.
+
+<ins>The Solution:</ins>
+
+When running multiple update statements and experiencing such errors, try running them in separate single statements and await (Promise) each statement to finish running before running the next statement.
+
+Note that in general in SQLite this is not recommended, since it makes your queries take a bit longer.
+
 ## Write-Ahead Logging (WAL)
 
  - Electron, Web platforms only WAL journal_mode is implemented
