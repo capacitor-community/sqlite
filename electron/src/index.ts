@@ -15,6 +15,7 @@ import type {
   capSQLiteExportOptions,
   capSQLiteFromAssetsOptions,
   capSQLiteHTTPOptions,
+  capSQLiteLocalDiskOptions,
   capSQLiteImportOptions,
   capSQLiteJson,
   capSQLiteOptions,
@@ -897,6 +898,18 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   }
 
   async saveToStore(options: capSQLiteOptions): Promise<void> {
+    console.log(`${JSON.stringify(options)}`);
+    throw new Error('Method not implemented.');
+  }
+
+  async saveToLocalDisk(options: capSQLiteOptions): Promise<void> {
+    console.log(`${JSON.stringify(options)}`);
+    throw new Error('Method not implemented.');
+  }
+
+  async getFromLocalDiskToStore(
+    options: capSQLiteLocalDiskOptions,
+  ): Promise<void> {
     console.log(`${JSON.stringify(options)}`);
     throw new Error('Method not implemented.');
   }

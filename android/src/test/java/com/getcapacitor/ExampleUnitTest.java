@@ -4,7 +4,6 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLite;
-
 import org.junit.Test;
 
 /**
@@ -28,7 +27,7 @@ public class ExampleUnitTest {
             "PRAGMA foreign_keys = OFF;",
             "",
             "-- CreateTable",
-            "CREATE TABLE IF NOT EXISTS key_value (key TEXT NOT NULL PRIMARY KEY, VALUE TEXT);",
+            "CREATE TABLE IF NOT EXISTS key_value (key TEXT NOT NULL PRIMARY KEY, VALUE TEXT);"
         };
 
         String[] expected = {
@@ -36,11 +35,7 @@ public class ExampleUnitTest {
             "CREATE TABLE IF NOT EXISTS key_value (key TEXT NOT NULL PRIMARY KEY, VALUE TEXT);"
         };
 
-        assertArrayEquals(
-            expected,
-            uSqlite.getStatementsArray(
-                String.join("\n", actualLines)
-            ));
+        assertArrayEquals(expected, uSqlite.getStatementsArray(String.join("\n", actualLines)));
     }
 
     @Test
@@ -64,10 +59,6 @@ public class ExampleUnitTest {
             "CREATE TABLE IF NOT EXISTS key_value (key TEXT NOT NULL PRIMARY KEY, VALUE TEXT)"
         };
 
-        assertArrayEquals(
-            expected,
-            uSqlite.getStatementsArray(
-                String.join("\n", actualLines)
-            ));
+        assertArrayEquals(expected, uSqlite.getStatementsArray(String.join("\n", actualLines)));
     }
 }

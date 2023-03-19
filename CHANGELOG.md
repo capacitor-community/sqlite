@@ -1,3 +1,14 @@
+# 4.6.3 (2023-03-19)
+
+### Chore
+
+ - Update to jeep-sqlite 2.3.1
+
+### Added Features
+
+ - add getFromLocalDiskToStore and saveToLocalDisk methods (Web platform)
+ - add unexpected behaviour docs PR #394 by folsze
+
 # 4.6.3-4 (2023-03-12)
 
 ### Bug Fixes

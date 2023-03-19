@@ -16,7 +16,7 @@
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/dw/@capacitor-community/sqlite?style=flat-square" /></a>
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/v/@capacitor-community/sqlite?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-<a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-31-orange?style=flat-square" /></a>
+<a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-32-orange?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 </p>
 
@@ -225,6 +225,8 @@ npm install --save-dev @types/sqlite3
 | isDatabaseEncrypted         | ✅      | ✅  | ❌        | ❌  | since 4.6.2-2
 | isInConfigEncryption        | ✅      | ✅  | ❌        | ❌  | since 4.6.2-2
 | isInConfigBiometricAuth     | ✅      | ✅  | ❌        | ❌  | since 4.6.2-2
+| getFromLocalDiskToStore     | ❌      | ❌  | ❌        | ✅  | since 4.6.3
+| saveToLocalDisk             | ❌      | ❌  | ❌        | ✅  | since 4.6.3
 
 
 ## Documentation & APIs
@@ -346,6 +348,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <a href="https://github.com/ws-rush" title="ws-rush"><img src="https://github.com/ws-rush.png?size=100" width="50" height="50" /></a>
   <a href="https://github.com/eppineda" title="eppineda"><img src="https://github.com/eppineda.png?size=100" width="50" height="50" /></a>
   <a href="https://github.com/patdx" title="patdx"><img src="https://github.com/patdx.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/folsze" title="folsze"><img src="https://github.com/folsze.png?size=100" width="50" height="50" /></a>
 </p>
 
 

@@ -147,6 +147,8 @@ Note that in general in SQLite this is not recommended, since it makes your quer
 
 * [`initWebStore()`](#initwebstore)
 * [`saveToStore(...)`](#savetostore)
+* [`getFromLocalDiskToStore(...)`](#getfromlocaldisktostore)
+* [`saveToLocalDisk(...)`](#savetolocaldisk)
 * [`isSecretStored()`](#issecretstored)
 * [`setEncryptionSecret(...)`](#setencryptionsecret)
 * [`changeEncryptionSecret(...)`](#changeencryptionsecret)
@@ -230,6 +232,40 @@ Save database to  the web store
 | **`options`** | <code><a href="#capsqliteoptions">capSQLiteOptions</a></code> | : <a href="#capsqliteoptions">capSQLiteOptions</a> |
 
 **Since:** 3.2.3-1
+
+--------------------
+
+
+### getFromLocalDiskToStore(...)
+
+```typescript
+getFromLocalDiskToStore(options: capSQLiteLocalDiskOptions) => Promise<void>
+```
+
+Get database from local disk and save it to store
+
+| Param         | Type                                                                            | Description                                                          |
+| ------------- | ------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| **`options`** | <code><a href="#capsqlitelocaldiskoptions">capSQLiteLocalDiskOptions</a></code> | : <a href="#capsqlitelocaldiskoptions">capSQLiteLocalDiskOptions</a> |
+
+**Since:** 4.6.3
+
+--------------------
+
+
+### saveToLocalDisk(...)
+
+```typescript
+saveToLocalDisk(options: capSQLiteOptions) => Promise<void>
+```
+
+Save database to local disk
+
+| Param         | Type                                                          | Description                                        |
+| ------------- | ------------------------------------------------------------- | -------------------------------------------------- |
+| **`options`** | <code><a href="#capsqliteoptions">capSQLiteOptions</a></code> | : <a href="#capsqliteoptions">capSQLiteOptions</a> |
+
+**Since:** 4.6.3
 
 --------------------
 
@@ -1048,6 +1084,13 @@ Check if a non conformed database exists without connection
 | -------------- | -------------------- | ------------------------------------------------ |
 | **`database`** | <code>string</code>  | The database name                                |
 | **`readonly`** | <code>boolean</code> | Set to true (database in read-only mode) / false |
+
+
+#### capSQLiteLocalDiskOptions
+
+| Prop            | Type                 | Description                                                                                              |
+| --------------- | -------------------- | -------------------------------------------------------------------------------------------------------- |
+| **`overwrite`** | <code>boolean</code> | Set the overwrite mode for saving the database from local disk to store "true"/"false" default to "true" |
 
 
 #### capSQLiteResult

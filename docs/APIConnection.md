@@ -10,6 +10,8 @@
 
 * [`initWebStore()`](#initwebstore)
 * [`saveToStore(...)`](#savetostore)
+* [`getFromLocalDiskToStore(...)`](#getfromlocaldisktostore)
+* [`saveToLocalDisk(...)`](#savetolocaldisk)
 * [`echo(...)`](#echo)
 * [`isSecretStored()`](#issecretstored)
 * [`setEncryptionSecret(...)`](#setencryptionsecret)
@@ -80,6 +82,40 @@ Save the datbase to the web store
 | **`database`** | <code>string</code> |
 
 **Since:** 3.2.3-1
+
+--------------------
+
+
+### getFromLocalDiskToStore(...)
+
+```typescript
+getFromLocalDiskToStore(overwrite: boolean) => Promise<void>
+```
+
+Get database from local disk and save it to store
+
+| Param           | Type                 | Description |
+| --------------- | -------------------- | ----------- |
+| **`overwrite`** | <code>boolean</code> | : boolean   |
+
+**Since:** 4.6.3
+
+--------------------
+
+
+### saveToLocalDisk(...)
+
+```typescript
+saveToLocalDisk(database: string) => Promise<void>
+```
+
+Save database to local disk
+
+| Param          | Type                | Description |
+| -------------- | ------------------- | ----------- |
+| **`database`** | <code>string</code> | : string    |
+
+**Since:** 4.6.3
 
 --------------------
 

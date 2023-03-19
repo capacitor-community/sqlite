@@ -65,16 +65,15 @@ public class UtilsSQLite {
             for (String s : array) {
                 String line = s.trim();
                 int idx = line.indexOf("--");
-                if(idx > -1) {
+                if (idx > -1) {
                     line = line.substring(0, idx);
                 }
-                if(line.length() > 0) {
+                if (line.length() > 0) {
                     if (builder.length() > 0) {
                         builder.append(" ");
                     }
                     builder.append(line);
                 }
-
             }
             sqlCmdArray[i] = builder.toString();
         }

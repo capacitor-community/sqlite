@@ -16,6 +16,7 @@ import type {
   capSQLiteExportOptions,
   capSQLiteFromAssetsOptions,
   capSQLiteHTTPOptions,
+  capSQLiteLocalDiskOptions,
   capSQLiteImportOptions,
   capSQLiteJson,
   capSQLiteOptions,
@@ -59,7 +60,25 @@ export class CapacitorSQLiteWeb
         this.notifyListeners('sqliteExportProgressEvent', event.detail);
       },
     );
-
+    this.jeepSqliteElement.addEventListener(
+      'jeepSqliteHTTPRequestEnded',
+      (event: CustomEvent) => {
+        this.notifyListeners('sqliteHTTPRequestEndedEvent', event.detail);
+      },
+    );
+    this.jeepSqliteElement.addEventListener(
+      'jeepSqlitePickDatabaseEnded',
+      (event: CustomEvent) => {
+        this.notifyListeners('sqlitePickDatabaseEndedEvent', event.detail);
+      },
+    );
+    this.jeepSqliteElement.addEventListener(
+      'jeepSqliteSaveDatabaseToDisk',
+      (event: CustomEvent) => {
+        this.notifyListeners('sqliteSaveDatabaseToDiskEvent', event.detail);
+      },
+    );
+    
     if (!this.isWebStoreOpen) {
       this.isWebStoreOpen = await this.jeepSqliteElement.isStoreOpen();
     }
@@ -73,6 +92,30 @@ export class CapacitorSQLiteWeb
 
     try {
       await this.jeepSqliteElement.saveToStore(options);
+      return;
+    } catch (err) {
+      throw new Error(`${err}`);
+    }
+  }
+  async getFromLocalDiskToStore(
+    options: capSQLiteLocalDiskOptions,
+  ): Promise<void> {
+    this.ensureJeepSqliteIsAvailable();
+    this.ensureWebstoreIsOpen();
+
+    try {
+      await this.jeepSqliteElement.getFromLocalDiskToStore(options);
+      return;
+    } catch (err) {
+      throw new Error(`${err}`);
+    }
+  }
+  async saveToLocalDisk(options: capSQLiteOptions): Promise<void> {
+    this.ensureJeepSqliteIsAvailable();
+    this.ensureWebstoreIsOpen();
+
+    try {
+      await this.jeepSqliteElement.saveToLocalDisk(options);
       return;
     } catch (err) {
       throw new Error(`${err}`);
