@@ -1,8 +1,8 @@
 <p align="center"><br><img src="https://user-images.githubusercontent.com/236501/85893648-1c92e880-b7a8-11ea-926d-95355b8175c7.png" width="128" height="128" /></p>
 <h3 align="center">SQLITE DATABASE</h3>
-<p align="center"><strong><code>@capacitor-community/sqlite</code></strong></p>
+<p align="center"><strong><code>@capacitor-community/sqlite@next</code></strong></p>
 <br>
-<p align="center" style="font-size:50px;color:red"><strong>CAPACITOR 4</strong></p><br>
+<p align="center" style="font-size:50px;color:red"><strong>CAPACITOR 5</strong></p><br>
 
 <p align="center">
   Capacitor community plugin for Native and Electron SQLite Databases. In Native databases could be encrypted with SQLCipher
@@ -30,17 +30,17 @@
 To install:
 
 ```
-npm install --save @capacitor-community/sqlite
+npm install --save @capacitor-community/sqlite@next
 npx cap sync
 ```
 
 ```
-yarn add @capacitor-community/sqlite
+yarn add @capacitor-community/sqlite@next
 npx cap sync
 ```
 
 ```
-pnpm install --save @capacitor-community/sqlite
+pnpm install --save @capacitor-community/sqlite@next
 pnpm install --save @jeep-sqlite
 pnpm install --save sql.js
 npx cap sync

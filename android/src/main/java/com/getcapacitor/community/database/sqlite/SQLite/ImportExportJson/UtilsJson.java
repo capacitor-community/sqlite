@@ -8,6 +8,8 @@ import java.sql.Blob;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -34,7 +36,14 @@ public class UtilsJson {
             List<String> tables = _uDrop.getTablesNames(db);
             for (String tableName : tables) {
                 JSObject namesTypes = getTableColumnNamesTypes(db, tableName);
-                ArrayList<String> colNames = (ArrayList<String>) namesTypes.get("names");
+                ArrayList<String> colNames = new ArrayList<>();
+                if (namesTypes.has("names")) {
+                    colNames =
+                            JSONArrayToArrayList(namesTypes.getJSONArray("names"));
+                } else {
+                    throw new Exception("isLastModified: Table " + tableName + " no names");
+                }
+
                 if (colNames.contains("last_modified")) {
                     ret = true;
                     break;
@@ -61,7 +70,13 @@ public class UtilsJson {
             List<String> tables = _uDrop.getTablesNames(db);
             for (String tableName : tables) {
                 JSObject namesTypes = getTableColumnNamesTypes(db, tableName);
-                ArrayList<String> colNames = (ArrayList<String>) namesTypes.get("names");
+                ArrayList<String> colNames = new ArrayList<>();
+                if (namesTypes.has("names")) {
+                    colNames =
+                            JSONArrayToArrayList(namesTypes.getJSONArray("names"));
+                } else {
+                    throw new Exception("isSqlDeleted: Table " + tableName + " no names");
+                }
                 if (colNames.contains("sql_deleted")) {
                     ret = true;
                     break;
@@ -469,15 +484,16 @@ public class UtilsJson {
         ArrayList<ArrayList<Object>> values = new ArrayList<>();
         try {
             JSObject tableNamesTypes = getTableColumnNamesTypes(mDb, tableName);
-            ArrayList<String> rowNames = new ArrayList<>();
             ArrayList<String> rowTypes = new ArrayList<>();
+            ArrayList<String> rowNames = new ArrayList<>();
             if (tableNamesTypes.has("names")) {
-                rowNames = (ArrayList<String>) tableNamesTypes.get("names");
+                rowNames =
+                        JSONArrayToArrayList(tableNamesTypes.getJSONArray("names"));
             } else {
                 throw new Exception("GetValues: Table " + tableName + " no names");
             }
             if (tableNamesTypes.has("types")) {
-                rowTypes = (ArrayList<String>) tableNamesTypes.get("types");
+                rowTypes = JSONArrayToArrayList(tableNamesTypes.getJSONArray("types"));
             } else {
                 throw new Exception("GetValues: Table " + tableName + " no types");
             }
@@ -528,5 +544,12 @@ public class UtilsJson {
             }
         }
         return row;
+    }
+    public ArrayList<String> JSONArrayToArrayList(JSONArray arr) throws JSONException {
+        ArrayList<String> retArr = new ArrayList<>();
+        for (int i=0; i<arr.length(); i++) {
+            retArr.add(arr.getString(i));
+        }
+        return retArr;
     }
 }

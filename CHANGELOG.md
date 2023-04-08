@@ -1,3 +1,11 @@
+# 5.0.0-beta.0 (2023-04-08)
+
+### Chore
+
+ - Update to @capacitor/core@5.0.0-beta.1
+ - Update to @capacitor/ios@5.0.0-beta.1
+ - Update to @capacitor/android@5.0.0-beta.1
+
 # 4.6.3 (2023-03-19)
 
 ### Chore

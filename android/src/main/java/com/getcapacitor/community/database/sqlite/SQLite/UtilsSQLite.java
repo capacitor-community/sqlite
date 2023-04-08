@@ -84,15 +84,18 @@ public class UtilsSQLite {
     }
 
     private String[] dealWithTriggers(String[] sqlCmdArray) {
-        List listArray = Arrays.asList(sqlCmdArray);
+        List<String> listArray = Arrays.asList(sqlCmdArray);
         listArray = trimArray(listArray);
         listArray = concatRemoveEnd(listArray);
-        String[] retArray = (String[]) listArray.toArray(new String[0]);
+        Object[] objectList = listArray.toArray();
+        String[] retArray = Arrays.copyOf(objectList, objectList.length, String[].class);
+
+//        String[] retArray =  listArray.toArray(new String[listArray.size()]);
         return retArray;
     }
 
-    private List concatRemoveEnd(List listArray) {
-        List lArray = new ArrayList(listArray);
+    private List<String> concatRemoveEnd(List<String> listArray) {
+        List<String> lArray = new ArrayList<String>(listArray);
         if (lArray.contains("END")) {
             int idx = lArray.indexOf("END");
             lArray.set(idx - 1, lArray.get(idx - 1) + "; END");
@@ -103,11 +106,12 @@ public class UtilsSQLite {
         }
     }
 
-    private List trimArray(List listArray) {
-        for (int i = 0; i < listArray.size(); i++) {
-            listArray.set(i, listArray.get(i).toString().trim());
+    private List<String> trimArray(List<String> listArray) {
+        List<String> trimmedStrings = new ArrayList<String>();
+        for(String s : listArray) {
+            trimmedStrings.add(s.trim());
         }
-        return listArray;
+        return trimmedStrings;
     }
 
     public ArrayList<Object> objectJSArrayToArrayList(JSArray jsArray) throws JSONException {

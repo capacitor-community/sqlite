@@ -78,7 +78,7 @@ export class CapacitorSQLiteWeb
         this.notifyListeners('sqliteSaveDatabaseToDiskEvent', event.detail);
       },
     );
-    
+
     if (!this.isWebStoreOpen) {
       this.isWebStoreOpen = await this.jeepSqliteElement.isStoreOpen();
     }

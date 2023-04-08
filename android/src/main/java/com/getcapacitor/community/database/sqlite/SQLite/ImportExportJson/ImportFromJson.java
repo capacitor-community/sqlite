@@ -380,8 +380,20 @@ public class ImportFromJson {
             if (tableNamesTypes.length() == 0) {
                 throw new Exception("CreateTableData: no column names & types returned");
             }
-            ArrayList<String> tColNames = (ArrayList<String>) tableNamesTypes.get("names");
-            ArrayList<String> tColTypes = (ArrayList<String>) tableNamesTypes.get("types");
+            ArrayList<String> tColNames = new ArrayList<>();
+            ArrayList<String> tColTypes = new ArrayList<>();
+            if (tableNamesTypes.has("names")) {
+                tColNames = _uJson.
+                        JSONArrayToArrayList(tableNamesTypes.getJSONArray("names"));
+            } else {
+                throw new Exception("GetValues: Table " + tableName + " no names");
+            }
+            if (tableNamesTypes.has("types")) {
+                tColTypes = _uJson.
+                        JSONArrayToArrayList(tableNamesTypes.getJSONArray("types"));
+            } else {
+                throw new Exception("GetValues: Table " + tableName + " no types");
+            }
 
             // Loop on Table's Values
             for (int j = 0; j < values.size(); j++) {
