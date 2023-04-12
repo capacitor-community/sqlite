@@ -1,3 +1,9 @@
+# 5.0.0-beta.1 (2023-04-12)
+
+### Bug Fixes
+
+- Fix UtilsJson (Android} 
+
 # 5.0.0-beta.0 (2023-04-08)
 
 ### Chore

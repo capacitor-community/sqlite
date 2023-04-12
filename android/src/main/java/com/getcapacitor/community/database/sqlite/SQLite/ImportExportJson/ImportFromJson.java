@@ -383,14 +383,12 @@ public class ImportFromJson {
             ArrayList<String> tColNames = new ArrayList<>();
             ArrayList<String> tColTypes = new ArrayList<>();
             if (tableNamesTypes.has("names")) {
-                tColNames = _uJson.
-                        JSONArrayToArrayList(tableNamesTypes.getJSONArray("names"));
+                tColNames = _uJson.getColumnNames(tableNamesTypes.get("names"));
             } else {
                 throw new Exception("GetValues: Table " + tableName + " no names");
             }
             if (tableNamesTypes.has("types")) {
-                tColTypes = _uJson.
-                        JSONArrayToArrayList(tableNamesTypes.getJSONArray("types"));
+                tColTypes = _uJson.getColumnNames(tableNamesTypes.get("types"));
             } else {
                 throw new Exception("GetValues: Table " + tableName + " no types");
             }
