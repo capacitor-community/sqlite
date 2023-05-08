@@ -79,7 +79,7 @@ const App: React.FC = () => {
 export default App;
 ```
 
-Now the Singleton SQLite Hook `sqlite`and Existing Connections Store `existingConn` can use in other components
+Now the Singleton SQLite Hook `sqlite`and Existing Connections Store `existingConn` can be used in other components
 
 ### React SQLite Hook Declaration for platforms including Web
 As for the Web platform, the `jeep-sqlite` Stencil component is used and requires the DOM it is then defined and initialized in the `index.tsx` file.
