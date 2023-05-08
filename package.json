@@ -56,11 +56,11 @@
     "prepublishOnly": "npm run build && npm run build-electron && npm run docgen"
   },
   "devDependencies": {
-    "@capacitor/android": "^4.6.3",
-    "@capacitor/cli": "^4.6.3",
-    "@capacitor/core": "^4.6.3",
+    "@capacitor/android": "^4.8.0",
+    "@capacitor/cli": "^4.8.0",
+    "@capacitor/core": "^4.8.0",
     "@capacitor/docgen": "^0.0.17",
-    "@capacitor/ios": "^4.6.3",
+    "@capacitor/ios": "^4.8.0",
     "@ionic/eslint-config": "^0.3.0",
     "@ionic/prettier-config": "^1.0.1",
     "@ionic/swiftlint-config": "^1.1.2",
@@ -95,6 +95,6 @@
     }
   },
   "dependencies": {
-    "jeep-sqlite": "^2.3.1"
+    "jeep-sqlite": "^2.3.3"
   }
 }

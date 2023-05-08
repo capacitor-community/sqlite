@@ -1,3 +1,20 @@
+# 4.8.0-0 (2023-05-08)
+
+### Chore
+
+ - Update to @capacitor/core 4.8.0
+ - Update to @capacitor/ios 4.8.0
+ - Update to @capacitor/android 4.8.0
+
+### Added Features
+
+ - add SyntaxScanner-For-SQLite-Code.md PR#405 issue#400
+
+### Bug Fixes
+
+ - Fix Ionic-React-Usage.md PR#403
+ - Fix Data import where the ID is a UUID and sql_deleted = 1 issue#399
+
 # 4.6.3 (2023-03-19)
 
 ### Chore
