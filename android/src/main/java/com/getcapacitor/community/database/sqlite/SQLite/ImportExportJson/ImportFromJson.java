@@ -557,6 +557,7 @@ public class ImportFromJson {
                 if (row.get(idxDelete).equals(1)) {
                     // Delete
                     isUpdate = false;
+                    Object key = tColNames.get(0);
                     StringBuilder sbQuery =
                         new StringBuilder("DELETE FROM ")
                             .append(tableName)

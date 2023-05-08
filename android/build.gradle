@@ -11,7 +11,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.4.1'
+        classpath 'com.android.tools.build:gradle:8.0.0'
     }
 }
 
@@ -40,8 +40,8 @@ android {
         abortOnError false
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 }
 
@@ -70,7 +70,7 @@ dependencies {
     implementation 'net.zetetic:android-database-sqlcipher:4.5.3'
     implementation "androidx.sqlite:sqlite:2.3.1"
     //security library
-    implementation "androidx.security:security-crypto:1.1.0-alpha05"
+    implementation "androidx.security:security-crypto:1.1.0-alpha06"
     implementation "androidx.biometric:biometric:1.1.0"
     annotationProcessor 'androidx.room:room-compiler:2.5.1'
 }
