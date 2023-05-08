@@ -251,6 +251,7 @@ npm install --save-dev @types/sqlite3
 
 - [Biometric Authentication](https://github.com/capacitor-community/sqlite/blob/master/docs/Biometric-Authentication.md)
 
+- [Enable SQLite Schema Error Syntax Highlighting](https://github.com/capacitor-community/sqlite/blob/master/docs/SyntaxScanner-For-SQLite-Code.md)
 
 ## Applications demonstrating the use of the plugin and related documentation
 
