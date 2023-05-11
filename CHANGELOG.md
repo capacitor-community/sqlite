@@ -1,3 +1,13 @@
+# 4.8.0-1 (2023-05-11)
+
+### Chore
+
+ - Update to jeep-sqlite@2.3.4
+
+### Bug Fixes
+
+ - Fix Database fails to open when browser window minimized issue#402
+
 # 4.8.0-0 (2023-05-08)
 
 ### Chore
