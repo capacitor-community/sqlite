@@ -16,7 +16,7 @@
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/dw/@capacitor-community/sqlite?style=flat-square" /></a>
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/v/@capacitor-community/sqlite?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-<a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-33-orange?style=flat-square" /></a>
+<a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-35-orange?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 </p>
 
@@ -79,6 +79,7 @@ then add plugin to main `capacitor.config.json` file:
 
 ## More Reading:
 
+ - [Updating to Capacitor 5](https://capacitorjs.com/docs/updating/5-0)
  - [Releases](https://github.com/capacitor-community/sqlite/blob/master/info_releases.md)
  - [Changelog](https://github.com/capacitor-community/sqlite/blob/master/CHANGELOG.md)
  - [Issues](https://github.com/capacitor-community/sqlite/issues)
@@ -116,8 +117,8 @@ You'll need the usual capacitor/android/react npm script to build and copy the a
   See [#301](https://github.com/capacitor-community/sqlite/issues/301) and [SO question](https://stackoverflow.com/questions/63291529/how-to-fix-more-than-one-file-was-found-with-os-independent-path-build-data-pro) for more information.
 
  - Check/Add the following:
-    Gradle JDK version 11
-    Android Gradle Plugin Version 7.2.2
+    Gradle JDK version 17
+    Android Gradle Plugin Version 8.0.0
     In variables.gradle
 
       ```
@@ -157,10 +158,9 @@ You'll need the usual capacitor/android/react npm script to build and copy the a
 
 ```bash
 cd electron
-npm install --save sqlite3
+npm install --save @journeyapps/sqlcipher
 npm install --save jszip
 npm install --save node-fetch@2.6.7
-npm install --save-dev @types/sqlite3
 ```
 - **Important**: `node-fetch` version must be `<=2.6.7`; otherwise [you'll get an error](https://github.com/capacitor-community/sqlite/issues/349 "you'll get an error ERR_REQUIRE_ESM") running the app. 
 
@@ -209,10 +209,10 @@ npm install --save-dev @types/sqlite3
 | deleteOldDatabases          | ✅      | ✅  | ❌        | ❌  |
 | moveDatabasesAndAddSuffix   | ✅      | ✅  | ❌        | ❌  |
 | checkConnectionsConsistency | ✅      | ✅  | ✅        | ✅  |
-| isSecretStored              | ✅      | ✅  | ❌        | ❌  |
-| setEncryptionSecret         | ✅      | ✅  | ❌        | ❌  |
-| changeEncryptionSecret      | ✅      | ✅  | ❌        | ❌  |
-| clearEncryptionSecret       | ✅      | ✅  | ❌        | ❌  |
+| isSecretStored              | ✅      | ✅  | ✅        | ❌  |
+| setEncryptionSecret         | ✅      | ✅  | ✅        | ❌  |
+| changeEncryptionSecret      | ✅      | ✅  | ✅        | ❌  |
+| clearEncryptionSecret       | ✅      | ✅  | ✅        | ❌  |
 | checkEncryptionSecret       | ✅      | ✅  | ❌        | ❌  |
 | initWebStore                | ❌      | ❌  | ❌        | ✅  |
 | saveToStore                 | ❌      | ❌  | ❌        | ✅  |
@@ -305,9 +305,9 @@ npm install --save-dev @types/sqlite3
 ## Dependencies
 
 The iOS and Android codes are using `SQLCipher` allowing for database encryption.
-The iOS codes is using `ZIPFoundation` for unzipping assets files.
-The Electron code is using `sqlite3` and `node-fetch` from 4.2.0.
-The Web code is using the Stencil component `jeep-sqlite` based on `sql.js`, `localforage`, and `jszip`.
+The iOS codes is using `ZIPFoundation` for unzipping assets files
+The Electron code is using `@journeyapps/sqlcipher` and `node-fetch` from 4.2.0.
+The Web code is using the Stencil component `jeep-sqlite` based on `sql.js`, `localforage`. and `jszip`  
 
 ## Contributors ✨
 
@@ -351,6 +351,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <a href="https://github.com/patdx" title="patdx"><img src="https://github.com/patdx.png?size=100" width="50" height="50" /></a>
   <a href="https://github.com/folsze" title="folsze"><img src="https://github.com/folsze.png?size=100" width="50" height="50" /></a>
   <a href="https://github.com/pranav-singhal" title="pranav-singhal"><img src="https://github.com/pranav-singhal.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/beligatclement" title="beligatclement"><img src="https://github.com/beligatclement.png?size=100" width="50" height="50" /></a>
 </p>
 
 

@@ -1,13 +1,13 @@
 const SQLITE_OPEN_READONLY = 1;
 
 export class UtilsSQLite {
-  //  public JSQlite: any;
-  public SQLite3: any;
+  public JSQlite: any;
+  // public SQLite3: any;
 
   constructor() {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    //    this.JSQlite = require('@journeyapps/sqlcipher').verbose();
-    this.SQLite3 = require('sqlite3');
+    this.JSQlite = require('@journeyapps/sqlcipher').verbose();
+    // this.SQLite3 = require('sqlite3');
   }
   /**
    * OpenOrCreateDatabase
@@ -15,19 +15,19 @@ export class UtilsSQLite {
    * @param password
    */
   public async openOrCreateDatabase(
-    pathDB: string /*,
-    password: string,*/,
+    pathDB: string,
+    password: string,
     readonly: boolean,
   ): Promise<any> {
     const msg = 'OpenOrCreateDatabase: ';
     // open sqlite3 database
     let mDB: any;
     if (!readonly) {
-      mDB = new this.SQLite3.Database(pathDB, {
+      mDB = new this.JSQlite.Database(pathDB, {
         verbose: console.log,
       });
     } else {
-      mDB = new this.SQLite3.Database(pathDB, SQLITE_OPEN_READONLY, {
+      mDB = new this.JSQlite.Database(pathDB, SQLITE_OPEN_READONLY, {
         verbose: console.log,
       });
     }
@@ -39,11 +39,10 @@ export class UtilsSQLite {
       }
 
       try {
-        /*        // set the password
+        // set the password
         if (password.length > 0) {
           await this.setCipherPragma(mDB, password);
         }
-        */
         // set Foreign Keys On
         await this.setForeignKeyConstraintsEnabled(mDB, true);
       } catch (err) {
@@ -59,8 +58,8 @@ export class UtilsSQLite {
    * @param mDB
    * @param password
    */
-  /*
   public async setCipherPragma(mDB: any, password: string): Promise<void> {
+    console.log("setCipherPragma");
     return new Promise((resolve, reject) => {
       mDB.serialize(() => {
         mDB.run('PRAGMA cipher_compatibility = 4');
@@ -73,7 +72,6 @@ export class UtilsSQLite {
       });
     });
   }
-*/
   /**
    * SetForeignKeyConstraintsEnabled
    * @param mDB
@@ -141,8 +139,6 @@ export class UtilsSQLite {
    * @param password
    * @param newpassword
    */
-  /*
-
   public async changePassword(
     pathDB: string,
     password: string,
@@ -150,7 +146,7 @@ export class UtilsSQLite {
   ): Promise<void> {
     let mDB: any;
     try {
-      mDB = await this.openOrCreateDatabase(pathDB, password);
+      mDB = await this.openOrCreateDatabase(pathDB, password, false);
       await this.pragmaReKey(mDB, password, newpassword);
     } catch (err) {
       return Promise.reject(err);
@@ -158,14 +154,12 @@ export class UtilsSQLite {
       mDB.close();
     }
   }
-*/
   /**
    * PragmaReKey
    * @param mDB
    * @param password
    * @param newpassword
    */
-  /*
   private async pragmaReKey(
     mDB: any,
     password: string,
@@ -184,7 +178,6 @@ export class UtilsSQLite {
       });
     });
   }
-*/
   /**
    * BeginTransaction
    * @param db

@@ -1,13 +1,13 @@
-//import { GlobalSQLite } from '../GlobalSQLite';
 import type {
   capSQLiteVersionUpgrade,
   JsonSQLite,
 } from '../../../src/definitions';
+import { GlobalSQLite } from '../GlobalSQLite';
 
 import { ExportToJson } from './ImportExportJson/exportToJson';
 import { ImportFromJson } from './ImportExportJson/importFromJson';
 import { UtilsJson } from './ImportExportJson/utilsJson';
-//import { UtilsEncryption } from './utilsEncryption';
+import { UtilsEncryption } from './utilsEncryption';
 import { UtilsFile } from './utilsFile';
 import { UtilsSQLite } from './utilsSQLite';
 import { UtilsUpgrade } from './utilsUpgrade';
@@ -15,16 +15,16 @@ import { UtilsUpgrade } from './utilsUpgrade';
 export class Database {
   private _isDbOpen: boolean;
   private dbName: string;
-  //  private _encrypted: boolean;
-  //  private _mode: string;
+  private _encrypted: boolean;
+  private _mode: string;
   private version: number;
   private readonly: boolean;
   private pathDB: string;
   private fileUtil: UtilsFile = new UtilsFile();
   private sqliteUtil: UtilsSQLite = new UtilsSQLite();
   private jsonUtil: UtilsJson = new UtilsJson();
-  //  private _uGlobal: GlobalSQLite = new GlobalSQLite();
-  //  private _uEncrypt: UtilsEncryption = new UtilsEncryption();
+  private globalUtil: GlobalSQLite = new GlobalSQLite();
+  private encryptionUtil: UtilsEncryption = new UtilsEncryption();
   private upgradeUtil: UtilsUpgrade = new UtilsUpgrade();
   private importFromJsonUtil: ImportFromJson = new ImportFromJson();
   private exportToJsonUtil: ExportToJson = new ExportToJson();
@@ -33,20 +33,22 @@ export class Database {
 
   constructor(
     dbName: string,
-    //    encrypted: boolean,
-    //    mode: string,
+    encrypted: boolean,
+    mode: string,
     version: number,
     readonly: boolean,
     upgDict: Record<number, capSQLiteVersionUpgrade>,
+    globalUtil?: GlobalSQLite
   ) {
     this.dbName = dbName;
-    //    this._encrypted = encrypted;
-    //    this._mode = mode;
+    this._encrypted = encrypted;
+    this._mode = mode;
     this.version = version;
     this.readonly = readonly;
     this.upgradeVersionDict = upgDict;
     this.pathDB = this.fileUtil.getFilePath(dbName);
     this._isDbOpen = false;
+    this.globalUtil = globalUtil ? globalUtil : new GlobalSQLite();
 
     if (this.pathDB.length === 0)
       throw new Error('Could not generate a path to ' + dbName);
@@ -68,30 +70,28 @@ export class Database {
    */
   async open(): Promise<void> {
     this._isDbOpen = false;
-    //    let password = '';
+       let password = '';
     try {
-      /*
       if (
         this._encrypted &&
         (this._mode === 'secret' || this._mode === 'encryption')
       ) {
-        password = this._uGlobal.secret;
+        password = this.globalUtil.secret;
       }
       if (this._mode === 'newsecret') {
         // change the password
-        const oPassword: string = this._uGlobal.secret;
-        const nPassword: string = this._uGlobal.newsecret;
-        await this._uSQLite.changePassword(this._pathDB, oPassword, nPassword);
+        const oPassword: string = this.globalUtil.secret;
+        const nPassword: string = this.globalUtil.newsecret;
+        await this.sqliteUtil.changePassword(this.pathDB, oPassword, nPassword);
         password = nPassword;
       }
 
       if (this._mode === 'encryption') {
-        await this._uEncrypt.encryptDatabase(this._pathDB, password);
+        await this.encryptionUtil.encryptDatabase(this.pathDB, password);
       }
-*/
       this.database = await this.sqliteUtil.openOrCreateDatabase(
-        this.pathDB /*,
-        password,*/,
+        this.pathDB,
+        password,
         this.readonly,
       );
       this._isDbOpen = true;
@@ -158,7 +158,24 @@ export class Database {
       });
     });
   }
-
+  /**
+   * ChangeSecret
+   * open the @journeyapps/sqlcipher sqlite3 database
+   * @returns Promise<void>
+   */
+  async changeSecret(): Promise<void> {
+    try {
+      if (this._mode === 'encryption') {
+        // change the password
+        const oPassword: string = this.globalUtil.secret;
+        const nPassword: string = this.globalUtil.newsecret;
+        await this.sqliteUtil.changePassword(this.pathDB, oPassword, nPassword);
+      }
+      return;
+    } catch (err) {
+      throw new Error(`Change secret: ${err}`);
+    }
+  }
   /**
    * GetVersion
    * get the database version
