@@ -16,7 +16,7 @@
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/dw/@capacitor-community/sqlite?style=flat-square" /></a>
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/v/@capacitor-community/sqlite?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-<a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-33-orange?style=flat-square" /></a>
+<a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-34-orange?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 </p>
 
@@ -159,7 +159,7 @@ You'll need the usual capacitor/android/react npm script to build and copy the a
 cd electron
 npm install --save @journeyapps/sqlcipher
 npm install --save jszip
-npm install --save node-fetch
+npm install --save node-fetch@2.6.7
 ```
 - **Important**: `node-fetch` version must be `<=2.6.7`; otherwise [you'll get an error](https://github.com/capacitor-community/sqlite/issues/349 "you'll get an error ERR_REQUIRE_ESM") running the app. 
 
@@ -350,6 +350,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <a href="https://github.com/patdx" title="patdx"><img src="https://github.com/patdx.png?size=100" width="50" height="50" /></a>
   <a href="https://github.com/folsze" title="folsze"><img src="https://github.com/folsze.png?size=100" width="50" height="50" /></a>
   <a href="https://github.com/pranav-singhal" title="pranav-singhal"><img src="https://github.com/pranav-singhal.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/beligatclement" title="beligatclement"><img src="https://github.com/beligatclement.png?size=100" width="50" height="50" /></a>
 </p>
 
 

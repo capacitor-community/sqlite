@@ -1,3 +1,9 @@
+# 4.8.0 (2023-05-24)
+
+### Added Features
+
+ - Enable electron database encryption PR#342 from Clément Béligat
+
 # 4.8.0-1 (2023-05-11)
 
 ### Chore
