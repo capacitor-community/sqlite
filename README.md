@@ -157,10 +157,9 @@ You'll need the usual capacitor/android/react npm script to build and copy the a
 
 ```bash
 cd electron
-npm install --save sqlite3
+npm install --save @journeyapps/sqlcipher
 npm install --save jszip
-npm install --save node-fetch@2.6.7
-npm install --save-dev @types/sqlite3
+npm install --save node-fetch
 ```
 - **Important**: `node-fetch` version must be `<=2.6.7`; otherwise [you'll get an error](https://github.com/capacitor-community/sqlite/issues/349 "you'll get an error ERR_REQUIRE_ESM") running the app. 
 
@@ -180,7 +179,7 @@ npm install --save-dev @types/sqlite3
 | isConnection (ReadWrite)    | ✅      | ✅  | ✅        | ✅  |
 | isConnection (ReadOnly)     | ✅      | ✅  | ✅        | ❌  | since 4.1.0-7
 | open (non-encrypted DB)     | ✅      | ✅  | ✅        | ✅  |
-| open (encrypted DB)         | ✅      | ✅  | ❌        | ❌  |
+| open (encrypted DB)         | ✅      | ✅  | ✅        | ❌  |
 | close                       | ✅      | ✅  | ✅        | ✅  |
 | getUrl                      | ✅      | ✅  | ❌        | ❌  |
 | getVersion                  | ✅      | ✅  | ✅        | ✅  |
@@ -209,10 +208,10 @@ npm install --save-dev @types/sqlite3
 | deleteOldDatabases          | ✅      | ✅  | ❌        | ❌  |
 | moveDatabasesAndAddSuffix   | ✅      | ✅  | ❌        | ❌  |
 | checkConnectionsConsistency | ✅      | ✅  | ✅        | ✅  |
-| isSecretStored              | ✅      | ✅  | ❌        | ❌  |
-| setEncryptionSecret         | ✅      | ✅  | ❌        | ❌  |
-| changeEncryptionSecret      | ✅      | ✅  | ❌        | ❌  |
-| clearEncryptionSecret       | ✅      | ✅  | ❌        | ❌  |
+| isSecretStored              | ✅      | ✅  | ✅        | ❌  |
+| setEncryptionSecret         | ✅      | ✅  | ✅        | ❌  |
+| changeEncryptionSecret      | ✅      | ✅  | ✅        | ❌  |
+| clearEncryptionSecret       | ✅      | ✅  | ✅        | ❌  |
 | checkEncryptionSecret       | ✅      | ✅  | ❌        | ❌  |
 | initWebStore                | ❌      | ❌  | ❌        | ✅  |
 | saveToStore                 | ❌      | ❌  | ❌        | ✅  |
@@ -305,9 +304,9 @@ npm install --save-dev @types/sqlite3
 ## Dependencies
 
 The iOS and Android codes are using `SQLCipher` allowing for database encryption.
-The iOS codes is using `ZIPFoundation` for unzipping assets files.
-The Electron code is using `sqlite3` and `node-fetch` from 4.2.0.
-The Web code is using the Stencil component `jeep-sqlite` based on `sql.js`, `localforage`, and `jszip`.
+The iOS codes is using `ZIPFoundation` for unzipping assets files
+The Electron code is using `@journeyapps/sqlcipher` and `node-fetch` from 4.2.0.
+The Web code is using the Stencil component `jeep-sqlite` based on `sql.js`, `localforage`. and `jszip`  
 
 ## Contributors ✨
 
