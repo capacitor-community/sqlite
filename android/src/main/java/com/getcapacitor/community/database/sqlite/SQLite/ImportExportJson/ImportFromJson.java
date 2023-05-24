@@ -380,8 +380,18 @@ public class ImportFromJson {
             if (tableNamesTypes.length() == 0) {
                 throw new Exception("CreateTableData: no column names & types returned");
             }
-            ArrayList<String> tColNames = (ArrayList<String>) tableNamesTypes.get("names");
-            ArrayList<String> tColTypes = (ArrayList<String>) tableNamesTypes.get("types");
+            ArrayList<String> tColNames = new ArrayList<>();
+            ArrayList<String> tColTypes = new ArrayList<>();
+            if (tableNamesTypes.has("names")) {
+                tColNames = _uJson.getColumnNames(tableNamesTypes.get("names"));
+            } else {
+                throw new Exception("GetValues: Table " + tableName + " no names");
+            }
+            if (tableNamesTypes.has("types")) {
+                tColTypes = _uJson.getColumnNames(tableNamesTypes.get("types"));
+            } else {
+                throw new Exception("GetValues: Table " + tableName + " no types");
+            }
 
             // Loop on Table's Values
             for (int j = 0; j < values.size(); j++) {
@@ -548,11 +558,13 @@ public class ImportFromJson {
                     // Delete
                     isUpdate = false;
                     Object key = tColNames.get(0);
-                    StringBuilder sbQuery = new StringBuilder("DELETE FROM ")
-                        .append(tableName)
-                        .append(" WHERE ")
-                        .append(tColNames.get(0))
-                        .append(" = ");
+                    StringBuilder sbQuery =
+                        new StringBuilder("DELETE FROM ")
+                            .append(tableName)
+                            .append(" WHERE ")
+                            .append(tColNames.get(0))
+                            .append(" = ");
+                    
                     if (key instanceof Integer) sbQuery.append(row.get(0)).append(";");
                     if (key instanceof String) sbQuery.append("'").append(row.get(0)).append("';");
                     stmt = sbQuery.toString();

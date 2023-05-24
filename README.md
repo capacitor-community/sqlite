@@ -1,8 +1,8 @@
 <p align="center"><br><img src="https://user-images.githubusercontent.com/236501/85893648-1c92e880-b7a8-11ea-926d-95355b8175c7.png" width="128" height="128" /></p>
 <h3 align="center">SQLITE DATABASE</h3>
-<p align="center"><strong><code>@capacitor-community/sqlite</code></strong></p>
+<p align="center"><strong><code>@capacitor-community/sqlite@next</code></strong></p>
 <br>
-<p align="center" style="font-size:50px;color:red"><strong>CAPACITOR 4</strong></p><br>
+<p align="center" style="font-size:50px;color:red"><strong>CAPACITOR 5</strong></p><br>
 
 <p align="center">
   Capacitor community plugin for Native and Electron SQLite Databases. In Native databases could be encrypted with SQLCipher
@@ -16,7 +16,7 @@
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/dw/@capacitor-community/sqlite?style=flat-square" /></a>
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/v/@capacitor-community/sqlite?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-<a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-34-orange?style=flat-square" /></a>
+<a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-35-orange?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 </p>
 
@@ -79,6 +79,7 @@ then add plugin to main `capacitor.config.json` file:
 
 ## More Reading:
 
+ - [Updating to Capacitor 5](https://capacitorjs.com/docs/updating/5-0)
  - [Releases](https://github.com/capacitor-community/sqlite/blob/master/info_releases.md)
  - [Changelog](https://github.com/capacitor-community/sqlite/blob/master/CHANGELOG.md)
  - [Issues](https://github.com/capacitor-community/sqlite/issues)
@@ -116,8 +117,8 @@ You'll need the usual capacitor/android/react npm script to build and copy the a
   See [#301](https://github.com/capacitor-community/sqlite/issues/301) and [SO question](https://stackoverflow.com/questions/63291529/how-to-fix-more-than-one-file-was-found-with-os-independent-path-build-data-pro) for more information.
 
  - Check/Add the following:
-    Gradle JDK version 11
-    Android Gradle Plugin Version 7.2.2
+    Gradle JDK version 17
+    Android Gradle Plugin Version 8.0.0
     In variables.gradle
 
       ```

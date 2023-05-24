@@ -555,6 +555,11 @@ public class CapacitorSQLitePlugin extends Plugin {
             return;
         }
         JSArray openModes = call.getArray("openModes");
+        if (dbNames == null || openModes == null) {
+            String msg = "CheckConnectionsConsistency: No dbNames or openModes given";
+            rHandler.retResult(call, null, msg);
+            return;
+        }
         if (implementation != null) {
             try {
                 Boolean res = implementation.checkConnectionsConsistency(dbNames, openModes);
@@ -784,9 +789,14 @@ public class CapacitorSQLitePlugin extends Plugin {
             folderPath = call.getString("folderPath");
         }
         if (!call.getData().has("dbNameList")) {
-            dbList = new JSArray();
+            dbList = null;
         } else {
             dbList = call.getArray("dbNameList");
+        }
+        if (dbList == null) {
+            String msg = "AddSQLiteSuffix: dbNameList not given or empty";
+            rHandler.retResult(call, null, msg);
+            return;
         }
         if (implementation != null) {
             try {
@@ -818,9 +828,14 @@ public class CapacitorSQLitePlugin extends Plugin {
             folderPath = call.getString("folderPath");
         }
         if (!call.getData().has("dbNameList")) {
-            dbList = new JSArray();
+            dbList = null;
         } else {
             dbList = call.getArray("dbNameList");
+        }
+        if (dbList == null) {
+            String msg = "deleteOldDatabases: dbNameList not given or empty";
+            rHandler.retResult(call, null, msg);
+            return;
         }
         if (implementation != null) {
             try {
@@ -852,9 +867,14 @@ public class CapacitorSQLitePlugin extends Plugin {
             folderPath = call.getString("folderPath");
         }
         if (!call.getData().has("dbNameList")) {
-            dbList = new JSArray();
+            dbList = null;
         } else {
             dbList = call.getArray("dbNameList");
+        }
+        if (dbList == null) {
+            String msg = "moveDatabasesAndAddSuffix: dbNameList not given or empty";
+            rHandler.retResult(call, null, msg);
+            return;
         }
         if (implementation != null) {
             try {
@@ -936,6 +956,11 @@ public class CapacitorSQLitePlugin extends Plugin {
             return;
         }
         JSArray set = call.getArray("set");
+        if (set == null) {
+            String msg = "ExecuteSet: Must provide a set of SQL statements";
+            rHandler.retChanges(call, retRes, msg);
+            return;
+        }
         if (set.length() == 0) {
             String msg = "ExecuteSet: Must provide a non-empty set of SQL statements";
             rHandler.retChanges(call, retRes, msg);
@@ -999,7 +1024,11 @@ public class CapacitorSQLitePlugin extends Plugin {
             return;
         }
         JSArray values = call.getArray("values");
-
+        if (values == null) {
+            String msg = "Run: Must provide an Array of values";
+            rHandler.retChanges(call, retRes, msg);
+            return;
+        }
         Boolean transaction = call.getBoolean("transaction", true);
         Boolean readOnly = call.getBoolean("readonly", false);
         if (implementation != null) {
@@ -1044,6 +1073,11 @@ public class CapacitorSQLitePlugin extends Plugin {
             return;
         }
         JSArray values = call.getArray("values");
+        if (values == null) {
+            String msg = "Query: Must provide an Array of values";
+            rHandler.retValues(call, new JSArray(), msg);
+            return;
+        }
         Boolean readOnly = call.getBoolean("readonly", false);
         if (implementation != null) {
             try {
@@ -1263,7 +1297,7 @@ public class CapacitorSQLitePlugin extends Plugin {
         if (!call.getData().has("database")) {
             String msg = "GetSyncDate : Must provide a database name";
             retRes.put("changes", Integer.valueOf(-1));
-            rHandler.retSyncDate(call, new Long(0), msg);
+            rHandler.retSyncDate(call, Long.valueOf(0), msg);
             return;
         }
         String dbName = call.getString("database");
@@ -1275,11 +1309,11 @@ public class CapacitorSQLitePlugin extends Plugin {
                 return;
             } catch (Exception e) {
                 String msg = "GetSyncDate: " + e.getMessage();
-                rHandler.retSyncDate(call, new Long(0), msg);
+                rHandler.retSyncDate(call, Long.valueOf(0), msg);
                 return;
             }
         } else {
-            rHandler.retSyncDate(call, new Long(0), loadMessage);
+            rHandler.retSyncDate(call, Long.valueOf(0), loadMessage);
             return;
         }
     }
@@ -1304,6 +1338,11 @@ public class CapacitorSQLitePlugin extends Plugin {
             return;
         }
         JSArray upgrade = call.getArray("upgrade");
+        if (upgrade == null) {
+            String msg = "AddUpgradeStatement: Must provide an array with upgrade statement";
+            rHandler.retResult(call, null, msg);
+            return;
+        }
 
         if (implementation != null) {
             try {

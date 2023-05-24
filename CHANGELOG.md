@@ -1,3 +1,41 @@
+# 5.0.0 (2023-05-24)
+
+### Chore
+
+ - Update to @capacitor/core@5.0.4
+ - Update to @capacitor/ios@5.0.4
+ - Update to @capacitor/android@5.0.4
+ 
+### Added Features
+
+ - Enable electron database encryption PR#342 from Clément Béligat
+
+### Bug Fixes
+
+ - Fix Encrypted electron database issue#162
+ 
+# 5.0.0-beta.2 (2023-05-08)
+
+### Chore
+
+ - Update to @capacitor/core 5.0.0
+ - Update to @capacitor/ios 5.0.0
+ - Update to @capacitor/android 5.0.0
+
+# 5.0.0-beta.1 (2023-04-12)
+
+### Bug Fixes
+
+- Fix UtilsJson (Android} 
+
+# 5.0.0-beta.0 (2023-04-08)
+
+### Chore
+
+ - Update to @capacitor/core@5.0.0-beta.1
+ - Update to @capacitor/ios@5.0.0-beta.1
+ - Update to @capacitor/android@5.0.0-beta.1
+
 # 4.8.0 (2023-05-24)
 
 ### Added Features

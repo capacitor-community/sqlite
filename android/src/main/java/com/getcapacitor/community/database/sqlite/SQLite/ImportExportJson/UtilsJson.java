@@ -6,8 +6,11 @@ import com.getcapacitor.community.database.sqlite.SQLite.Database;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsDrop;
 import java.sql.Blob;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -34,8 +37,14 @@ public class UtilsJson {
             List<String> tables = _uDrop.getTablesNames(db);
             for (String tableName : tables) {
                 JSObject namesTypes = getTableColumnNamesTypes(db, tableName);
-                ArrayList<String> colNames = (ArrayList<String>) namesTypes.get("names");
-                if (colNames.contains("last_modified")) {
+                ArrayList<String> colNames = new ArrayList<>();
+                if (namesTypes.has("names")) {
+                  colNames = getColumnNames(namesTypes.get("names"));
+                } else {
+                  throw new Exception("isLastModified: Table " + tableName + " no names");
+                }
+
+                if (colNames.size() > 0  &&  colNames.contains("last_modified")) {
                     ret = true;
                     break;
                 }
@@ -46,6 +55,18 @@ public class UtilsJson {
         }
     }
 
+  /**
+   * Get Column name's list
+   * @param obj
+   * @return
+   */
+    public ArrayList<String> getColumnNames(Object obj) {
+
+      ArrayList<String> colNames = new ArrayList<>();
+      if (obj instanceof ArrayList) colNames = (ArrayList<String>) obj;
+
+      return colNames;
+    }
     /**
      * Check existence of sql_deleted column
      * @param db
@@ -61,7 +82,12 @@ public class UtilsJson {
             List<String> tables = _uDrop.getTablesNames(db);
             for (String tableName : tables) {
                 JSObject namesTypes = getTableColumnNamesTypes(db, tableName);
-                ArrayList<String> colNames = (ArrayList<String>) namesTypes.get("names");
+                ArrayList<String> colNames = new ArrayList<>();
+                if (namesTypes.has("names")) {
+                  colNames = getColumnNames(namesTypes.get("names"));
+                } else {
+                    throw new Exception("isSqlDeleted: Table " + tableName + " no names");
+                }
                 if (colNames.contains("sql_deleted")) {
                     ret = true;
                     break;
@@ -469,15 +495,15 @@ public class UtilsJson {
         ArrayList<ArrayList<Object>> values = new ArrayList<>();
         try {
             JSObject tableNamesTypes = getTableColumnNamesTypes(mDb, tableName);
-            ArrayList<String> rowNames = new ArrayList<>();
             ArrayList<String> rowTypes = new ArrayList<>();
+            ArrayList<String> rowNames = new ArrayList<>();
             if (tableNamesTypes.has("names")) {
-                rowNames = (ArrayList<String>) tableNamesTypes.get("names");
+                rowNames = getColumnNames(tableNamesTypes.get("names"));
             } else {
                 throw new Exception("GetValues: Table " + tableName + " no names");
             }
             if (tableNamesTypes.has("types")) {
-                rowTypes = (ArrayList<String>) tableNamesTypes.get("types");
+                rowTypes = getColumnNames(tableNamesTypes.get("types"));
             } else {
                 throw new Exception("GetValues: Table " + tableName + " no types");
             }
