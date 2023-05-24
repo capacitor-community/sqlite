@@ -1,3 +1,167 @@
+# 4.8.0-1 (2023-05-11)
+
+### Chore
+
+ - Update to jeep-sqlite@2.3.4
+
+### Bug Fixes
+
+ - Fix Database fails to open when browser window minimized issue#402
+
+# 4.8.0-0 (2023-05-08)
+
+### Chore
+
+ - Update to @capacitor/core 4.8.0
+ - Update to @capacitor/ios 4.8.0
+ - Update to @capacitor/android 4.8.0
+
+### Added Features
+
+ - add SyntaxScanner-For-SQLite-Code.md PR#405 issue#400
+
+### Bug Fixes
+
+ - Fix Ionic-React-Usage.md PR#403
+ - Fix Data import where the ID is a UUID and sql_deleted = 1 issue#399
+
+# 4.6.3 (2023-03-19)
+
+### Chore
+
+ - Update to jeep-sqlite 2.3.1
+
+### Added Features
+
+ - add getFromLocalDiskToStore and saveToLocalDisk methods (Web platform)
+ - add unexpected behaviour docs PR #394 by folsze
+
+# 4.6.3-4 (2023-03-12)
+
+### Bug Fixes
+
+ - Remove logs in build (Web) issue#392
+ 
+# 4.6.3-3 (2023-03-10)
+
+### Bug Fixes
+
+- Fix Strip comment lines when using CapacitorSQLite.execute (Android} PR#387 by patdx
+- Fix CapacitorSQLite.execute on Android does not support comments issue#386
+- Add Comments within SQL statements in API.md
+
+# 4.6.3-2 (2023-03-10)
+
+### Bug Fixes
+
+ - Update Ionic-React-Usage.md PR#390 by eppineda
+ - Fix Foreign Key Support on Web Version (jeep-sqlite) issue#385
+
+# 4.6.3-1 (2023-02-26)
+
+### Chore
+
+ - Update to @capacitor/core 4.6.3
+ - Update to @capacitor/ios 4.6.3
+ - Update to @capacitor/android 4.6.3
+
+### Bug Fixes
+
+ - Update configure plugin section #381 by ws-rush
+ - Add link to vite-vue-sqlite-app
+
+# 4.6.2 (2023-02-24)
+
+### Chore
+
+  - Update to jeep-sqlite@2.0.0 with @stencil/core@3.00
+  - Update SQLCipher to 4.5.0 (iOS & Android only)
+  - Update to androidx.security:security-crypto:1.1.0-alpha05 (should fix issue#321)
+
+# 4.6.2-3 (2023-02-15)
+
+### Bug Fixes
+
+ - Keep database version number after encrypting a database (iOS)
+
+ - Encrypted Database isn't Encrypted when no Passphrase stored (iOS, Android) issue#375
+
+# 4.6.2-2 (2023-02-11)
+
+### Added Features
+
+ - add isDatabaseEncrypted, isInConfigEncryption, isInConfigBiometricAuth methods
+
+# 4.6.2-1 (2023-02-10)
+
+### Chore
+
+ - Update to @capacitor/core 4.6.2
+ - Update to @capacitor/ios 4.6.2
+ - Update to @capacitor/android 4.6.2
+
+### Bug Fixes
+
+ - Failed to parse source map issue#374
+
+# 4.6.1 (2023-02-03)
+
+### Added Features
+
+ - add checkEncryptionSecret #issue-request#370.
+ - add `ionic-angular-sqlite-starter`a new application starter for CRUD operations
+
+### Bug Fixes
+
+ - fix contributors paragraph ending correctly (PR Micha-Richter)
+
+# 4.6.1-2 (2023-01-15)
+
+### Bug Fixes
+
+ - fix addUpgradeStatement all platforms
+
+# 4.6.1-1 (2023-01-12)
+
+### Chore
+
+ - Update to @capacitor/core 4.6.1
+ - Update to @capacitor/ios 4.6.1
+ - Update to @capacitor/android 4.6.1
+
+### Bug Fixes
+
+ - fix(docs): use yarn add in favor of deprecated yarn install --save issue#362 (PR from Sirs0ri)
+ - fix open readonly encrypted database (Android) issue#364 (PR from TheNovemberRain)
+ - fix file deletion for windows (Electron) issue#367 (PR from tobiasmuecksch)
+ - improve code in docs issue#368 (PR from fizdalf)
+
+
+# 4.6.0 (2022-12-23)
+
+### Chore
+
+ - Update to @capacitor/core 4.6.0
+ - Update to @capacitor/ios 4.6.0
+ - Update to @capacitor/android 4.6.0
+
+### Bug Fixes
+
+ - Fix createNCConnection and closeNCConnection in Android
+
+# 4.5.0 (2022-12-08)
+
+### Chore
+
+ - Update to @capacitor/core 4.5.0
+ - Update to @capacitor/ios 4.5.0
+ - Update to @capacitor/android 4.5.0
+ - Update to jeep-sqlite 1.6.9
+
+### Bug Fixes
+
+ - Fix sortedKeys in onUpgrade Electron issue#353
+
 # 4.2.2 (2022-10-18)
 
 ### Chore

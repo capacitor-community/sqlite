@@ -201,6 +201,37 @@ public class CapacitorSQLitePlugin extends Plugin {
         }
     }
 
+    /**
+     * checkEncryptionSecret
+     * check a passphrase secret against the stored passphrase
+     *
+     * @param call
+     */
+    @PluginMethod
+    public void checkEncryptionSecret(PluginCall call) {
+        String passphrase = null;
+        if (!call.getData().has("passphrase")) {
+            String msg = "checkEncryptionSecret: Must provide a passphrase";
+            rHandler.retResult(call, null, msg);
+            return;
+        }
+        passphrase = call.getString("passphrase");
+        if (implementation != null) {
+            try {
+                Boolean res = implementation.checkEncryptionSecret(passphrase);
+                rHandler.retResult(call, res, null);
+                return;
+            } catch (Exception e) {
+                String msg = "CheckEncryptionSecret: " + e.getMessage();
+                rHandler.retResult(call, null, msg);
+                return;
+            }
+        } else {
+            rHandler.retResult(call, null, loadMessage);
+            return;
+        }
+    }
+
     @PluginMethod
     public void getNCDatabasePath(PluginCall call) {
         String folderPath = null;
@@ -570,7 +601,62 @@ public class CapacitorSQLitePlugin extends Plugin {
     }
 
     /**
-     * IsDatabase Method
+     * IsDatabaseEncrypted Method
+     * Check if the database is encrypted
+     *
+     * @param call
+     */
+    @PluginMethod
+    public void isDatabaseEncrypted(PluginCall call) {
+        if (!call.getData().has("database")) {
+            rHandler.retResult(call, null, "Must provide a database name");
+            return;
+        }
+        String dbName = call.getString("database");
+        if (implementation != null) {
+            try {
+                Boolean res = implementation.isDatabaseEncrypted(dbName);
+                rHandler.retResult(call, res, null);
+                return;
+            } catch (Exception e) {
+                String msg = "isDatabaseEncrypted: " + e.getMessage();
+                rHandler.retResult(call, null, msg);
+                return;
+            }
+        } else {
+            rHandler.retResult(call, null, loadMessage);
+            return;
+        }
+    }
+
+    /**
+     * isInConfigEncryption
+     * Check if encryption is definrd in capacitor.config
+     *
+     * @param call
+     */
+    @PluginMethod
+    public void isInConfigEncryption(PluginCall call) {
+        Boolean res = this.config.getIsEncryption();
+        rHandler.retResult(call, res, null);
+        return;
+    }
+
+    /**
+     * isInConfigBiometricAuth
+     * Check if biometric auth is definrd in capacitor.config
+     *
+     * @param call
+     */
+    @PluginMethod
+    public void isInConfigBiometricAuth(PluginCall call) {
+        Boolean res = this.config.getBiometricAuth();
+        rHandler.retResult(call, res, null);
+        return;
+    }
+
+    /**
+     * IsNCDatabase Method
      * Check if the database file exists
      *
      * @param call

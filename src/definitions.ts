@@ -22,6 +22,24 @@ export interface CapacitorSQLitePlugin {
 
   saveToStore(options: capSQLiteOptions): Promise<void>;
   /**
+   * Get database from local disk and save it to store
+   *
+   * @param options: capSQLiteLocalDiskOptions
+   * @return Promise<void>
+   * @since 4.6.3
+   */
+
+  getFromLocalDiskToStore(options: capSQLiteLocalDiskOptions): Promise<void>;
+  /**
+   * Save database to local disk
+   *
+   * @param options: capSQLiteOptions
+   * @return Promise<void>
+   * @since 4.6.3
+   */
+
+  saveToLocalDisk(options: capSQLiteOptions): Promise<void>;
+  /**
    * Check if a passphrase exists in a secure store
    *
    * @return Promise<capSQLiteResult>
@@ -55,6 +73,14 @@ export interface CapacitorSQLitePlugin {
    * @since 3.5.1
    */
   clearEncryptionSecret(): Promise<void>;
+  /**
+   * Check encryption passphrase
+   *
+   * @return Promise<capSQLiteResult>
+   * @since 4.6.1
+   */
+
+  checkEncryptionSecret(options: capSetSecretOptions): Promise<capSQLiteResult>;
 
   /**
    * create a database connection
@@ -150,6 +176,25 @@ export interface CapacitorSQLitePlugin {
    * @since 3.0.0-beta.5
    */
   isDBOpen(options: capSQLiteOptions): Promise<capSQLiteResult>;
+  /**
+   * Check if a SQLite database is encrypted
+   * @param options: capSQLiteOptions
+   * @returns Promise<capSQLiteResult>
+   * @since 4.6.2-2
+   */
+  isDatabaseEncrypted(options: capSQLiteOptions): Promise<capSQLiteResult>;
+  /**
+   * Check encryption value in capacitor.config
+   * @returns Promise<capSQLiteResult>
+   * @since 4.6.2-2
+   */
+  isInConfigEncryption(): Promise<capSQLiteResult>;
+  /**
+   * Check encryption value in capacitor.config
+   * @returns Promise<capSQLiteResult>
+   * @since 4.6.2-2
+   */
+  isInConfigBiometricAuth(): Promise<capSQLiteResult>;
   /**
    * Check if a SQLite database exists without connection
    * @param options: capSQLiteOptions
@@ -543,6 +588,14 @@ export interface capSQLiteFromAssetsOptions {
    */
   overwrite?: boolean;
 }
+export interface capSQLiteLocalDiskOptions {
+  /**
+   * Set the overwrite mode for saving the database from local disk to store
+   * "true"/"false"  default to "true"
+   *
+   */
+  overwrite?: boolean;
+}
 export interface capSQLiteHTTPOptions {
   /**
    * The url of the database or the zipped database(s)
@@ -829,6 +882,22 @@ export interface capJsonProgressListener {
    */
   progress?: string;
 }
+export interface capHttpRequestEndedListener {
+  /**
+   * Message
+   */
+  message?: string;
+}
+export interface capPickOrSaveDatabaseEndedListener {
+  /**
+   * Pick Database's name
+   */
+  db_name?: string;
+  /**
+   * Message
+   */
+  message?: string;
+}
 export interface capSQLiteVersionUpgrade {
   toVersion: number;
   statements: string[];
@@ -851,6 +920,22 @@ export interface ISQLiteConnection {
    * @since 3.2.3-1
    */
   saveToStore(database: string): Promise<void>;
+  /**
+   * Get database from local disk and save it to store
+   *
+   * @param overwrite: boolean
+   * @return Promise<void>
+   * @since 4.6.3
+   */
+  getFromLocalDiskToStore(overwrite: boolean): Promise<void>;
+  /**
+   * Save database to local disk
+   *
+   * @param database: string
+   * @return Promise<void>
+   * @since 4.6.3
+   */
+  saveToLocalDisk(database: string): Promise<void>;
   /**
    * Echo a value
    * @param value
@@ -888,6 +973,13 @@ export interface ISQLiteConnection {
    * @since 3.5.1
    */
   clearEncryptionSecret(): Promise<void>;
+  /**
+   * Check the passphrase stored in a secure store
+   * @param passphrase
+   * @returns Promise<capSQLiteResult>
+   * @since 4.6.1
+   */
+  checkEncryptionSecret(passphrase: string): Promise<capSQLiteResult>;
   /**
    * Add the upgrade Statement for database version upgrading
    * @param database
@@ -1040,6 +1132,25 @@ export interface ISQLiteConnection {
    */
   getFromHTTPRequest(url?: string, overwrite?: boolean): Promise<void>;
   /**
+   * Check if a SQLite database is encrypted
+   * @param options: capSQLiteOptions
+   * @returns Promise<capSQLiteResult>
+   * @since 4.6.2-2
+   */
+  isDatabaseEncrypted(database: string): Promise<capSQLiteResult>;
+  /**
+   * Check encryption value in capacitor.config
+   * @returns Promise<capSQLiteResult>
+   * @since 4.6.2-2
+   */
+  isInConfigEncryption(): Promise<capSQLiteResult>;
+  /**
+   * Check encryption value in capacitor.config
+   * @returns Promise<capSQLiteResult>
+   * @since 4.6.2-2
+   */
+  isInConfigBiometricAuth(): Promise<capSQLiteResult>;
+  /**
    * Check if a database exists
    * @param database
    * @returns Promise<capSQLiteResult>
@@ -1117,6 +1228,25 @@ export class SQLiteConnection implements ISQLiteConnection {
       return Promise.reject(err);
     }
   }
+  async saveToLocalDisk(database: string): Promise<void> {
+    try {
+      await this.sqlite.saveToLocalDisk({ database });
+      return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async getFromLocalDiskToStore(overwrite?: boolean): Promise<void> {
+    const mOverwrite: boolean = overwrite != null ? overwrite : true;
+
+    try {
+      await this.sqlite.getFromLocalDiskToStore({ overwrite: mOverwrite });
+      return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+
   async echo(value: string): Promise<capEchoResult> {
     try {
       const res = await this.sqlite.echo({ value });
@@ -1160,6 +1290,16 @@ export class SQLiteConnection implements ISQLiteConnection {
     try {
       await this.sqlite.clearEncryptionSecret();
       return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async checkEncryptionSecret(passphrase: string): Promise<capSQLiteResult> {
+    try {
+      const res: capSQLiteResult = await this.sqlite.checkEncryptionSecret({
+        passphrase: passphrase,
+      });
+      return Promise.resolve(res);
     } catch (err) {
       return Promise.reject(err);
     }
@@ -1389,6 +1529,31 @@ export class SQLiteConnection implements ISQLiteConnection {
     try {
       await this.sqlite.getFromHTTPRequest({ url, overwrite: mOverwrite });
       return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async isDatabaseEncrypted(database: string): Promise<capSQLiteResult> {
+    if (database.endsWith('.db')) database = database.slice(0, -3);
+    try {
+      const res = await this.sqlite.isDatabaseEncrypted({ database: database });
+      return Promise.resolve(res);
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async isInConfigEncryption(): Promise<capSQLiteResult> {
+    try {
+      const res = await this.sqlite.isInConfigEncryption();
+      return Promise.resolve(res);
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async isInConfigBiometricAuth(): Promise<capSQLiteResult> {
+    try {
+      const res = await this.sqlite.isInConfigBiometricAuth();
+      return Promise.resolve(res);
     } catch (err) {
       return Promise.reject(err);
     }

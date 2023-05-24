@@ -38,123 +38,62 @@ export class SQLiteService {
     /**
      * Plugin Initialization
      */
-    initializePlugin(): Promise<boolean> {
-        return new Promise (resolve => {
-            this.platform = Capacitor.getPlatform();
-            if(this.platform === 'ios' || this.platform === 'android') this.native = true;
-            this.sqlitePlugin = CapacitorSQLite;
-            this.sqlite = new SQLiteConnection(this.sqlitePlugin);
-            this.isService = true;
-            resolve(true);
-        });
+    async initializePlugin(): Promise<boolean> {
+        this.platform = Capacitor.getPlatform();
+        if ( this.platform === 'ios' || this.platform === 'android' ) {
+            this.native = true;
+        }
+        this.sqlitePlugin = CapacitorSQLite;
+        this.sqlite = new SQLiteConnection(this.sqlitePlugin);
+        this.isService = true;
+        return true;
     }
-    getPlatform() {
-        return this.platform;
-    }
+
     /**
      * Echo a value
-     * @param value 
+     * @param value
      */
     async echo(value: string): Promise<capEchoResult> {
-        if(this.sqlite != null) {
-            try {
-                const ret = await this.sqlite.echo(value);
-                return Promise.resolve(ret);
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error("no connection open"));
-        }
+        this.ensureConnectionIsOpen();
+        return this.sqlite.echo(value);
     }
-    async isSecretStored(): Promise<capSQLiteResult> {
-        if(!this.native) {
-            return Promise.reject(new Error(`Not implemented for ${this.platform} platform`));
-        }
-        if(this.sqlite != null) {
-            try {
-                return Promise.resolve(await this.sqlite.isSecretStored());
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
-    }
-    async setEncryptionSecret(passphrase: string): Promise<void> {
-        if(!this.native) {
-            return Promise.reject(new Error(`Not implemented for ${this.platform} platform`));
-        }
-        if(this.sqlite != null) {
-            try {
-                return Promise.resolve(await this.sqlite.setEncryptionSecret(passphrase));
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
 
+    async isSecretStored(): Promise<capSQLiteResult> {
+        this.ensureIsNativePlatform();
+        this.ensureConnectionIsOpen();
+        return this.sqlite.isSecretStored();
+    }
+
+    async setEncryptionSecret(passphrase: string): Promise<void> {
+        this.ensureIsNativePlatform();
+        this.ensureConnectionIsOpen();
+        return this.sqlite.setEncryptionSecret(passphrase);
     }
 
     async changeEncryptionSecret(passphrase: string, oldpassphrase: string): Promise<void> {
-        if(!this.native) {
-            return Promise.reject(new Error(`Not implemented for ${this.platform} platform`));
-        }
-        if(this.sqlite != null) {
-            try {
-                return Promise.resolve(await this.sqlite.changeEncryptionSecret(passphrase, oldpassphrase));
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
-
+        this.ensureIsNativePlatform();
+        this.ensureConnectionIsOpen();
+        return this.sqlite.changeEncryptionSecret(passphrase, oldpassphrase);
     }
 
-    /**
-     * addUpgradeStatement
-     * @param database 
-     * @param toVersion 
-     * @param statements 
-     */
-    async addUpgradeStatement(database:string,
-                              toVersion: number, statements: string[])
-                                        : Promise<void> {
-        if(this.sqlite != null) {
-            try {
-                await this.sqlite.addUpgradeStatement(database, toVersion,
-                                                      statements);
-                return Promise.resolve();
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open for ${database}`));
-        }                             
+    async addUpgradeStatement(database: string, toVersion: number, statement: string)
+        : Promise<void> {
+        this.ensureConnectionIsOpen();
+        return this.sqlite.addUpgradeStatement(database, toVersion, [statement]);
     }
+
     /**
      * get a non-conformed database path
-     * @param path
+     * @param folderPath
      * @param database
      * @returns Promise<capNCDatabasePathResult>
      * @since 3.3.3-1
      */
     async getNCDatabasePath(folderPath: string, database: string): Promise<capNCDatabasePathResult> {
-        if(this.sqlite != null) {
-            try {
-                const res: capNCDatabasePathResult = await this.sqlite.getNCDatabasePath(
-                                                        folderPath, database);
-                return Promise.resolve(res);
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open for ${database}`));
-        }
-
+        this.ensureConnectionIsOpen();
+        return this.sqlite.getNCDatabasePath(folderPath, database);
     }
+
     /**
      * Create a non-conformed database connection
      * @param databasePath
@@ -163,23 +102,14 @@ export class SQLiteService {
      * @since 3.3.3-1
      */
     async createNCConnection(databasePath: string, version: number): Promise<SQLiteDBConnection> {
-        if(this.sqlite != null) {
-            try {
-                const db: SQLiteDBConnection = await this.sqlite.createNCConnection(
-                                databasePath, version);
-                if (db != null) {
-                    return Promise.resolve(db);
-                } else {
-                    return Promise.reject(new Error(`no db returned is null`));
-                }
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open for ${databasePath}`));
+        this.ensureConnectionIsOpen();
+        const db: SQLiteDBConnection = await this.sqlite.createNCConnection(databasePath, version);
+        if ( db == null ) {
+            throw new Error(`no db returned is null`);
         }
-        
+        return db;
     }
+
     /**
      * Close a non-conformed database connection
      * @param databasePath
@@ -187,17 +117,10 @@ export class SQLiteService {
      * @since 3.3.3-1
      */
     async closeNCConnection(databasePath: string): Promise<void> {
-        if(this.sqlite != null) {
-            try {
-                await this.sqlite.closeNCConnection(databasePath);
-                return Promise.resolve();
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open for ${databasePath}`));
-        }
+        this.ensureConnectionIsOpen();
+        return this.sqlite.closeNCConnection(databasePath);
     }
+
     /**
      * Check if a non-conformed databaseconnection exists
      * @param databasePath
@@ -205,34 +128,21 @@ export class SQLiteService {
      * @since 3.3.3-1
      */
     async isNCConnection(databasePath: string): Promise<capSQLiteResult> {
-        if(this.sqlite != null) {
-            try {
-                return Promise.resolve(await this.sqlite.isNCConnection(databasePath));
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
-            
+        this.ensureConnectionIsOpen();
+        return this.sqlite.isNCConnection(databasePath);
     }
+
     /**
      * Retrieve a non-conformed database connection
      * @param databasePath
      * @returns Promise<SQLiteDBConnection>
      * @since 3.3.3-1
      */
-     async retrieveNCConnection(databasePath: string): Promise<SQLiteDBConnection> {
-        if(this.sqlite != null) {
-            try {
-                return Promise.resolve(await this.sqlite.retrieveNCConnection(databasePath));
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open for ${databasePath}`));
-        }
+    async retrieveNCConnection(databasePath: string): Promise<SQLiteDBConnection> {
+        this.ensureConnectionIsOpen();
+        return this.sqlite.retrieveNCConnection(databasePath);
     }
+
     /**
      * Check if a non conformed database exists
      * @param databasePath
@@ -240,343 +150,193 @@ export class SQLiteService {
      * @since 3.3.3-1
      */
     async isNCDatabase(databasePath: string): Promise<capSQLiteResult> {
-        if(this.sqlite != null) {
-            try {
-                return Promise.resolve(await this.sqlite.isNCDatabase(databasePath));
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
+        this.ensureConnectionIsOpen();
+        return this.sqlite.isNCDatabase(databasePath);
     }
+
     /**
      * Create a connection to a database
-     * @param database 
-     * @param encrypted 
-     * @param mode 
-     * @param version 
+     * @param database
+     * @param encrypted
+     * @param mode
+     * @param version
      */
-    async createConnection(database:string, encrypted: boolean,
-                           mode: string, version: number, readonly?: boolean
-                           ): Promise<SQLiteDBConnection> {
-        if(this.sqlite != null) {
-            try {
-               const readOnly = readonly ? readonly : false;
-               const db: SQLiteDBConnection = await this.sqlite.createConnection(
-                                database, encrypted, mode, version, readOnly);
-                if (db != null) {
-                    return Promise.resolve(db);
-                } else {
-                    return Promise.reject(new Error(`no db returned is null`));
-                }
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open for ${database}`));
+    async createConnection(database: string, encrypted: boolean,
+                           mode: string, version: number
+    ): Promise<SQLiteDBConnection> {
+        this.ensureConnectionIsOpen();
+        const db: SQLiteDBConnection = await this.sqlite.createConnection(database, encrypted, mode, version, false);
+        if ( db == null ) {
+            throw new Error(`no db returned is null`);
         }
+        return db;
     }
+
     /**
      * Close a connection to a database
-     * @param database 
+     * @param database
      */
-    async closeConnection(database:string, readonly?: boolean): Promise<void> {
-        if(this.sqlite != null) {
-            try {
-                const readOnly = readonly ? readonly : false;
-                await this.sqlite.closeConnection(database, readOnly);
-                return Promise.resolve();
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open for ${database}`));
-        }
+    async closeConnection(database: string): Promise<void> {
+        this.ensureConnectionIsOpen();
+        return this.sqlite.closeConnection(database, false);
     }
+
     /**
      * Retrieve an existing connection to a database
-     * @param database 
+     * @param database
      */
-    async retrieveConnection(database:string, readonly?: boolean): 
-            Promise<SQLiteDBConnection> {
-        if(this.sqlite != null) {
-            try {
-                const readOnly = readonly ? readonly : false;
-                return Promise.resolve(await this.sqlite.retrieveConnection(database, readOnly));
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open for ${database}`));
-        }
+    async retrieveConnection(database: string): Promise<SQLiteDBConnection> {
+        this.ensureConnectionIsOpen();
+        return this.sqlite.retrieveConnection(database, false);
     }
+
     /**
      * Retrieve all existing connections
      */
-    async retrieveAllConnections(): 
-                    Promise<Map<string, SQLiteDBConnection>> {
-        if(this.sqlite != null) {
-            try {
-                const myConns =  await this.sqlite.retrieveAllConnections();
-                let keys = [...myConns.keys()];
-                keys.forEach( (value) => {
-                    console.log("Connection: " + value);
-                }); 
-
-                return Promise.resolve(myConns);
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }               
+    async retrieveAllConnections(): Promise<Map<string, SQLiteDBConnection>> {
+        this.ensureConnectionIsOpen();
+        return this.sqlite.retrieveAllConnections();
     }
+
     /**
      * Close all existing connections
      */
     async closeAllConnections(): Promise<void> {
-        if(this.sqlite != null) {
-            try {
-                return Promise.resolve(await this.sqlite.closeAllConnections());
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
-    }
-    /**
-     * Check if connection exists
-     * @param database 
-     */
-     async isConnection(database: string, readonly?: boolean): Promise<capSQLiteResult> {
-        if(this.sqlite != null) {
-            try {
-                const readOnly = readonly ? readonly : false;
-                return Promise.resolve(await this.sqlite.isConnection(database, readOnly));
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
-    }
-    /**
-     * Check Connections Consistency
-     * @returns 
-     */
-    async checkConnectionsConsistency(): Promise<capSQLiteResult> {
-        if(this.sqlite != null) {
-            try {
-                const res = await this.sqlite.checkConnectionsConsistency();
-                return Promise.resolve(res);
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
-    }
-    /**
-     * Check if database exists
-     * @param database 
-     */
-    async isDatabase(database: string): Promise<capSQLiteResult> {
-        if(this.sqlite != null) {
-            try {
-                return Promise.resolve(await this.sqlite.isDatabase(database));
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
-    }
-    /**
-     * Get the list of databases
-     */    
-    async getDatabaseList() : Promise<capSQLiteValues> {
-        if(this.sqlite != null) {
-            try {
-                return Promise.resolve(await this.sqlite.getDatabaseList());
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
-    }
-    /**
-     * Get Migratable databases List
-     */    
-    async getMigratableDbList(folderPath?: string): Promise<capSQLiteValues>{
-        if(!this.native) {
-            return Promise.reject(new Error(`Not implemented for ${this.platform} platform`));
-        }
-        if(this.sqlite != null) {
-            try {
-                if(!folderPath || folderPath.length === 0) {
-                    return Promise.reject(new Error(`You must provide a folder path`));
-                }
-                return Promise.resolve(await this.sqlite.getMigratableDbList(folderPath));
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
-    }
-    
-    /**
-     * Add "SQLite" suffix to old database's names
-     */    
-    async addSQLiteSuffix(folderPath?: string, dbNameList?: string[]): Promise<void>{
-        if(!this.native) {
-            return Promise.reject(new Error(`Not implemented for ${this.platform} platform`));
-        }
-        if(this.sqlite != null) {
-            try {
-                const path: string = folderPath ? folderPath : "default";
-                const dbList: string[] = dbNameList ? dbNameList : [];
-                return Promise.resolve(await this.sqlite.addSQLiteSuffix(path, dbList));
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
-    }
-    /**
-     * Delete old databases
-     */    
-    async deleteOldDatabases(folderPath?: string, dbNameList?: string[]): Promise<void>{
-        if(!this.native) {
-            return Promise.reject(new Error(`Not implemented for ${this.platform} platform`));
-        }
-        if(this.sqlite != null) {
-            try {
-                const path: string = folderPath ? folderPath : "default";
-                const dbList: string[] = dbNameList ? dbNameList : [];
-                return Promise.resolve(await this.sqlite.deleteOldDatabases(path, dbList));
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
+        this.ensureConnectionIsOpen();
+        return this.sqlite.closeAllConnections();
     }
 
     /**
-     * Moves database files from a given folder to the database location where
-     * they can be read, it also changes their suffix.
-     * @param folderPath the folder to move from
-     * @param dbNameList the files to move, empty list means all the files
-     * @returns 
+     * Check if connection exists
+     * @param database
      */
-    async moveDatabasesAndAddSuffix(folderPath?: string, dbNameList?: string[]): Promise<void>{
-        if(!this.native) {
-            throw new Error(`Not implemented for ${this.platform} platform`);
+    async isConnection(database: string): Promise<capSQLiteResult> {
+        this.ensureConnectionIsOpen();
+        return this.sqlite.isConnection(database, false);
+    }
+
+    /**
+     * Check Connections Consistency
+     * @returns
+     */
+    async checkConnectionsConsistency(): Promise<capSQLiteResult> {
+        this.ensureConnectionIsOpen();
+        return this.sqlite.checkConnectionsConsistency();
+    }
+
+    /**
+     * Check if database exists
+     * @param database
+     */
+    async isDatabase(database: string): Promise<capSQLiteResult> {
+        this.ensureConnectionIsOpen();
+        return this.sqlite.isDatabase(database);
+    }
+
+    /**
+     * Get the list of databases
+     */
+    async getDatabaseList(): Promise<capSQLiteValues> {
+        this.ensureConnectionIsOpen();
+        return this.sqlite.getDatabaseList();
+    }
+
+    /**
+     * Get Migratable databases List
+     */
+    async getMigratableDbList(folderPath?: string): Promise<capSQLiteValues> {
+        this.ensureIsNativePlatform();
+        this.ensureConnectionIsOpen();
+
+        if ( !folderPath || folderPath.length === 0 ) {
+            throw new Error(`You must provide a folder path`);
         }
-        if(this.sqlite != null) {
-            const path: string = folderPath ? folderPath : "default";
-            const dbList: string[] = dbNameList ? dbNameList : [];
-            return this.sqlite.moveDatabasesAndAddSuffix(path, dbList);
-        } else {
-            throw new Error(`can't move the databases`);
-        }
+        return this.sqlite.getMigratableDbList(folderPath);
+    }
+
+    /**
+     * Add "SQLite" suffix to old database's names
+     */
+    async addSQLiteSuffix(folderPath?: string, dbNameList?: string[]): Promise<void> {
+        this.ensureIsNativePlatform();
+        this.ensureConnectionIsOpen();
+        const path: string = folderPath ? folderPath : 'default';
+        const dbList: string[] = dbNameList ? dbNameList : [];
+        return this.sqlite.addSQLiteSuffix(path, dbList);
+    }
+
+    /**
+     * Delete old databases
+     */
+    async deleteOldDatabases(folderPath?: string, dbNameList?: string[]): Promise<void> {
+        this.ensureIsNativePlatform();
+        this.ensureConnectionIsOpen();
+        const path: string = folderPath ? folderPath : 'default';
+        const dbList: string[] = dbNameList ? dbNameList : [];
+        return this.sqlite.deleteOldDatabases(path, dbList);
     }
 
     /**
      * Import from a Json Object
-     * @param jsonstring 
+     * @param jsonstring
      */
-    async importFromJson(jsonstring:string): Promise<capSQLiteChanges> {
-        if(this.sqlite != null) {
-            try {
-                return Promise.resolve(await this.sqlite.importFromJson(jsonstring));
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
-                    
+    async importFromJson(jsonstring: string): Promise<capSQLiteChanges> {
+        this.ensureConnectionIsOpen();
+        return this.sqlite.importFromJson(jsonstring);
     }
 
     /**
      * Is Json Object Valid
-     * @param jsonstring Check the validity of a given Json Object
+     * @param jsonString Check the validity of a given Json Object
      */
 
-    async isJsonValid(jsonstring:string): Promise<capSQLiteResult> {
-        if(this.sqlite != null) {
-            try {
-                return Promise.resolve(await this.sqlite.isJsonValid(jsonstring));
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
-
+    async isJsonValid(jsonString: string): Promise<capSQLiteResult> {
+        this.ensureConnectionIsOpen();
+        return this.sqlite.isJsonValid(jsonString);
     }
 
     /**
      * Copy databases from public/assets/databases folder to application databases folder
      */
-    async copyFromAssets(overwrite?: boolean): Promise<void> { 
+    async copyFromAssets(overwrite?: boolean): Promise<void> {
         const mOverwrite: boolean = overwrite != null ? overwrite : true;
-        console.log(`&&&& mOverwrite ${mOverwrite}`);
-        if (this.sqlite != null) {
-            try {
-                return Promise.resolve(await this.sqlite.copyFromAssets(mOverwrite));
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
+        this.ensureConnectionIsOpen();
+        return this.sqlite.copyFromAssets(mOverwrite);
+    }
+
+    async initWebStore(): Promise<void> {
+        this.ensureIsWebPlatform();
+        this.ensureConnectionIsOpen();
+        return this.sqlite.initWebStore();
     }
 
     /**
-     * Initialize the Web store
-     */
-     async initWebStore(): Promise<void> {
-        if(this.platform !== 'web')  {
-            return Promise.reject(new Error(`not implemented for this platform: ${this.platform}`));
-        }
-        if(this.sqlite != null) {
-            try {
-                await this.sqlite.initWebStore();
-                return Promise.resolve();
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
-    }
-    /**
      * Save a database to store
-     * @param database 
+     * @param database
      */
-     async saveToStore(database:string): Promise<void> {
-        if(this.platform !== 'web')  {
-            return Promise.reject(new Error(`not implemented for this platform: ${this.platform}`));
-        }
-        if(this.sqlite != null) {
-            try {
-                await this.sqlite.saveToStore(database);
-                return Promise.resolve();
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open for ${database}`));
+    async saveToStore(database: string): Promise<void> {
+        this.ensureIsWebPlatform();
+        this.ensureConnectionIsOpen();
+        return this.sqlite.saveToStore(database);
+    }
+
+    private ensureConnectionIsOpen() {
+        if ( this.sqlite == null ) {
+            throw new Error(`no connection open`);
         }
     }
-    
+
+    private ensureIsNativePlatform() {
+        if ( !this.native ) {
+            throw new Error(`Not implemented for ${this.platform} platform`);
+        }
+    }
+
+    private ensureIsWebPlatform() {
+        if ( this.platform !== 'web' ) {
+            throw new Error(`Not implemented for ${this.platform} platform`);
+        }
+    }
 }
 ```
 
@@ -659,587 +419,182 @@ export class AppComponent {
 - in a `component` file
 
 ```ts
-import { Injectable } from '@angular/core';
+import { Component, AfterViewInit } from '@angular/core';
+import { SQLiteService } from '../services/sqlite.service';
+import { createSchema, twoUsers } from '../utils/no-encryption-utils';
+import { deleteDatabase } from '../utils/db-utils';
 
-import { Capacitor } from '@capacitor/core';
-import { CapacitorSQLite, SQLiteDBConnection, SQLiteConnection, capSQLiteSet,
-         capSQLiteChanges, capSQLiteValues, capEchoResult, capSQLiteResult,
-         capNCDatabasePathResult } from '@capacitor-community/sqlite';
+@Component({
+  selector: 'app-testencryption',
+  templateUrl: 'testencryption.page.html',
+  styleUrls: ['testencryption.page.scss'],
+})
+export class TestencryptionPage implements AfterViewInit {
+  sqlite: any;
+  platform: string;
+  handlerPermissions: any;
+  initPlugin: boolean = false;
 
-@Injectable()
+  constructor(private _sqlite: SQLiteService) {}
 
-export class SQLiteService {
-    sqlite: SQLiteConnection;
-    isService: boolean = false;
-    platform: string;
-    sqlitePlugin: any;
-    native: boolean = false;
+  async ngAfterViewInit() {
+    console.log('%%%% in TestencryptionPage this._sqlite ' + this._sqlite);
+    try {
+      await this.runTest();
+      document.querySelector('.sql-allsuccess').classList.remove('display');
+      console.log('$$$ runTest was successful');
+    } catch (err) {
+      document.querySelector('.sql-allfailure').classList.remove('display');
+      console.log(`$$$ runTest failed ${err.message}`);
+    }
+  }
 
-    constructor() {
-    }
-    /**
-     * Plugin Initialization
-     */
-    initializePlugin(): Promise<boolean> {
-        return new Promise (resolve => {
-            this.platform = Capacitor.getPlatform();
-            if(this.platform === 'ios' || this.platform === 'android') this.native = true;
-            this.sqlitePlugin = CapacitorSQLite;
-            this.sqlite = new SQLiteConnection(this.sqlitePlugin);
-            this.isService = true;
-            resolve(true);
-        });
-    }
-    getPlatform() {
-        return this.platform;
-    }
-    /**
-     * Echo a value
-     * @param value 
-     */
-    async echo(value: string): Promise<capEchoResult> {
-        if(this.sqlite != null) {
-            try {
-                const ret = await this.sqlite.echo(value);
-                return Promise.resolve(ret);
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error("no connection open"));
-        }
-    }
-    async isSecretStored(): Promise<capSQLiteResult> {
-        if(!this.native) {
-            return Promise.reject(new Error(`Not implemented for ${this.platform} platform`));
-        }
-        if(this.sqlite != null) {
-            try {
-                return Promise.resolve(await this.sqlite.isSecretStored());
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
-    }
-    async setEncryptionSecret(passphrase: string): Promise<void> {
-        if(!this.native) {
-            return Promise.reject(new Error(`Not implemented for ${this.platform} platform`));
-        }
-        if(this.sqlite != null) {
-            try {
-                return Promise.resolve(await this.sqlite.setEncryptionSecret(passphrase));
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
+  async runTest(): Promise<void> {
+    try {
+      let result: any = await this._sqlite.echo('Hello World');
+      console.log(' from Echo ' + result.value);
 
-    }
+      // ************************************************
+      // Create Database No Encryption
+      // ************************************************
 
-    async changeEncryptionSecret(passphrase: string, oldpassphrase: string): Promise<void> {
-        if(!this.native) {
-            return Promise.reject(new Error(`Not implemented for ${this.platform} platform`));
-        }
-        if(this.sqlite != null) {
-            try {
-                return Promise.resolve(await this.sqlite.changeEncryptionSecret(passphrase, oldpassphrase));
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
+      // initialize the connection
+      let db = await this._sqlite.createConnection(
+        'testEncryption',
+        false,
+        'no-encryption',
+        1,
+      );
 
-    }
+      // open db testEncryption
+      await db.open();
 
-    /**
-     * addUpgradeStatement
-     * @param database 
-     * @param toVersion 
-     * @param statements 
-     */
-    async addUpgradeStatement(database:string,
-                              toVersion: number, statements: string[])
-                                        : Promise<void> {
-        if(this.sqlite != null) {
-            try {
-                await this.sqlite.addUpgradeStatement(database, toVersion,
-                                                      statements);
-                return Promise.resolve();
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open for ${database}`));
-        }                             
-    }
-    /**
-     * get a non-conformed database path
-     * @param path
-     * @param database
-     * @returns Promise<capNCDatabasePathResult>
-     * @since 3.3.3-1
-     */
-    async getNCDatabasePath(folderPath: string, database: string): Promise<capNCDatabasePathResult> {
-        if(this.sqlite != null) {
-            try {
-                const res: capNCDatabasePathResult = await this.sqlite.getNCDatabasePath(
-                                                        folderPath, database);
-                return Promise.resolve(res);
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open for ${database}`));
-        }
+      // create tables in db
+      let ret: any = await db.execute(createSchema);
+      console.log('$$$ ret.changes.changes in db ' + ret.changes.changes);
+      if (ret.changes.changes < 0) {
+        return Promise.reject(new Error('Execute createSchema failed'));
+      }
 
-    }
-    /**
-     * Create a non-conformed database connection
-     * @param databasePath
-     * @param version
-     * @returns Promise<SQLiteDBConnection>
-     * @since 3.3.3-1
-     */
-    async createNCConnection(databasePath: string, version: number): Promise<SQLiteDBConnection> {
-        if(this.sqlite != null) {
-            try {
-                const db: SQLiteDBConnection = await this.sqlite.createNCConnection(
-                                databasePath, version);
-                if (db != null) {
-                    return Promise.resolve(db);
-                } else {
-                    return Promise.reject(new Error(`no db returned is null`));
-                }
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open for ${databasePath}`));
-        }
-        
-    }
-    /**
-     * Close a non-conformed database connection
-     * @param databasePath
-     * @returns Promise<void>
-     * @since 3.3.3-1
-     */
-    async closeNCConnection(databasePath: string): Promise<void> {
-        if(this.sqlite != null) {
-            try {
-                await this.sqlite.closeNCConnection(databasePath);
-                return Promise.resolve();
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open for ${databasePath}`));
-        }
-    }
-    /**
-     * Check if a non-conformed databaseconnection exists
-     * @param databasePath
-     * @returns Promise<capSQLiteResult>
-     * @since 3.3.3-1
-     */
-    async isNCConnection(databasePath: string): Promise<capSQLiteResult> {
-        if(this.sqlite != null) {
-            try {
-                return Promise.resolve(await this.sqlite.isNCConnection(databasePath));
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
-            
-    }
-    /**
-     * Retrieve a non-conformed database connection
-     * @param databasePath
-     * @returns Promise<SQLiteDBConnection>
-     * @since 3.3.3-1
-     */
-     async retrieveNCConnection(databasePath: string): Promise<SQLiteDBConnection> {
-        if(this.sqlite != null) {
-            try {
-                return Promise.resolve(await this.sqlite.retrieveNCConnection(databasePath));
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open for ${databasePath}`));
-        }
-    }
-    /**
-     * Check if a non conformed database exists
-     * @param databasePath
-     * @returns Promise<capSQLiteResult>
-     * @since 3.3.3-1
-     */
-    async isNCDatabase(databasePath: string): Promise<capSQLiteResult> {
-        if(this.sqlite != null) {
-            try {
-                return Promise.resolve(await this.sqlite.isNCDatabase(databasePath));
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
-    }
-    /**
-     * Create a connection to a database
-     * @param database 
-     * @param encrypted 
-     * @param mode 
-     * @param version 
-     */
-    async createConnection(database:string, encrypted: boolean,
-                           mode: string, version: number, readonly?: boolean
-                           ): Promise<SQLiteDBConnection> {
-        if(this.sqlite != null) {
-            try {
-/*                if(encrypted) {
-                    if(this.native) {
-                        const isSet = await this.sqlite.isSecretStored()
-                        if(!isSet.result) {
-                            return Promise.reject(new Error(`no secret phrase registered`));
-                        }
-                    }
-                }
-*/
-               const readOnly = readonly ? readonly : false;
-               const db: SQLiteDBConnection = await this.sqlite.createConnection(
-                                database, encrypted, mode, version, readOnly);
-                if (db != null) {
-                    return Promise.resolve(db);
-                } else {
-                    return Promise.reject(new Error(`no db returned is null`));
-                }
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open for ${database}`));
-        }
-    }
-    /**
-     * Close a connection to a database
-     * @param database 
-     */
-    async closeConnection(database:string, readonly?: boolean): Promise<void> {
-        if(this.sqlite != null) {
-            try {
-                const readOnly = readonly ? readonly : false;
-                await this.sqlite.closeConnection(database, readOnly);
-                return Promise.resolve();
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open for ${database}`));
-        }
-    }
-    /**
-     * Retrieve an existing connection to a database
-     * @param database 
-     */
-    async retrieveConnection(database:string, readonly?: boolean): 
-            Promise<SQLiteDBConnection> {
-        if(this.sqlite != null) {
-            try {
-                const readOnly = readonly ? readonly : false;
-                return Promise.resolve(await this.sqlite.retrieveConnection(database, readOnly));
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open for ${database}`));
-        }
-    }
-    /**
-     * Retrieve all existing connections
-     */
-    async retrieveAllConnections(): 
-                    Promise<Map<string, SQLiteDBConnection>> {
-        if(this.sqlite != null) {
-            try {
-                const myConns =  await this.sqlite.retrieveAllConnections();
-                let keys = [...myConns.keys()];
-                keys.forEach( (value) => {
-                    console.log("Connection: " + value);
-                }); 
+      // create synchronization table
+      ret = await db.createSyncTable();
+      if (ret.changes.changes < 0) {
+        return Promise.reject(new Error('Execute createSyncTable failed'));
+      }
 
-                return Promise.resolve(myConns);
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }               
-    }
-    /**
-     * Close all existing connections
-     */
-    async closeAllConnections(): Promise<void> {
-        if(this.sqlite != null) {
-            try {
-                return Promise.resolve(await this.sqlite.closeAllConnections());
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
-    }
-    /**
-     * Check if connection exists
-     * @param database 
-     */
-     async isConnection(database: string, readonly?: boolean): Promise<capSQLiteResult> {
-        if(this.sqlite != null) {
-            try {
-                const readOnly = readonly ? readonly : false;
-                return Promise.resolve(await this.sqlite.isConnection(database, readOnly));
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
-    }
-    /**
-     * Check Connections Consistency
-     * @returns 
-     */
-    async checkConnectionsConsistency(): Promise<capSQLiteResult> {
-        if(this.sqlite != null) {
-            try {
-                const res = await this.sqlite.checkConnectionsConsistency();
-                return Promise.resolve(res);
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
-    }
-    /**
-     * Check if database exists
-     * @param database 
-     */
-    async isDatabase(database: string): Promise<capSQLiteResult> {
-        if(this.sqlite != null) {
-            try {
-                return Promise.resolve(await this.sqlite.isDatabase(database));
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
-    }
-    /**
-     * Get the list of databases
-     */    
-    async getDatabaseList() : Promise<capSQLiteValues> {
-        if(this.sqlite != null) {
-            try {
-                return Promise.resolve(await this.sqlite.getDatabaseList());
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
-    }
-    /**
-     * Get Migratable databases List
-     */    
-    async getMigratableDbList(folderPath?: string): Promise<capSQLiteValues>{
-        if(!this.native) {
-            return Promise.reject(new Error(`Not implemented for ${this.platform} platform`));
-        }
-        if(this.sqlite != null) {
-            try {
-                if(!folderPath || folderPath.length === 0) {
-                    return Promise.reject(new Error(`You must provide a folder path`));
-                }
-                return Promise.resolve(await this.sqlite.getMigratableDbList(folderPath));
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
-    }
-    
-    /**
-     * Add "SQLite" suffix to old database's names
-     */    
-    async addSQLiteSuffix(folderPath?: string, dbNameList?: string[]): Promise<void>{
-        if(!this.native) {
-            return Promise.reject(new Error(`Not implemented for ${this.platform} platform`));
-        }
-        if(this.sqlite != null) {
-            try {
-                const path: string = folderPath ? folderPath : "default";
-                const dbList: string[] = dbNameList ? dbNameList : [];
-                return Promise.resolve(await this.sqlite.addSQLiteSuffix(path, dbList));
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
-    }
-    /**
-     * Delete old databases
-     */    
-    async deleteOldDatabases(folderPath?: string, dbNameList?: string[]): Promise<void>{
-        if(!this.native) {
-            return Promise.reject(new Error(`Not implemented for ${this.platform} platform`));
-        }
-        if(this.sqlite != null) {
-            try {
-                const path: string = folderPath ? folderPath : "default";
-                const dbList: string[] = dbNameList ? dbNameList : [];
-                return Promise.resolve(await this.sqlite.deleteOldDatabases(path, dbList));
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
-    }
+      // set the synchronization date
+      const syncDate: string = '2020-11-25T08:30:25.000Z';
+      await db.setSyncDate(syncDate);
 
-    /**
-     * Moves database files from a given folder to the database location where
-     * they can be read, it also changes their suffix.
-     * @param folderPath the folder to move from
-     * @param dbNameList the files to move, empty list means all the files
-     * @returns 
-     */
-    async moveDatabasesAndAddSuffix(folderPath?: string, dbNameList?: string[]): Promise<void>{
-        if(!this.native) {
-            throw new Error(`Not implemented for ${this.platform} platform`);
-        }
-        if(this.sqlite != null) {
-            const path: string = folderPath ? folderPath : "default";
-            const dbList: string[] = dbNameList ? dbNameList : [];
-            return this.sqlite.moveDatabasesAndAddSuffix(path, dbList);
-        } else {
-            throw new Error(`can't move the databases`);
-        }
-    }
+      // add two users in db
+      ret = await db.execute(twoUsers);
+      if (ret.changes.changes !== 2) {
+        return Promise.reject(new Error('Execute twoUsers failed'));
+      }
+      // select all users in db
+      ret = await db.query('SELECT * FROM users;');
+      if (
+        ret.values.length !== 2 ||
+        ret.values[0].name !== 'Whiteley' ||
+        ret.values[1].name !== 'Jones'
+      ) {
+        return Promise.reject(new Error('Query1 twoUsers failed'));
+      }
 
-    async getFromHTTPRequest(url: string, overwrite?: boolean): Promise<void> {
-        const mOverwrite: boolean = overwrite != null ? overwrite : true;
-        if (url.length === 0) {
-            return Promise.reject(new Error(`Must give an url to download`));
-        }
-        if(this.sqlite != null) {
-            return this.sqlite.getFromHTTPRequest(url, mOverwrite);
-        } else {
-            throw new Error(`can't download the database`);
-        }
-    }
+      // select users where company is NULL in db
+      ret = await db.query('SELECT * FROM users WHERE company IS NULL;');
+      if (
+        ret.values.length !== 2 ||
+        ret.values[0].name !== 'Whiteley' ||
+        ret.values[1].name !== 'Jones'
+      ) {
+        return Promise.reject(
+          new Error('Query2 Users where Company null failed'),
+        );
+      }
+      // add one user with statement and values
+      let sqlcmd: string = 'INSERT INTO users (name,email,age) VALUES (?,?,?)';
+      let values: Array<any> = ['Simpson', 'Simpson@example.com', 69];
+      ret = await db.run(sqlcmd, values);
+      console.log();
+      if (ret.changes.lastId !== 3) {
+        return Promise.reject(new Error('Run1 add 1 User failed'));
+      }
+      // add one user with statement
+      sqlcmd =
+        `INSERT INTO users (name,email,age) VALUES ` +
+        `("Brown","Brown@example.com",15)`;
+      ret = await db.run(sqlcmd);
+      if (ret.changes.lastId !== 4) {
+        return Promise.reject(new Error('Run2 add 1 User failed'));
+      }
 
-    /**
-     * Import from a Json Object
-     * @param jsonstring 
-     */
-    async importFromJson(jsonstring:string): Promise<capSQLiteChanges> {
-        if(this.sqlite != null) {
-            try {
-                return Promise.resolve(await this.sqlite.importFromJson(jsonstring));
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
-                    
-    }
+      await this._sqlite.closeConnection('testEncryption');
 
-    /**
-     * Is Json Object Valid
-     * @param jsonstring Check the validity of a given Json Object
-     */
+      // ************************************************
+      // Encrypt the existing database
+      // ************************************************
 
-    async isJsonValid(jsonstring:string): Promise<capSQLiteResult> {
-        if(this.sqlite != null) {
-            try {
-                return Promise.resolve(await this.sqlite.isJsonValid(jsonstring));
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
+      // initialize the connection
+      db = await this._sqlite.createConnection(
+        'testEncryption',
+        true,
+        'encryption',
+        1,
+      );
 
-    }
+      // open db testEncryption
+      await db.open();
+      // close the connection
+      await this._sqlite.closeConnection('testEncryption');
+      console.log('closeConnection encrypted ');
+      // ************************************************
+      // Work with the encrypted  database
+      // ************************************************
 
-    /**
-     * Copy databases from public/assets/databases folder to application databases folder
-     */
-    async copyFromAssets(overwrite?: boolean): Promise<void> { 
-        const mOverwrite: boolean = overwrite != null ? overwrite : true;
-        console.log(`&&&& mOverwrite ${mOverwrite}`);
-        if (this.sqlite != null) {
-            try {
-                return Promise.resolve(await this.sqlite.copyFromAssets(mOverwrite));
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
-    }
+      // initialize the connection
+      db = await this._sqlite.createConnection(
+        'testEncryption',
+        true,
+        'secret',
+        1,
+      );
 
-    /**
-     * Initialize the Web store
-     */
-     async initWebStore(): Promise<void> {
-        if(this.platform !== 'web')  {
-            return Promise.reject(new Error(`not implemented for this platform: ${this.platform}`));
-        }
-        if(this.sqlite != null) {
-            try {
-                await this.sqlite.initWebStore();
-                return Promise.resolve();
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open`));
-        }
+      // open db testEncryption
+      await db.open();
+
+      // add one user with statement and values
+      sqlcmd = 'INSERT INTO users (name,email,age) VALUES (?,?,?)';
+      values = ['Jackson', 'Jackson@example.com', 32];
+      ret = await db.run(sqlcmd, values);
+      if (ret.changes.lastId !== 5) {
+        return Promise.reject(new Error('Run3 add 1 User failed'));
+      }
+
+      // select all users in db
+      ret = await db.query('SELECT * FROM users;');
+      console.log('query encrypted ' + ret.values.length);
+      if (
+        ret.values.length !== 5 ||
+        ret.values[0].name !== 'Whiteley' ||
+        ret.values[1].name !== 'Jones' ||
+        ret.values[2].name !== 'Simpson' ||
+        ret.values[3].name !== 'Brown' ||
+        ret.values[4].name !== 'Jackson'
+      ) {
+        return Promise.reject(new Error('Query3  5 Users failed'));
+      }
+
+      // delete it for multiple successive tests
+      await deleteDatabase(db);
+
+      await this._sqlite.closeConnection('testEncryption');
+
+      return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
     }
-    /**
-     * Save a database to store
-     * @param database 
-     */
-     async saveToStore(database:string): Promise<void> {
-        if(this.platform !== 'web')  {
-            return Promise.reject(new Error(`not implemented for this platform: ${this.platform}`));
-        }
-        if(this.sqlite != null) {
-            try {
-                await this.sqlite.saveToStore(database);
-                return Promise.resolve();
-            } catch (err) {
-                return Promise.reject(new Error(err));
-            }
-        } else {
-            return Promise.reject(new Error(`no connection open for ${database}`));
-        }
-    }
-    
+  }
 }
 ```
 

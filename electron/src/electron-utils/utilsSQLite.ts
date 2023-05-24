@@ -185,7 +185,7 @@ export class UtilsSQLite {
    */
   public async beginTransaction(db: any, isOpen: boolean): Promise<void> {
     // eslint-disable-next-line no-async-promise-executor
-    return new Promise( (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       const msg = 'BeginTransaction: ';
       if (!isOpen) {
         return Promise.reject(`${msg}database not opened`);
@@ -197,7 +197,7 @@ export class UtilsSQLite {
           reject(`${msg}${err.message}`);
         }
         resolve();
-      }); 
+      });
     });
   }
   /**
@@ -824,7 +824,7 @@ export class UtilsSQLite {
   }
   public async getJournalMode(mDB: any): Promise<string> {
     let resQuery: any[] = [];
-    let retMode = "delete";
+    let retMode = 'delete';
     const query = `PRAGMA journal_mode;`;
     try {
       resQuery = await this.queryAll(mDB, query, []);
@@ -837,8 +837,6 @@ export class UtilsSQLite {
     } catch (err) {
       return Promise.reject('GetJournalMode: ' + `${err}`);
     }
-
-
   }
   /**
    * GetTableColumnNamesTypes

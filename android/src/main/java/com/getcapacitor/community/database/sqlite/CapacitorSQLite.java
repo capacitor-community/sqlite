@@ -1,5 +1,9 @@
 package com.getcapacitor.community.database.sqlite;
 
+import static com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLCipher.State.ENCRYPTED_GLOBAL_SECRET;
+import static com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLCipher.State.ENCRYPTED_SECRET;
+import static com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLCipher.State.UNENCRYPTED;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
@@ -13,6 +17,7 @@ import com.getcapacitor.JSObject;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.community.database.sqlite.SQLite.BiometricListener;
 import com.getcapacitor.community.database.sqlite.SQLite.Database;
+import com.getcapacitor.community.database.sqlite.SQLite.GlobalSQLite;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.JsonSQLite;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.UtilsJson;
 import com.getcapacitor.community.database.sqlite.SQLite.SqliteConfig;
@@ -21,6 +26,7 @@ import com.getcapacitor.community.database.sqlite.SQLite.UtilsDownloadFromHTTP;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsFile;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsMigrate;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsNCDatabase;
+import com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLCipher;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLite;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsSecret;
 import java.io.File;
@@ -48,6 +54,8 @@ public class CapacitorSQLite {
     private final UtilsMigrate uMigrate = new UtilsMigrate();
     private final UtilsNCDatabase uNCDatabase = new UtilsNCDatabase();
     private final UtilsDownloadFromHTTP uHTTP = new UtilsDownloadFromHTTP();
+    private final GlobalSQLite globVar = new GlobalSQLite();
+    private final UtilsSQLCipher uCipher = new UtilsSQLCipher();
     private UtilsSecret uSecret;
     private SharedPreferences sharedPreferences = null;
     private MasterKey masterKeyAlias;
@@ -59,6 +67,7 @@ public class CapacitorSQLite {
     private final String biometricSubTitle;
     private final int VALIDITY_DURATION = 5;
     private final RetHandler rHandler = new RetHandler();
+
     private PluginCall call;
 
     public CapacitorSQLite(Context context, SqliteConfig config) throws Exception {
@@ -278,6 +287,28 @@ public class CapacitorSQLite {
         }
     }
 
+    /**
+     * CheckEncryptionSecret
+     *
+     * @param passphrase
+     * @throws Exception
+     */
+    public Boolean checkEncryptionSecret(String passphrase) throws Exception {
+        if (isEncryption) {
+            try {
+                // close all connections
+                closeAllConnections();
+                // set encryption secret
+                Boolean res = uSecret.checkEncryptionSecret(passphrase);
+                return res;
+            } catch (Exception e) {
+                throw new Exception(e.getMessage());
+            }
+        } else {
+            throw new Exception("No Encryption set in capacitor.config");
+        }
+    }
+
     public String getNCDatabasePath(String folderPath, String database) throws Exception {
         try {
             String databasePath = uNCDatabase.getNCDatabasePath(context, folderPath, database);
@@ -373,7 +404,7 @@ public class CapacitorSQLite {
                 true
             );
             if (db != null) {
-                dbDict.put(dbPath, db);
+                dbDict.put(connName, db);
                 return;
             } else {
                 String msg = "db is null";
@@ -496,7 +527,7 @@ public class CapacitorSQLite {
      */
     public void closeNCConnection(String dbPath) throws Exception {
         String connName = "RO_" + dbPath;
-        Database db = dbDict.get(dbPath);
+        Database db = dbDict.get(connName);
         if (db != null) {
             if (db.isOpen()) {
                 try {
@@ -606,6 +637,30 @@ public class CapacitorSQLite {
     public Boolean isDatabase(String dbName) {
         dbName = getDatabaseName(dbName);
         return uFile.isFileExists(context, dbName + "SQLite.db");
+    }
+
+    /**
+     * IsDatabaseEncrypted
+     *
+     * @param dbName
+     * @return Boolean
+     * @throws Exception
+     */
+    public Boolean isDatabaseEncrypted(String dbName) throws Exception {
+        dbName = getDatabaseName(dbName);
+        File file = context.getDatabasePath(dbName + "SQLite.db");
+        if (uFile.isFileExists(context, dbName + "SQLite.db")) {
+            UtilsSQLCipher.State state = uCipher.getDatabaseState(context, file, sharedPreferences, globVar);
+            if (state == ENCRYPTED_GLOBAL_SECRET || state == ENCRYPTED_SECRET) {
+                return true;
+            }
+            if (state == UNENCRYPTED) {
+                return false;
+            }
+            throw new Exception("Database unknown");
+        } else {
+            throw new Exception("Database does not exist");
+        }
     }
 
     /**
@@ -1019,27 +1074,28 @@ public class CapacitorSQLite {
     public Dictionary<Integer, JSONObject> addUpgradeStatement(JSArray upgrade) throws Exception {
         Dictionary<Integer, JSONObject> upgDict = new Hashtable<>();
 
-        JSONObject upgObj = null;
-        try {
-            upgObj = (JSONObject) upgrade.get(0);
-        } catch (Exception e) {
-            String msg = "Must provide an upgrade statement " + e.getMessage();
-            throw new Exception(msg);
+        for (int i = 0; i < upgrade.length(); i++) {
+            JSONObject upgObj = null;
+            try {
+                upgObj = (JSONObject) upgrade.get(i);
+                if (upgObj == null || !upgObj.has("toVersion") || !upgObj.has("statements")) {
+                    String msg = "Must provide an upgrade statement";
+                    msg += " {toVersion,statement}";
+                    throw new Exception(msg);
+                }
+            } catch (Exception e) {
+                String msg = "Must provide an upgrade statement " + e.getMessage();
+                throw new Exception(msg);
+            }
+            try {
+                int toVersion = upgObj.getInt("toVersion");
+                upgDict.put(toVersion, upgObj);
+            } catch (Exception e) {
+                String msg = "Must provide toVersion as Integer" + e.getMessage();
+                throw new Exception(msg);
+            }
         }
-
-        if (upgObj == null || !upgObj.has("toVersion") || !upgObj.has("statements")) {
-            String msg = "Must provide an upgrade statement";
-            msg += " {toVersion,statement}";
-            throw new Exception(msg);
-        }
-        try {
-            int toVersion = upgObj.getInt("toVersion");
-            upgDict.put(toVersion, upgObj);
-            return upgDict;
-        } catch (Exception e) {
-            String msg = "Must provide toVersion as Integer" + e.getMessage();
-            throw new Exception(msg);
-        }
+        return upgDict;
     }
 
     public Boolean isJsonValid(String parsingData) throws Exception {

@@ -9,14 +9,14 @@
 </p>
 <br>
 <p align="center">
-  <img src="https://img.shields.io/maintenance/yes/2022?style=flat-square" />
+  <img src="https://img.shields.io/maintenance/yes/2023?style=flat-square" />
   <a href="https://github.com/capacitor-community/sqlite/actions?query=workflow%3A%22CI%22"><img src="https://img.shields.io/github/workflow/status/capacitor-community/sqlite/CI?style=flat-square" /></a>
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/l/@capacitor-community/sqlite?style=flat-square" /></a>
 <br>
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/dw/@capacitor-community/sqlite?style=flat-square" /></a>
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/v/@capacitor-community/sqlite?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-<a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-22-orange?style=flat-square" /></a>
+<a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-33-orange?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 </p>
 
@@ -35,7 +35,7 @@ npx cap sync
 ```
 
 ```
-yarn install --save @capacitor-community/sqlite
+yarn add @capacitor-community/sqlite
 npx cap sync
 ```
 
@@ -44,6 +44,37 @@ pnpm install --save @capacitor-community/sqlite
 pnpm install --save @jeep-sqlite
 pnpm install --save sql.js
 npx cap sync
+```
+
+then add plugin to main `capacitor.config.json` file:
+
+```json
+{
+  "appId": "com.example.app",
+  "appName": "cap",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "plugins": {
+    "CapacitorSQLite": {
+      "iosDatabaseLocation": "Library/CapacitorDatabase",
+      "iosIsEncryption": false,
+      "iosKeychainPrefix": "cap",
+      "iosBiometric": {
+        "biometricAuth": false,
+        "biometricTitle" : "Biometric login for capacitor sqlite"
+      },
+      "androidIsEncryption": false,
+      "androidBiometric": {
+        "biometricAuth" : false,
+        "biometricTitle" : "Biometric login for capacitor sqlite",
+        "biometricSubTitle" : "Log in using your biometric"
+      },
+      "electronWindowsLocation": "C:\\ProgramData\\CapacitorDatabases",
+      "electronMacLocation": "YOUR_VOLUME/CapacitorDatabases",
+      "electronLinuxLocation": "Databases"
+    }
+  }
+}
 ```
 
 ## More Reading:
@@ -74,16 +105,52 @@ You'll need the usual capacitor/android/react npm script to build and copy the a
 
 ## Android Quirks
 
-In case you get the following error when building your app in Android Studio:
-`x files found with path 'build-data.properties'.`
-You can you add the following code to `app/build.gradle`:
-```
-    packagingOptions {
-        exclude 'build-data.properties'
-    }
-```
-See [#301](https://github.com/capacitor-community/sqlite/issues/301) and [SO question](https://stackoverflow.com/questions/63291529/how-to-fix-more-than-one-file-was-found-with-os-independent-path-build-data-pro) for more information.
+ - In case you get the following error when building your app in Android Studio:
+  `x files found with path 'build-data.properties'.`
+  You can you add the following code to `app/build.gradle`:
+  ```
+      packagingOptions {
+          exclude 'build-data.properties'
+      }
+  ```
+  See [#301](https://github.com/capacitor-community/sqlite/issues/301) and [SO question](https://stackoverflow.com/questions/63291529/how-to-fix-more-than-one-file-was-found-with-os-independent-path-build-data-pro) for more information.
 
+ - Check/Add the following:
+    Gradle JDK version 11
+    Android Gradle Plugin Version 7.2.2
+    In variables.gradle
+
+      ```
+      minSdkVersion = 22
+      compileSdkVersion = 33
+      targetSdkVersion = 33
+      ```
+    In AndroidManifest.xml
+      ```
+          <application
+            android:allowBackup="false"
+            android:fullBackupContent="false"
+            android:dataExtractionRules="@xml/data_extraction_rules"
+      ```
+    In res/xml create a file `data_extraction_rules.xml` containing:
+      ```
+      <?xml version="1.0" encoding="utf-8"?>
+      <data-extraction-rules>
+          <cloud-backup>
+            <exclude domain="root" />
+            <exclude domain="database" />
+            <exclude domain="sharedpref" />
+            <exclude domain="external" />
+          </cloud-backup>
+          <device-transfer>
+            <exclude domain="root" />
+            <exclude domain="database" />
+            <exclude domain="sharedpref" />
+            <exclude domain="external" />
+          </device-transfer>
+      </data-extraction-rules>
+      ```
+      
 ## Electron Quirks
 
 - On Electron, go to the Electron folder of YOUR_APPLICATION
@@ -94,6 +161,7 @@ npm install --save @journeyapps/sqlcipher
 npm install --save jszip
 npm install --save node-fetch
 ```
+- **Important**: `node-fetch` version must be `<=2.6.7`; otherwise [you'll get an error](https://github.com/capacitor-community/sqlite/issues/349 "you'll get an error ERR_REQUIRE_ESM") running the app. 
 
 ## IOS Quirks
 
@@ -144,6 +212,7 @@ npm install --save node-fetch
 | setEncryptionSecret         | ✅      | ✅  | ✅        | ❌  |
 | changeEncryptionSecret      | ✅      | ✅  | ✅        | ❌  |
 | clearEncryptionSecret       | ✅      | ✅  | ✅        | ❌  |
+| checkEncryptionSecret       | ✅      | ✅  | ❌        | ❌  |
 | initWebStore                | ❌      | ❌  | ❌        | ✅  |
 | saveToStore                 | ❌      | ❌  | ❌        | ✅  |
 | getNCDatabasePath           | ✅      | ✅  | ❌        | ❌  |
@@ -152,6 +221,11 @@ npm install --save node-fetch
 | isNCDatabase                | ✅      | ✅  | ❌        | ❌  |
 | transaction                 | ✅      | ✅  | ✅        | ✅  |
 | getFromHTTPRequest          | ✅      | ✅  | ✅        | ✅  | since 4.2.0
+| isDatabaseEncrypted         | ✅      | ✅  | ❌        | ❌  | since 4.6.2-2
+| isInConfigEncryption        | ✅      | ✅  | ❌        | ❌  | since 4.6.2-2
+| isInConfigBiometricAuth     | ✅      | ✅  | ❌        | ❌  | since 4.6.2-2
+| getFromLocalDiskToStore     | ❌      | ❌  | ❌        | ✅  | since 4.6.3
+| saveToLocalDisk             | ❌      | ❌  | ❌        | ✅  | since 4.6.3
 
 
 ## Documentation & APIs
@@ -176,6 +250,7 @@ npm install --save node-fetch
 
 - [Biometric Authentication](https://github.com/capacitor-community/sqlite/blob/master/docs/Biometric-Authentication.md)
 
+- [Enable SQLite Schema Error Syntax Highlighting](https://github.com/capacitor-community/sqlite/blob/master/docs/SyntaxScanner-For-SQLite-Code.md)
 
 ## Applications demonstrating the use of the plugin and related documentation
 
@@ -183,9 +258,15 @@ npm install --save node-fetch
 
 - [Ionic/Angular Usage Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-Angular-Usage.md)
 
-- [angular-sqlite-app-starter](https://github.com/jepiqueau/angular-sqlite-app-starter)
+- [ionic-angular-sqlite-starter](https://github.com/jepiqueau/ionic-angular-sqlite-starter) Ionic 6 Angular SQLite CRUD operations.
+
+- [angular-sqlite-app-starter](https://github.com/jepiqueau/angular-sqlite-app-starter) This one is now more for testing the issues.
 
 - [angular-sqlite-synchronize-app](https://github.com/jepiqueau/angular-sqlite-synchronize-app)
+
+### Ionic/Angular TypeORM app
+
+- [ionic-sqlite-typeorm-app](https://github.com/jepiqueau/ionic-sqlite-typeorm-app)
 
 ### Ionic/React
 
@@ -209,15 +290,15 @@ npm install --save node-fetch
 
 ### Vue+Vite
 
-- [vue-vite-sqlite-app](https://github.com/jepiqueau/vuevite-app)
-
-### SolidJS+Vite
-
-- [solidjs-vite-sqlite-app](https://github.com/jepiqueau/capacitor-solid-sqlite)
+- [vite-vue-sqlite-app](https://github.com/jepiqueau/vite-vue-sqlite-app)
 
 ### Vue TypeORM app
 
 - [vue-typeorm-app](https://github.com/jepiqueau/vue-typeorm-app)
+
+### SolidJS+Vite
+
+- [solidjs-vite-sqlite-app](https://github.com/jepiqueau/capacitor-solid-sqlite)
 
 
 ## Dependencies
@@ -256,8 +337,21 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <a href="https://github.com/antoniovlx" title="antoniovlx"><img src="https://github.com/antoniovlx.png?size=100" width="50" height="50" /></a>
   <a href="https://github.com/HarelM" title="HarelM"><img src="https://github.com/HarelM.png?size=100" width="50" height="50" /></a>
   <a href="https://github.com/rdlabo" title="rdlabo"><img src="https://github.com/rdlabo.png?size=100" width="50" height="50" /></a>
-  <a href="https://github.com/axkristiansen" title="rdlabo"><img src="https://github.com/axkristiansen.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/axkristiansen" title="axkristiansen"><img src="https://github.com/axkristiansen.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/aeinn" title="aeinn"><img src="https://github.com/aeinn.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/jonz94" title="jonz94"><img src="https://github.com/jonz94.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/oscarfonts" title="oscarfonts"><img src="https://github.com/oscarfonts.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/Sirs0ri" title="Sirs0ri"><img src="https://github.com/Sirs0ri.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/TheNovemberRain" title="TheNovemberRain"><img src="https://github.com/TheNovemberRain.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/fizdalf" title="fizdalf"><img src="https://github.com/fizdalf.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/Micha-Richter" title="Micha-Richter"><img src="https://github.com/Micha-Richter.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/ws-rush" title="ws-rush"><img src="https://github.com/ws-rush.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/eppineda" title="eppineda"><img src="https://github.com/eppineda.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/patdx" title="patdx"><img src="https://github.com/patdx.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/folsze" title="folsze"><img src="https://github.com/folsze.png?size=100" width="50" height="50" /></a>
+  <a href="https://github.com/pranav-singhal" title="pranav-singhal"><img src="https://github.com/pranav-singhal.png?size=100" width="50" height="50" /></a>
 </p>
+
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->

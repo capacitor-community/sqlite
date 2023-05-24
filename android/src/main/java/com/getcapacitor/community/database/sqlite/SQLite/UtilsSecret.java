@@ -128,6 +128,33 @@ public class UtilsSecret {
         }
     }
 
+    /**
+     * CheckEncryptionSecret
+     * @param passphrase
+     * @throws Exception
+     */
+    public Boolean checkEncryptionSecret(String passphrase) throws Exception {
+        Boolean ret = false;
+        try {
+            if (TextUtils.isEmpty(passphrase)) {
+                String msg = "passphrase must not be empty";
+                throw new Exception(msg);
+            }
+            // test if Encryption secret is already set
+            String savedPassPhrase = getPassphrase();
+            if (savedPassPhrase.isEmpty()) {
+                throw new Exception("no passphrase stored  in sharedPreferences");
+            }
+
+            if (savedPassPhrase.equals(passphrase)) {
+                ret = true;
+            }
+            return ret;
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
+        }
+    }
+
     public void setPassphrase(String passphrase) {
         sharedPreferences.edit().putString("secret", passphrase).apply();
     }
@@ -139,5 +166,12 @@ public class UtilsSecret {
 
     public void clearPassphrase() {
         sharedPreferences.edit().remove("secret").commit();
+    }
+
+    public Boolean isPassphrase() {
+        if (!getPassphrase().isEmpty()) {
+            return true;
+        }
+        return false;
     }
 }

@@ -103,6 +103,11 @@ class Database {
     func open () throws {
         var password: String = ""
         if isEncryption && encrypted && (mode == "secret" || mode == "encryption") {
+            let isPassphrase = try UtilsSecret.isPassphrase(account: account)
+            if !isPassphrase {
+                let msg: String = "No Passphrase stored"
+                throw DatabaseError.open(message: msg)
+            }
             password = UtilsSecret.getPassphrase(account: account)
         }
         if mode == "encryption" {
@@ -110,7 +115,8 @@ class Database {
                 do {
                     let ret: Bool = try UtilsEncryption
                         .encryptDatabase(databaseLocation: databaseLocation,
-                                         filePath: path, password: password)
+                                         filePath: path, password: password,
+                                         version: dbVersion)
                     if !ret {
                         let msg: String = "Failed in encryption"
                         throw DatabaseError.open(message: msg)

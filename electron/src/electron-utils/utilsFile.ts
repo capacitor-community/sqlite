@@ -1,4 +1,4 @@
-import { open } from 'node:fs/promises';
+import { open, unlink } from 'node:fs/promises';
 
 export class UtilsFile {
   pathDB = 'Databases';
@@ -344,17 +344,39 @@ export class UtilsFile {
    * @param filePath
    */
   public async deleteFilePath(filePath: string): Promise<void> {
+    let unlinkRetries = 50000;
+
+    /**
+     * On windows, the file lock behaves unpredictable. Often it claims a databsae file is locked / busy, although
+     * the file stream is already closed.
+     * Even though we already checked the status with the `waitForFilePathLock()` method previously.
+     *
+     * The only way to handle this reliably is to retry deletion until it works.
+     */
+    const deleteFile = async () => {
+      try {
+        await unlink(filePath);
+      } catch (err) {
+        unlinkRetries--;
+        if (unlinkRetries > 0) {
+          await deleteFile();
+        } else {
+          throw err;
+        }
+      }
+    };
+
     if (filePath.length !== 0) {
       // check if path exists
       const isPath = this.isPathExists(filePath);
       if (isPath) {
         try {
           await this.waitForFilePathLock(filePath);
-
-          this.NodeFs.unlinkSync(filePath);
+          // actually delete the file
+          await deleteFile();
           return Promise.resolve();
         } catch (err) {
-          return Promise.reject('DeleteFilePath: ' + `${err}`);
+          return Promise.reject(`DeleteFilePath: ${err}`);
         }
       } else {
         return Promise.resolve();
@@ -364,8 +386,11 @@ export class UtilsFile {
     }
   }
 
-  public async waitForFilePathLock(filePath: string, timeoutMS: number = 4000): Promise<void> {
-    let timeIsOver: boolean = false;
+  public async waitForFilePathLock(
+    filePath: string,
+    timeoutMS = 4000,
+  ): Promise<void> {
+    let timeIsOver = false;
 
     setTimeout(() => {
       timeIsOver = true;
@@ -375,7 +400,9 @@ export class UtilsFile {
       const check = async () => {
         if (timeIsOver) {
           reject(
-            new Error(`WaitForFilePathLock: The resource is still locked / busy after ${timeoutMS} milliseconds.`)
+            new Error(
+              `WaitForFilePathLock: The resource is still locked / busy after ${timeoutMS} milliseconds.`,
+            ),
           );
           return;
         }
@@ -409,14 +436,17 @@ export class UtilsFile {
             return;
           } else {
             // Something else went wrong.
-            reject(new Error(`WaitForFilePathLock: Error while checking the file: ${err}`));
+            reject(
+              new Error(
+                `WaitForFilePathLock: Error while checking the file: ${err}`,
+              ),
+            );
           }
         }
-      }
+      };
 
       check();
     });
-
   }
 
   /**

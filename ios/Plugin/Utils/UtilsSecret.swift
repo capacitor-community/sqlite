@@ -15,6 +15,7 @@ enum UtilsSecretError: Error {
     case setEncryptionSecret(message: String)
     case changeEncryptionSecret(message: String)
     case clearEncryptionSecret(message: String)
+    case checkEncryptionSecret(message: String)
 }
 
 let oldAccount: String = "CapacitorSQLitePlugin"
@@ -258,5 +259,30 @@ class UtilsSecret {
             throw UtilsSecretError.clearEncryptionSecret(message: message)
         }
 
+    }
+
+    // MARK: - CheckEncryptionSecret
+
+    class func checkEncryptionSecret(prefix: String, passphrase: String) throws -> NSNumber {
+        var ret: NSNumber = 0
+        if prefix.isEmpty {
+            let msg: String = "keychain prefix must not be empty"
+            throw UtilsSecretError.checkEncryptionSecret(message: msg)
+        }
+        if passphrase.isEmpty {
+            let msg: String = "passphrase must not be empty"
+            throw UtilsSecretError.checkEncryptionSecret(message: msg)
+        }
+        // get encrypted passphrase
+        let account = "\(prefix)_\(oldAccount)"
+        let storedPassPhrase = getPassphrase(account: account)
+        if storedPassPhrase.isEmpty {
+            let msg: String = "no passphrase stored in keychain"
+            throw UtilsSecretError.checkEncryptionSecret(message: msg)
+        }
+        if storedPassPhrase == passphrase {
+            ret = 1
+        }
+        return ret
     }
 }

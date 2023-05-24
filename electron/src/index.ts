@@ -15,6 +15,7 @@ import type {
   capSQLiteExportOptions,
   capSQLiteFromAssetsOptions,
   capSQLiteHTTPOptions,
+  capSQLiteLocalDiskOptions,
   capSQLiteImportOptions,
   capSQLiteJson,
   capSQLiteOptions,
@@ -637,28 +638,30 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       'upgrade',
     );
 
-    const firstUpgrade = upgrades[0];
-    const versionUpgradeKeys = Object.keys(firstUpgrade);
-
-    if (
-      !versionUpgradeKeys.includes('toVersion') ||
-      !versionUpgradeKeys.includes('statements')
-    ) {
-      throw new Error('Must provide an upgrade capSQLiteVersionUpgrade Object');
+    for (const upgrade of upgrades) {
+      const versionUpgradeKeys = Object.keys(upgrade);
+      if (
+        !versionUpgradeKeys.includes('toVersion') ||
+        !versionUpgradeKeys.includes('statements')
+      ) {
+        throw new Error(
+          'Must provide an upgrade capSQLiteVersionUpgrade Object',
+        );
+      }
+      if (typeof upgrade.toVersion != 'number') {
+        throw new Error('upgrade.toVersion must be a number');
+      }
+      if (this.versionUpgrades[dbName]) {
+        this.versionUpgrades[dbName][upgrade.toVersion] = upgrade;
+      } else {
+        const upgradeVersionDict: Record<number, capSQLiteVersionUpgrade> = {};
+        upgradeVersionDict[upgrade.toVersion] = upgrade;
+        this.versionUpgrades[dbName] = upgradeVersionDict;
+      }
     }
-
-    if (typeof firstUpgrade.toVersion != 'number') {
-      throw new Error('upgrade.toVersion must be a number');
-    }
-
-    if (this.versionUpgrades[dbName]) {
-      this.versionUpgrades[dbName][firstUpgrade.toVersion] = firstUpgrade;
-    } else {
-      const upgradeVersionDict: Record<number, capSQLiteVersionUpgrade> = {};
-      upgradeVersionDict[firstUpgrade.toVersion] = firstUpgrade;
-      this.versionUpgrades[dbName] = upgradeVersionDict;
-    }
-
+    console.log(
+      `this.versionUpgrades: ${JSON.stringify(this.versionUpgrades)}`,
+    );
     return;
   }
 
@@ -953,6 +956,25 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     throw new Error('Method not implemented.');
   }
 
+  async saveToLocalDisk(options: capSQLiteOptions): Promise<void> {
+    console.log(`${JSON.stringify(options)}`);
+    throw new Error('Method not implemented.');
+  }
+
+  async getFromLocalDiskToStore(
+    options: capSQLiteLocalDiskOptions,
+  ): Promise<void> {
+    console.log(`${JSON.stringify(options)}`);
+    throw new Error('Method not implemented.');
+  }
+
+   async checkEncryptionSecret(
+    options: capSetSecretOptions,
+  ): Promise<capSQLiteResult> {
+    console.log('checkEncryptionSecret', options);
+    throw new Error('Method not implemented.');
+  }
+
   async getNCDatabasePath(
     options: capNCDatabasePathOptions,
   ): Promise<capNCDatabasePathResult> {
@@ -973,5 +995,20 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   async isNCDatabase(options: capNCOptions): Promise<capSQLiteResult> {
     console.log('isNCDatabase', options);
     throw new Error('Method not implemented.');
+  }
+
+  async isDatabaseEncrypted(
+    options: capSQLiteOptions,
+  ): Promise<capSQLiteResult> {
+    console.log('isDatabaseEncrypted', options);
+    throw new Error('Not implemented on web.');
+  }
+
+  async isInConfigEncryption(): Promise<capSQLiteResult> {
+    throw new Error('Not implemented on web.');
+  }
+
+  async isInConfigBiometricAuth(): Promise<capSQLiteResult> {
+    throw new Error('Not implemented on web.');
   }
 }

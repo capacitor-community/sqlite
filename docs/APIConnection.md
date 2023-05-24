@@ -10,11 +10,14 @@
 
 * [`initWebStore()`](#initwebstore)
 * [`saveToStore(...)`](#savetostore)
+* [`getFromLocalDiskToStore(...)`](#getfromlocaldisktostore)
+* [`saveToLocalDisk(...)`](#savetolocaldisk)
 * [`echo(...)`](#echo)
 * [`isSecretStored()`](#issecretstored)
 * [`setEncryptionSecret(...)`](#setencryptionsecret)
 * [`changeEncryptionSecret(...)`](#changeencryptionsecret)
 * [`clearEncryptionSecret()`](#clearencryptionsecret)
+* [`checkEncryptionSecret(...)`](#checkencryptionsecret)
 * [`addUpgradeStatement(...)`](#addupgradestatement)
 * [`createConnection(...)`](#createconnection)
 * [`isConnection(...)`](#isconnection)
@@ -32,6 +35,9 @@
 * [`isJsonValid(...)`](#isjsonvalid)
 * [`copyFromAssets(...)`](#copyfromassets)
 * [`getFromHTTPRequest(...)`](#getfromhttprequest)
+* [`isDatabaseEncrypted(...)`](#isdatabaseencrypted)
+* [`isInConfigEncryption()`](#isinconfigencryption)
+* [`isInConfigBiometricAuth()`](#isinconfigbiometricauth)
 * [`isDatabase(...)`](#isdatabase)
 * [`isNCDatabase(...)`](#isncdatabase)
 * [`getDatabaseList()`](#getdatabaselist)
@@ -76,6 +82,40 @@ Save the datbase to the web store
 | **`database`** | <code>string</code> |
 
 **Since:** 3.2.3-1
+
+--------------------
+
+
+### getFromLocalDiskToStore(...)
+
+```typescript
+getFromLocalDiskToStore(overwrite: boolean) => Promise<void>
+```
+
+Get database from local disk and save it to store
+
+| Param           | Type                 | Description |
+| --------------- | -------------------- | ----------- |
+| **`overwrite`** | <code>boolean</code> | : boolean   |
+
+**Since:** 4.6.3
+
+--------------------
+
+
+### saveToLocalDisk(...)
+
+```typescript
+saveToLocalDisk(database: string) => Promise<void>
+```
+
+Save database to local disk
+
+| Param          | Type                | Description |
+| -------------- | ------------------- | ----------- |
+| **`database`** | <code>string</code> | : string    |
+
+**Since:** 4.6.3
 
 --------------------
 
@@ -158,6 +198,25 @@ clearEncryptionSecret() => Promise<void>
 Clear the passphrase in a secure store
 
 **Since:** 3.5.1
+
+--------------------
+
+
+### checkEncryptionSecret(...)
+
+```typescript
+checkEncryptionSecret(passphrase: string) => Promise<capSQLiteResult>
+```
+
+Check the passphrase stored in a secure store
+
+| Param            | Type                |
+| ---------------- | ------------------- |
+| **`passphrase`** | <code>string</code> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 4.6.1
 
 --------------------
 
@@ -469,6 +528,55 @@ getFromHTTPRequest(url?: string | undefined, overwrite?: boolean | undefined) =>
 | **`overwrite`** | <code>boolean</code> |
 
 **Since:** 4.1.1
+
+--------------------
+
+
+### isDatabaseEncrypted(...)
+
+```typescript
+isDatabaseEncrypted(database: string) => Promise<capSQLiteResult>
+```
+
+Check if a SQLite database is encrypted
+
+| Param          | Type                |
+| -------------- | ------------------- |
+| **`database`** | <code>string</code> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 4.6.2-2
+
+--------------------
+
+
+### isInConfigEncryption()
+
+```typescript
+isInConfigEncryption() => Promise<capSQLiteResult>
+```
+
+Check encryption value in capacitor.config
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 4.6.2-2
+
+--------------------
+
+
+### isInConfigBiometricAuth()
+
+```typescript
+isInConfigBiometricAuth() => Promise<capSQLiteResult>
+```
+
+Check encryption value in capacitor.config
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 4.6.2-2
 
 --------------------
 

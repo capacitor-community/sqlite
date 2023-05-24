@@ -258,6 +258,32 @@ enum CapacitorSQLiteError: Error {
         }
     }
 
+    // MARK: - CheckEncryptionSecret
+
+    @objc public func checkEncryptionSecret(passphrase: String) throws ->  NSNumber {
+        if isInit {
+            if isEncryption {
+                do {
+                    // close all connections
+                    try closeAllConnections()
+                    // check encryption secret
+                    let res: NSNumber = try UtilsSecret
+                        .checkEncryptionSecret(prefix: prefixKeychain,
+                                               passphrase: passphrase)
+                    return res
+                } catch UtilsSecretError.checkEncryptionSecret(let message) {
+                    throw CapacitorSQLiteError.failed(message: message)
+                } catch let error {
+                    throw CapacitorSQLiteError.failed(message: "\(error)")
+                }
+            } else {
+                throw CapacitorSQLiteError.failed(message: "No Encryption set in capacitor.config")
+            }
+        } else {
+            throw CapacitorSQLiteError.failed(message: initMessage)
+        }
+    }
+
     // MARK: - getNCDatabasePath
 
     @objc public func getNCDatabasePath(_ folderPath: String, dbName: String ) throws -> String {
@@ -574,6 +600,34 @@ enum CapacitorSQLiteError: Error {
                 return 1
             } else {
                 return 0
+            }
+        } else {
+            throw CapacitorSQLiteError.failed(message: initMessage)
+        }
+    }
+
+    // MARK: - IsDatabaseEncrypted
+
+    @objc public func isDatabaseEncrypted(_ dbName: String) throws -> NSNumber {
+        if isInit {
+            let mDbName = CapacitorSQLite.getDatabaseName(dbName: dbName)
+            let isFileExists: Bool = UtilsFile
+                .isFileExist(databaseLocation: databaseLocation,
+                             fileName: mDbName + "SQLite.db")
+            if isFileExists {
+                let state: State = UtilsSQLCipher
+                    .getDatabaseState(databaseLocation: databaseLocation,
+                                      databaseName: mDbName + "SQLite.db",
+                                      account: account)
+                if state.rawValue == "ENCRYPTEDGLOBALSECRET" || state.rawValue == "ENCRYPTEDSECRET" {
+                    return 1
+                }
+                if state.rawValue == "UNENCRYPTED" {
+                    return 0
+                }
+                throw CapacitorSQLiteError.failed(message: "Database unknown")
+            } else {
+                throw CapacitorSQLiteError.failed(message: "Database does not exist")
             }
         } else {
             throw CapacitorSQLiteError.failed(message: initMessage)
@@ -1244,6 +1298,7 @@ enum CapacitorSQLiteError: Error {
     throws -> [Int: [String: Any]] {
         if isInit {
             var upgDict: [String: Any] = [:]
+            var upgVersionDict: [Int: [String: Any]] = [:]
             for dict in upgrade {
                 let keys = dict.keys
                 if !(keys.contains("toVersion")) || !(keys.contains("statements")) {
@@ -1254,13 +1309,12 @@ enum CapacitorSQLiteError: Error {
                 for (key, value) in dict {
                     upgDict[key] = value
                 }
+                guard let toVersion = upgDict["toVersion"] as? Int else {
+                    let msg: String = "toVersion key must be an Int"
+                    throw CapacitorSQLiteError.failed(message: msg)
+                }
+                upgVersionDict[toVersion] =  upgDict
             }
-            guard let toVersion = upgDict["toVersion"] as? Int else {
-                let msg: String = "toVersion key must be an Int"
-                throw CapacitorSQLiteError.failed(message: msg)
-            }
-            let upgVersionDict: [Int: [String: Any]] =
-                [toVersion: upgDict]
             return upgVersionDict
         } else {
             throw CapacitorSQLiteError.failed(message: initMessage)

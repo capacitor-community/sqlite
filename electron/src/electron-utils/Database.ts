@@ -1,6 +1,6 @@
 import type {
   capSQLiteVersionUpgrade,
-  JsonSQLite
+  JsonSQLite,
 } from '../../../src/definitions';
 import { GlobalSQLite } from '../GlobalSQLite';
 
@@ -99,7 +99,10 @@ export class Database {
         const curVersion: number = await this.sqliteUtil.getVersion(
           this.database,
         );
-
+        console.log(`@@@@ this.readonly: ${this.readonly}`);
+        console.log(
+          `@@@@ this.version: ${this.version} curVersion: ${curVersion}`,
+        );
         if (
           this.version > curVersion &&
           Object.keys(this.upgradeVersionDict).length > 0
@@ -154,7 +157,6 @@ export class Database {
         resolve();
       });
     });
-
   }
   /**
    * ChangeSecret
@@ -381,8 +383,10 @@ export class Database {
 
     try {
       if (transaction) {
-        const mode: string = await this.sqliteUtil.getJournalMode(this.database);
-        console.log(`$$$ in executeSQL journal_mode: ${mode} $$$`)
+        const mode: string = await this.sqliteUtil.getJournalMode(
+          this.database,
+        );
+        console.log(`$$$ in executeSQL journal_mode: ${mode} $$$`);
         await this.sqliteUtil.beginTransaction(this.database, this._isDbOpen);
       }
 
@@ -454,8 +458,10 @@ export class Database {
       initChanges = await this.sqliteUtil.dbChanges(this.database);
       // start a transaction
       if (transaction) {
-        const mode: string = await this.sqliteUtil.getJournalMode(this.database);
-        console.log(`$$$ in runSQL journal_mode: ${mode} $$$`)
+        const mode: string = await this.sqliteUtil.getJournalMode(
+          this.database,
+        );
+        console.log(`$$$ in runSQL journal_mode: ${mode} $$$`);
         await this.sqliteUtil.beginTransaction(this.database, this._isDbOpen);
       }
     } catch (err) {
@@ -514,8 +520,10 @@ export class Database {
 
       // start a transaction
       if (transaction) {
-        const mode: string = await this.sqliteUtil.getJournalMode(this.database);
-        console.log(`$$$ in execSet journal_mode: ${mode} $$$`)
+        const mode: string = await this.sqliteUtil.getJournalMode(
+          this.database,
+        );
+        console.log(`$$$ in execSet journal_mode: ${mode} $$$`);
         await this.sqliteUtil.beginTransaction(this.database, this._isDbOpen);
       }
     } catch (err) {

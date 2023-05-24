@@ -91,6 +91,31 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 
 - the database is stored in Web browser INDEXEDDB storage as a `localforage` store under the `jeepSqliteStore` name and `databases` table name.
 
+## Comments within SQL statements
+
+ - see [Comments within SQL](https://www.techonthenet.com/sqlite/comments.php)
+
+## Unexpected behaviours
+
+Unexpected or erroneous behaviour users of this library have encountered.
+
+### 1. Running multiple update statements in one statement
+
+<ins>The Problem:</ins>
+
+In https://github.com/capacitor-community/sqlite/issues/393 a user of this library
+experienced bugs when running a statement that itself contained multiple update statements.
+
+The statement executed fine on the web version of this library (sql-wasm.wasm).
+
+But on android and IOS only some updates took place, some updates were ignored and did not take effect in the database.
+
+<ins>The Solution:</ins>
+
+When running multiple update statements and experiencing such errors, try running them in separate single statements and await (Promise) each statement to finish running before running the next statement.
+
+Note that in general in SQLite this is not recommended, since it makes your queries take a bit longer.
+
 ## Write-Ahead Logging (WAL)
 
  - Electron, Web platforms only WAL journal_mode is implemented
@@ -122,10 +147,13 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 
 * [`initWebStore()`](#initwebstore)
 * [`saveToStore(...)`](#savetostore)
+* [`getFromLocalDiskToStore(...)`](#getfromlocaldisktostore)
+* [`saveToLocalDisk(...)`](#savetolocaldisk)
 * [`isSecretStored()`](#issecretstored)
 * [`setEncryptionSecret(...)`](#setencryptionsecret)
 * [`changeEncryptionSecret(...)`](#changeencryptionsecret)
 * [`clearEncryptionSecret()`](#clearencryptionsecret)
+* [`checkEncryptionSecret(...)`](#checkencryptionsecret)
 * [`createConnection(...)`](#createconnection)
 * [`closeConnection(...)`](#closeconnection)
 * [`echo(...)`](#echo)
@@ -139,6 +167,9 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 * [`query(...)`](#query)
 * [`isDBExists(...)`](#isdbexists)
 * [`isDBOpen(...)`](#isdbopen)
+* [`isDatabaseEncrypted(...)`](#isdatabaseencrypted)
+* [`isInConfigEncryption()`](#isinconfigencryption)
+* [`isInConfigBiometricAuth()`](#isinconfigbiometricauth)
 * [`isDatabase(...)`](#isdatabase)
 * [`isTableExists(...)`](#istableexists)
 * [`deleteDatabase(...)`](#deletedatabase)
@@ -205,6 +236,40 @@ Save database to  the web store
 --------------------
 
 
+### getFromLocalDiskToStore(...)
+
+```typescript
+getFromLocalDiskToStore(options: capSQLiteLocalDiskOptions) => Promise<void>
+```
+
+Get database from local disk and save it to store
+
+| Param         | Type                                                                            | Description                                                          |
+| ------------- | ------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| **`options`** | <code><a href="#capsqlitelocaldiskoptions">capSQLiteLocalDiskOptions</a></code> | : <a href="#capsqlitelocaldiskoptions">capSQLiteLocalDiskOptions</a> |
+
+**Since:** 4.6.3
+
+--------------------
+
+
+### saveToLocalDisk(...)
+
+```typescript
+saveToLocalDisk(options: capSQLiteOptions) => Promise<void>
+```
+
+Save database to local disk
+
+| Param         | Type                                                          | Description                                        |
+| ------------- | ------------------------------------------------------------- | -------------------------------------------------- |
+| **`options`** | <code><a href="#capsqliteoptions">capSQLiteOptions</a></code> | : <a href="#capsqliteoptions">capSQLiteOptions</a> |
+
+**Since:** 4.6.3
+
+--------------------
+
+
 ### isSecretStored()
 
 ```typescript
@@ -267,6 +332,25 @@ clearEncryptionSecret() => Promise<void>
 Clear the passphrase in the secure store
 
 **Since:** 3.5.1
+
+--------------------
+
+
+### checkEncryptionSecret(...)
+
+```typescript
+checkEncryptionSecret(options: capSetSecretOptions) => Promise<capSQLiteResult>
+```
+
+Check encryption passphrase
+
+| Param         | Type                                                                |
+| ------------- | ------------------------------------------------------------------- |
+| **`options`** | <code><a href="#capsetsecretoptions">capSetSecretOptions</a></code> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 4.6.1
 
 --------------------
 
@@ -507,6 +591,55 @@ Check if a SQLite database is opened
 **Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
 
 **Since:** 3.0.0-beta.5
+
+--------------------
+
+
+### isDatabaseEncrypted(...)
+
+```typescript
+isDatabaseEncrypted(options: capSQLiteOptions) => Promise<capSQLiteResult>
+```
+
+Check if a SQLite database is encrypted
+
+| Param         | Type                                                          | Description                                        |
+| ------------- | ------------------------------------------------------------- | -------------------------------------------------- |
+| **`options`** | <code><a href="#capsqliteoptions">capSQLiteOptions</a></code> | : <a href="#capsqliteoptions">capSQLiteOptions</a> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 4.6.2-2
+
+--------------------
+
+
+### isInConfigEncryption()
+
+```typescript
+isInConfigEncryption() => Promise<capSQLiteResult>
+```
+
+Check encryption value in capacitor.config
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 4.6.2-2
+
+--------------------
+
+
+### isInConfigBiometricAuth()
+
+```typescript
+isInConfigBiometricAuth() => Promise<capSQLiteResult>
+```
+
+Check encryption value in capacitor.config
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 4.6.2-2
 
 --------------------
 
@@ -951,6 +1084,13 @@ Check if a non conformed database exists without connection
 | -------------- | -------------------- | ------------------------------------------------ |
 | **`database`** | <code>string</code>  | The database name                                |
 | **`readonly`** | <code>boolean</code> | Set to true (database in read-only mode) / false |
+
+
+#### capSQLiteLocalDiskOptions
+
+| Prop            | Type                 | Description                                                                                              |
+| --------------- | -------------------- | -------------------------------------------------------------------------------------------------------- |
+| **`overwrite`** | <code>boolean</code> | Set the overwrite mode for saving the database from local disk to store "true"/"false" default to "true" |
 
 
 #### capSQLiteResult

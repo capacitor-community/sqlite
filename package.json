@@ -1,6 +1,6 @@
 {
   "name": "@capacitor-community/sqlite",
-  "version": "4.2.2",
+  "version": "4.8.0-1",
   "description": "Community plugin for native & electron SQLite databases",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
@@ -10,6 +10,7 @@
     "android/src/main/",
     "android/build.gradle",
     "dist/",
+    "src/",
     "ios/Plugin/",
     "electron/",
     "CapacitorCommunitySqlite.podspec"
@@ -55,16 +56,17 @@
     "prepublishOnly": "npm run build && npm run build-electron && npm run docgen"
   },
   "devDependencies": {
-    "@capacitor/android": "^4.2.0",
-    "@capacitor/core": "^4.2.0",
+    "@capacitor/android": "^4.8.0",
+    "@capacitor/cli": "^4.8.0",
+    "@capacitor/core": "^4.8.0",
     "@capacitor/docgen": "^0.0.17",
-    "@capacitor/ios": "^4.2.0",
+    "@capacitor/ios": "^4.8.0",
     "@ionic/eslint-config": "^0.3.0",
     "@ionic/prettier-config": "^1.0.1",
     "@ionic/swiftlint-config": "^1.1.2",
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
-    "electron": "^15.5.5",
+    "electron": "^22.0.0",
     "eslint": "^7.11.0",
     "prettier": "~2.3.0",
     "prettier-plugin-java": "~1.0.2",
@@ -93,6 +95,6 @@
     }
   },
   "dependencies": {
-    "jeep-sqlite": "^1.6.6"
+    "jeep-sqlite": "^2.3.4"
   }
 }
