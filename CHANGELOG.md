@@ -1,3 +1,13 @@
+# 5.0.1 (2023-05-31)
+
+### Added Features
+ - add Ionic react typeorm example PR#423 from Marcello Cosentino
+ - add link to Ionic7-angular-sqlite-starter 
+
+### Bug Fixes
+
+ - fix Readme.md file
+ 
 # 5.0.0 (2023-05-24)
 
 ### Chore

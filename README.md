@@ -1,6 +1,6 @@
 <p align="center"><br><img src="https://user-images.githubusercontent.com/236501/85893648-1c92e880-b7a8-11ea-926d-95355b8175c7.png" width="128" height="128" /></p>
 <h3 align="center">SQLITE DATABASE</h3>
-<p align="center"><strong><code>@capacitor-community/sqlite@next</code></strong></p>
+<p align="center"><strong><code>@capacitor-community/sqlite</code></strong></p>
 <br>
 <p align="center" style="font-size:50px;color:red"><strong>CAPACITOR 5</strong></p><br>
 
@@ -48,33 +48,39 @@ npx cap sync
 
 then add plugin to main `capacitor.config.json` file:
 
-```json
-{
-  "appId": "com.example.app",
-  "appName": "cap",
-  "webDir": "dist",
-  "bundledWebRuntime": false,
-  "plugins": {
-    "CapacitorSQLite": {
-      "iosDatabaseLocation": "Library/CapacitorDatabase",
-      "iosIsEncryption": false,
-      "iosKeychainPrefix": "cap",
-      "iosBiometric": {
-        "biometricAuth": false,
-        "biometricTitle" : "Biometric login for capacitor sqlite"
+```ts
+import { CapacitorConfig } from '@capacitor/cli';
+
+const config: CapacitorConfig = {
+  appId: 'com.jeep.app.ionic7.angular.sqlite',
+  appName: 'ionic7-angular-sqlite-starter',
+  webDir: 'www',
+  server: {
+    androidScheme: 'https'
+  },
+  plugins: {
+    CapacitorSQLite: {
+      iosDatabaseLocation: 'Library/CapacitorDatabase',
+      iosIsEncryption: true,
+      iosKeychainPrefix: 'angular-sqlite-app-starter',
+      iosBiometric: {
+        biometricAuth: false,
+        biometricTitle : "Biometric login for capacitor sqlite"
       },
-      "androidIsEncryption": false,
-      "androidBiometric": {
-        "biometricAuth" : false,
-        "biometricTitle" : "Biometric login for capacitor sqlite",
-        "biometricSubTitle" : "Log in using your biometric"
+      androidIsEncryption: true,
+      androidBiometric: {
+        biometricAuth : false,
+        biometricTitle : "Biometric login for capacitor sqlite",
+        biometricSubTitle : "Log in using your biometric"
       },
-      "electronWindowsLocation": "C:\\ProgramData\\CapacitorDatabases",
-      "electronMacLocation": "YOUR_VOLUME/CapacitorDatabases",
-      "electronLinuxLocation": "Databases"
+      electronWindowsLocation: "C:\\ProgramData\\CapacitorDatabases",
+      electronMacLocation: "/Volumes/Development_Lacie/Development/Databases",
+      electronLinuxLocation: "Databases"
     }
   }
-}
+};
+export default config;
+
 ```
 
 ## More Reading:
@@ -259,7 +265,7 @@ npm install --save node-fetch@2.6.7
 
 - [Ionic/Angular Usage Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-Angular-Usage.md)
 
-- [ionic-angular-sqlite-starter](https://github.com/jepiqueau/ionic-angular-sqlite-starter) Ionic 6 Angular SQLite CRUD operations.
+- [ionic7-angular-sqlite-starter](https://github.com/jepiqueau/ionic7-angular-sqlite-starter) Ionic 7 Angular 16 Capacitor 5 SQLite CRUD operations.
 
 - [angular-sqlite-app-starter](https://github.com/jepiqueau/angular-sqlite-app-starter) This one is now more for testing the issues.
 
