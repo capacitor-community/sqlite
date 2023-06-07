@@ -8,6 +8,7 @@ import static android.database.Cursor.FIELD_TYPE_STRING;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.util.Log;
 import androidx.sqlite.db.SimpleSQLiteQuery;
 import androidx.sqlite.db.SupportSQLiteDatabase;
@@ -22,6 +23,7 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Dictionary;
@@ -795,7 +797,12 @@ public class Database {
                             row.put(colName, c.getDouble(index));
                             break;
                         case FIELD_TYPE_BLOB:
-                            row.put(colName, c.getBlob(index));
+//                            row.put(colName, c.getBlob(index));
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                row.put(colName, Base64.getEncoder().encodeToString(c.getBlob(index)));
+                            } else {
+                                row.put(colName, JSONObject.NULL);
+                            }
                             break;
                         case FIELD_TYPE_NULL:
                             row.put(colName, JSONObject.NULL);

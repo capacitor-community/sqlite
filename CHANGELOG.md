@@ -1,3 +1,9 @@
+# 5.0.2 (2023-06-07)
+
+### Bug Fixes
+
+ - fix issue#426 for Android & iOS
+
 # 5.0.1 (2023-05-31)
 
 ### Added Features
