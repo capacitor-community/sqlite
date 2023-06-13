@@ -22,6 +22,19 @@
 		2C3AF31A25B593E500C5EF2F /* UtilsUpgrade.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C3AF31925B593E500C5EF2F /* UtilsUpgrade.swift */; };
 		2C479B9225BD874C009B1A49 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C479B9125BD874C009B1A49 /* Security.framework */; };
 		2C772263262FF971000C65E9 /* String.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C772262262FF971000C65E9 /* String.swift */; };
+		2C7E57142A3864C400C04517 /* UtilsBinding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7E57092A3864C400C04517 /* UtilsBinding.swift */; };
+		2C7E57152A3864C400C04517 /* UtilsDownloadFromHTTP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7E570A2A3864C400C04517 /* UtilsDownloadFromHTTP.swift */; };
+		2C7E57162A3864C400C04517 /* UtilsDrop.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7E570B2A3864C400C04517 /* UtilsDrop.swift */; };
+		2C7E57172A3864C400C04517 /* UtilsEncryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7E570C2A3864C400C04517 /* UtilsEncryption.swift */; };
+		2C7E57182A3864C400C04517 /* UtilsFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7E570D2A3864C400C04517 /* UtilsFile.swift */; };
+		2C7E57192A3864C400C04517 /* UtilsJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7E570E2A3864C400C04517 /* UtilsJson.swift */; };
+		2C7E571A2A3864C400C04517 /* UtilsMigrate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7E570F2A3864C400C04517 /* UtilsMigrate.swift */; };
+		2C7E571B2A3864C400C04517 /* UtilsNCDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7E57102A3864C400C04517 /* UtilsNCDatabase.swift */; };
+		2C7E571C2A3864C400C04517 /* UtilsSecret.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7E57112A3864C400C04517 /* UtilsSecret.swift */; };
+		2C7E571D2A3864C400C04517 /* UtilsSQLCipher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7E57122A3864C400C04517 /* UtilsSQLCipher.swift */; };
+		2C7E571E2A3864C400C04517 /* UtilsUpgrade.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7E57132A3864C400C04517 /* UtilsUpgrade.swift */; };
+		2C7E57212A38655600C04517 /* Data.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7E571F2A38655600C04517 /* Data.swift */; };
+		2C7E57222A38655600C04517 /* Array.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7E57202A38655600C04517 /* Array.swift */; };
 		2CB4368728EEEFF500C973AA /* UtilsDownloadFromHTTP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB4368628EEEFF500C973AA /* UtilsDownloadFromHTTP.swift */; };
 		2CB89AE327C57603001F464B /* BiometricIDAuthentication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB89AE227C57603001F464B /* BiometricIDAuthentication.swift */; };
 		2CB9B9342601EEE500743730 /* JsonSQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB9B9312601EEE500743730 /* JsonSQLite.swift */; };
@@ -65,6 +78,19 @@
 		2C3AF31925B593E500C5EF2F /* UtilsUpgrade.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilsUpgrade.swift; sourceTree = "<group>"; };
 		2C479B9125BD874C009B1A49 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk/System/Library/Frameworks/Security.framework; sourceTree = DEVELOPER_DIR; };
 		2C772262262FF971000C65E9 /* String.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = String.swift; sourceTree = "<group>"; };
+		2C7E57092A3864C400C04517 /* UtilsBinding.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilsBinding.swift; sourceTree = "<group>"; };
+		2C7E570A2A3864C400C04517 /* UtilsDownloadFromHTTP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilsDownloadFromHTTP.swift; sourceTree = "<group>"; };
+		2C7E570B2A3864C400C04517 /* UtilsDrop.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilsDrop.swift; sourceTree = "<group>"; };
+		2C7E570C2A3864C400C04517 /* UtilsEncryption.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilsEncryption.swift; sourceTree = "<group>"; };
+		2C7E570D2A3864C400C04517 /* UtilsFile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilsFile.swift; sourceTree = "<group>"; };
+		2C7E570E2A3864C400C04517 /* UtilsJson.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilsJson.swift; sourceTree = "<group>"; };
+		2C7E570F2A3864C400C04517 /* UtilsMigrate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilsMigrate.swift; sourceTree = "<group>"; };
+		2C7E57102A3864C400C04517 /* UtilsNCDatabase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilsNCDatabase.swift; sourceTree = "<group>"; };
+		2C7E57112A3864C400C04517 /* UtilsSecret.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilsSecret.swift; sourceTree = "<group>"; };
+		2C7E57122A3864C400C04517 /* UtilsSQLCipher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilsSQLCipher.swift; sourceTree = "<group>"; };
+		2C7E57132A3864C400C04517 /* UtilsUpgrade.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilsUpgrade.swift; sourceTree = "<group>"; };
+		2C7E571F2A38655600C04517 /* Data.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Data.swift; sourceTree = "<group>"; };
+		2C7E57202A38655600C04517 /* Array.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Array.swift; sourceTree = "<group>"; };
 		2CB4368628EEEFF500C973AA /* UtilsDownloadFromHTTP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilsDownloadFromHTTP.swift; sourceTree = "<group>"; };
 		2CB89AE227C57603001F464B /* BiometricIDAuthentication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiometricIDAuthentication.swift; sourceTree = "<group>"; };
 		2CB9B9312601EEE500743730 /* JsonSQLite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JsonSQLite.swift; sourceTree = "<group>"; };
@@ -137,10 +163,30 @@
 		2C772261262FF94E000C65E9 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				2C7E57202A38655600C04517 /* Array.swift */,
+				2C7E571F2A38655600C04517 /* Data.swift */,
 				2CBB5E0326333DD2000FA0A6 /* Notification.Name.swift */,
 				2C772262262FF971000C65E9 /* String.swift */,
 			);
 			path = Extensions;
+			sourceTree = "<group>";
+		};
+		2C7E57082A3864C400C04517 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				2C7E57092A3864C400C04517 /* UtilsBinding.swift */,
+				2C7E570A2A3864C400C04517 /* UtilsDownloadFromHTTP.swift */,
+				2C7E570B2A3864C400C04517 /* UtilsDrop.swift */,
+				2C7E570C2A3864C400C04517 /* UtilsEncryption.swift */,
+				2C7E570D2A3864C400C04517 /* UtilsFile.swift */,
+				2C7E570E2A3864C400C04517 /* UtilsJson.swift */,
+				2C7E570F2A3864C400C04517 /* UtilsMigrate.swift */,
+				2C7E57102A3864C400C04517 /* UtilsNCDatabase.swift */,
+				2C7E57112A3864C400C04517 /* UtilsSecret.swift */,
+				2C7E57122A3864C400C04517 /* UtilsSQLCipher.swift */,
+				2C7E57132A3864C400C04517 /* UtilsUpgrade.swift */,
+			);
+			path = Utils;
 			sourceTree = "<group>";
 		};
 		2CB9B9302601EEE500743730 /* ImportExportJson */ = {
@@ -184,6 +230,7 @@
 		50ADFF8A201F53D600D50D53 /* Plugin */ = {
 			isa = PBXGroup;
 			children = (
+				2C7E57082A3864C400C04517 /* Utils */,
 				2CC9CBD6264142CB002028BF /* Models */,
 				2C772261262FF94E000C65E9 /* Extensions */,
 				2CB9B9302601EEE500743730 /* ImportExportJson */,
@@ -412,20 +459,32 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2C7E571D2A3864C400C04517 /* UtilsSQLCipher.swift in Sources */,
+				2C7E57192A3864C400C04517 /* UtilsJson.swift in Sources */,
 				2CBB5E0426333DD2000FA0A6 /* Notification.Name.swift in Sources */,
 				2CB9B9342601EEE500743730 /* JsonSQLite.swift in Sources */,
 				2C3AF30625B592FD00C5EF2F /* UtilsDrop.swift in Sources */,
 				2C3AF2F425B58EC400C5EF2F /* Database.swift in Sources */,
+				2C7E57162A3864C400C04517 /* UtilsDrop.swift in Sources */,
 				2CB9B9352601EEE500743730 /* ImportFromJson.swift in Sources */,
+				2C7E571A2A3864C400C04517 /* UtilsMigrate.swift in Sources */,
+				2C7E57222A38655600C04517 /* Array.swift in Sources */,
 				2C3AF2EC25B58C3400C5EF2F /* ReturnHandler.swift in Sources */,
 				2CDB5FF227822D7B0040BBA3 /* SqliteConfig.swift in Sources */,
 				50E1A94820377CB70090CE1A /* CapacitorSQLitePlugin.swift in Sources */,
 				2C3AF2F025B58E8500C5EF2F /* GlobalSQLite.swift in Sources */,
 				2C3AF30E25B5935B00C5EF2F /* UtilsFile.swift in Sources */,
 				2CC9CBD8264142FF002028BF /* KeychainServices.swift in Sources */,
+				2C7E57142A3864C400C04517 /* UtilsBinding.swift in Sources */,
+				2C7E57172A3864C400C04517 /* UtilsEncryption.swift in Sources */,
+				2C7E57152A3864C400C04517 /* UtilsDownloadFromHTTP.swift in Sources */,
+				2C7E571E2A3864C400C04517 /* UtilsUpgrade.swift in Sources */,
+				2C7E57182A3864C400C04517 /* UtilsFile.swift in Sources */,
 				2C3AF2F925B591ED00C5EF2F /* UtilsBinding.swift in Sources */,
 				2C3AF31625B593B600C5EF2F /* UtilsSQLCipher.swift in Sources */,
 				2CC9CBC226413B9F002028BF /* UtilsSecret.swift in Sources */,
+				2C7E571C2A3864C400C04517 /* UtilsSecret.swift in Sources */,
+				2C7E57212A38655600C04517 /* Data.swift in Sources */,
 				2C3AF30A25B5932B00C5EF2F /* UtilsEncryption.swift in Sources */,
 				2F98D68224C9AAE500613A4C /* CapacitorSQLite.swift in Sources */,
 				2C772263262FF971000C65E9 /* String.swift in Sources */,
@@ -437,6 +496,7 @@
 				2CB89AE327C57603001F464B /* BiometricIDAuthentication.swift in Sources */,
 				2CB9B9362601EEE500743730 /* ExportToJson.swift in Sources */,
 				2C2352C4276C8195003978B4 /* UtilsNCDatabase.swift in Sources */,
+				2C7E571B2A3864C400C04517 /* UtilsNCDatabase.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

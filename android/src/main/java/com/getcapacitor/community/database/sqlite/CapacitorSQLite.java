@@ -30,6 +30,7 @@ import com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLCipher;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLite;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsSecret;
 import java.io.File;
+import java.nio.ByteBuffer;
 import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Collections;

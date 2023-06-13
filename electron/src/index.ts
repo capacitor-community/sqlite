@@ -62,16 +62,13 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     // const encrypted = false;
     // const inMode = "no-encryption";
 
-    const encrypted: boolean =
-      options.encrypted
-        ? options.encrypted
-        : false;
+    const encrypted: boolean = options.encrypted ? options.encrypted : false;
     const inMode: string =
-      options.mode === "secret"
-        ? "secret"
-        : options.mode === "encryption"
-          ? "encryption"
-          : 'no-encryption';
+      options.mode === 'secret'
+        ? 'secret'
+        : options.mode === 'encryption'
+        ? 'encryption'
+        : 'no-encryption';
     const readonly: boolean = options.readonly ? options.readonly : false;
 
     let upgrades: Record<number, capSQLiteVersionUpgrade> = {};
@@ -92,7 +89,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       version,
       readonly,
       upgrades,
-      this.globalUtil
+      this.globalUtil,
     );
 
     this.databases[connName] = databaseConnection;
@@ -472,7 +469,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       targetDbVersion,
       false,
       {},
-      this.globalUtil
+      this.globalUtil,
     );
 
     try {
@@ -870,7 +867,10 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   async isSecretStored(): Promise<capSQLiteResult> {
     if (this.globalUtil != null) {
       let capSQLiteResult = { result: false };
-      if (this.globalUtil?.secret != null && this.globalUtil.secret !== 'sqlite secret') {
+      if (
+        this.globalUtil?.secret != null &&
+        this.globalUtil.secret !== 'sqlite secret'
+      ) {
         capSQLiteResult = { result: true };
       }
       return Promise.resolve(capSQLiteResult);
@@ -898,11 +898,11 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       // get the list of databases
       const files: string[] = await this.fileUtil.getFileList(pathDatabase);
 
-      files.forEach((dbName) => {
+      files.forEach(dbName => {
         const connName = 'RW_' + dbName;
         const database = this.getDatabaseConnectionOrThrowError(connName);
         database.changeSecret();
-      })
+      });
     } else {
       return Promise.reject(`changeEncryptionSecret: Failed to change Secret.`);
     }
@@ -968,7 +968,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     throw new Error('Method not implemented.');
   }
 
-   async checkEncryptionSecret(
+  async checkEncryptionSecret(
     options: capSetSecretOptions,
   ): Promise<capSQLiteResult> {
     console.log('checkEncryptionSecret', options);

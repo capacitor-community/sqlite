@@ -38,7 +38,7 @@ export class Database {
     version: number,
     readonly: boolean,
     upgDict: Record<number, capSQLiteVersionUpgrade>,
-    globalUtil?: GlobalSQLite
+    globalUtil?: GlobalSQLite,
   ) {
     this.dbName = dbName;
     this._encrypted = encrypted;
@@ -70,7 +70,7 @@ export class Database {
    */
   async open(): Promise<void> {
     this._isDbOpen = false;
-       let password = '';
+    let password = '';
     try {
       if (
         this._encrypted &&

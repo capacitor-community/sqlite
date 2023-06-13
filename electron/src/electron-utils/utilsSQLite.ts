@@ -59,7 +59,7 @@ export class UtilsSQLite {
    * @param password
    */
   public async setCipherPragma(mDB: any, password: string): Promise<void> {
-    console.log("setCipherPragma");
+    console.log('setCipherPragma');
     return new Promise((resolve, reject) => {
       mDB.serialize(() => {
         mDB.run('PRAGMA cipher_compatibility = 4');

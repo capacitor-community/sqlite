@@ -802,6 +802,31 @@ enum CapacitorSQLiteError: Error {
                                 val.append(obj)
                             } else if value is NSNull {
                                 val.append(value)
+                            } else if let obj = value as? [String: Any] {
+                                if var keys = Array(obj.keys) as? [String] {
+                                    if #available(iOS 15.0, *) {
+                                        keys.sort(using: .localizedStandard)
+                                        var valuesArr: [UInt8] = []
+                                        for key in keys {
+                                            if let mVal = obj[key] {
+                                                if let iVal = mVal as? Int {
+                                                    valuesArr.append(UInt8(iVal))
+                                                } else {
+                                                    let msg: String = "Error in reading buffer"
+                                                    throw CapacitorSQLiteError.failed(message: msg)
+                                                }
+                                            } else {
+                                                let msg: String = "Error in reading buffer"
+                                                throw CapacitorSQLiteError.failed(message: msg)
+                                            }
+                                        }
+                                        val.append(valuesArr)
+                                    } else {
+                                        let msg: String = "Error buffer sorted not implemented"
+                                        throw CapacitorSQLiteError.failed(message: msg)
+
+                                    }
+                                }
                             } else {
                                 let msg: String = "Not a SQL type"
                                 throw CapacitorSQLiteError.failed(message: msg)

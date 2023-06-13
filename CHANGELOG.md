@@ -1,8 +1,20 @@
+# 5.0.3-1 (2023-06-13)
+
+### Added Features
+
+ - Add SQLiteBlob.md documentation
+
+### Bug Fixes
+
+ - fix issue#426 for Android & iOS returning binary array
+ - fix Cannot bind buffer in Android issue#428 for Android & iOS
+
+
 # 5.0.2 (2023-06-07)
 
 ### Bug Fixes
 
- - fix issue#426 for Android & iOS
+ - fix issue#426 for Android & iOS with base64 string
 
 # 5.0.1 (2023-05-31)
 

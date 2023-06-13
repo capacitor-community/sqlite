@@ -558,13 +558,12 @@ public class ImportFromJson {
                     // Delete
                     isUpdate = false;
                     Object key = tColNames.get(0);
-                    StringBuilder sbQuery =
-                        new StringBuilder("DELETE FROM ")
-                            .append(tableName)
-                            .append(" WHERE ")
-                            .append(tColNames.get(0))
-                            .append(" = ");
-                    
+                    StringBuilder sbQuery = new StringBuilder("DELETE FROM ")
+                        .append(tableName)
+                        .append(" WHERE ")
+                        .append(tColNames.get(0))
+                        .append(" = ");
+
                     if (key instanceof Integer) sbQuery.append(row.get(0)).append(";");
                     if (key instanceof String) sbQuery.append("'").append(row.get(0)).append("';");
                     stmt = sbQuery.toString();

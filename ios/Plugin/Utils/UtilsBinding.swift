@@ -34,6 +34,7 @@ class UtilsBinding {
         }
         return message
     }
+    // swiftlint:disable cyclomatic_complexity
     class func bind( handle: OpaquePointer?, value: Any?, idx: Int)
     throws {
         if value == nil {
@@ -64,9 +65,14 @@ class UtilsBinding {
             var bInt: Int32 = Int32(0)
             if value {bInt = Int32(1)}
             sqlite3_bind_int(handle, Int32(idx), Int32(bInt))
+        } else if let value = value as? [UInt8] {
+            let data: Data = Data(value)
+            sqlite3_bind_blob(handle, Int32(idx), data.bytes,
+                              Int32(data.bytes.count), SQLITETRANSIENT)
         } else {
             throw UtilsSQLCipherError.bindFailed
         }
 
     }
+    // swiftlint:enable cyclomatic_complexity
 }

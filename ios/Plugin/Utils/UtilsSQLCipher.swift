@@ -909,11 +909,12 @@ class UtilsSQLCipher {
                     let val: Double = sqlite3_column_double(handle, index)
                     rowData[String(cString: name)] = val
                 case SQLITE_BLOB:
-                    if let dataBlob = sqlite3_column_blob(handle, index){
-                        let dataBlobLength = sqlite3_column_bytes(handle,index)
+                    if let dataBlob = sqlite3_column_blob(handle, index) {
+                        let dataBlobLength = sqlite3_column_bytes(handle, index)
                         let data = Data(bytes: dataBlob,
-                                        count:Int(dataBlobLength))
-                        rowData[String(cString: name)] = data.base64EncodedString()
+                                        count: Int(dataBlobLength))
+                        //                        rowData[String(cString: name)] = data.base64EncodedString()
+                        rowData[String(cString: name)] = data.bytes
                     } else {
                         rowData[String(cString: name)] = NSNull()
                     }

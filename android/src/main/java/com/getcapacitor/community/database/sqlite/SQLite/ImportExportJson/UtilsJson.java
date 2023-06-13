@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -39,12 +38,12 @@ public class UtilsJson {
                 JSObject namesTypes = getTableColumnNamesTypes(db, tableName);
                 ArrayList<String> colNames = new ArrayList<>();
                 if (namesTypes.has("names")) {
-                  colNames = getColumnNames(namesTypes.get("names"));
+                    colNames = getColumnNames(namesTypes.get("names"));
                 } else {
-                  throw new Exception("isLastModified: Table " + tableName + " no names");
+                    throw new Exception("isLastModified: Table " + tableName + " no names");
                 }
 
-                if (colNames.size() > 0  &&  colNames.contains("last_modified")) {
+                if (colNames.size() > 0 && colNames.contains("last_modified")) {
                     ret = true;
                     break;
                 }
@@ -55,18 +54,18 @@ public class UtilsJson {
         }
     }
 
-  /**
-   * Get Column name's list
-   * @param obj
-   * @return
-   */
+    /**
+     * Get Column name's list
+     * @param obj
+     * @return
+     */
     public ArrayList<String> getColumnNames(Object obj) {
+        ArrayList<String> colNames = new ArrayList<>();
+        if (obj instanceof ArrayList) colNames = (ArrayList<String>) obj;
 
-      ArrayList<String> colNames = new ArrayList<>();
-      if (obj instanceof ArrayList) colNames = (ArrayList<String>) obj;
-
-      return colNames;
+        return colNames;
     }
+
     /**
      * Check existence of sql_deleted column
      * @param db
@@ -84,7 +83,7 @@ public class UtilsJson {
                 JSObject namesTypes = getTableColumnNamesTypes(db, tableName);
                 ArrayList<String> colNames = new ArrayList<>();
                 if (namesTypes.has("names")) {
-                  colNames = getColumnNames(namesTypes.get("names"));
+                    colNames = getColumnNames(namesTypes.get("names"));
                 } else {
                     throw new Exception("isSqlDeleted: Table " + tableName + " no names");
                 }

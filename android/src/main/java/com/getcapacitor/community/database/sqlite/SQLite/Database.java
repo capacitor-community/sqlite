@@ -797,12 +797,15 @@ public class Database {
                             row.put(colName, c.getDouble(index));
                             break;
                         case FIELD_TYPE_BLOB:
-//                            row.put(colName, c.getBlob(index));
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            byte[] blobVal = c.getBlob(index);
+                            JSArray arr = this._uSqlite.ByteArrayToJSArray(blobVal);
+                            row.put(colName, arr);
+                            /*                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                                 row.put(colName, Base64.getEncoder().encodeToString(c.getBlob(index)));
                             } else {
                                 row.put(colName, JSONObject.NULL);
                             }
+*/
                             break;
                         case FIELD_TYPE_NULL:
                             row.put(colName, JSONObject.NULL);
