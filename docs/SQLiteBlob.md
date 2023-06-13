@@ -4,11 +4,19 @@
 <p align="center">
   Capacitor community plugin for Native and Electron SQLite Databases. For <strong>Native</strong> and <strong>Electron</strong> platforms, databases could be encrypted with SQLCipher</p>
 
+## Prerequisite
+
+```bash
+npm i --save buffer
+```
+
 ## Read a SQLite Blob
 
 ### Image Blob
 
 ```js
+...
+import { Buffer } from 'buffer';
 ...
     const stmt = `SELECT id, name, img FROM testblob;`;
     const ret: DBSQLiteValues = await db.query(stmt, []);
@@ -45,6 +53,8 @@
 
 ```js
 ...
+import { Buffer } from 'buffer';
+...
     const stmt = `SELECT id, name, blobtext FROM teach;`;
     const bufText = Buffer.from(ret.values[0].blobtext);
     const myText = bufText.toString();
@@ -58,6 +68,8 @@
 
 ```js
 ...
+import { Buffer } from 'buffer';
+...
     const imagePath = "YOUR_IMAGE_PATH/favicon.png";
     const blob = await(await fetch(imagePath)).blob();
     const imageBuffer = Buffer.from(new Uint8Array(await blob.arrayBuffer()));
@@ -70,6 +82,8 @@
 ### Text Blob
 
 ```js
+...
+import { Buffer } from 'buffer';
 ...
     const textBuffer = Buffer.from('Hello, World!');
     const stmt = "INSERT INTO teach (id, name, blobtext)VALUES( ?,?,?);";
