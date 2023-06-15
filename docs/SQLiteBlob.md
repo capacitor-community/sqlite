@@ -17,37 +17,30 @@ npm i --save buffer
 ```js
 ...
 import { Buffer } from 'buffer';
-...
-    const stmt = `SELECT id, name, img FROM testblob;`;
-    const ret: DBSQLiteValues = await db.query(stmt, []);
-    const arr = new Uint8Array(ret.values[0].img )
-    var myBlob = new Blob( [ arr ], { type: this.getMime(arr) } );
-    var imageUrl = URL.createObjectURL( myBlob );
-    const imagEL: HTMLImageElement = document.querySelector('#image');
-    imagEL.src = imageUrl;
 
 ...
 
-  private getMime = (arr: Uint8Array): string => {
-    let mime = "";
-    if (arr.length > 4) {
-      if (arr[0] == 0x89 && arr[1] == 0x50 && arr[2] == 0x4E && arr[3] == 0x47)
-        mime = 'image/png';
-      else if (arr[0] == 0xff && arr[1] == 0xd8)
-        mime = 'image/jpeg';
-      else if (arr[0] == 0x47 && arr[1] == 0x49 && arr[2] == 0x46)
-        mime = 'image/gif';
-      else if (arr[0] == 0x25 && arr[1] == 0x50 && arr[2] == 0x44 && arr[3] == 0x46)
-        mime = 'application/pdf';
-        if (arr[0] == 0x50 && arr[1] == 0x4B && arr[2] == 0x03 && arr[3] == 0x04)
-        mime = 'application/zip';
-      else {
-        mime = 'text/plain';
-      }
+  private async readImage(db: SQLiteDBConnection, query: string, imageId: number) {
+    const retQuery = await db.query(query, [imageId]);
+    if(retQuery.values.length !==1 ) {
+      return Promise.reject(new Error("Blob Image query failed"));
     }
-    return mime;
+    if(retQuery.values[0].blob.length <= 0) {
+      return Promise.reject(new Error("Blob Image query blob length <= 0"));
+    }
+    const arr = new Uint8Array(retQuery.values[0].blob )
+    var myBlob = new Blob( [ arr ], { type: retQuery.values[0].type } );
+    const imageUrl: string = URL.createObjectURL( myBlob );
+    return imageUrl;
   }
+
 ...
+    const query = `SELECT name, type, blob FROM blobs WHERE id = ? ;`;
+    const imageUrl: string = await this.readImage(db, query, imageId);
+    const imageEL: HTMLImageElement = document.querySelector('#image');
+    imageEL.src = imageUrl;
+...
+
 ```
 ### Text Blob
 
@@ -55,11 +48,47 @@ import { Buffer } from 'buffer';
 ...
 import { Buffer } from 'buffer';
 ...
-    const stmt = `SELECT id, name, blobtext FROM teach;`;
-    const bufText = Buffer.from(ret.values[0].blobtext);
-    const myText = bufText.toString();
-    console.log(`&&& myText: ${myText}`);
+    const query = `SELECT name, type, blob FROM blobs WHERE id = ? ;`;
+    let retQuery: any = await db.query(query,[textId]);
+    if(retQuery.values.length !==1 ) {
+      return Promise.reject(new Error("Blob text query failed"));
+    }
+    if(retQuery.values[0].type !== "text") {
+      return Promise.reject(new Error("Blob text query not return the right type"));
+    }
+    const retText = (Buffer.from(retQuery.values[0].blob)).toString();
+    const myText = retText;
 ...
+```
+
+### Base64 Image Blob
+
+```js
+...
+import { Buffer } from 'buffer';
+
+...
+
+  private async readImage(db: SQLiteDBConnection, query: string, imageId: number) {
+    const retQuery = await db.query(query, [imageId]);
+    if(retQuery.values.length !==1 ) {
+      return Promise.reject(new Error("Blob Image query failed"));
+    }
+    if(retQuery.values[0].blob.length <= 0) {
+      return Promise.reject(new Error("Blob Image query blob length <= 0"));
+    }
+    const arr = new Uint8Array(retQuery.values[0].blob )
+    var myBlob = new Blob( [ arr ], { type: retQuery.values[0].type } );
+    const imageUrl: string = URL.createObjectURL( myBlob );
+    return imageUrl;
+  }
+
+...
+    const query = `SELECT name, type, blob FROM blobs WHERE id = ? ;`;
+    imageUrl = await this.readImage(db, query, imageId);
+    const imageEL: HTMLImageElement = document.querySelector('#image');
+    imageEL.src = imageUrl;
+
 ```
 
 ## Write a SQLite Blob
@@ -70,12 +99,21 @@ import { Buffer } from 'buffer';
 ...
 import { Buffer } from 'buffer';
 ...
-    const imagePath = "YOUR_IMAGE_PATH/favicon.png";
+  private async writeImage(db: SQLiteDBConnection, stmt: string, imagePath: string, name: string, type: string) {
     const blob = await(await fetch(imagePath)).blob();
     const imageBuffer = Buffer.from(new Uint8Array(await blob.arrayBuffer()));
-    const imgValues = [1,"test image", imageBuffer];
-    ret = await db.run(stmt, imgValues);
-    console.log(`&&& res: ${JSON.stringify(ret)}`);
+    const imgValues = [name,type, imageBuffer];
+    const ret = await db.run(stmt, imgValues);
+    if(ret.changes.changes !== 1) {
+      return Promise.reject(new Error('WriteImage failed'))
+    }
+    return ret.changes.lastId;
+  }
+...
+
+  const imagePath = "YOUR_IMAGE_PATH/YOUR_IMAGE_NAME.png";
+  const stmt = "INSERT INTO blobs (name, type, blob) VALUES( ?,?,?);";
+  let imageId = await this.writeImage(db, stmt, imagePath, "Image1", "png");
 ...
 ```
 
@@ -86,9 +124,33 @@ import { Buffer } from 'buffer';
 import { Buffer } from 'buffer';
 ...
     const textBuffer = Buffer.from('Hello, World!');
-    const stmt = "INSERT INTO teach (id, name, blobtext)VALUES( ?,?,?);";
-    const values = [1,"test text", textBuffer];
+    const stmt = "INSERT INTO blobs (name, type, blob) VALUES( ?,?,?);";
+    const values = ["test blob text", "text", textBuffer];
     let ret: any = await db.run(stmt, values);
-    console.log(`&&& res: ${JSON.stringify(ret)}`);
+    let textId = ret.changes.lastId;
+...
+```
 
+### Base64 Image Blob
+
+```js
+import { Buffer } from 'buffer';
+...
+  private async writeImage(db: SQLiteDBConnection, stmt: string, imagePath: string, name: string, type: string) {
+    const blob = await(await fetch(imagePath)).blob();
+    const imageBuffer = Buffer.from(new Uint8Array(await blob.arrayBuffer()));
+    const imgValues = [name,type, imageBuffer];
+    const ret = await db.run(stmt, imgValues);
+    if(ret.changes.changes !== 1) {
+      return Promise.reject(new Error('WriteImage failed'))
+    }
+    return ret.changes.lastId;
+  }
+...
+
+  const imgBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAU1QTFRFNjtAQEVK////bG9zSk9T/v7+/f39/f3+9vf3O0BETlJWNzxB/Pz8d3t+TFFVzM3O1NXX7u/vUldbRElNs7W3v8HCmZyeRkpPW19j8vLy7u7vvsDC9PT1cHR3Oj9Eo6WnxsjJR0tQOD1Bj5KVgYSHTVFWtri50dLUtLa4YmZqOT5D8vPzRUpOkZOWc3Z64uPjr7Gzuru95+jpX2NnaGxwPkNHp6mrioyPlZeadXh8Q0hNPEBFyszNh4qNc3d6eHx/OD1Cw8XGXGBkfoGEra+xxcbIgoaJu72/m52ggoWIZ2tu8/P0wcLE+vr7kZSXgIOGP0NIvr/BvL6/QUZKP0RJkpWYpKaoqKqtVVldmJqdl5qcZWhstbe5bHB0bnJ1UVVZwsTF5ubnT1RYcHN3oaSm3N3e3NzdQkdLnJ+h9fX1TlNX+Pj47/DwwsPFVFhcEpC44wAAAShJREFUeNq8k0VvxDAQhZOXDS52mRnKzLRlZmZm+v/HxmnUOlFaSz3su4xm/BkGzLn4P+XimOJZyw0FKufelfbfAe89dMmBBdUZ8G1eCJMba69Al+AABOOm/7j0DDGXtQP9bXjYN2tWGQfyA1Yg1kSu95x9GKHiIOBXLcAwUD1JJSBVfUbwGGi2AIvoneK4bCblSS8b0RwwRAPbCHx52kH60K1b9zQUjQKiULbMDbulEjGha/RQQFDE0/ezW8kR3C3kOJXmFcSyrcQR7FDAi55nuGABZkT5hqpk3xughDN7FOHHHd0LLU9qtV7r7uhsuRwt6pEJJFVLN4V5CT+SErpXt81DbHautkpBeHeaqNDRqUA0Uo5GkgXGyI3xDZ/q/wJMsb7/pwADAGqZHDyWkHd1AAAAAElFTkSuQmCC"
+  ;
+  const stmt = "INSERT INTO blobs (name, type, blob) VALUES( ?,?,?);";
+  const imageId = await this.writeImage(db, stmt, imgBase64, "feather", "base64");
+  ...
 ```
