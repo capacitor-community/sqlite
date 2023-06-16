@@ -960,14 +960,14 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
           "",
           true,
         );
-        console.log(`@@@@ dbName: ${dbName} , mDB ${mDB}`)
-        if(mDB !== null) {
-          mDB.close();
-          return Promise.resolve({result: false});
-        } else {
-          return Promise.resolve({result: true});
-        }
+        const curVersion: number = await this.sqliteUtil.getVersion(
+          mDB
+        );
+        console.log(`@@@@ UNENCRYPTED dbName: ${dbName} , mDB ${mDB}, curVersion ${curVersion}`)
+        mDB.close();
+        return Promise.resolve({result: false});
       } catch (error) {
+        console.log(`@@@@ ENCRYPTED dbName: ${dbName}`)
         return Promise.resolve({result: true});
       }
     } else {
