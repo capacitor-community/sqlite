@@ -14,6 +14,7 @@ export class UtilsFile {
   sep = '/';
   appPath: string;
   capConfig: any;
+  isEncryption = false;
 
   constructor() {
     this.Path = require('path');
@@ -49,24 +50,40 @@ export class UtilsFile {
         ).toString(),
       );
     }
+    this.isEncryption = this.capConfig.plugins.CapacitorSQLite.electronIsEncryption
+                        ? this.capConfig.plugins.CapacitorSQLite.electronIsEncryption
+                        : false;
     this.osType = this.Os.type();
     switch (this.osType) {
       case 'Darwin':
         this.pathDB =
-          this.capConfig.plugins.CapacitorSQLite.electronMacLocation;
+          this.capConfig.plugins.CapacitorSQLite.electronMacLocation 
+          ? this.capConfig.plugins.CapacitorSQLite.electronMacLocation 
+          : 'Databases';
         break;
       case 'Linux':
         this.pathDB =
-          this.capConfig.plugins.CapacitorSQLite.electronLinuxLocation;
+          this.capConfig.plugins.CapacitorSQLite.electronLinuxLocation
+          ? this.capConfig.plugins.CapacitorSQLite.electronLinuxLocation 
+          : 'Databases';
         break;
       case 'Windows_NT':
         this.pathDB =
-          this.capConfig.plugins.CapacitorSQLite.electronWindowsLocation;
+          this.capConfig.plugins.CapacitorSQLite.electronWindowsLocation
+          ? this.capConfig.plugins.CapacitorSQLite.electronWindowsLocation 
+          : 'Databases';
         break;
       default:
         console.log('other operating system');
     }
     console.log(`&&& Databases path: ${this.pathDB}`);
+  }
+  /**
+   * Get isEncryption from config
+   * @returns 
+   */ 
+  public getIsEncryption(): boolean {
+    return this.isEncryption;
   }
   /**
    * GetExtName

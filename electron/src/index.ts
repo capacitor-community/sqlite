@@ -39,6 +39,7 @@ import { GlobalSQLite } from './GlobalSQLite';
 import { Database } from './electron-utils/Database';
 import { UtilsJson } from './electron-utils/ImportExportJson/utilsJson';
 import { UtilsFile } from './electron-utils/utilsFile';
+import { UtilsSQLite } from './electron-utils/utilsSQLite';
 
 export class CapacitorSQLite implements CapacitorSQLitePlugin {
   private versionUpgrades: Record<
@@ -48,7 +49,9 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   private databases: { [databasename: string]: Database } = {};
   private fileUtil: UtilsFile = new UtilsFile();
   private jsonUtil: UtilsJson = new UtilsJson();
+  private sqliteUtil: UtilsSQLite = new UtilsSQLite();
   private globalUtil: GlobalSQLite = new GlobalSQLite();
+  private isEncryption: boolean = this.fileUtil.getIsEncryption();
 
   async createConnection(options: capConnectionOptions): Promise<void> {
     const optionKeys = Object.keys(options);
@@ -59,16 +62,21 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
     const dbName: string = options.database;
     const version: number = options.version ? options.version : 1;
-    // const encrypted = false;
-    // const inMode = "no-encryption";
 
-    const encrypted: boolean = options.encrypted ? options.encrypted : false;
-    const inMode: string =
-      options.mode === 'secret'
+    let encrypted = options.encrypted ? options.encrypted : false;
+    if(!this.isEncryption && encrypted) {
+      throw new Error('Must set electronIsEncryption = true in capacitor.config.ts');
+    }
+    let inMode: string =
+      encrypted && options.mode === 'secret'
         ? 'secret'
-        : options.mode === 'encryption'
+        : encrypted && options.mode === 'encryption'
         ? 'encryption'
         : 'no-encryption';
+    if(!this.isEncryption) {
+      encrypted = false;
+      inMode = 'no-encryption';
+    }
     const readonly: boolean = options.readonly ? options.readonly : false;
 
     let upgrades: Record<number, capSQLiteVersionUpgrade> = {};
@@ -460,6 +468,9 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     const overwrite: boolean = vJsonObj.overwrite ?? false;
     const encrypted: boolean = vJsonObj.encrypted ?? false;
     const mode: string = vJsonObj.mode ?? 'no-encryption';
+    if(!this.isEncryption && encrypted) {
+      throw new Error('Must set electronIsEncryption = true in capacitor.config.ts');
+    }
 
     // Create the database
     const database: Database = new Database(
@@ -865,6 +876,10 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   }
 
   async isSecretStored(): Promise<capSQLiteResult> {
+    if(!this.isEncryption) {
+      return Promise.reject(`isSecretStored: Not available electronIsEncryption = false in capacitor.config.ts`);
+    }
+
     if (this.globalUtil != null) {
       let capSQLiteResult = { result: false };
       if (
@@ -880,6 +895,9 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   }
 
   async setEncryptionSecret(options: capSetSecretOptions): Promise<void> {
+    if(!this.isEncryption) {
+      return Promise.reject(`setEncryptionSecret: Not available electronIsEncryption = false in capacitor.config.ts`);
+    }
     if (this.globalUtil != null) {
       this.globalUtil.secret = options.passphrase;
       Promise.resolve();
@@ -889,6 +907,9 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   }
 
   async changeEncryptionSecret(options: capChangeSecretOptions): Promise<void> {
+    if(!this.isEncryption) {
+      return Promise.reject(`changeEncryptionSecret: Not available electronIsEncryption = false in capacitor.config.ts`);
+    }
     if (this.globalUtil != null) {
       this.globalUtil.secret = options.oldpassphrase;
       this.globalUtil.newsecret = options.passphrase;
@@ -909,11 +930,48 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   }
 
   async clearEncryptionSecret(): Promise<void> {
+    if(!this.isEncryption) {
+      return Promise.reject(`clearEncryptionSecret: Not available electronIsEncryption = false in capacitor.config.ts`);
+    }
     if (this.globalUtil != null) {
       this.globalUtil.secret = '';
       Promise.resolve();
     } else {
       return Promise.reject(`clearEncryptionSecret: Failed to clear Secret.`);
+    }
+  }
+
+  async isInConfigEncryption(): Promise<capSQLiteResult> {
+    console.log(`in electron plugin this.isEncryption: ${this.isEncryption}`);
+    return Promise.resolve({result: this.isEncryption});
+  }
+
+  async isDatabaseEncrypted(
+    options: capSQLiteOptions,
+  ): Promise<capSQLiteResult> {
+    const dbName: string = this.getOptionValue(options, 'database');
+    const isExists: boolean = this.fileUtil.isFileExists(dbName + 'SQLite.db');
+    console.log(`@@@ isDatabaseEncrypted dbName: ${dbName} isExists: ${isExists}`)    
+    if(isExists) {
+      const filePath = this.fileUtil.getFilePath(dbName + 'SQLite.db');
+      try {
+        const mDB = await this.sqliteUtil.openOrCreateDatabase(
+          filePath,
+          "",
+          true,
+        );
+        console.log(`@@@@ dbName: ${dbName} , mDB ${mDB}`)
+        if(mDB !== null) {
+          mDB.close();
+          return Promise.resolve({result: false});
+        } else {
+          return Promise.resolve({result: true});
+        }
+      } catch (error) {
+        return Promise.resolve({result: true});
+      }
+    } else {
+      return Promise.reject(`isDatabaseEncryptedt: Database ${dbName} does not exist`);
     }
   }
 
@@ -997,16 +1055,6 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     throw new Error('Method not implemented.');
   }
 
-  async isDatabaseEncrypted(
-    options: capSQLiteOptions,
-  ): Promise<capSQLiteResult> {
-    console.log('isDatabaseEncrypted', options);
-    throw new Error('Not implemented on web.');
-  }
-
-  async isInConfigEncryption(): Promise<capSQLiteResult> {
-    throw new Error('Not implemented on web.');
-  }
 
   async isInConfigBiometricAuth(): Promise<capSQLiteResult> {
     throw new Error('Not implemented on web.');

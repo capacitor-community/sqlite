@@ -1,13 +1,21 @@
+import { UtilsFile } from './utilsFile';
+
 const SQLITE_OPEN_READONLY = 1;
 
 export class UtilsSQLite {
-  public JSQlite: any;
-  // public SQLite3: any;
+  public mSQLite: any;
+//  public JSQlite: any;
+//  public SQLite3: any;
+  private fileUtil: UtilsFile = new UtilsFile();
+  private isEncryption: boolean = this.fileUtil.getIsEncryption();
 
   constructor() {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    this.JSQlite = require('@journeyapps/sqlcipher').verbose();
-    // this.SQLite3 = require('sqlite3');
+    if(this.isEncryption) {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      this.mSQLite = require('@journeyapps/sqlcipher').verbose();
+    } else {
+      this.mSQLite = require('sqlite3');
+    }
   }
   /**
    * OpenOrCreateDatabase
@@ -23,11 +31,11 @@ export class UtilsSQLite {
     // open sqlite3 database
     let mDB: any;
     if (!readonly) {
-      mDB = new this.JSQlite.Database(pathDB, {
+      mDB = new this.mSQLite.Database(pathDB, {
         verbose: console.log,
       });
     } else {
-      mDB = new this.JSQlite.Database(pathDB, SQLITE_OPEN_READONLY, {
+      mDB = new this.mSQLite.Database(pathDB, SQLITE_OPEN_READONLY, {
         verbose: console.log,
       });
     }
