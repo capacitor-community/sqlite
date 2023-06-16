@@ -73,6 +73,7 @@ const config: CapacitorConfig = {
         biometricTitle : "Biometric login for capacitor sqlite",
         biometricSubTitle : "Log in using your biometric"
       },
+      electronIsEncryption: false,
       electronWindowsLocation: "C:\\ProgramData\\CapacitorDatabases",
       electronMacLocation: "/Volumes/Development_Lacie/Development/Databases",
       electronLinuxLocation: "Databases"
@@ -165,8 +166,10 @@ You'll need the usual capacitor/android/react npm script to build and copy the a
 ```bash
 cd electron
 npm install --save @journeyapps/sqlcipher
+npm install --save sqlite3
 npm install --save jszip
 npm install --save node-fetch@2.6.7
+npm install --save @types/sqlite3
 ```
 - **Important**: `node-fetch` version must be `<=2.6.7`; otherwise [you'll get an error](https://github.com/capacitor-community/sqlite/issues/349 "you'll get an error ERR_REQUIRE_ESM") running the app. 
 
@@ -228,8 +231,8 @@ npm install --save node-fetch@2.6.7
 | isNCDatabase                | ✅      | ✅  | ❌        | ❌  |
 | transaction                 | ✅      | ✅  | ✅        | ✅  |
 | getFromHTTPRequest          | ✅      | ✅  | ✅        | ✅  | since 4.2.0
-| isDatabaseEncrypted         | ✅      | ✅  | ❌        | ❌  | since 4.6.2-2
-| isInConfigEncryption        | ✅      | ✅  | ❌        | ❌  | since 4.6.2-2
+| isDatabaseEncrypted         | ✅      | ✅  | ✅        | ❌  | since 4.6.2-2
+| isInConfigEncryption        | ✅      | ✅  | ✅        | ❌  | since 4.6.2-2
 | isInConfigBiometricAuth     | ✅      | ✅  | ❌        | ❌  | since 4.6.2-2
 | getFromLocalDiskToStore     | ❌      | ❌  | ❌        | ✅  | since 4.6.3
 | saveToLocalDisk             | ❌      | ❌  | ❌        | ✅  | since 4.6.3

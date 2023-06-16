@@ -1,3 +1,12 @@
+# 5.0.3 (2023-06-16)
+
+### Added Features
+
+ - Add method isInConfigEncryption and isDatabaseEncrypted for electron
+ - Add electronIsEncryption in capacitor.config.ts
+                            = true use @journeyapps/sqlcipher
+                            = false use sqlite3
+
 # 5.0.3-1 (2023-06-13)
 
 ### Added Features

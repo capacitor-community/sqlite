@@ -942,7 +942,6 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   }
 
   async isInConfigEncryption(): Promise<capSQLiteResult> {
-    console.log(`in electron plugin this.isEncryption: ${this.isEncryption}`);
     return Promise.resolve({result: this.isEncryption});
   }
 
@@ -951,7 +950,6 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   ): Promise<capSQLiteResult> {
     const dbName: string = this.getOptionValue(options, 'database');
     const isExists: boolean = this.fileUtil.isFileExists(dbName + 'SQLite.db');
-    console.log(`@@@ isDatabaseEncrypted dbName: ${dbName} isExists: ${isExists}`)    
     if(isExists) {
       const filePath = this.fileUtil.getFilePath(dbName + 'SQLite.db');
       try {
@@ -960,14 +958,12 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
           "",
           true,
         );
-        const curVersion: number = await this.sqliteUtil.getVersion(
+        await this.sqliteUtil.getVersion(
           mDB
         );
-        console.log(`@@@@ UNENCRYPTED dbName: ${dbName} , mDB ${mDB}, curVersion ${curVersion}`)
         mDB.close();
         return Promise.resolve({result: false});
       } catch (error) {
-        console.log(`@@@@ ENCRYPTED dbName: ${dbName}`)
         return Promise.resolve({result: true});
       }
     } else {
