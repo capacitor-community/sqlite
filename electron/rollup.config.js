@@ -15,8 +15,7 @@ export default {
   external: [
     '@capacitor/core',
     'electron',
-    '@journeyapps/sqlcipher',
-    'sqlite3',
+    'better-sqlite3',
     'path',
     'fs',
     'os',

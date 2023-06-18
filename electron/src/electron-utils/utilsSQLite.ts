@@ -1,4 +1,4 @@
-import { UtilsFile } from './utilsFile';
+//import { UtilsFile } from './utilsFile';
 
 const SQLITE_OPEN_READONLY = 1;
 
@@ -6,16 +6,19 @@ export class UtilsSQLite {
   public mSQLite: any;
 //  public JSQlite: any;
 //  public SQLite3: any;
-  private fileUtil: UtilsFile = new UtilsFile();
-  private isEncryption: boolean = this.fileUtil.getIsEncryption();
+//  private fileUtil: UtilsFile = new UtilsFile();
+//  private isEncryption: boolean = this.fileUtil.getIsEncryption();
 
   constructor() {
+/*
     if(this.isEncryption) {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       this.mSQLite = require('@journeyapps/sqlcipher').verbose();
     } else {
       this.mSQLite = require('sqlite3');
     }
+*/
+    this.mSQLite = require('better-sqlite3');
   }
   /**
    * OpenOrCreateDatabase
