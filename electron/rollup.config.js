@@ -15,7 +15,7 @@ export default {
   external: [
     '@capacitor/core',
     'electron',
-    'better-sqlite3',
+    'better-sqlite3-multiple-ciphers',
     'path',
     'fs',
     'os',

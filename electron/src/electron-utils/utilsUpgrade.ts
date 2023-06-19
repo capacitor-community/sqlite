@@ -23,7 +23,6 @@ export class UtilsUpgrade {
     const sortedKeys: Int32Array = new Int32Array(
       Object.keys(vUpgDict).map(item => parseInt(item)),
     ).sort();
-    console.log(`@@@ sortedKeys: ${sortedKeys}`);
     for (const versionKey of sortedKeys) {
       if (versionKey > curVersion && versionKey <= targetVersion) {
         const statements = vUpgDict[versionKey].statements;
@@ -42,7 +41,6 @@ export class UtilsUpgrade {
           await this.sqliteUtil.setForeignKeyConstraintsEnabled(mDB, true);
           changes = (await this.sqliteUtil.dbChanges(mDB)) - initChanges;
         } catch (err) {
-          console.log(`@@@@ onUpgrade: ${err}`);
           return Promise.reject(`onUpgrade: ${err}`);
         }
       }
@@ -62,7 +60,6 @@ export class UtilsUpgrade {
     try {
       await this.sqliteUtil.beginTransaction(mDB, true);
       for (const statement of statements) {
-        console.log(`@@@ statement: ${statement}`);
         await this.sqliteUtil.execute(mDB, statement, false);
       }
 
@@ -71,8 +68,6 @@ export class UtilsUpgrade {
       return Promise.resolve();
     } catch (err) {
       await this.sqliteUtil.rollbackTransaction(mDB, true);
-      console.log(`@@@ ExecuteStatementProcess: ${err}`);
-
       return Promise.reject(`ExecuteStatementProcess: ${err}`);
     }
   }

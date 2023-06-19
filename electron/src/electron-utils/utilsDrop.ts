@@ -43,13 +43,13 @@ export class UtilsDrop {
           statements.push(stmt);
         }
         for (const stmt of statements) {
-          const lastId: number = await this.sqliteUtil.prepareRun(
+          const results = await this.sqliteUtil.prepareRun(
             db,
             stmt,
             [],
             false,
           );
-          if (lastId < 0) {
+          if (results.lastId < 0) {
             return Promise.reject(`${msg}: lastId < 0`);
           }
         }
@@ -98,12 +98,12 @@ export class UtilsDrop {
       statements.push(stmt);
     }
     try {
-      const changes: number = await this.sqliteUtil.execute(
+      const results = await this.sqliteUtil.execute(
         db,
         statements.join('\n'),
         false,
       );
-      if (changes < 0) {
+      if (results.changes < 0) {
         return Promise.reject('DropTempTables: changes < 0');
       }
       return Promise.resolve();

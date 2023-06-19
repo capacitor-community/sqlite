@@ -3,7 +3,7 @@
 const SQLITE_OPEN_READONLY = 1;
 
 export class UtilsSQLite {
-  public mSQLite: any;
+  public BCSQLite3: any;
 //  public JSQlite: any;
 //  public SQLite3: any;
 //  private fileUtil: UtilsFile = new UtilsFile();
@@ -18,7 +18,7 @@ export class UtilsSQLite {
       this.mSQLite = require('sqlite3');
     }
 */
-    this.mSQLite = require('better-sqlite3');
+    this.BCSQLite3 = require('better-sqlite3-multiple-ciphers');
   }
   /**
    * OpenOrCreateDatabase
@@ -34,19 +34,23 @@ export class UtilsSQLite {
     // open sqlite3 database
     let mDB: any;
     if (!readonly) {
-      mDB = new this.mSQLite.Database(pathDB, {
+      mDB = new this.BCSQLite3(pathDB, {
         verbose: console.log,
+        fileMustExist: false,
       });
     } else {
-      mDB = new this.mSQLite.Database(pathDB, SQLITE_OPEN_READONLY, {
+      mDB = new this.BCSQLite3(pathDB, {
         verbose: console.log,
+        readonly: SQLITE_OPEN_READONLY,
+        fileMustExist: true,
       });
     }
     if (mDB != null) {
       try {
         await this.dbChanges(mDB);
-      } catch (err) {
-        return Promise.reject(msg + `dbChanges ${err}`);
+      } catch (err: any) {
+        const errmsg = err.message ? err.message : err;
+        return Promise.reject(`${msg} ${errmsg}`);
       }
 
       try {
@@ -56,8 +60,9 @@ export class UtilsSQLite {
         }
         // set Foreign Keys On
         await this.setForeignKeyConstraintsEnabled(mDB, true);
-      } catch (err) {
-        return Promise.reject(msg + `${err}`);
+      } catch (err: any) {
+        const errmsg = err.message ? err.message : err;
+        return Promise.reject(`${msg} ${errmsg}`);
       }
       return Promise.resolve(mDB);
     } else {
@@ -69,20 +74,18 @@ export class UtilsSQLite {
    * @param mDB
    * @param password
    */
-  public async setCipherPragma(mDB: any, password: string): Promise<void> {
-    console.log('setCipherPragma');
-    return new Promise((resolve, reject) => {
-      mDB.serialize(() => {
-        mDB.run('PRAGMA cipher_compatibility = 4');
-        mDB.run(`PRAGMA key = '${password}'`, (err: any) => {
-          if (err) {
-            reject(new Error('SetForeignKey: ' + `${err.message}`));
-          }
-          resolve();
-        });
-      });
-    });
-  }
+  public async setCipherPragma(mDB: any, passphrase: string): Promise<void> {
+    const msg = 'setCipherPragma: ';
+    try {
+      mDB.pragma(`cipher='sqlcipher'`)
+      mDB.pragma(`legacy=4`)
+      mDB.pragma(`key='${passphrase}'`);
+      return Promise.resolve();
+    } catch (err: any) {
+      const errmsg = err.message ? err.message : err;
+      return Promise.reject(`${msg} ${errmsg}`);
+    }
+}
   /**
    * SetForeignKeyConstraintsEnabled
    * @param mDB
@@ -92,58 +95,48 @@ export class UtilsSQLite {
     mDB: any,
     toggle: boolean,
   ): Promise<void> {
-    return new Promise((resolve, reject) => {
-      let key = 'OFF';
-      if (toggle) {
-        key = 'ON';
-      }
-      mDB.run(`PRAGMA foreign_keys = '${key}'`, (err: any) => {
-        if (err) {
-          reject(`SetForeignKey: ${err.message}`);
-        }
-        resolve();
-      });
-    });
-  }
+    const msg = 'SetForeignKeyConstraintsEnabled: ';
+    let key = 'OFF';
+    if (toggle) {
+      key = 'ON';
+    }
+    try {
+      mDB.pragma(`foreign_keys = '${key}'`);
+      return Promise.resolve();
+    } catch (err: any) {
+      const errmsg = err.message ? err.message : err;
+      return Promise.reject(`${msg} ${errmsg}`);
+    }
+ }
   /**
    * GetVersion
    * @param mDB
    */
   public async getVersion(mDB: any): Promise<number> {
-    return new Promise((resolve, reject) => {
-      let version = 0;
-      const SELECT_VERSION = 'PRAGMA user_version;';
-      mDB.get(SELECT_VERSION, [], (err: any, row: any) => {
-        // process the row here
-        if (err) {
-          reject('getVersion failed: ' + `${err.message}`);
-        } else {
-          if (row == null) {
-            version = 0;
-          } else {
-            const key: any = Object.keys(row)[0];
-            version = row[key];
-          }
-          resolve(version);
-        }
-      });
-    });
-  }
+    const msg = 'GetVersion: ';
+    try {
+      const version = mDB.pragma('user_version');
+      return Promise.resolve(version)
+    } catch (err: any) {
+      const errmsg = err.message ? err.message : err;
+      return Promise.reject(`${msg} ${errmsg}`);
+    }
+ }
   /**
    * SetVersion
    * @param mDB
    * @param version
    */
   public async setVersion(mDB: any, version: number): Promise<void> {
-    return new Promise((resolve, reject) => {
-      mDB.run(`PRAGMA user_version = ${version}`, (err: any) => {
-        if (err) {
-          reject('setVersion failed: ' + `${err.message}`);
-        }
-        resolve();
-      });
-    });
-  }
+    const msg = 'SetVersion: ';
+    try {
+      mDB.pragma(`user_version = '${version}'`);
+      return;
+    } catch (err: any) {
+      const errmsg = err.message ? err.message : err;
+      return Promise.reject(`${msg} ${errmsg}`);
+    }
+ }
   /**
    * ChangePassword
    * @param pathDB
@@ -156,11 +149,13 @@ export class UtilsSQLite {
     newpassword: string,
   ): Promise<void> {
     let mDB: any;
+    const msg = "ChangePassword";
     try {
       mDB = await this.openOrCreateDatabase(pathDB, password, false);
       await this.pragmaReKey(mDB, password, newpassword);
-    } catch (err) {
-      return Promise.reject(err);
+    } catch (err: any) {
+      const errmsg = err.message ? err.message : err;
+      return Promise.reject(`${msg} ${errmsg}`);
     } finally {
       mDB.close();
     }
@@ -173,21 +168,20 @@ export class UtilsSQLite {
    */
   private async pragmaReKey(
     mDB: any,
-    password: string,
-    newpassword: string,
+    passphrase: string,
+    newpassphrase: string,
   ): Promise<void> {
-    return new Promise((resolve, reject) => {
-      mDB.serialize(() => {
-        mDB.run('PRAGMA cipher_compatibility = 4');
-        mDB.run(`PRAGMA key = '${password}'`);
-        mDB.run(`PRAGMA rekey = '${newpassword}'`, (err: any) => {
-          if (err) {
-            reject(new Error('ChangePassword: ' + `${err.message}`));
-          }
-          resolve();
-        });
-      });
-    });
+    const msg = 'PragmaReKey: ';
+    try {
+      mDB.pragma(`cipher='sqlcipher'`)
+      mDB.pragma(`legacy=4`)
+      mDB.pragma(`key='${passphrase}'`);
+      mDB.pragma(`rekey='${newpassphrase}'`);
+      return;
+    } catch (err: any) {
+      const errmsg = err.message ? err.message : err;
+      return Promise.reject(`${msg} ${errmsg}`);
+    }
   }
   /**
    * BeginTransaction
@@ -196,20 +190,18 @@ export class UtilsSQLite {
    */
   public async beginTransaction(db: any, isOpen: boolean): Promise<void> {
     // eslint-disable-next-line no-async-promise-executor
-    return new Promise((resolve, reject) => {
-      const msg = 'BeginTransaction: ';
-      if (!isOpen) {
-        return Promise.reject(`${msg}database not opened`);
-      }
-      const sql = 'BEGIN TRANSACTION;';
-
-      db.run(sql, (err: any) => {
-        if (err) {
-          reject(`${msg}${err.message}`);
-        }
-        resolve();
-      });
-    });
+    const msg = 'BeginTransaction: ';
+    if (!isOpen) {
+      return Promise.reject(`${msg} database not opened`);
+    }
+    const sql = 'BEGIN TRANSACTION;';
+    try {
+      db.exec(sql);
+      return Promise.resolve();
+    } catch (err: any) {
+      const errmsg = err.message ? err.message : err;
+      return Promise.reject(`${msg} ${errmsg}`);
+    }
   }
   /**
    * RollbackTransaction
@@ -217,19 +209,18 @@ export class UtilsSQLite {
    * @param isOpen
    */
   public async rollbackTransaction(db: any, isOpen: boolean): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const msg = 'RollbackTransaction: ';
-      if (!isOpen) {
-        reject(`${msg}database not opened`);
-      }
-      const sql = 'ROLLBACK TRANSACTION;';
-      db.run(sql, (err: any) => {
-        if (err) {
-          reject(`${msg}${err.message}`);
-        }
-        resolve();
-      });
-    });
+    const msg = 'RollbackTransaction: ';
+    if (!isOpen) {
+      return Promise.reject(`${msg} database not opened`);
+    }
+    const sql = 'ROLLBACK TRANSACTION;';
+    try {
+      db.exec(sql);
+      return Promise.resolve();
+    } catch (err: any) {
+      const errmsg = err.message ? err.message : err;
+      return Promise.reject(`${msg} ${errmsg}`);
+    }
   }
   /**
    * CommitTransaction
@@ -237,19 +228,18 @@ export class UtilsSQLite {
    * @param isOpen
    */
   public async commitTransaction(db: any, isOpen: boolean): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const msg = 'CommitTransaction: ';
-      if (!isOpen) {
-        reject(`${msg}database not opened`);
-      }
-      const sql = 'COMMIT TRANSACTION;';
-      db.run(sql, (err: any) => {
-        if (err) {
-          reject(`${msg}${err.message}`);
-        }
-        resolve();
-      });
-    });
+    const msg = 'CommitTransaction: ';
+    if (!isOpen) {
+      return Promise.reject(`${msg} database not opened`);
+    }
+    const sql = 'COMMIT TRANSACTION;';
+    try {
+      db.exec(sql);
+      return Promise.resolve();
+    } catch (err: any) {
+      const errmsg = err.message ? err.message : err;
+      return Promise.reject(`${msg} ${errmsg}`);
+    }
   }
   /**
    * DbChanges
@@ -257,46 +247,42 @@ export class UtilsSQLite {
    * @param db
    */
   public async dbChanges(db: any): Promise<number> {
-    return new Promise((resolve, reject) => {
-      const SELECT_CHANGE = 'SELECT total_changes()';
-      let changes = 0;
+    const msg = 'DbChanges: ';
+    let changes = 0;
+    try {
+      const statement = db.prepare('SELECT total_changes()');
+      const firstRow = statement.get();
+      if (firstRow != null) {
+        const key: any = Object.keys(firstRow)[0];
+        changes = firstRow[key];
+      }
+      return Promise.resolve(changes);
+    } catch (err: any) {
+      const errmsg = err.message ? err.message : err;
+      return Promise.reject(`${msg} ${errmsg}`);
+    }
 
-      db.get(SELECT_CHANGE, [], (err: any, row: any) => {
-        // process the row here
-        if (err) {
-          reject(`DbChanges failed: ${err.message}`);
-        } else {
-          if (row == null) {
-            changes = 0;
-          } else {
-            const key: any = Object.keys(row)[0];
-            changes = row[key];
-          }
-          resolve(changes);
-        }
-      });
-    });
   }
   /**
    * GetLastId
    * @param db
    */
   public getLastId(db: any): Promise<number> {
-    return new Promise((resolve, reject) => {
-      const SELECT_LAST_ID = 'SELECT last_insert_rowid()';
-      let lastId = -1;
-      db.get(SELECT_LAST_ID, [], (err: any, row: any) => {
-        // process the row here
-        if (err) {
-          reject(`GetLastId failed: ${err.message}`);
-        } else {
-          if (row == null) resolve(lastId);
-          const key: any = Object.keys(row)[0];
-          lastId = row[key];
-          resolve(lastId);
-        }
-      });
-    });
+    const msg = 'GetLastId: ';
+    let lastId = -1;
+    try {
+      const statement = db.prepare('SELECT last_insert_rowid()');
+      const firstRow = statement.get();
+      if (firstRow != null) {
+        const key: any = Object.keys(firstRow)[0];
+        lastId = firstRow[key];
+      }
+      return Promise.resolve(lastId);
+    } catch (err: any) {
+      const errmsg = err.message ? err.message : err;
+      return Promise.reject(`${msg} ${errmsg}`);
+    }
+
   }
   /**
    * Execute
@@ -307,11 +293,10 @@ export class UtilsSQLite {
     mDB: any,
     sql: string,
     fromJson: boolean,
-  ): Promise<number> {
-    let changes = -1;
-    let initChanges = -1;
+  ): Promise<{changes: number, lastId: number}> {
+    const result = {changes: 0, lastId: -1};
+    const msg = "Execute";
     try {
-      initChanges = await this.dbChanges(mDB);
       let sqlStmt = sql;
       // Check for DELETE FROM in sql string
       if (
@@ -340,12 +325,13 @@ export class UtilsSQLite {
         sqlStmt = resArr.join(';');
       }
 
-      await this.execDB(mDB, sqlStmt);
-      changes = (await this.dbChanges(mDB)) - initChanges;
-      return Promise.resolve(changes);
-    } catch (err) {
-      const msg = err.message ? err.message : err;
-      return Promise.reject(`Execute: ${msg}`);
+      const ret = await this.execDB(mDB, sqlStmt);
+      result.changes = ret.changes;
+      result.lastId = ret.lastInsertRowId;
+      return Promise.resolve(result);
+    } catch (err: any) {
+      const errmsg = err.message ? err.message : err;
+      return Promise.reject(`${msg} ${errmsg}`);
     }
   }
   /**
@@ -353,28 +339,30 @@ export class UtilsSQLite {
    * @param mDB
    * @param sql
    */
-  private async execDB(mDB: any, sql: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      mDB.exec(sql, async (err: any) => {
-        if (err) {
-          console.log(`in execDB err: ${JSON.stringify(err)}`);
-          reject(`Execute: ${err}: `);
-        }
-        resolve();
-      });
-    });
+  private async execDB(mDB: any, sql: string): Promise<{changes: number, lastInsertRowId: number}> {
+    const msg = 'execDB: ';
+    try {
+      const statement = mDB.prepare(sql);
+      const result = statement.run();
+      return Promise.resolve(result);
+    } catch (err: any) {
+      const errmsg = err.message ? err.message : err;
+      return Promise.reject(`${msg} ${errmsg}`);
+    }
   }
   /**
    * ExecuteSet
-   * @param db
+   * @param mDB
    * @param set
+   * @param fromJson
    */
   public async executeSet(
-    db: any,
+    mDB: any,
     set: any[],
     fromJson: boolean,
-  ): Promise<number> {
-    let lastId = -1;
+  ): Promise<{changes: number, lastId: number}> {
+    let result = {changes: 0, lastId: -1};
+    const msg = "ExecuteSet"
     for (let i = 0; i < set.length; i++) {
       const statement = 'statement' in set[i] ? set[i].statement : null;
       const values =
@@ -388,84 +376,79 @@ export class UtilsSQLite {
         if (Array.isArray(values[0])) {
           for (const val of values) {
             const mVal: any[] = await this.replaceUndefinedByNull(val);
-            lastId = await this.prepareRun(db, statement, mVal, fromJson);
+            result = await this.prepareRun(mDB, statement, mVal, fromJson);
           }
         } else {
           const mVal: any[] = await this.replaceUndefinedByNull(values);
-          lastId = await this.prepareRun(db, statement, mVal, fromJson);
+          result = await this.prepareRun(mDB, statement, mVal, fromJson);
         }
-      } catch (err) {
-        return Promise.reject(`ExecuteSet: ${err}`);
+      } catch (err: any) {
+        const errmsg = err.message ? err.message : err;
+        return Promise.reject(`${msg} ${errmsg}`);
       }
     }
-    return Promise.resolve(lastId);
+    return Promise.resolve(result);
   }
   /**
    * PrepareRun
-   * @param db
+   * @param mDB
    * @param statement
    * @param values
+   * @param fromJson
    */
   public async prepareRun(
-    db: any,
+    mDB: any,
     statement: string,
     values: any[],
     fromJson: boolean,
-  ): Promise<number> {
+  ): Promise<{changes: number, lastId: number}> {
+    const result = {changes: 0, lastId: -1};
+    const msg = "PrepareRun";
+
     const stmtType: string = statement
       .replace(/\n/g, '')
       .trim()
       .substring(0, 6)
       .toUpperCase();
     let sqlStmt: string = statement;
-    let lastId = -1;
     try {
       if (!fromJson && stmtType === 'DELETE') {
-        sqlStmt = await this.deleteSQL(db, statement, values);
+        sqlStmt = await this.deleteSQL(mDB, statement, values);
       }
       let mVal: any[] = [];
       if (values != null && values.length > 0) {
         mVal = await this.replaceUndefinedByNull(values);
       }
 
-      await this.runExec(db, sqlStmt, mVal);
-
-      lastId = await this.getLastId(db);
-      return Promise.resolve(lastId);
-    } catch (err) {
-      return Promise.reject(`PrepareRun: ${err}`);
+      const ret = await this.runExec(mDB, sqlStmt, mVal);
+      result.changes = ret.changes;
+      result.lastId = ret.lastInsertRowId;
+      return Promise.resolve(result);
+    } catch (err: any) {
+      const errmsg = err.message ? err.message : err;
+      return Promise.reject(`${msg} ${errmsg}`);
     }
   }
 
   private async runExec(
-    db: any,
+    mDB: any,
     stmt: string,
     values: any[] = [],
-  ): Promise<void> {
-    return new Promise((resolve, reject) => {
+  ): Promise<{changes: number, lastInsertRowId: number}> {
+    const msg = 'runExec: ';
+    try {
+      const statement = mDB.prepare(stmt);
+      let result: {changes: number, lastInsertRowId: number};
       if (values != null && values.length > 0) {
-        ``;
-        db.run(stmt, values, (err: any) => {
-          if (err) {
-            console.log(`in runExec err1: ${JSON.stringify(err)}`);
-            const msg = err.message ? err.message : err;
-            reject(msg);
-          } else {
-            resolve();
-          }
-        });
+        result = statement.run(values);
       } else {
-        db.exec(stmt, (err: any) => {
-          if (err) {
-            console.log(`in runExec err2: ${JSON.stringify(err)}`);
-            const msg = err.message ? err.message : err;
-            reject(msg);
-          } else {
-            resolve();
-          }
-        });
+        result = statement.run();
       }
-    });
+      return Promise.resolve(result);
+    } catch (err: any) {
+      const errmsg = err.message ? err.message : err;
+      return Promise.reject(`${msg} ${errmsg}`);
+    }
   }
   /**
    * replaceUndefinedByNull
@@ -485,20 +468,21 @@ export class UtilsSQLite {
   }
   /**
    * deleteSQL
-   * @param db
+   * @param mDB
    * @param statement
    * @param values
    * @returns
    */
   public async deleteSQL(
-    db: any,
+    mDB: any,
     statement: string,
     values: any[],
   ): Promise<string> {
     let sqlStmt: string = statement;
+    const msg = "DeleteSQL"
     try {
-      const isLast: boolean = await this.isLastModified(db, true);
-      const isDel: boolean = await this.isSqlDeleted(db, true);
+      const isLast: boolean = await this.isLastModified(mDB, true);
+      const isDel: boolean = await this.isSqlDeleted(mDB, true);
       if (isLast && isDel) {
         // Replace DELETE by UPDATE and set sql_deleted to 1
         const wIdx: number = statement.toUpperCase().indexOf('WHERE');
@@ -509,29 +493,31 @@ export class UtilsSQLite {
           .trim();
         sqlStmt = `UPDATE ${tableName} SET sql_deleted = 1 ${clauseStmt}`;
         // Find REFERENCES if any and update the sql_deleted column
-        await this.findReferencesAndUpdate(db, tableName, clauseStmt, values);
+        await this.findReferencesAndUpdate(mDB, tableName, clauseStmt, values);
       }
       return sqlStmt;
-    } catch (err) {
-      return Promise.reject(`DeleteSQL: ${err}`);
+    } catch (err: any) {
+      const errmsg = err.message ? err.message : err;
+      return Promise.reject(`${msg} ${errmsg}`);
     }
   }
   /**
    * findReferencesAndUpdate
-   * @param db
+   * @param mDB
    * @param tableName
    * @param whereStmt
    * @param values
    * @returns
    */
   public async findReferencesAndUpdate(
-    db: any,
+    mDB: any,
     tableName: string,
     whereStmt: string,
     values: any[],
   ): Promise<void> {
+    const msg = "FindReferencesAndUpdate";
     try {
-      const references = await this.getReferences(db, tableName);
+      const references = await this.getReferences(mDB, tableName);
       if (references.length <= 0) {
         return;
       }
@@ -571,11 +557,11 @@ export class UtilsSQLite {
         //update sql_deleted for this reference
         const stmt: string =
           'UPDATE ' + updTableName + ' SET sql_deleted = 1 ' + uWhereStmt;
+        const selValues: any[] = [];
         if (values != null && values.length > 0) {
           const mVal: any[] = await this.replaceUndefinedByNull(values);
           let arrVal: string[] = whereStmt.split('?');
           if (arrVal[arrVal.length - 1] === ';') arrVal = arrVal.slice(0, -1);
-          const selValues: any[] = [];
           for (const [j, val] of arrVal.entries()) {
             for (const updVal of updColNames) {
               const idxVal = val.indexOf(updVal);
@@ -584,21 +570,20 @@ export class UtilsSQLite {
               }
             }
           }
-          await db.run(stmt, selValues);
-        } else {
-          await db.exec(stmt);
         }
-        const lastId: number = await this.getLastId(db);
+  
+        const ret = await this.runExec(mDB, stmt, selValues);
+  
+        const lastId: number = ret.lastInsertRowId;
         if (lastId == -1) {
           const msg = `UPDATE sql_deleted failed for references table: ${refTable}`;
           return Promise.reject(new Error(`findReferencesAndUpdate: ${msg}`));
         }
       }
       return Promise.resolve();
-    } catch (err) {
-      return Promise.reject(
-        new Error(`findReferencesAndUpdate: ${err.message}`),
-      );
+    } catch (err: any) {
+      const errmsg = err.message ? err.message : err;
+      return Promise.reject(`${msg} ${errmsg}`);
     }
   }
   public async getReferenceTableName(refValue: string): Promise<string> {
@@ -686,7 +671,8 @@ export class UtilsSQLite {
     return whereStmt;
   }
 
-  public async getReferences(db: any, tableName: string): Promise<any[]> {
+  public async getReferences(mDB: any, tableName: string): Promise<any[]> {
+    const msg = "GetReferences";
     const sqlStmt: string =
       'SELECT sql FROM sqlite_master ' +
       "WHERE sql LIKE('%FOREIGN KEY%') AND sql LIKE('%REFERENCES%') AND " +
@@ -694,15 +680,16 @@ export class UtilsSQLite {
       tableName +
       "%') AND sql LIKE('%ON DELETE%');";
     try {
-      const res: any[] = await this.queryAll(db, sqlStmt, []);
+      const res: any[] = await this.queryAll(mDB, sqlStmt, []);
       // get the reference's string(s)
       let retRefs: string[] = [];
       if (res.length > 0) {
         retRefs = await this.getRefs(res[0].sql);
       }
       return Promise.resolve(retRefs);
-    } catch (err) {
-      return Promise.reject(new Error(`getReferences: ${err.message}`));
+    } catch (err: any) {
+      const errmsg = err.message ? err.message : err;
+      return Promise.reject(`${msg} ${errmsg}`);
     }
   }
   public async getRefs(str: string): Promise<string[]> {
@@ -728,26 +715,53 @@ export class UtilsSQLite {
    * @param values
    */
   public queryAll(mDB: any, sql: string, values: any[]): Promise<any[]> {
-    return new Promise((resolve, reject) => {
-      mDB.serialize(() => {
-        mDB.all(sql, values, (err: any, rows: any[]) => {
-          if (err) {
-            reject(`QueryAll: ${err.message}`);
-          } else {
-            if (rows == null) {
-              rows = [];
-            }
-            resolve(rows);
-          }
-        });
-      });
-    });
+    const msg = "QueryAll";
+    try {
+      const stmt = mDB.prepare(sql);
+      let rows
+      if (values != null && values.length > 0) {
+        rows = stmt.all(values);
+      } else {
+        rows = stmt.all();
+      }
+      if (rows == null) {
+        rows = [];
+      }
+      Promise.resolve(rows);
+    } catch (err: any) {
+      const errmsg = err.message ? err.message : err;
+      return Promise.reject(`${msg} ${errmsg}`);
+    }
+  }
+  /**
+   * QueryAll
+   * @param mDB
+   * @param sql
+   * @param values
+   */
+  public queryOne(mDB: any, sql: string, values: any[]): Promise<any> {
+    const msg = "QueryOne";
+    try {
+      const stmt = mDB.prepare(sql);
+
+      let row
+      if (values != null && values.length > 0) {
+        row = stmt.get(values);
+      } else {
+        row = stmt.get();
+      }
+      Promise.resolve(row);
+    } catch (err: any) {
+      const errmsg = err.message ? err.message : err;
+      return Promise.reject(`${msg} ${errmsg}`);
+    }
   }
   /**
    * GetTablesNames
    * @param mDb
    */
   public async getTablesNames(mDb: any): Promise<string[]> {
+    const msg = "getTablesNames";
     let sql = 'SELECT name FROM sqlite_master WHERE ';
     sql += "type='table' AND name NOT LIKE 'sync_table' ";
     sql += "AND name NOT LIKE '_temp_%' ";
@@ -760,15 +774,18 @@ export class UtilsSQLite {
         retArr.push(query.name);
       }
       return Promise.resolve(retArr);
-    } catch (err) {
-      return Promise.reject(`getTablesNames: ${err}`);
+    } catch (err: any) {
+      const errmsg = err.message ? err.message : err;
+      return Promise.reject(`${msg} ${errmsg}`);
     }
   }
+  
   /**
    * GetViewsNames
    * @param mDb
    */
   public async getViewsNames(mDb: any): Promise<string[]> {
+    const msg = "GetViewsNames";
     let sql = 'SELECT name FROM sqlite_master WHERE ';
     sql += "type='view' AND name NOT LIKE 'sqlite_%' ";
     sql += 'ORDER BY rootpage DESC;';
@@ -779,24 +796,26 @@ export class UtilsSQLite {
         retArr.push(query.name);
       }
       return Promise.resolve(retArr);
-    } catch (err) {
-      return Promise.reject(`getViewsNames: ${err}`);
+    } catch (err: any) {
+      const errmsg = err.message ? err.message : err;
+      return Promise.reject(`${msg} ${errmsg}`);
     }
   }
   /**
    * isLastModified
-   * @param db
+   * @param mDB
    * @param isOpen
    */
-  public async isLastModified(db: any, isOpen: boolean): Promise<boolean> {
+  public async isLastModified(mDB: any, isOpen: boolean): Promise<boolean> {
+    const msg = "IsLastModified";
     if (!isOpen) {
-      return Promise.reject('isLastModified: database not opened');
+      return Promise.reject(`${msg} database not opened`);
     }
     try {
-      const tableList: string[] = await this.getTablesNames(db);
+      const tableList: string[] = await this.getTablesNames(mDB);
       for (const table of tableList) {
         const tableNamesTypes: any = await this.getTableColumnNamesTypes(
-          db,
+          mDB,
           table,
         );
         const tableColumnNames: string[] = tableNamesTypes.names;
@@ -804,24 +823,26 @@ export class UtilsSQLite {
           return Promise.resolve(true);
         }
       }
-    } catch (err) {
-      return Promise.reject(`isLastModified: ${err}`);
+    } catch (err: any) {
+      const errmsg = err.message ? err.message : err;
+      return Promise.reject(`${msg} ${errmsg}`);
     }
   }
   /**
    * isSqlDeleted
-   * @param db
+   * @param mDB
    * @param isOpen
    */
-  public async isSqlDeleted(db: any, isOpen: boolean): Promise<boolean> {
+  public async isSqlDeleted(mDB: any, isOpen: boolean): Promise<boolean> {
+    const msg = "IsSqlDeleted"
     if (!isOpen) {
-      return Promise.reject('isSqlDeleted: database not opened');
+      return Promise.reject(`${msg} database not opened`);
     }
     try {
-      const tableList: string[] = await this.getTablesNames(db);
+      const tableList: string[] = await this.getTablesNames(mDB);
       for (const table of tableList) {
         const tableNamesTypes: any = await this.getTableColumnNamesTypes(
-          db,
+          mDB,
           table,
         );
         const tableColumnNames: string[] = tableNamesTypes.names;
@@ -829,24 +850,19 @@ export class UtilsSQLite {
           return Promise.resolve(true);
         }
       }
-    } catch (err) {
-      return Promise.reject(`isSqlDeleted: ${err}`);
+    } catch (err: any) {
+      const errmsg = err.message ? err.message : err;
+      return Promise.reject(`${msg} ${errmsg}`);
     }
   }
   public async getJournalMode(mDB: any): Promise<string> {
-    let resQuery: any[] = [];
-    let retMode = 'delete';
-    const query = `PRAGMA journal_mode;`;
+    const msg = "getJournalMode";
     try {
-      resQuery = await this.queryAll(mDB, query, []);
-      if (resQuery.length === 1) {
-        for (const query of resQuery) {
-          retMode = query.journal_mode;
-        }
-      }
+      const retMode = mDB.pragma('journal_mode');
       return retMode;
-    } catch (err) {
-      return Promise.reject('GetJournalMode: ' + `${err}`);
+    } catch (err: any) {
+      const errmsg = err.message ? err.message : err;
+      return Promise.reject(`${msg} ${errmsg}`);
     }
   }
   /**
@@ -858,21 +874,19 @@ export class UtilsSQLite {
     mDB: any,
     tableName: string,
   ): Promise<any> {
-    let resQuery: any[] = [];
-    const retNames: string[] = [];
-    const retTypes: string[] = [];
-    const query = `PRAGMA table_info('${tableName}');`;
+    const msg = "getTableColumnNamesTypes";
     try {
-      resQuery = await this.queryAll(mDB, query, []);
-      if (resQuery.length > 0) {
-        for (const query of resQuery) {
-          retNames.push(query.name);
-          retTypes.push(query.type);
-        }
+      const infos = mDB.pragma(`table_info('${tableName}')`);
+      const retNames: string[] = [];
+      const retTypes: string[] = [];
+      for(const info of infos) {
+        retNames.push(info.name);
+        retTypes.push(info.type); 
       }
       return Promise.resolve({ names: retNames, types: retTypes });
-    } catch (err) {
-      return Promise.reject('GetTableColumnNamesTypes: ' + `${err}`);
+    } catch (err: any) {
+      const errmsg = err.message ? err.message : err;
+      return Promise.reject(`${msg} ${errmsg}`);
     }
   }
 }

@@ -284,8 +284,8 @@ export class Database {
                               );`;
           stmts += `INSERT INTO sync_table (sync_date) VALUES (
                               "${date}");`;
-          changes = await this.sqliteUtil.execute(this.database, stmts, false);
-          if (changes < 0) {
+          const results = await this.sqliteUtil.execute(this.database, stmts, false);
+          if (results.changes < 0) {
             throw new Error(`CreateSyncTable: failed changes < 0`);
           }
         } else {
@@ -323,13 +323,13 @@ export class Database {
       let stmt = `UPDATE sync_table SET sync_date = `;
       stmt += `${syncDateUnixTimestamp} WHERE id = 1;`;
 
-      const changes: number = await this.sqliteUtil.execute(
+      const results = await this.sqliteUtil.execute(
         this.database,
         stmt,
         false,
       );
 
-      if (changes < 0) {
+      if (results.changes < 0) {
         return { result: false, message: 'setSyncDate failed' };
       } else {
         return { result: true };
@@ -386,9 +386,9 @@ export class Database {
         await this.sqliteUtil.beginTransaction(this.database, this._isDbOpen);
       }
 
-      const changes = await this.sqliteUtil.execute(this.database, sql, false);
+      const results = await this.sqliteUtil.execute(this.database, sql, false);
 
-      if (changes < 0) {
+      if (results.changes < 0) {
         throw new Error('ExecuteSQL: changes < 0');
       }
 
@@ -396,7 +396,7 @@ export class Database {
         await this.sqliteUtil.commitTransaction(this.database, this._isDbOpen);
       }
 
-      return changes;
+      return results.changes;
     } catch (executeError) {
       let message = `${executeError}`;
       try {
@@ -447,11 +447,8 @@ export class Database {
   ): Promise<any> {
     this.ensureDatabaseIsOpen();
 
-    const result: any = { changes: -1, lastId: -1 };
-    let initChanges = -1;
 
     try {
-      initChanges = await this.sqliteUtil.dbChanges(this.database);
       // start a transaction
       if (transaction) {
         const mode: string = await this.sqliteUtil.getJournalMode(
@@ -464,13 +461,13 @@ export class Database {
       throw new Error(`RunSQL: ${err}`);
     }
     try {
-      const lastId = await this.sqliteUtil.prepareRun(
+      const results = await this.sqliteUtil.prepareRun(
         this.database,
         statement,
         values,
         false,
       );
-      if (lastId < 0) {
+      if (results.lastId < 0) {
         if (transaction) {
           await this.sqliteUtil.rollbackTransaction(
             this.database,
@@ -483,11 +480,7 @@ export class Database {
       if (transaction) {
         await this.sqliteUtil.commitTransaction(this.database, this._isDbOpen);
       }
-      result.changes =
-        (await this.sqliteUtil.dbChanges(this.database)) - initChanges;
-      result.lastId = lastId;
-
-      return result;
+      return results;
     } catch (err) {
       if (transaction) {
         await this.sqliteUtil.rollbackTransaction(
@@ -508,11 +501,8 @@ export class Database {
   async execSet(set: any[], transaction: boolean): Promise<any> {
     this.ensureDatabaseIsOpen();
 
-    const result: any = { changes: -1, lastId: -1 };
-    let initChanges = -1;
-
+    let results: any = { changes: 0, lastId: -1 };
     try {
-      initChanges = await this.sqliteUtil.dbChanges(this.database);
 
       // start a transaction
       if (transaction) {
@@ -526,7 +516,7 @@ export class Database {
       throw new Error(`ExecSet: ${err}`);
     }
     try {
-      result.lastId = await this.sqliteUtil.executeSet(
+      results = await this.sqliteUtil.executeSet(
         this.database,
         set,
         false,
@@ -535,9 +525,7 @@ export class Database {
         await this.sqliteUtil.commitTransaction(this.database, this._isDbOpen);
       }
 
-      result.changes =
-        (await this.sqliteUtil.dbChanges(this.database)) - initChanges;
-      return result;
+      return results;
     } catch (err) {
       const message: string = err;
 

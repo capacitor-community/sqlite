@@ -22,6 +22,7 @@ export class ExportToJson {
     mDB: any,
     sqlObj: JsonSQLite,
   ): Promise<JsonSQLite> {
+    const msg = 'CreateExportObject';
     const retObj: JsonSQLite = {} as JsonSQLite;
     let tables: JsonTable[] = [];
     let views: JsonView[] = [];
@@ -32,7 +33,7 @@ export class ExportToJson {
       // get Table's name
       const resTables: any[] = await this.getTablesNameSQL(mDB);
       if (resTables.length === 0) {
-        return Promise.reject("createExportObject: table's names failed");
+        return Promise.reject(`${msg} table's names failed`);
       } else {
         const isTable = await this.jsonUtil.isTableExists(
           mDB,
@@ -40,7 +41,7 @@ export class ExportToJson {
           'sync_table',
         );
         if (!isTable && sqlObj.mode === 'partial') {
-          return Promise.reject('No sync_table available');
+          return Promise.reject(`${msg} No sync_table available`);
         }
 
         switch (sqlObj.mode) {
@@ -54,7 +55,7 @@ export class ExportToJson {
           }
           default: {
             errmsg =
-              'createExportObject: expMode ' + sqlObj.mode + ' not defined';
+              `${msg} expMode ${sqlObj.mode} not defined`;
             break;
           }
         }
@@ -74,7 +75,7 @@ export class ExportToJson {
         return Promise.resolve(retObj);
       }
     } catch (err) {
-      return Promise.reject('createExportObject: ' + err);
+      return Promise.reject(`${msg} ${err}`);
     }
   }
   /**
@@ -82,6 +83,7 @@ export class ExportToJson {
    * @param mDb
    */
   public async getTablesNameSQL(mDb: any): Promise<any[]> {
+    const msg = 'GetTablesNameSQL';
     let sql = 'SELECT name,sql FROM sqlite_master WHERE ';
     sql += "type='table' AND name NOT LIKE 'sync_table' ";
     sql += "AND name NOT LIKE '_temp_%' ";
@@ -91,27 +93,24 @@ export class ExportToJson {
       retQuery = await this.sqliteUtil.queryAll(mDb, sql, []);
       return Promise.resolve(retQuery);
     } catch (err) {
-      return Promise.reject(`getTablesNameSQL: ${err}`);
+      return Promise.reject(`${msg} ${err}`);
     }
   }
   public async getLastExportDate(mDb: any): Promise<number> {
-    return new Promise((resolve, reject) => {
-      let retDate = -1;
+    const msg = "GetLastExportDate";
+    let retDate = -1;
+    try {
       // get the last sync date
-      const stmt = `SELECT sync_date FROM sync_table WHERE id = 2;`;
-      mDb.get(stmt, [], (err: Error, row: any) => {
-        // process the row here
-        if (err) {
-          reject(`getLastExportDate: ${err.message}`);
-        } else {
-          if (row != null) {
-            const key: any = Object.keys(row)[0];
-            retDate = row[key];
-          }
-          resolve(retDate);
-        }
-      });
-    });
+      const stmt = `SELECT sync_date FROM sync_table WHERE id = ?;`;
+      const row = await this.sqliteUtil.queryOne(mDb, stmt, [2]);
+      if (row != null) {
+        const key: any = Object.keys(row)[0];
+        retDate = row[key];
+      }
+      return Promise.resolve(retDate);
+    } catch (err) {
+      return Promise.reject(`${msg} ${err}`);
+    }
   }
   /**
    * SetLastExportDate
@@ -123,6 +122,7 @@ export class ExportToJson {
     mDb: any,
     lastExportedDate: string,
   ): Promise<any> {
+    const msg = "SetLastExportDate";
     try {
       const isTable = await this.jsonUtil.isTableExists(
         mDb,
@@ -131,7 +131,7 @@ export class ExportToJson {
       );
       if (!isTable) {
         return Promise.reject(
-          new Error('setLastExportDate: No sync_table available'),
+          new Error(`${msg} No sync_table available`),
         );
       }
       const sDate: number = Math.round(
@@ -143,20 +143,21 @@ export class ExportToJson {
       } else {
         stmt = `INSERT INTO sync_table (sync_date) VALUES (${sDate});`;
       }
-      const changes: number = await this.sqliteUtil.execute(mDb, stmt, false);
-      if (changes < 0) {
-        return { result: false, message: 'setLastExportDate failed' };
+      const results = await this.sqliteUtil.execute(mDb, stmt, false);
+      if (results.changes < 0) {
+        return { result: false, message: `${msg} failed`};
       } else {
         return { result: true };
       }
     } catch (err) {
       return {
         result: false,
-        message: `setLastExportDate failed: ${err.message}`,
+        message: `${msg} ${err.message}`,
       };
     }
   }
   public async delExportedRows(mDb: any): Promise<void> {
+    const msg = "DelExportedRows";
     let lastExportDate: number;
     try {
       // check if synchronization table exists
@@ -166,33 +167,31 @@ export class ExportToJson {
         'sync_table',
       );
       if (!isTable) {
-        return Promise.reject('DelExportedRows: No sync_table available');
+        return Promise.reject(`${msg} No sync_table available`);
       }
       // get the last export date
       lastExportDate = await this.getLastExportDate(mDb);
       if (lastExportDate < 0) {
         return Promise.reject(
-          'DelExportedRows: no last exported date available',
-        );
+          `${msg} no last exported date available`);
       }
       // get the table' name list
       const resTables: any[] = await this.sqliteUtil.getTablesNames(mDb);
       if (resTables.length === 0) {
-        return Promise.reject("DelExportedRows: No table's names returned");
+        return Promise.reject(`${msg} No table's names returned`);
       }
       // Loop through the tables
       for (const table of resTables) {
-        let lastId = -1;
         // define the delete statement
         const delStmt = `DELETE FROM ${table}
               WHERE sql_deleted = 1 AND last_modified < ${lastExportDate};`;
-        lastId = await this.sqliteUtil.prepareRun(mDb, delStmt, [], true);
-        if (lastId < 0) {
-          return Promise.reject('DelExportedRows: lastId < 0');
+        const results = await this.sqliteUtil.prepareRun(mDb, delStmt, [], true);
+        if (results.lastId < 0) {
+          return Promise.reject(`${msg} lastId < 0`);
         }
       }
     } catch (err) {
-      return Promise.reject(`DelExportedRows failed: ${err.message}`);
+      return Promise.reject(`${msg} failed: ${err.message}`);
     }
   }
   /**
@@ -222,25 +221,18 @@ export class ExportToJson {
    * @param mDb
    */
   public async getSyncDate(mDb: any): Promise<number> {
-    return new Promise((resolve, reject) => {
-      let retDate = -1;
-      // get the last sync date
-      const stmt = `SELECT sync_date FROM sync_table WHERE id = 1;`;
-      mDb.get(stmt, [], (err: Error, row: any) => {
-        // process the row here
-        if (err) {
-          reject(`GetSyncDate: ${err.message}`);
-        } else {
-          if (row != null) {
-            const key: any = Object.keys(row)[0];
-            retDate = row[key];
-            resolve(retDate);
-          } else {
-            reject(`GetSyncDate: no syncDate`);
-          }
-        }
-      });
-    });
+    const msg = "GetSyncDate";
+    let retDate = -1;
+    // get the last sync date
+    const stmt = `SELECT sync_date FROM sync_table WHERE id = ?;`;
+    const row = await this.sqliteUtil.queryOne(mDb, stmt, [1]);
+    if (row != null) {
+      const key: any = Object.keys(row)[0];
+      retDate = row[key];
+      return Promise.resolve(retDate);
+    } else {
+      return Promise.reject(`${msg} no syncDate`);
+    }
   }
   /**
    * GetTablesFull
@@ -251,6 +243,7 @@ export class ExportToJson {
     mDb: any,
     resTables: any[],
   ): Promise<JsonTable[]> {
+    const msg = 'GetTablesFull'
     const tables: JsonTable[] = [];
     let errmsg = '';
     try {
@@ -262,13 +255,13 @@ export class ExportToJson {
         if (rTable.name) {
           tableName = rTable.name;
         } else {
-          errmsg = 'GetTablesFull: no name';
+          errmsg = `${msg} no name`;
           break;
         }
         if (rTable.sql) {
           sqlStmt = rTable.sql;
         } else {
-          errmsg = 'GetTablesFull: no sql';
+          errmsg = `${msg} no sql`;
           break;
         }
         const table: JsonTable = {} as JsonTable;
@@ -276,7 +269,7 @@ export class ExportToJson {
         // create Table's Schema
         const schema: JsonColumn[] = await this.getSchema(sqlStmt);
         if (schema.length === 0) {
-          errmsg = 'GetTablesFull: no Schema returned';
+          errmsg = `${msg} no Schema returned`;
           break;
         }
         // check schema validity
@@ -304,7 +297,7 @@ export class ExportToJson {
         if (schema.length > 0) {
           table.schema = schema;
         } else {
-          errmsg = `GetTablesFull: must contain schema`;
+          errmsg = `${msg} must contain schema`;
           break;
         }
         if (indexes.length > 0) {
@@ -317,7 +310,7 @@ export class ExportToJson {
           table.values = values;
         }
         if (Object.keys(table).length <= 1) {
-          errmsg = `GetTablesFull: table ${tableName} is not a jsonTable`;
+          errmsg = `${msg} table ${tableName} is not a jsonTable`;
           break;
         }
 
@@ -328,7 +321,7 @@ export class ExportToJson {
       }
       return Promise.resolve(tables);
     } catch (err) {
-      return Promise.reject(`GetTablesFull: ${err}`);
+      return Promise.reject(`${msg} ${err}`);
     }
   }
 
@@ -341,6 +334,7 @@ export class ExportToJson {
   private async getSchema(
     sqlStmt: string /*,tableName: string,*/,
   ): Promise<JsonColumn[]> {
+    const msg ='GetSchema';
     const schema: JsonColumn[] = [];
     // take the substring between parenthesis
     const openPar: number = sqlStmt.indexOf('(');
@@ -393,7 +387,7 @@ export class ExportToJson {
       }
       return Promise.resolve(schema);
     } catch (err) {
-      return Promise.reject(err);
+      return Promise.reject(`${msg} ${err}`);
     }
   }
 
@@ -404,6 +398,7 @@ export class ExportToJson {
    * @param tableName
    */
   private async getIndexes(mDb: any, tableName: string): Promise<JsonIndex[]> {
+    const msg = 'GetIndexes';
     const indexes: JsonIndex[] = [];
     let errmsg = '';
     try {
@@ -426,11 +421,11 @@ export class ExportToJson {
               if (mode.length > 0) index.mode = mode;
               indexes.push(index);
             } else {
-              errmsg = `GetIndexes: Table ${tableName} doesn't match`;
+              errmsg = `${msg} Table ${tableName} doesn't match`;
               break;
             }
           } else {
-            errmsg = `GetIndexes: Table ${tableName} creating indexes`;
+            errmsg = `${msg} Table ${tableName} creating indexes`;
             break;
           }
         }
@@ -440,7 +435,7 @@ export class ExportToJson {
       }
       return Promise.resolve(indexes);
     } catch (err) {
-      return Promise.reject(`GetIndexes: ${err}`);
+      return Promise.reject(`${msg} ${err}`);
     }
   }
   /**
@@ -453,6 +448,7 @@ export class ExportToJson {
     mDb: any,
     tableName: string,
   ): Promise<JsonTrigger[]> {
+    const msg = 'GetTriggers';
     const triggers: JsonTrigger[] = [];
     try {
       let stmt = 'SELECT name,tbl_name,sql FROM sqlite_master WHERE ';
@@ -470,19 +466,19 @@ export class ExportToJson {
               let sqlArr: string[] = sql.split(name);
               if (sqlArr.length != 2) {
                 return Promise.reject(
-                  `GetTriggers: sql split name does not return 2 values`,
+                  `${msg} sql split name does not return 2 values`,
                 );
               }
               if (!sqlArr[1].includes(tableName)) {
                 return Promise.reject(
-                  `GetTriggers: sql split does not contains ${tableName}`,
+                  `${msg} sql split does not contains ${tableName}`,
                 );
               }
               const timeEvent = sqlArr[1].split(tableName, 1)[0].trim();
               sqlArr = sqlArr[1].split(timeEvent + ' ' + tableName);
               if (sqlArr.length != 2) {
                 return Promise.reject(
-                  `GetTriggers: sql split tableName does not return 2 values`,
+                  `${msg} sql split tableName does not return 2 values`,
                 );
               }
               let condition = '';
@@ -491,7 +487,7 @@ export class ExportToJson {
                 sqlArr = sqlArr[1].trim().split('BEGIN');
                 if (sqlArr.length != 2) {
                   return Promise.reject(
-                    `GetTriggers: sql split BEGIN does not return 2 values`,
+                    `${msg} sql split BEGIN does not return 2 values`,
                   );
                 }
                 condition = sqlArr[0].trim();
@@ -508,19 +504,19 @@ export class ExportToJson {
               triggers.push(trigger);
             } else {
               return Promise.reject(
-                `GetTriggers: Table ${tableName} doesn't match`,
+                `${msg} Table ${tableName} doesn't match`,
               );
             }
           } else {
             return Promise.reject(
-              `GetTriggers: Table ${tableName} creating indexes`,
+              `${msg} Table ${tableName} creating indexes`,
             );
           }
         }
       }
       return Promise.resolve(triggers);
     } catch (err) {
-      return Promise.reject(`GetTriggers: ${err}`);
+      return Promise.reject(`${msg} ${err}`);
     }
   }
   /**
@@ -532,6 +528,7 @@ export class ExportToJson {
     mDb: any,
     resTables: any[],
   ): Promise<JsonTable[]> {
+    const msg = 'GetTablesPartial';
     const tables: JsonTable[] = [];
     let modTables: any = {};
     let syncDate = 0;
@@ -557,13 +554,13 @@ export class ExportToJson {
         if (rTable.name) {
           tableName = rTable.name;
         } else {
-          errmsg = 'GetTablesFull: no name';
+          errmsg = `${msg} no name`;
           break;
         }
         if (rTable.sql) {
           sqlStmt = rTable.sql;
         } else {
-          errmsg = 'GetTablesFull: no sql';
+          errmsg = `${msg} no sql`;
           break;
         }
         if (
@@ -628,7 +625,7 @@ export class ExportToJson {
           table.values = values;
         }
         if (Object.keys(table).length <= 1) {
-          errmsg = `GetTablesPartial: table ${tableName} is not a jsonTable`;
+          errmsg = `${msg} table ${tableName} is not a jsonTable`;
           break;
         }
         tables.push(table);
@@ -638,7 +635,7 @@ export class ExportToJson {
       }
       return Promise.resolve(tables);
     } catch (err) {
-      return Promise.reject(`GetTablesPartial: ${err}`);
+      return Promise.reject(`${msg} ${err}`);
     }
   }
   /**
@@ -647,12 +644,13 @@ export class ExportToJson {
    * @param resTables
    */
   private async getPartialModeData(mDb: any, resTables: any[]): Promise<any> {
+    const msg = 'GetPartialModeData';
     const retData: any = {};
     try {
       // get the synchronization date
       const syncDate: number = await this.getSyncDate(mDb);
       if (syncDate <= 0) {
-        return Promise.reject(`GetPartialModeData: no syncDate`);
+        return Promise.reject(`${msg} no syncDate`);
       }
       // get the tables which have been updated
       // since last synchronization
@@ -662,20 +660,21 @@ export class ExportToJson {
         syncDate,
       );
       if (modTables.length <= 0) {
-        return Promise.reject(`GetPartialModeData: no modTables`);
+        return Promise.reject(`${msg} no modTables`);
       }
       retData.syncDate = syncDate;
       retData.modTables = modTables;
       return Promise.resolve(retData);
     } catch (err) {
-      return Promise.reject(`GetPartialModeData: ${err}`);
+      return Promise.reject(`${msg} ${err}`);
     }
   }
   private async getTablesModified(
-    db: any,
+    mDb: any,
     tables: any[],
     syncDate: number,
   ): Promise<any> {
+    const msg = 'GetTablesModified';
     let errmsg = '';
     try {
       const retModified: any = {};
@@ -684,9 +683,9 @@ export class ExportToJson {
         // get total count of the table
         let stmt = 'SELECT count(*) AS tcount  ';
         stmt += `FROM ${rTable.name};`;
-        let retQuery: any[] = await this.sqliteUtil.queryAll(db, stmt, []);
+        let retQuery: any[] = await this.sqliteUtil.queryAll(mDb, stmt, []);
         if (retQuery.length != 1) {
-          errmsg = 'GetTableModified: total ' + 'count not returned';
+          errmsg = `${msg} total count not returned`;
           break;
         }
         const totalCount: number = retQuery[0]['tcount'];
@@ -694,7 +693,7 @@ export class ExportToJson {
         stmt = 'SELECT count(*) AS mcount FROM ';
         stmt += `${rTable.name} WHERE last_modified > `;
         stmt += `${syncDate};`;
-        retQuery = await this.sqliteUtil.queryAll(db, stmt, []);
+        retQuery = await this.sqliteUtil.queryAll(mDb, stmt, []);
         if (retQuery.length != 1) break;
         const totalModifiedCount: number = retQuery[0]['mcount'];
 
@@ -713,16 +712,16 @@ export class ExportToJson {
       }
       return Promise.resolve(retModified);
     } catch (err) {
-      return Promise.reject(`GetTableModified: ${err}`);
+      return Promise.reject(`${msg} ${err}`);
     }
   }
   private async modEmbeddedParentheses(sstr: string): Promise<string> {
+    const msg = 'ModEmbeddedParentheses';
     const oParArray: number[] = this.indexOfChar(sstr, '(');
     const cParArray: number[] = this.indexOfChar(sstr, ')');
     if (oParArray.length != cParArray.length) {
       return Promise.reject(
-        "ModEmbeddedParentheses: Not same number of '(' & ')'",
-      );
+        `${msg} Not same number of '(' & ')'`);
     }
     if (oParArray.length === 0) {
       return Promise.resolve(sstr);

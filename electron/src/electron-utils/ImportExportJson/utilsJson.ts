@@ -11,34 +11,27 @@ export class UtilsJson {
 
   /**
    * IsTableExists
-   * @param db
+   * @param mDB
    * @param isOpen
    * @param tableName
    */
   public async isTableExists(
-    db: any,
+    mDB: any,
     isOpen: boolean,
     tableName: string,
   ): Promise<boolean> {
-    return new Promise((resolve, reject) => {
+      const msg = 'IsTableExists';
+      let ret = false;
       if (!isOpen) {
-        reject('isTableExists: database not opened');
+        return Promise.reject(`${msg} database not opened`);
       }
       let query = 'SELECT name FROM sqlite_master WHERE ';
       query += `type='table' AND name='${tableName}';`;
-      db.all(query, [], (err: Error, rows: any[]) => {
-        // process the row here
-        if (err) {
-          reject(`isTableExists: failed: ${err.message}`);
-        } else {
-          if (rows.length === 0) {
-            resolve(false);
-          } else {
-            resolve(true);
-          }
-        }
-      });
-    });
+      const rows: any[] = await this.sqliteUtil.queryAll(mDB, query, []);
+      if (rows.length > 0) {
+        ret = true;
+      } 
+      return Promise.resolve(ret);
   }
   /**
    * IsViewExists
@@ -47,29 +40,22 @@ export class UtilsJson {
    * @param viewName
    */
   public async isViewExists(
-    db: any,
+    mDB: any,
     isOpen: boolean,
     viewName: string,
   ): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-      if (!isOpen) {
-        reject('isViewExists: database not opened');
+    const msg = 'IsViewExists';
+    let ret = false;
+    if (!isOpen) {
+        return Promise.reject(`${msg} database not opened`);
       }
       let query = 'SELECT name FROM sqlite_master WHERE ';
       query += `type='view' AND name='${viewName}';`;
-      db.all(query, [], (err: Error, rows: any[]) => {
-        // process the row here
-        if (err) {
-          reject(`isViewExists: failed: ${err.message}`);
-        } else {
-          if (rows.length === 0) {
-            resolve(false);
-          } else {
-            resolve(true);
-          }
-        }
-      });
-    });
+      const rows: any[] = await this.sqliteUtil.queryAll(mDB, query, []);
+      if (rows.length > 0) {
+        ret = true;
+      } 
+      return Promise.resolve(ret);
   }
   /**
    * CreateSchema
@@ -78,24 +64,25 @@ export class UtilsJson {
    */
   public async createSchema(mDB: any, jsonData: any): Promise<number> {
     // create the database schema
-    let changes = 0;
+    const msg = 'CreateSchema';
+    let results: {changes: number, lastId: number};
     try {
       // start a transaction
       await this.sqliteUtil.beginTransaction(mDB, true);
     } catch (err) {
-      return Promise.reject(`CreateDatabaseSchema: ${err}`);
+      return Promise.reject(`${msg} ${err}`);
     }
 
     const stmts = await this.createSchemaStatement(jsonData);
     if (stmts.length > 0) {
       const schemaStmt: string = stmts.join('\n');
       try {
-        changes = await this.sqliteUtil.execute(mDB, schemaStmt, true);
-        if (changes < 0) {
+        results = await this.sqliteUtil.execute(mDB, schemaStmt, true);
+        if (results.changes < 0) {
           try {
             await this.sqliteUtil.rollbackTransaction(mDB, true);
           } catch (err) {
-            return Promise.reject('CreateSchema: changes < 0 ' + `${err}`);
+            return Promise.reject(`${msg} changes < 0 ${err}`);
           }
         }
       } catch (err) {
@@ -105,16 +92,16 @@ export class UtilsJson {
           return Promise.reject(`CreateSchema: ${msg}`);
         } catch (err) {
           return Promise.reject(
-            'CreateSchema: changes < 0 ' + `${err}: ${msg}`,
+            `${msg} changes < 0${err}: ${msg}`,
           );
         }
       }
     }
     try {
       await this.sqliteUtil.commitTransaction(mDB, true);
-      return Promise.resolve(changes);
+      return Promise.resolve(results.changes);
     } catch (err) {
-      return Promise.reject('CreateSchema: commit ' + `${err}`);
+      return Promise.reject(`${msg} ${err}`);
     }
   }
 
@@ -123,6 +110,7 @@ export class UtilsJson {
    * @param jsonData
    */
   public async createSchemaStatement(jsonData: any): Promise<string[]> {
+    const msg = 'CreateSchemaStatement';
     const statements: string[] = [];
     let isLastModified = false;
     let isSqlDeleted = false;
@@ -221,7 +209,7 @@ export class UtilsJson {
       }
       return Promise.resolve(statements);
     } catch (err) {
-      return Promise.reject(err);
+      return Promise.reject(`${msg} ${err}`);
     }
   }
 
@@ -235,14 +223,16 @@ export class UtilsJson {
     mDB: any,
     table: any,
     mode: string,
-  ): Promise<number> {
+  ): Promise<{changes:number,lastId: number}> {
     let lastId = -1;
+    const msg = 'CreateDataTable';
+    let results: {changes:number,lastId: number};
     try {
       // Check if the table exists
       const tableExists = await this.isTableExists(mDB, true, table.name);
       if (!tableExists) {
         return Promise.reject(
-          'CreateDataTable: Table ' + `${table.name} does not exist`,
+          `${msg} ${table.name} does not exist`,
         );
       }
 
@@ -253,7 +243,7 @@ export class UtilsJson {
       const tableColumnNames: string[] = tableNamesTypes.names;
       if (tableColumnTypes.length === 0) {
         return Promise.reject(
-          'CreateDataTable: Table ' + `${table.name} info does not exist`,
+          `${msg} ${table.name} info does not exist`,
         );
       }
       // Loop on Table Values
@@ -280,17 +270,18 @@ export class UtilsJson {
           if (stmt.substring(0, 6).toUpperCase() === 'DELETE') {
             row = [];
           }
-          lastId = await this.sqliteUtil.prepareRun(mDB, stmt, row, true);
+          results = await this.sqliteUtil.prepareRun(mDB, stmt, row, true);
+          lastId = results.lastId;
           if (lastId < 0) {
-            return Promise.reject('CreateDataTable: lastId < 0');
+            return Promise.reject(`${msg} lastId < 0`);
           }
         } else {
           lastId = 0;
         }
       }
-      return Promise.resolve(lastId);
+      return Promise.resolve(results);
     } catch (err) {
-      return Promise.reject(`CreateDataTable: ${err}`);
+      return Promise.reject(`${msg} ${err}`);
     }
   }
   /**
@@ -312,6 +303,7 @@ export class UtilsJson {
     mode: string,
   ): Promise<string> {
     // Check the row number of columns
+    const msg = 'CreateRowStatement';
     if (
       row.length != tColNames.length ||
       row.length === 0 ||
@@ -319,7 +311,7 @@ export class UtilsJson {
     ) {
       return Promise.reject(
         new Error(
-          `CreateRowStatement: Table ${tableName} ` +
+          `${msg} Table ${tableName} ` +
             `values row ${j} not correct length`,
         ),
       );
@@ -363,7 +355,7 @@ export class UtilsJson {
           if (setString.length === 0) {
             return Promise.reject(
               new Error(
-                `CreateRowStatement: Table ${tableName} ` +
+                `${msg} Table ${tableName} ` +
                   `values row ${j} not set to String`,
               ),
             );
@@ -378,24 +370,25 @@ export class UtilsJson {
       }
       return Promise.resolve(stmt);
     } catch (err) {
-      return Promise.reject(new Error(`CreateRowStatement: ${err.message}`));
+      return Promise.reject(new Error(`${msg} ${err.message}`));
     }
   }
   /**
    *
-   * @param db
+   * @param mDB
    * @param values
    * @param tbName
    * @param tColNames
    * @returns
    */
   public async checkUpdate(
-    db: any,
+    mDB: any,
     stmt: string,
     values: any[],
     tbName: string,
     tColNames: string[],
   ): Promise<boolean> {
+    const msg = 'CheckUpdate';
     const isRun = true;
     if (stmt.substring(0, 6) === 'UPDATE') {
       try {
@@ -406,7 +399,7 @@ export class UtilsJson {
           query += `${tColNames[0]} = ${values[0]};`;
         }
 
-        const resQuery: any[] = await this.getValues(db, query, tbName);
+        const resQuery: any[] = await this.getValues(mDB, query, tbName);
         let resValues: any[] = [];
         if (resQuery.length > 0) {
           resValues = resQuery[0];
@@ -423,11 +416,11 @@ export class UtilsJson {
           }
           return Promise.resolve(false);
         } else {
-          const msg = 'Both arrays not the same length';
-          return Promise.reject(new Error(`CheckUpdate: ${msg}`));
+          const msg1 = 'Both arrays not the same length';
+          return Promise.reject(new Error(`${msg} ${msg1}`));
         }
       } catch (err) {
-        return Promise.reject(new Error(`CheckUpdate: ${err.message}`));
+        return Promise.reject(new Error(`${msg} ${err.message}`));
       }
     } else {
       return Promise.resolve(isRun);
@@ -444,6 +437,7 @@ export class UtilsJson {
     query: string,
     tableName: string,
   ): Promise<any[]> {
+    const msg = 'GetValues';
     const values: any[] = [];
     try {
       // get table column names and types
@@ -455,7 +449,7 @@ export class UtilsJson {
       if (Object.keys(tableNamesTypes).includes('names')) {
         rowNames = tableNamesTypes.names;
       } else {
-        return Promise.reject(`GetValues: Table ${tableName} no names`);
+        return Promise.reject(`${msg} Table ${tableName} no names`);
       }
       const retValues = await this.sqliteUtil.queryAll(mDb, query, []);
       for (const rValue of retValues) {
@@ -471,7 +465,7 @@ export class UtilsJson {
       }
       return Promise.resolve(values);
     } catch (err) {
-      return Promise.reject(`GetValues: ${err}`);
+      return Promise.reject(`${msg} ${err}`);
     }
   }
   /**
@@ -519,17 +513,18 @@ export class UtilsJson {
 */
   /**
    * IsIdExists
-   * @param db
+   * @param mDB
    * @param dbName
    * @param firstColumnName
    * @param key
    */
   private async isIdExists(
-    db: any,
+    mDB: any,
     dbName: string,
     firstColumnName: string,
     key: any,
   ): Promise<boolean> {
+    const msg = 'IsIdExists';
     let ret = false;
     let query: string =
       `SELECT ${firstColumnName} FROM ` +
@@ -538,11 +533,11 @@ export class UtilsJson {
     if (typeof key === 'string') query += `'${key}';`;
 
     try {
-      const resQuery: any[] = await this.sqliteUtil.queryAll(db, query, []);
+      const resQuery: any[] = await this.sqliteUtil.queryAll(mDB, query, []);
       if (resQuery.length === 1) ret = true;
       return Promise.resolve(ret);
     } catch (err) {
-      return Promise.reject(`IsIdExists: ${err}`);
+      return Promise.reject(`${msg} ${err}`);
     }
   }
 
@@ -551,18 +546,17 @@ export class UtilsJson {
    * @param length
    */
   private createQuestionMarkString(length: number): Promise<string> {
-    return new Promise((resolve, reject) => {
+    const msg = 'CreateQuestionMarkString';
       let retString = '';
       for (let i = 0; i < length; i++) {
         retString += '?,';
       }
       if (retString.length > 1) {
         retString = retString.slice(0, -1);
-        resolve(retString);
+        return Promise.resolve(retString);
       } else {
-        reject('CreateQuestionMarkString: length = 0');
+        return Promise.reject(`${msg} length = 0`);
       }
-    });
   }
 
   /**
@@ -570,6 +564,7 @@ export class UtilsJson {
    * @param names
    */
   private async setNameForUpdate(names: string[]): Promise<string> {
+    const msg = 'SetNameForUpdate';
     let retString = '';
     for (const name of names) {
       retString += `${name} = ? ,`;
@@ -578,7 +573,7 @@ export class UtilsJson {
       retString = retString.slice(0, -1);
       return Promise.resolve(retString);
     } else {
-      return Promise.reject('SetNameForUpdate: length = 0');
+      return Promise.reject(`${msg} length = 0`);
     }
   }
 
@@ -792,6 +787,7 @@ export class UtilsJson {
    * @param schema
    */
   public async checkSchemaValidity(schema: JsonColumn[]): Promise<void> {
+    const msg = 'CheckSchemaValidity';
     for (let i = 0; i < schema.length; i++) {
       const sch: JsonColumn = {} as JsonColumn;
       const keys: string[] = Object.keys(schema[i]);
@@ -809,7 +805,7 @@ export class UtilsJson {
       }
       const isValid: boolean = this.isSchema(sch);
       if (!isValid) {
-        return Promise.reject(`CheckSchemaValidity: schema[${i}] not valid`);
+        return Promise.reject(`${msg} schema[${i}] not valid`);
       }
     }
     return Promise.resolve();
@@ -819,6 +815,7 @@ export class UtilsJson {
    * @param indexes
    */
   public async checkIndexesValidity(indexes: JsonIndex[]): Promise<void> {
+    const msg = 'CheckIndexesValidity';
     for (let i = 0; i < indexes.length; i++) {
       const index: JsonIndex = {} as JsonIndex;
       const keys: string[] = Object.keys(indexes[i]);
@@ -834,7 +831,7 @@ export class UtilsJson {
 
       const isValid: boolean = this.isIndexes(index);
       if (!isValid) {
-        return Promise.reject(`CheckIndexesValidity: indexes[${i}] not valid`);
+        return Promise.reject(`${msg} indexes[${i}] not valid`);
       }
     }
     return Promise.resolve();
@@ -844,6 +841,7 @@ export class UtilsJson {
    * @param triggers
    */
   public async checkTriggersValidity(triggers: JsonTrigger[]): Promise<void> {
+    const msg = 'CheckTriggersValidity';
     for (let i = 0; i < triggers.length; i++) {
       const trigger: JsonTrigger = {} as JsonTrigger;
       const keys: string[] = Object.keys(triggers[i]);
@@ -863,7 +861,7 @@ export class UtilsJson {
       const isValid: boolean = this.isTriggers(trigger);
       if (!isValid) {
         return Promise.reject(
-          `CheckTriggersValidity: triggers[${i}] not valid`,
+          `${msg} triggers[${i}] not valid`,
         );
       }
     }
@@ -874,6 +872,7 @@ export class UtilsJson {
    * @param views
    */
   public async checkViewsValidity(views: JsonView[]): Promise<void> {
+    const msg = 'CheckViewsValidity';
     for (let i = 0; i < views.length; i++) {
       const view: JsonView = {} as JsonView;
       const keys: string[] = Object.keys(views[i]);
@@ -886,7 +885,7 @@ export class UtilsJson {
 
       const isValid: boolean = this.isView(view);
       if (!isValid) {
-        return Promise.reject(`CheckViewsValidity: views[${i}] not valid`);
+        return Promise.reject(`${msg} views[${i}] not valid`);
       }
     }
     return Promise.resolve();
@@ -896,16 +895,17 @@ export class UtilsJson {
    * @param mDB
    * @param table
    */
-  public async createView(mDB: any, view: JsonView): Promise<void> {
+  public async createView(mDB: any, view: JsonView): Promise<{changes:number,lastId: number}> {
+    const msg = 'CreateView';
     const stmt = `CREATE VIEW IF NOT EXISTS ${view.name} AS ${view.value};`;
     try {
-      const changes = await this.sqliteUtil.execute(mDB, stmt, true);
-      if (changes < 0) {
-        return Promise.reject(`CreateView: ${view.name} failed`);
+      const results = await this.sqliteUtil.execute(mDB, stmt, true);
+      if (results.changes < 0) {
+        return Promise.reject(`${msg} ${view.name} failed`);
       }
-      return Promise.resolve();
+      return Promise.resolve(results);
     } catch (err) {
-      return Promise.reject(`CreateView: ${err}`);
+      return Promise.reject(`${msg} ${err}`);
     }
   }
 }

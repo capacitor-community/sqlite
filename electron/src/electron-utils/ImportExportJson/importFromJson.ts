@@ -37,31 +37,29 @@ export class ImportFromJson {
     mDB: any,
     jsonData: JsonSQLite,
   ): Promise<number> {
-    let changes = 0;
+    const msg = 'CreateTablesData'
+    let results: {changes:number, lastId:number};
     let isValue = false;
-    let lastId = -1;
-    let msg = '';
-    let initChanges = -1;
+    let message = '';
     try {
-      initChanges = await this.sqliteUtil.dbChanges(mDB);
       // start a transaction
       await this.sqliteUtil.beginTransaction(mDB, true);
     } catch (err) {
-      return Promise.reject(`createTablesData: ${err}`);
+      return Promise.reject(`${msg} ${err}`);
     }
     for (const jTable of jsonData.tables) {
       if (jTable.values != null && jTable.values.length >= 1) {
         // Create the table's data
         try {
-          lastId = await this.jsonUtil.createDataTable(
+          results = await this.jsonUtil.createDataTable(
             mDB,
             jTable,
             jsonData.mode,
           );
-          if (lastId < 0) break;
+          if (results.lastId < 0) break;
           isValue = true;
         } catch (err) {
-          msg = err;
+          message = err;
           isValue = false;
           break;
         }
@@ -70,18 +68,17 @@ export class ImportFromJson {
     if (isValue) {
       try {
         await this.sqliteUtil.commitTransaction(mDB, true);
-        changes = (await this.sqliteUtil.dbChanges(mDB)) - initChanges;
-        return Promise.resolve(changes);
+        return Promise.resolve(results.changes);
       } catch (err) {
-        return Promise.reject('createTablesData: ' + `${err}`);
+        return Promise.reject(`${msg} ${err}`);
       }
     } else {
-      if (msg.length > 0) {
+      if (message.length > 0) {
         try {
           await this.sqliteUtil.rollbackTransaction(mDB, true);
-          return Promise.reject(new Error(`createTablesData: ${msg}`));
+          return Promise.reject(new Error(`${msg} ${message}`));
         } catch (err) {
-          return Promise.reject('createTablesData: ' + `${err}: ${msg}`);
+          return Promise.reject(`${msg} ${err}: ${message}`);
         }
       } else {
         // case were no values given
@@ -95,25 +92,24 @@ export class ImportFromJson {
    * @param jsonData
    */
   public async createViews(mDB: any, jsonData: JsonSQLite): Promise<number> {
+    const msg = 'CreateViews';
     let isView = false;
-    let msg = '';
-    let initChanges = -1;
-    let changes = -1;
+    let message = '';
+    let results: {changes:number,lastId: number};
     try {
-      initChanges = await this.sqliteUtil.dbChanges(mDB);
       // start a transaction
       await this.sqliteUtil.beginTransaction(mDB, true);
     } catch (err) {
-      return Promise.reject(`createViews: ${err}`);
+      return Promise.reject(`${msg} ${err}`);
     }
     for (const jView of jsonData.views) {
       if (jView.value != null) {
         // Create the view
         try {
-          await this.jsonUtil.createView(mDB, jView);
+          results = await this.jsonUtil.createView(mDB, jView);
           isView = true;
         } catch (err) {
-          msg = err;
+          message = err;
           isView = false;
           break;
         }
@@ -122,18 +118,17 @@ export class ImportFromJson {
     if (isView) {
       try {
         await this.sqliteUtil.commitTransaction(mDB, true);
-        changes = (await this.sqliteUtil.dbChanges(mDB)) - initChanges;
-        return Promise.resolve(changes);
+        return Promise.resolve(results.changes);
       } catch (err) {
-        return Promise.reject('createViews: ' + `${err}`);
+        return Promise.reject(`${msg} ${err}`);
       }
     } else {
-      if (msg.length > 0) {
+      if (message.length > 0) {
         try {
           await this.sqliteUtil.rollbackTransaction(mDB, true);
-          return Promise.reject(new Error(`createViews: ${msg}`));
+          return Promise.reject(new Error(`${msg} ${message}`));
         } catch (err) {
-          return Promise.reject('createViews: ' + `${err}: ${msg}`);
+          return Promise.reject(`${msg} ${err}: ${message}`);
         }
       } else {
         // case were no views given
