@@ -110,19 +110,21 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     const connName = readonly ? 'RO_' + dbName : 'RW_' + dbName;
     const database = this.getDatabaseConnectionOrThrowError(connName);
 
-    if (database.isDBOpen()) {
-      // close the database
-      try {
+    try {
+      if (database.isDBOpen()) {
+        // close the database
         await database.close();
-      } catch (err) {
-        throw new Error(
-          `CloseConnection command failed:  close ${dbName} failed ${err.message}`,
-        );
       }
+    } catch (err) {
+      throw new Error(
+        `CloseConnection command failed:  close ${dbName} failed ${err.message}`,
+      );
+    } finally {
+      // remove the connection from dictionary
+      delete this.databases[connName];
     }
 
-    // remove the connection from dictionary
-    delete this.databases[connName];
+    return;
   }
 
   async echo(options: capEchoOptions): Promise<capEchoResult> {
