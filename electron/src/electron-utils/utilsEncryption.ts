@@ -31,9 +31,9 @@ export class UtilsEncryption {
           false,
         );
         await this.sqlcipherEncrypt(oDB, pathDB, password);
-        oDB.close();
+        await this.sqliteUtil.closeDB(oDB);
         this.fileUtil.deleteFilePath(tempPath);
-        mDB.close();
+        await this.sqliteUtil.closeDB(mDB);
         return Promise.resolve();
       } catch (err) {
         return Promise.reject(new Error(`${msg} ${err.message} `));

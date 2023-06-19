@@ -30,7 +30,7 @@ export class UtilsSQLite {
     password: string,
     readonly: boolean,
   ): Promise<any> {
-    const msg = 'OpenOrCreateDatabase: ';
+    const msg = 'OpenOrCreateDatabase';
     // open sqlite3 database
     let mDB: any;
     if (!readonly) {
@@ -75,7 +75,7 @@ export class UtilsSQLite {
    * @param password
    */
   public async setCipherPragma(mDB: any, passphrase: string): Promise<void> {
-    const msg = 'setCipherPragma: ';
+    const msg = 'setCipherPragma';
     try {
       mDB.pragma(`cipher='sqlcipher'`)
       mDB.pragma(`legacy=4`)
@@ -95,7 +95,7 @@ export class UtilsSQLite {
     mDB: any,
     toggle: boolean,
   ): Promise<void> {
-    const msg = 'SetForeignKeyConstraintsEnabled: ';
+    const msg = 'SetForeignKeyConstraintsEnabled';
     let key = 'OFF';
     if (toggle) {
       key = 'ON';
@@ -107,28 +107,43 @@ export class UtilsSQLite {
       const errmsg = err.message ? err.message : err;
       return Promise.reject(`${msg} ${errmsg}`);
     }
- }
+  }
+  /**
+   * CloseDB
+   * @param mDB
+   */
+  public async closeDB(mDB: any): Promise<void> {
+    const msg = 'closeDB';
+    try {
+      mDB.close();
+      return Promise.resolve();
+    } catch (err: any) {
+      const errmsg = err.message ? err.message : err;
+      return Promise.reject(`${msg} ${errmsg}`);
+    }
+  }
   /**
    * GetVersion
    * @param mDB
    */
   public async getVersion(mDB: any): Promise<number> {
-    const msg = 'GetVersion: ';
+    const msg = 'GetVersion';
     try {
       const version = mDB.pragma('user_version');
-      return Promise.resolve(version)
+      return Promise.resolve(version);
     } catch (err: any) {
       const errmsg = err.message ? err.message : err;
       return Promise.reject(`${msg} ${errmsg}`);
     }
- }
+  }
+
   /**
    * SetVersion
    * @param mDB
    * @param version
    */
   public async setVersion(mDB: any, version: number): Promise<void> {
-    const msg = 'SetVersion: ';
+    const msg = 'SetVersion';
     try {
       mDB.pragma(`user_version = '${version}'`);
       return;
@@ -157,8 +172,9 @@ export class UtilsSQLite {
       const errmsg = err.message ? err.message : err;
       return Promise.reject(`${msg} ${errmsg}`);
     } finally {
-      mDB.close();
+      await this.closeDB(mDB);
     }
+    return;
   }
   /**
    * PragmaReKey

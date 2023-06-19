@@ -130,29 +130,25 @@ export class Database {
       }
       return;
     } catch (err) {
-      if (this._isDbOpen) this.close();
+      if (this._isDbOpen) await this.sqliteUtil.closeDB(this.database);
       throw new Error(`Open: ${err}`);
     }
   }
   /**
    * Close
-   * close the @journeyapps/sqlcipher sqlite3 database
+   * close better-sqlite3 database
    * @returns Promise<boolean>
    */
-  async close(): Promise<void> {
+  async dbClose(): Promise<void> {
     this.ensureDatabaseIsOpen();
-
-    return new Promise((resolve, reject) => {
-      this.database.close((err: Error) => {
-        if (err) {
-          reject(new Error(`Close failed: ${this.dbName}  ${err}`));
-          return;
-        }
-
-        this._isDbOpen = false;
-        resolve();
-      });
-    });
+    try {
+      await this.sqliteUtil.closeDB(this.database);  
+    } catch (err) {
+      throw new Error (`Close failed: ${this.dbName}  ${err}`);
+    } finally {
+      this._isDbOpen = false;
+    }
+    return;
   }
   /**
    * ChangeSecret
@@ -182,11 +178,10 @@ export class Database {
 
     try {
       const currentVersion: number = await this.sqliteUtil.getVersion(
-        this.database,
-      );
+                                      this.database);
       return currentVersion;
     } catch (err) {
-      if (this._isDbOpen) this.close();
+      if (this._isDbOpen) await this.sqliteUtil.closeDB(this.database);
       throw new Error(`getVersion: ${err}`);
     }
   }
@@ -212,7 +207,7 @@ export class Database {
 
     // close the database
     try {
-      await this.close();
+      await this.dbClose();
     } catch (err) {
       throw new Error('DeleteDB: Close failed');
     }

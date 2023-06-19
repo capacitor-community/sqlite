@@ -109,11 +109,13 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     const readonly: boolean = options.readonly ? options.readonly : false;
     const connName = readonly ? 'RO_' + dbName : 'RW_' + dbName;
     const database = this.getDatabaseConnectionOrThrowError(connName);
+    console.log(`@@@@@ connName: ${connName}`);
 
     try {
       if (database.isDBOpen()) {
         // close the database
-        await database.close();
+        await database.dbClose();
+        console.log(`@@@@@ after database.dbClose()`);
       }
     } catch (err) {
       throw new Error(
@@ -157,7 +159,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
     if (database.isDBOpen()) {
       try {
-        await database.close();
+        await database.dbClose();
         return;
       } catch (err) {
         throw new Error(`Close: ${err}`);
@@ -510,7 +512,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       // Import the JsonSQLite Object
       const changes = await database.importJson(vJsonObj);
       // Close the database
-      await database.close();
+      await database.dbClose();
       return { changes: { changes: changes } };
     } catch (err) {
       throw new Error(`ImportFromJson: ${err}`);
@@ -841,7 +843,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
    */
   private getDatabaseConnectionOrThrowError(dbName: string): Database {
     const databaseNames = Object.keys(this.databases);
-
+    console.log(`@@@@ this.databases: ${JSON.stringify(this.databases)}`);
     if (!databaseNames.includes(dbName)) {
       throw new Error(`No connection available for database "${dbName}"`);
     }
@@ -960,10 +962,8 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
           "",
           true,
         );
-        await this.sqliteUtil.getVersion(
-          mDB
-        );
-        mDB.close();
+        await this.sqliteUtil.getVersion(mDB);
+        await this.sqliteUtil.closeDB(mDB);
         return Promise.resolve({result: false});
       } catch (error) {
         return Promise.resolve({result: true});
