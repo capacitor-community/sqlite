@@ -1,6 +1,6 @@
 {
   "name": "@capacitor-community/sqlite",
-  "version": "5.0.4-alphabetter.4",
+  "version": "5.0.4-betabetter.0",
   "description": "Community plugin for native & electron SQLite databases",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
