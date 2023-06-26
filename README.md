@@ -5,7 +5,9 @@
 <p align="center" style="font-size:50px;color:red"><strong>CAPACITOR 5</strong></p><br>
 
 <p align="center">
-  Capacitor community plugin for Native and Electron SQLite Databases. In Native databases could be encrypted with SQLCipher
+  Capacitor community plugin for Native and Electron SQLite Databases.
+   - In Native, databases could be encrypted with `SQLCipher`
+   - In Electron, databases could be encrypted with `better-sqlite3-multiple-ciphers`
 </p>
 <br>
 <p align="center">
@@ -165,11 +167,12 @@ You'll need the usual capacitor/android/react npm script to build and copy the a
 
 ```bash
 cd electron
-npm install --save @journeyapps/sqlcipher
-npm install --save sqlite3
+npm install --save better-sqlite3-multiple-ciphers
+npm install --save electron-json-storage
 npm install --save jszip
 npm install --save node-fetch@2.6.7
-npm install --save-dev @types/sqlite3
+npm install --save-dev @types/better-sqlite3
+npm install --save-dev @types/electron-json-storage
 ```
 - **Important**: `node-fetch` version must be `<=2.6.7`; otherwise [you'll get an error](https://github.com/capacitor-community/sqlite/issues/349 "you'll get an error ERR_REQUIRE_ESM") running the app. 
 
@@ -222,7 +225,7 @@ npm install --save-dev @types/sqlite3
 | setEncryptionSecret         | ✅      | ✅  | ✅        | ❌  |
 | changeEncryptionSecret      | ✅      | ✅  | ✅        | ❌  |
 | clearEncryptionSecret       | ✅      | ✅  | ✅        | ❌  |
-| checkEncryptionSecret       | ✅      | ✅  | ❌        | ❌  |
+| checkEncryptionSecret       | ✅      | ✅  | ✅        | ❌  |
 | initWebStore                | ❌      | ❌  | ❌        | ✅  |
 | saveToStore                 | ❌      | ❌  | ❌        | ✅  |
 | getNCDatabasePath           | ✅      | ✅  | ❌        | ❌  |
@@ -319,7 +322,7 @@ npm install --save-dev @types/sqlite3
 
 The iOS and Android codes are using `SQLCipher` allowing for database encryption.
 The iOS codes is using `ZIPFoundation` for unzipping assets files
-The Electron code is using `@journeyapps/sqlcipher` and `node-fetch` from 4.2.0.
+The Electron code is using `better-sqlite3-multiple-ciphers` , `electron-json-storage and `node-fetch`  from 5.0.4.
 The Web code is using the Stencil component `jeep-sqlite` based on `sql.js`, `localforage`. and `jszip`  
 
 ## Contributors ✨

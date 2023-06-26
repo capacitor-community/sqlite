@@ -19,7 +19,8 @@ export class UtilsEncryption {
     if (retB) {
       const tempPath: string = this.fileUtil.getFilePath('temp.db');
       try {
-        await this.fileUtil.renameFilePath(pathDB, tempPath);
+        await this.fileUtil.copyFilePath(pathDB, tempPath, true);
+
         const oDB = await this.sqliteUtil.openOrCreateDatabase(
           tempPath,
           '',
@@ -27,13 +28,14 @@ export class UtilsEncryption {
         );
         const mDB = await this.sqliteUtil.openOrCreateDatabase(
           pathDB,
-          password,
-          false,
+          '',
+          true,
         );
-        await this.sqlcipherEncrypt(oDB, pathDB, password);
-        await this.sqliteUtil.closeDB(oDB);
-        this.fileUtil.deleteFilePath(tempPath);
-        await this.sqliteUtil.closeDB(mDB);
+        this.sqliteUtil.pragmaReKey(oDB,'',password);
+        this.sqliteUtil.closeDB(oDB);
+        this.sqliteUtil.closeDB(mDB);
+        this.fileUtil.deleteFilePath(pathDB);
+        this.fileUtil.renameFilePath(tempPath, pathDB);
         return Promise.resolve();
       } catch (err) {
         return Promise.reject(new Error(`${msg} ${err.message} `));
@@ -50,7 +52,7 @@ export class UtilsEncryption {
    * @param pathDB
    * @param password
    */
-  private async sqlcipherEncrypt(
+/*  private async sqlcipherEncrypt(
     oDB: any,
     pathDB: string,
     password: string,
@@ -64,4 +66,5 @@ export class UtilsEncryption {
     });
     return Promise.resolve();
   }
+  */
 }

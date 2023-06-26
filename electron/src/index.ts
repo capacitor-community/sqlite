@@ -33,6 +33,7 @@ import type {
   capSQLiteVersionUpgrade,
   capVersionResult,
   JsonSQLite,
+  Changes,
 } from '../../src/definitions';
 
 import { GlobalSQLite } from './GlobalSQLite';
@@ -40,6 +41,7 @@ import { Database } from './electron-utils/Database';
 import { UtilsJson } from './electron-utils/ImportExportJson/utilsJson';
 import { UtilsFile } from './electron-utils/utilsFile';
 import { UtilsSQLite } from './electron-utils/utilsSQLite';
+import { UtilsSecret } from './electron-utils/utilsSecret';
 
 export class CapacitorSQLite implements CapacitorSQLitePlugin {
   private versionUpgrades: Record<
@@ -50,6 +52,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   private fileUtil: UtilsFile = new UtilsFile();
   private jsonUtil: UtilsJson = new UtilsJson();
   private sqliteUtil: UtilsSQLite = new UtilsSQLite();
+  private secretUtil: UtilsSecret = new UtilsSecret();
   private globalUtil: GlobalSQLite = new GlobalSQLite();
   private isEncryption: boolean = this.fileUtil.getIsEncryption();
 
@@ -114,7 +117,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     try {
       if (database.isDBOpen()) {
         // close the database
-        await database.dbClose();
+        database.dbClose();
         console.log(`@@@@@ after database.dbClose()`);
       }
     } catch (err) {
@@ -128,7 +131,6 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
     return;
   }
-
   async echo(options: capEchoOptions): Promise<capEchoResult> {
     const echoValue = this.getOptionValue(options, 'value');
 
@@ -159,7 +161,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
     if (database.isDBOpen()) {
       try {
-        await database.dbClose();
+        database.dbClose();
         return;
       } catch (err) {
         throw new Error(`Close: ${err}`);
@@ -234,7 +236,8 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
         throw new Error(`Execute: ${msg}`);
       }
       try {
-        const executeResult: number = await database.executeSQL(
+        console.log(`in index.ts statements`)
+        const executeResult: number = database.executeSQL(
           statements,
           transaction,
         );
@@ -282,12 +285,12 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       }
 
       try {
-        const execSetResult: any = await database.execSet(
+        const execSetResult: Changes = database.execSet(
           setOfStatements,
           transaction,
         );
 
-        if (execSetResult < 0) {
+        if (execSetResult.lastId < 0) {
           throw new Error(`ExecuteSet failed changes <0`);
         } else {
           return { changes: execSetResult };
@@ -323,7 +326,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
         throw new Error(`Run failed: ${msg}`);
       }
       try {
-        const runResult: any = await database.runSQL(
+        const runResult = database.runSQL(
           statement,
           values,
           transaction,
@@ -352,7 +355,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
     if (database.isDBOpen()) {
       try {
-        const queryResult: any[] = await database.selectSQL(statement, values);
+        const queryResult: any[] = database.selectSQL(statement, values);
         return { values: queryResult };
       } catch (err) {
         throw new Error(`Query: ${err}`);
@@ -801,6 +804,127 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       throw new Error(`CheckConnectionsConsistency: ${err}`);
     }
   }
+  async isSecretStored(): Promise<capSQLiteResult> {
+    if(!this.isEncryption) {
+      throw new Error(`isSecretStored: Not available electronIsEncryption = false in capacitor.config.ts`);
+    }
+
+    try {
+      const isStored =  this.secretUtil.isSecretStored();
+      return { result: isStored };
+    } catch (err) {
+      throw new Error(`isSecretStored: ${err}`);
+    }
+  }
+
+  async setEncryptionSecret(options: capSetSecretOptions): Promise<void> {
+    const isEncrypt = this.fileUtil.getIsEncryption();
+    if(!isEncrypt) {
+      throw new Error(`setEncryptionSecret: Not available electronIsEncryption = false in capacitor.config.ts`);
+    }
+    const passphrase = options.passphrase ? options.passphrase : "";
+    if(passphrase.length <= 0) {
+      throw new Error(`setEncryptionSecret: You must give a passphrase`);
+    }
+    try {
+      // check if already exists
+      const isStored = this.secretUtil.isSecretStored();
+      if(isStored) {
+        throw new Error(`setEncryptionSecret: passphrase already in store`);
+      }
+      await this.closeAllConnections();
+      console.log(`setEncryptionSecret after closeAllConnections`);
+      this.secretUtil.setEncryptSecret(passphrase);
+      return;
+    } catch(err) {
+      throw new Error(`setEncryptionSecret: ${err}`);
+    }
+
+  }
+
+  async changeEncryptionSecret(options: capChangeSecretOptions): Promise<void> {
+    const isEncrypt = this.fileUtil.getIsEncryption();
+    if(!isEncrypt) {
+      throw new Error(`changeEncryptionSecret: Not available electronIsEncryption = false in capacitor.config.ts`);
+    }
+    const oldsecret = this.secretUtil.getPassphrase();
+    const oldpassphrase = options.oldpassphrase ? options.oldpassphrase : "";
+    if(oldpassphrase.length <= 0) {
+      throw new Error(`changeEncryptionSecret: You must give the oldpassphrase`);
+    }
+    console.log(`##### oldsecret: ${oldsecret}`)
+    console.log(`##### oldpassphrase: ${oldpassphrase}`)
+    if(oldpassphrase !== oldsecret) {
+      throw new Error(`changeEncryptionSecret: the given oldpassphrase is wrong`);
+    }
+    const passphrase = options.passphrase ? options.passphrase : "";
+    if(passphrase.length <= 0) {
+      throw new Error(`changetEncryptionSecret: You must give a passphrase`);
+    }
+    try {
+      await this.closeAllConnections();
+      this.secretUtil.changeEncryptSecret(oldpassphrase, passphrase);
+      return;
+    } catch(err) {
+      throw new Error(`changetEncryptionSecret: ${err}`);
+    }
+  }
+
+  async clearEncryptionSecret(): Promise<void> {
+    const isEncrypt = this.fileUtil.getIsEncryption();
+    if(!isEncrypt) {
+      throw new Error(`clearEncryptionSecret: Not available electronIsEncryption = false in capacitor.config.ts`);
+    }
+    if(this.globalUtil == null) {
+      throw new Error(`clearEncryptionSecret: No available globalUtil`);
+    }
+    try {
+      await this.closeAllConnections();
+      this.secretUtil.clearEncryptSecret();
+      return;
+    } catch(err) {
+      throw new Error(`clearEncryptionSecret: ${err}`);
+    }
+  }
+
+  async isInConfigEncryption(): Promise<capSQLiteResult> {
+    return Promise.resolve({result: this.isEncryption});
+  }
+
+  async isDatabaseEncrypted(
+    options: capSQLiteOptions,
+  ): Promise<capSQLiteResult> {
+    const dbName: string = this.getOptionValue(options, 'database');
+    try {
+      const isEncrypt: boolean = this.sqliteUtil.isDatabaseEncrypted(dbName + 'SQLite.db');
+      return {result: isEncrypt};
+    } catch(err) {
+      throw new Error(`isDatabaseEncrypted: ${err}`);
+    }
+  }
+  async checkEncryptionSecret(
+    options: capSetSecretOptions,
+  ): Promise<capSQLiteResult> {
+    const isEncrypt = this.fileUtil.getIsEncryption();
+    if(!isEncrypt) {
+      throw new Error(`checkEncryptionSecret: Not available electronIsEncryption = false in capacitor.config.ts`);
+    }
+    const passphrase = options.passphrase ? options.passphrase : "";
+    if(passphrase.length <= 0) {
+      throw new Error(`checkEncryptionSecret: You must give a passphrase`);
+    }
+    try {
+      await this.closeAllConnections();
+      const isSame: boolean = this.secretUtil.checkEncryptSecret(passphrase);
+      return {result: isSame};
+    } catch(err) {
+      throw new Error(`checkEncryptionSecret: ${err}`);
+    }
+  }
+
+  ////////////////////////////////
+  //// PRIVATE METHODS
+  ////////////////////////////////
 
   private async resetDbDict(keys: string[]): Promise<void> {
     try {
@@ -843,7 +967,6 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
    */
   private getDatabaseConnectionOrThrowError(dbName: string): Database {
     const databaseNames = Object.keys(this.databases);
-    console.log(`@@@@ this.databases: ${JSON.stringify(this.databases)}`);
     if (!databaseNames.includes(dbName)) {
       throw new Error(`No connection available for database "${dbName}"`);
     }
@@ -879,97 +1002,20 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     return options[optionKey];
   }
 
-  async isSecretStored(): Promise<capSQLiteResult> {
-    if(!this.isEncryption) {
-      return Promise.reject(`isSecretStored: Not available electronIsEncryption = false in capacitor.config.ts`);
-    }
-
-    if (this.globalUtil != null) {
-      let capSQLiteResult = { result: false };
-      if (
-        this.globalUtil?.secret != null &&
-        this.globalUtil.secret !== 'sqlite secret'
-      ) {
-        capSQLiteResult = { result: true };
+  private async closeAllConnections() : Promise<void> {
+    const databaseNames = Object.keys(this.databases);
+    try {
+      for(const name of databaseNames) {
+        const db = this.databases[name];
+        if(db.isDBOpen()) {
+          db.dbClose();
+        }
       }
-      return Promise.resolve(capSQLiteResult);
-    } else {
-      return Promise.reject(`isSecretStored: Failed check Secret.`);
-    }
-  }
-
-  async setEncryptionSecret(options: capSetSecretOptions): Promise<void> {
-    if(!this.isEncryption) {
-      return Promise.reject(`setEncryptionSecret: Not available electronIsEncryption = false in capacitor.config.ts`);
-    }
-    if (this.globalUtil != null) {
-      this.globalUtil.secret = options.passphrase;
-      Promise.resolve();
-    } else {
-      return Promise.reject(`setEncryptionSecret: Failed to set Secret.`);
-    }
-  }
-
-  async changeEncryptionSecret(options: capChangeSecretOptions): Promise<void> {
-    if(!this.isEncryption) {
-      return Promise.reject(`changeEncryptionSecret: Not available electronIsEncryption = false in capacitor.config.ts`);
-    }
-    if (this.globalUtil != null) {
-      this.globalUtil.secret = options.oldpassphrase;
-      this.globalUtil.newsecret = options.passphrase;
-
-      // get the database folder
-      const pathDatabase = this.fileUtil.getDatabasesPath();
-      // get the list of databases
-      const files: string[] = await this.fileUtil.getFileList(pathDatabase);
-
-      files.forEach(dbName => {
-        const connName = 'RW_' + dbName;
-        const database = this.getDatabaseConnectionOrThrowError(connName);
-        database.changeSecret();
-      });
-    } else {
-      return Promise.reject(`changeEncryptionSecret: Failed to change Secret.`);
-    }
-  }
-
-  async clearEncryptionSecret(): Promise<void> {
-    if(!this.isEncryption) {
-      return Promise.reject(`clearEncryptionSecret: Not available electronIsEncryption = false in capacitor.config.ts`);
-    }
-    if (this.globalUtil != null) {
-      this.globalUtil.secret = '';
-      Promise.resolve();
-    } else {
-      return Promise.reject(`clearEncryptionSecret: Failed to clear Secret.`);
-    }
-  }
-
-  async isInConfigEncryption(): Promise<capSQLiteResult> {
-    return Promise.resolve({result: this.isEncryption});
-  }
-
-  async isDatabaseEncrypted(
-    options: capSQLiteOptions,
-  ): Promise<capSQLiteResult> {
-    const dbName: string = this.getOptionValue(options, 'database');
-    const isExists: boolean = this.fileUtil.isFileExists(dbName + 'SQLite.db');
-    if(isExists) {
-      const filePath = this.fileUtil.getFilePath(dbName + 'SQLite.db');
-      try {
-        const mDB = await this.sqliteUtil.openOrCreateDatabase(
-          filePath,
-          "",
-          true,
-        );
-        await this.sqliteUtil.getVersion(mDB);
-        await this.sqliteUtil.closeDB(mDB);
-        return Promise.resolve({result: false});
-      } catch (error) {
-        return Promise.resolve({result: true});
-      }
-    } else {
-      return Promise.reject(`isDatabaseEncryptedt: Database ${dbName} does not exist`);
+      return;
+    } catch (err) {
+      throw new Error(
+        `CloseAllConnection command failed: ${err.message}`,
+      );
     }
   }
 
@@ -1021,13 +1067,6 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     options: capSQLiteLocalDiskOptions,
   ): Promise<void> {
     console.log(`${JSON.stringify(options)}`);
-    throw new Error('Method not implemented.');
-  }
-
-  async checkEncryptionSecret(
-    options: capSetSecretOptions,
-  ): Promise<capSQLiteResult> {
-    console.log('checkEncryptionSecret', options);
     throw new Error('Method not implemented.');
   }
 

@@ -1,4 +1,4 @@
-import type { JsonSQLite } from '../../../../src/definitions';
+import type { JsonSQLite, Changes } from '../../../../src/definitions';
 import { UtilsDrop } from '../utilsDrop';
 import { UtilsSQLite } from '../utilsSQLite';
 
@@ -13,45 +13,45 @@ export class ImportFromJson {
    * @param mDB
    * @param jsonData
    */
-  public async createDatabaseSchema(
+  public createDatabaseSchema(
     mDB: any,
     jsonData: JsonSQLite,
-  ): Promise<number> {
+  ): number {
     let changes = -1;
     const version: number = jsonData.version;
     try {
       // set User Version PRAGMA
-      await this.sqliteUtil.setVersion(mDB, version);
+      this.sqliteUtil.setVersion(mDB, version);
       // DROP ALL when mode="full"
       if (jsonData.mode === 'full') {
-        await this.dropUtil.dropAll(mDB);
+        this.dropUtil.dropAll(mDB);
       }
       // create database schema
-      changes = await this.jsonUtil.createSchema(mDB, jsonData);
-      return Promise.resolve(changes);
+      changes = this.jsonUtil.createSchema(mDB, jsonData);
+      return changes;
     } catch (err) {
-      return Promise.reject('CreateDatabaseSchema: ' + `${err}`);
+      throw new Error ('CreateDatabaseSchema: ' + `${err}`);
     }
   }
-  public async createTablesData(
+  public createTablesData(
     mDB: any,
     jsonData: JsonSQLite,
-  ): Promise<number> {
+  ): number {
     const msg = 'CreateTablesData'
-    let results: {changes:number, lastId:number};
+    let results: Changes;
     let isValue = false;
     let message = '';
     try {
       // start a transaction
-      await this.sqliteUtil.beginTransaction(mDB, true);
+      this.sqliteUtil.beginTransaction(mDB, true);
     } catch (err) {
-      return Promise.reject(`${msg} ${err}`);
+      throw new Error (`${msg} ${err}`);
     }
     for (const jTable of jsonData.tables) {
       if (jTable.values != null && jTable.values.length >= 1) {
         // Create the table's data
         try {
-          results = await this.jsonUtil.createDataTable(
+          results = this.jsonUtil.createDataTable(
             mDB,
             jTable,
             jsonData.mode,
@@ -67,22 +67,22 @@ export class ImportFromJson {
     }
     if (isValue) {
       try {
-        await this.sqliteUtil.commitTransaction(mDB, true);
-        return Promise.resolve(results.changes);
+        this.sqliteUtil.commitTransaction(mDB, true);
+        return results.changes;
       } catch (err) {
-        return Promise.reject(`${msg} ${err}`);
+        throw new Error (`${msg} ${err}`);
       }
     } else {
       if (message.length > 0) {
         try {
-          await this.sqliteUtil.rollbackTransaction(mDB, true);
-          return Promise.reject(new Error(`${msg} ${message}`));
+          this.sqliteUtil.rollbackTransaction(mDB, true);
+          throw new Error (`${msg} ${message}`);
         } catch (err) {
-          return Promise.reject(`${msg} ${err}: ${message}`);
+          throw new Error (`${msg} ${err}: ${message}`);
         }
       } else {
         // case were no values given
-        return Promise.resolve(0);
+        return 0;
       }
     }
   }
@@ -91,22 +91,22 @@ export class ImportFromJson {
    * @param mDB
    * @param jsonData
    */
-  public async createViews(mDB: any, jsonData: JsonSQLite): Promise<number> {
+  public createViews(mDB: any, jsonData: JsonSQLite): number {
     const msg = 'CreateViews';
     let isView = false;
     let message = '';
-    let results: {changes:number,lastId: number};
+    let results: Changes;
     try {
       // start a transaction
-      await this.sqliteUtil.beginTransaction(mDB, true);
+      this.sqliteUtil.beginTransaction(mDB, true);
     } catch (err) {
-      return Promise.reject(`${msg} ${err}`);
+      throw new Error (`${msg} ${err}`);
     }
     for (const jView of jsonData.views) {
       if (jView.value != null) {
         // Create the view
         try {
-          results = await this.jsonUtil.createView(mDB, jView);
+          results = this.jsonUtil.createView(mDB, jView);
           isView = true;
         } catch (err) {
           message = err;
@@ -117,22 +117,22 @@ export class ImportFromJson {
     }
     if (isView) {
       try {
-        await this.sqliteUtil.commitTransaction(mDB, true);
-        return Promise.resolve(results.changes);
+        this.sqliteUtil.commitTransaction(mDB, true);
+        return results.changes;
       } catch (err) {
-        return Promise.reject(`${msg} ${err}`);
+        throw new Error (`${msg} ${err}`);
       }
     } else {
       if (message.length > 0) {
         try {
-          await this.sqliteUtil.rollbackTransaction(mDB, true);
-          return Promise.reject(new Error(`${msg} ${message}`));
+          this.sqliteUtil.rollbackTransaction(mDB, true);
+          throw new Error (`${msg} ${message}`);
         } catch (err) {
-          return Promise.reject(`${msg} ${err}: ${message}`);
+          throw new Error (`${msg} ${err}: ${message}`);
         }
       } else {
         // case were no views given
-        return Promise.resolve(0);
+        return 0;
       }
     }
   }

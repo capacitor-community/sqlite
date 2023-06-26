@@ -1,6 +1,7 @@
 import type {
   capSQLiteVersionUpgrade,
   JsonSQLite,
+  Changes,
 } from '../../../src/definitions';
 import { GlobalSQLite } from '../GlobalSQLite';
 
@@ -10,6 +11,7 @@ import { UtilsJson } from './ImportExportJson/utilsJson';
 import { UtilsEncryption } from './utilsEncryption';
 import { UtilsFile } from './utilsFile';
 import { UtilsSQLite } from './utilsSQLite';
+import { UtilsSecret } from './utilsSecret';
 import { UtilsUpgrade } from './utilsUpgrade';
 
 export class Database {
@@ -25,6 +27,7 @@ export class Database {
   private jsonUtil: UtilsJson = new UtilsJson();
   private globalUtil: GlobalSQLite = new GlobalSQLite();
   private encryptionUtil: UtilsEncryption = new UtilsEncryption();
+  private secretUtil: UtilsSecret = new UtilsSecret();
   private upgradeUtil: UtilsUpgrade = new UtilsUpgrade();
   private importFromJsonUtil: ImportFromJson = new ImportFromJson();
   private exportToJsonUtil: ExportToJson = new ExportToJson();
@@ -65,7 +68,7 @@ export class Database {
   }
   /**
    * Open
-   * open the @journeyapps/sqlcipher sqlite3 database
+   * open the better-sqlite3 database
    * @returns Promise<boolean>
    */
   async open(): Promise<void> {
@@ -76,27 +79,23 @@ export class Database {
         this._encrypted &&
         (this._mode === 'secret' || this._mode === 'encryption')
       ) {
-        password = this.globalUtil.secret;
+        password = this.secretUtil.getPassphrase();
+        if (password.length <= 0) {
+          password = this.globalUtil.secret;
+        }
       }
-      if (this._mode === 'newsecret') {
-        // change the password
-        const oPassword: string = this.globalUtil.secret;
-        const nPassword: string = this.globalUtil.newsecret;
-        await this.sqliteUtil.changePassword(this.pathDB, oPassword, nPassword);
-        password = nPassword;
-      }
-
+      
       if (this._mode === 'encryption') {
         await this.encryptionUtil.encryptDatabase(this.pathDB, password);
       }
-      this.database = await this.sqliteUtil.openOrCreateDatabase(
+      this.database = this.sqliteUtil.openOrCreateDatabase(
         this.pathDB,
         password,
         this.readonly,
       );
       this._isDbOpen = true;
       if (!this.readonly) {
-        const curVersion: number = await this.sqliteUtil.getVersion(
+        const curVersion: number = this.sqliteUtil.getVersion(
           this.database,
         );
         if (
@@ -130,7 +129,7 @@ export class Database {
       }
       return;
     } catch (err) {
-      if (this._isDbOpen) await this.sqliteUtil.closeDB(this.database);
+      if (this._isDbOpen) this.sqliteUtil.closeDB(this.database);
       throw new Error(`Open: ${err}`);
     }
   }
@@ -139,10 +138,10 @@ export class Database {
    * close better-sqlite3 database
    * @returns Promise<boolean>
    */
-  async dbClose(): Promise<void> {
+  dbClose(): void {
     this.ensureDatabaseIsOpen();
     try {
-      await this.sqliteUtil.closeDB(this.database);  
+      this.sqliteUtil.closeDB(this.database);  
     } catch (err) {
       throw new Error (`Close failed: ${this.dbName}  ${err}`);
     } finally {
@@ -161,7 +160,7 @@ export class Database {
         // change the password
         const oPassword: string = this.globalUtil.secret;
         const nPassword: string = this.globalUtil.newsecret;
-        await this.sqliteUtil.changePassword(this.pathDB, oPassword, nPassword);
+        this.sqliteUtil.changePassword(this.pathDB, oPassword, nPassword);
       }
       return;
     } catch (err) {
@@ -173,15 +172,15 @@ export class Database {
    * get the database version
    * @returns Promise<number>
    */
-  async getVersion(): Promise<number> {
+  getVersion(): number {
     this.ensureDatabaseIsOpen();
 
     try {
-      const currentVersion: number = await this.sqliteUtil.getVersion(
+      const currentVersion: number = this.sqliteUtil.getVersion(
                                       this.database);
       return currentVersion;
     } catch (err) {
-      if (this._isDbOpen) await this.sqliteUtil.closeDB(this.database);
+      if (this._isDbOpen) this.sqliteUtil.closeDB(this.database);
       throw new Error(`getVersion: ${err}`);
     }
   }
@@ -207,7 +206,7 @@ export class Database {
 
     // close the database
     try {
-      await this.dbClose();
+      this.dbClose();
     } catch (err) {
       throw new Error('DeleteDB: Close failed');
     }
@@ -228,13 +227,13 @@ export class Database {
    * @param tableName
    * @returns
    */
-  async isTableExists(tableName: string): Promise<boolean> {
+  isTableExists(tableName: string): boolean {
     this.ensureDatabaseIsOpen();
 
     const isOpen: boolean = this._isDbOpen;
 
     try {
-      const tableExistsResult = await this.jsonUtil.isTableExists(
+      const tableExistsResult = this.jsonUtil.isTableExists(
         this.database,
         isOpen,
         tableName,
@@ -249,24 +248,24 @@ export class Database {
    * create the synchronization table
    * @returns Promise<number>
    */
-  async createSyncTable(): Promise<number> {
+  createSyncTable(): number {
     this.ensureDatabaseIsOpen();
 
     let changes = -1;
     const isOpen = this._isDbOpen;
     // check if the table has already being created
     try {
-      const retB = await this.jsonUtil.isTableExists(
+      const retB = this.jsonUtil.isTableExists(
         this.database,
         isOpen,
         'sync_table',
       );
       if (!retB) {
-        const isLastModified = await this.sqliteUtil.isLastModified(
+        const isLastModified = this.sqliteUtil.isLastModified(
           this.database,
           isOpen,
         );
-        const isSqlDeleted = await this.sqliteUtil.isSqlDeleted(
+        const isSqlDeleted = this.sqliteUtil.isSqlDeleted(
           this.database,
           isOpen,
         );
@@ -278,8 +277,9 @@ export class Database {
                               sync_date INTEGER
                               );`;
           stmts += `INSERT INTO sync_table (sync_date) VALUES (
-                              "${date}");`;
-          const results = await this.sqliteUtil.execute(this.database, stmts, false);
+                              ${date});`;
+          const results = this.sqliteUtil.execute(this.database, stmts, false);
+          changes = results.changes;
           if (results.changes < 0) {
             throw new Error(`CreateSyncTable: failed changes < 0`);
           }
@@ -300,11 +300,11 @@ export class Database {
    * @param syncDate: string
    * @returns Promise<{result: boolean, message: string}>
    */
-  async setSyncDate(syncDate: string): Promise<any> {
+  setSyncDate(syncDate: string): any {
     this.ensureDatabaseIsOpen();
 
     try {
-      const isTable = await this.jsonUtil.isTableExists(
+      const isTable = this.jsonUtil.isTableExists(
         this.database,
         this._isDbOpen,
         'sync_table',
@@ -318,7 +318,7 @@ export class Database {
       let stmt = `UPDATE sync_table SET sync_date = `;
       stmt += `${syncDateUnixTimestamp} WHERE id = 1;`;
 
-      const results = await this.sqliteUtil.execute(
+      const results = this.sqliteUtil.execute(
         this.database,
         stmt,
         false,
@@ -338,11 +338,11 @@ export class Database {
    * store the synchronization date
    * @returns Promise<{syncDate: number, message: string}>
    */
-  async getSyncDate(): Promise<any> {
+  getSyncDate(): any {
     this.ensureDatabaseIsOpen();
 
     try {
-      const isTable = await this.jsonUtil.isTableExists(
+      const isTable = this.jsonUtil.isTableExists(
         this.database,
         this._isDbOpen,
         'sync_table',
@@ -350,7 +350,7 @@ export class Database {
       if (!isTable) {
         throw new Error('No sync_table available');
       }
-      const syncDate: number = await this.exportToJsonUtil.getSyncDate(
+      const syncDate: number = this.exportToJsonUtil.getSyncDate(
         this.database,
       );
       if (syncDate > 0) {
@@ -369,26 +369,25 @@ export class Database {
    * @param sql: string
    * @returns Promise<number>
    */
-  async executeSQL(sql: string, transaction: boolean): Promise<number> {
+  executeSQL(sql: string, transaction: boolean): number {
     this.ensureDatabaseIsOpen();
 
     try {
       if (transaction) {
-        const mode: string = await this.sqliteUtil.getJournalMode(
+        const mode: string = this.sqliteUtil.getJournalMode(
           this.database,
         );
         console.log(`$$$ in executeSQL journal_mode: ${mode} $$$`);
-        await this.sqliteUtil.beginTransaction(this.database, this._isDbOpen);
+        this.sqliteUtil.beginTransaction(this.database, this._isDbOpen);
       }
-
-      const results = await this.sqliteUtil.execute(this.database, sql, false);
+      const results = this.sqliteUtil.execute(this.database, sql, false);
 
       if (results.changes < 0) {
         throw new Error('ExecuteSQL: changes < 0');
       }
 
       if (transaction) {
-        await this.sqliteUtil.commitTransaction(this.database, this._isDbOpen);
+        this.sqliteUtil.commitTransaction(this.database, this._isDbOpen);
       }
 
       return results.changes;
@@ -396,7 +395,7 @@ export class Database {
       let message = `${executeError}`;
       try {
         if (transaction) {
-          await this.sqliteUtil.rollbackTransaction(
+          this.sqliteUtil.rollbackTransaction(
             this.database,
             this._isDbOpen,
           );
@@ -414,11 +413,11 @@ export class Database {
    * @param values: string[]
    * @returns Promise<any[]>
    */
-  async selectSQL(sql: any, values: any[]): Promise<any[]> {
+  selectSQL(sql: any, values: any[]): any[] {
     this.ensureDatabaseIsOpen();
 
     try {
-      const selectResult = await this.sqliteUtil.queryAll(
+      const selectResult = this.sqliteUtil.queryAll(
         this.database,
         sql,
         values,
@@ -435,28 +434,28 @@ export class Database {
    * @param values: string[]
    * @returns Promise<{changes:number, lastId:number}>
    */
-  async runSQL(
+  runSQL(
     statement: string,
     values: any[],
     transaction: boolean,
-  ): Promise<any> {
+  ): Changes {
     this.ensureDatabaseIsOpen();
 
 
     try {
       // start a transaction
       if (transaction) {
-        const mode: string = await this.sqliteUtil.getJournalMode(
+        const mode: string = this.sqliteUtil.getJournalMode(
           this.database,
         );
         console.log(`$$$ in runSQL journal_mode: ${mode} $$$`);
-        await this.sqliteUtil.beginTransaction(this.database, this._isDbOpen);
+        this.sqliteUtil.beginTransaction(this.database, this._isDbOpen);
       }
     } catch (err) {
       throw new Error(`RunSQL: ${err}`);
     }
     try {
-      const results = await this.sqliteUtil.prepareRun(
+      const results = this.sqliteUtil.prepareRun(
         this.database,
         statement,
         values,
@@ -464,7 +463,7 @@ export class Database {
       );
       if (results.lastId < 0) {
         if (transaction) {
-          await this.sqliteUtil.rollbackTransaction(
+          this.sqliteUtil.rollbackTransaction(
             this.database,
             this._isDbOpen,
           );
@@ -473,12 +472,12 @@ export class Database {
         throw new Error(`RunSQL: return LastId < 0`);
       }
       if (transaction) {
-        await this.sqliteUtil.commitTransaction(this.database, this._isDbOpen);
+        this.sqliteUtil.commitTransaction(this.database, this._isDbOpen);
       }
       return results;
     } catch (err) {
       if (transaction) {
-        await this.sqliteUtil.rollbackTransaction(
+        this.sqliteUtil.rollbackTransaction(
           this.database,
           this._isDbOpen,
         );
@@ -493,31 +492,31 @@ export class Database {
    * @param set: any[]
    * @returns Promise<{changes:number, lastId:number}>
    */
-  async execSet(set: any[], transaction: boolean): Promise<any> {
+  execSet(set: any[], transaction: boolean): Changes {
     this.ensureDatabaseIsOpen();
 
-    let results: any = { changes: 0, lastId: -1 };
+    let results: Changes = { changes: 0, lastId: -1 };
     try {
 
       // start a transaction
       if (transaction) {
-        const mode: string = await this.sqliteUtil.getJournalMode(
+        const mode: string = this.sqliteUtil.getJournalMode(
           this.database,
         );
         console.log(`$$$ in execSet journal_mode: ${mode} $$$`);
-        await this.sqliteUtil.beginTransaction(this.database, this._isDbOpen);
+        this.sqliteUtil.beginTransaction(this.database, this._isDbOpen);
       }
     } catch (err) {
       throw new Error(`ExecSet: ${err}`);
     }
     try {
-      results = await this.sqliteUtil.executeSet(
+      results = this.sqliteUtil.executeSet(
         this.database,
         set,
         false,
       );
       if (transaction) {
-        await this.sqliteUtil.commitTransaction(this.database, this._isDbOpen);
+        this.sqliteUtil.commitTransaction(this.database, this._isDbOpen);
       }
 
       return results;
@@ -526,7 +525,7 @@ export class Database {
 
       try {
         if (transaction) {
-          await this.sqliteUtil.rollbackTransaction(
+          this.sqliteUtil.rollbackTransaction(
             this.database,
             this._isDbOpen,
           );
@@ -536,10 +535,10 @@ export class Database {
       }
     }
   }
-  async deleteExportedRows(): Promise<void> {
+  deleteExportedRows(): void {
     this.ensureDatabaseIsOpen();
     try {
-      await this.exportToJsonUtil.delExportedRows(this.database);
+      this.exportToJsonUtil.delExportedRows(this.database);
       return;
     } catch (err) {
       throw new Error(`DeleteExportedRows: ${err}`);
@@ -550,37 +549,37 @@ export class Database {
    * get the table's list
    * @returns
    */
-  public async getTableList(): Promise<any[]> {
+  public getTableList(): any[] {
     this.ensureDatabaseIsOpen();
 
     try {
-      const tableNames = await this.sqliteUtil.getTablesNames(this.database);
+      const tableNames = this.sqliteUtil.getTablesNames(this.database);
       return tableNames;
     } catch (err) {
       throw new Error(`GetTableList: ${err}`);
     }
   }
 
-  public async importJson(jsonData: JsonSQLite): Promise<number> {
+  public importJson(jsonData: JsonSQLite): number {
     let changes = 0;
     this.ensureDatabaseIsOpen();
 
     try {
       // set Foreign Keys Off
-      await this.sqliteUtil.setForeignKeyConstraintsEnabled(
+      this.sqliteUtil.setForeignKeyConstraintsEnabled(
         this.database,
         false,
       );
       if (jsonData.tables && jsonData.tables.length > 0) {
         // create the database schema
-        changes = await this.importFromJsonUtil.createDatabaseSchema(
+        changes = this.importFromJsonUtil.createDatabaseSchema(
           this.database,
           jsonData,
         );
 
         if (changes != -1) {
           // create the tables data
-          changes += await this.importFromJsonUtil.createTablesData(
+          changes += this.importFromJsonUtil.createTablesData(
             this.database,
             jsonData,
           );
@@ -588,13 +587,13 @@ export class Database {
       }
       if (jsonData.views && jsonData.views.length > 0) {
         // create the views
-        changes += await this.importFromJsonUtil.createViews(
+        changes += this.importFromJsonUtil.createViews(
           this.database,
           jsonData,
         );
       }
       // set Foreign Keys On
-      await this.sqliteUtil.setForeignKeyConstraintsEnabled(
+      this.sqliteUtil.setForeignKeyConstraintsEnabled(
         this.database,
         true,
       );
@@ -605,7 +604,7 @@ export class Database {
     }
   }
 
-  public async exportJson(mode: string): Promise<any> {
+  public exportJson(mode: string): any {
     const inJson: JsonSQLite = {} as JsonSQLite;
     inJson.database = this.dbName.slice(0, -9);
     inJson.version = this.version;
@@ -614,19 +613,19 @@ export class Database {
     this.ensureDatabaseIsOpen();
 
     try {
-      const isTable = await this.jsonUtil.isTableExists(
+      const isTable = this.jsonUtil.isTableExists(
         this.database,
         this._isDbOpen,
         'sync_table',
       );
       if (isTable) {
-        await this.exportToJsonUtil.setLastExportDate(
+        this.exportToJsonUtil.setLastExportDate(
           this.database,
           new Date().toISOString(),
         );
       }
       const jsonResult: JsonSQLite =
-        await this.exportToJsonUtil.createExportObject(this.database, inJson);
+        this.exportToJsonUtil.createExportObject(this.database, inJson);
       const keys = Object.keys(jsonResult);
       if (keys.length === 0) {
         const msg =
