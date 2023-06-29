@@ -265,6 +265,8 @@ npm install --save-dev @types/electron-json-storage
 
 - [Enable SQLite Schema Error Syntax Highlighting](https://github.com/capacitor-community/sqlite/blob/master/docs/SyntaxScanner-For-SQLite-Code.md)
 
+- [Electron Better SQLite3](https://github.com/capacitor-community/sqlite/blob/master/docs/ElectronBetterSQLite3.md)
+
 ## Applications demonstrating the use of the plugin and related documentation
 
 ### Ionic/Angular

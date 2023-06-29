@@ -1,3 +1,14 @@
+# 5.0.4 (2023-06-29)
+
+### Removed Features
+
+ - Electron Plugin: Remove `@journeyapps/sqlcipher` and `sqlite3` packages
+
+### Added
+
+ - Electron Plugin: Add `better-sqlite3-multiple-ciphers` package
+ - Electron Plugin: Add `electron-json-storage` package to store the passphrase for database encryption
+
 # 5.0.3 (2023-06-16)
 
 ### Added Features
