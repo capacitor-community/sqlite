@@ -947,13 +947,13 @@ export class UtilsSQLite {
       throw new Error(`${msg} ${errmsg}`);
     }
   }
-  public isDatabaseEncrypted(dbName: string): boolean {
+  public async isDatabaseEncrypted(dbName: string): Promise<boolean> {
     const msg = "isDatabaseEncrypted";
     try {
       const isExists: boolean = this.fileUtil.isFileExists(dbName);
       if(isExists) {
-        const filePath = this.fileUtil.getFilePath(dbName + 'SQLite.db');
-        return this.isDBEncrypted(filePath);
+        const filePath = this.fileUtil.getFilePath(dbName);
+        return await this.isDBEncrypted(filePath);
       } else {
         throw new Error(`${msg}: Database ${dbName} does not exist`);
       }
@@ -964,16 +964,11 @@ export class UtilsSQLite {
     }
 
   }
-  public isDBEncrypted(filePath: string): boolean {
+  public async isDBEncrypted(filePath: string): Promise<boolean> {
     try {
-      const mDB = this.openOrCreateDatabase(
-        filePath,
-        "",
-        true,
-      );
-      this.getVersion(mDB);
-      this.closeDB(mDB);
-      return false;
+      const retStr = await this.fileUtil.readFileAsPromise(filePath, {start:0, end:12});
+      if (retStr === 'SQLite format') return false;
+      else return true;
     } catch (error) {
       return true;
     }
@@ -1032,5 +1027,4 @@ export class UtilsSQLite {
     }
     return retStmt;
   }
-
 }

@@ -53,7 +53,6 @@ export class UtilsFile {
     this.isEncryption = this.capConfig.plugins.CapacitorSQLite.electronIsEncryption
                         ? this.capConfig.plugins.CapacitorSQLite.electronIsEncryption
                         : false;
-    console.log(`$$$$$$ this.isEncryption: ${this.isEncryption} $$$$$$`);
     this.osType = this.Os.type();
     switch (this.osType) {
       case 'Darwin':
@@ -84,7 +83,6 @@ export class UtilsFile {
    * @returns 
    */ 
   public getIsEncryption(): boolean {
-    console.log(`>>>>>> getIsEncryption this.isEncryption: ${this.isEncryption} >>>>>>`);
     return this.isEncryption;
   }
   /**
@@ -598,6 +596,26 @@ export class UtilsFile {
       fileStream.on('finish', resolve);
     });
   }
+  public readFileAsPromise(path: string, options: {start: number, end: number}): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const fileStream = this.NodeFs.createReadStream(path, options);
+  
+      const chunks: any[] = [];
+      fileStream.on('data', (data: any) => {
+        chunks.push(data);
+      });
+  
+      fileStream.on('close', () => {
+        resolve(chunks.toString());
+      });
+  
+      fileStream.on('error', (err:any) => {
+        const msg = err.message ? err.message : err;
+        reject(msg);
+      });
+    });
+  }
+  
   /**
    * CreateFolderIfNotExists
    * Create directory

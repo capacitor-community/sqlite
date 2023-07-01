@@ -19,7 +19,6 @@ export class UtilsSecret {
     public setEncryptSecret(passphrase: string): void {
         try {
             let oldpassphrase = this.getPassphrase();
-            console.log(`>>>> setEncryptSecret oldpassphrase: ${oldpassphrase}`)
             if(oldpassphrase.length > 0 ) {
                 throw new Error(`setEncryptSecret: passphrase already stored`);
             } else {
@@ -27,7 +26,6 @@ export class UtilsSecret {
                 if(oldpassphrase.length <= 0 ) {
                     throw new Error(`setEncryptSecret: globalUtil is null`);
                 }
-                console.log(`>>>> setEncryptSecret oldpassphrase: ${oldpassphrase}, passphrase ${passphrase}`)
                 // check if some databases were encrypted with the initial secret 'sqlite secret'
                 this.changeDatabaseSecret(oldpassphrase, passphrase).then(() => {
 
@@ -82,20 +80,13 @@ export class UtilsSecret {
     }
     private async changeDatabaseSecret(oldpassphrase: string, newpassphrase: string): Promise<void> {
         try {
-            console.log(`>>> changeDatabaseSecret oldpassphrase: ${oldpassphrase}`);
-            console.log(`>>> changeDatabaseSecret newpassphrase: ${newpassphrase}`);
             // get the database folder
             const pathDatabase = this.fileUtil.getDatabasesPath();
-            console.log(`>>> changeDatabaseSecret pathDatabase: ${pathDatabase}`);
             // get the list of databases
             const files: string[] = await this.fileUtil.getFileList(pathDatabase);
-            console.log(`>>> changeDatabaseSecret files: ${files}`);
-            files.forEach(dbName => {
-                console.log(`>>> changeDatabaseSecret dbName: ${dbName}`);
+            files.forEach(async dbName => {
                 const filePath = this.fileUtil.getFilePath(dbName);
-                console.log(`>>> changeDatabaseSecret filePath: ${filePath}`);
-                const isEncrypt: boolean = this.sqliteUtil.isDBEncrypted(filePath);
-                console.log(`>>> changeDatabaseSecret isEncrypt: ${isEncrypt}`);
+                const isEncrypt: boolean = await this.sqliteUtil.isDBEncrypted(filePath);
                 if(isEncrypt) {
 
                     this.sqliteUtil.changePassword(filePath, oldpassphrase, newpassphrase);
@@ -108,7 +99,6 @@ export class UtilsSecret {
     }
     public getPassphrase(): string {
         const data = this.storage.getSync('userData');
-        console.log(`>>>>>> data: `, data)
         const keys = Object.keys(data);
         if(data == null || keys.length <= 0) return "";
         if (Object.keys(data).includes('passphrase')) {
@@ -120,7 +110,6 @@ export class UtilsSecret {
     public setPassphrase(passphrase: string): void {
         const data = this.storage.getSync('userData');
         data.passphrase = passphrase;
-        console.log(`>>>>>> set data: `, data)
         this.storage.set('userData', data,function (error:any) {
             if(error) throw new Error(`setPassphrase: ${error.message}`);
         });
@@ -128,7 +117,6 @@ export class UtilsSecret {
     public removePassphrase(): void {
         const data = this.storage.getSync('userData');
         delete data.passphrase;
-        console.log(`>>>>>> set data: `, data)
         this.storage.set('userData', data,function (error:any) {
             if(error) throw new Error(`removePassphrase: ${error.message}`);
         });

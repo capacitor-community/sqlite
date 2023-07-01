@@ -62,7 +62,6 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     if (!optionKeys.includes('database')) {
       throw new Error('Must provide a database name');
     }
-
     const dbName: string = options.database;
     const version: number = options.version ? options.version : 1;
 
@@ -112,13 +111,11 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     const readonly: boolean = options.readonly ? options.readonly : false;
     const connName = readonly ? 'RO_' + dbName : 'RW_' + dbName;
     const database = this.getDatabaseConnectionOrThrowError(connName);
-    console.log(`@@@@@ connName: ${connName}`);
 
     try {
       if (database.isDBOpen()) {
         // close the database
         database.dbClose();
-        console.log(`@@@@@ after database.dbClose()`);
       }
     } catch (err) {
       throw new Error(
@@ -236,7 +233,6 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
         throw new Error(`Execute: ${msg}`);
       }
       try {
-        console.log(`in index.ts statements`)
         const executeResult: number = database.executeSQL(
           statements,
           transaction,
@@ -738,7 +734,6 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
     // get the list of databases
     const files: string[] = await this.fileUtil.getFileList(pathDatabase);
-
     if (files.length > 0) {
       return { values: files };
     } else {
@@ -833,7 +828,6 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
         throw new Error(`setEncryptionSecret: passphrase already in store`);
       }
       await this.closeAllConnections();
-      console.log(`setEncryptionSecret after closeAllConnections`);
       this.secretUtil.setEncryptSecret(passphrase);
       return;
     } catch(err) {
@@ -852,8 +846,6 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     if(oldpassphrase.length <= 0) {
       throw new Error(`changeEncryptionSecret: You must give the oldpassphrase`);
     }
-    console.log(`##### oldsecret: ${oldsecret}`)
-    console.log(`##### oldpassphrase: ${oldpassphrase}`)
     if(oldpassphrase !== oldsecret) {
       throw new Error(`changeEncryptionSecret: the given oldpassphrase is wrong`);
     }
@@ -896,7 +888,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   ): Promise<capSQLiteResult> {
     const dbName: string = this.getOptionValue(options, 'database');
     try {
-      const isEncrypt: boolean = this.sqliteUtil.isDatabaseEncrypted(dbName + 'SQLite.db');
+      const isEncrypt: boolean = await this.sqliteUtil.isDatabaseEncrypted(dbName + 'SQLite.db');
       return {result: isEncrypt};
     } catch(err) {
       throw new Error(`isDatabaseEncrypted: ${err}`);

@@ -1570,7 +1570,10 @@ export class SQLiteConnection implements ISQLiteConnection {
   async getDatabaseList(): Promise<capSQLiteValues> {
     try {
       const res = await this.sqlite.getDatabaseList();
-      return Promise.resolve(res);
+      const values: string[] = res.values;
+      values.sort();
+      const ret = {values: values};
+      return Promise.resolve(ret);
     } catch (err) {
       return Promise.reject(err);
     }

@@ -1,3 +1,15 @@
+# 5.0.5-1 (2023-07-01)
+
+### Chore
+
+ - Update to @capacitor/core@5.0.5
+ - Update to @capacitor/ios@5.0.5
+ - Update to @capacitor/android@5.0.5
+
+### Bug Fixes
+
+ - Electron fix encryption
+
 # 5.0.4 (2023-06-29)
 
 ### Removed Features
