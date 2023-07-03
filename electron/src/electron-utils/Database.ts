@@ -84,7 +84,6 @@ export class Database {
           password = this.globalUtil.secret;
         }
       }
-      
       if (this._mode === 'encryption') {
         await this.encryptionUtil.encryptDatabase(this.pathDB, password);
       }

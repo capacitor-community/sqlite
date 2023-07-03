@@ -1,3 +1,9 @@
+# 5.0.5-2 (2023-07-03)
+
+### Bug Fixes
+
+ - Electron fix encryption of unencrypted databases
+
 # 5.0.5-1 (2023-07-01)
 
 ### Chore
