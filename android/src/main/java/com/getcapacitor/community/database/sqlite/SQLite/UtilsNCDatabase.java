@@ -12,7 +12,10 @@ public class UtilsNCDatabase {
         String pathDB = new File(context.getFilesDir().getParentFile(), "databases").getAbsolutePath();
         File dirDB = new File(pathDB);
         if (!dirDB.isDirectory()) {
-            dirDB.mkdir();
+            boolean nDir = dirDB.mkdir();
+            if (!nDir) {
+                throw new Exception("Cannot create dir" + pathDB);
+            }
         }
         String pathFiles = uMigrate.getFolder(context, folderPath);
         // check if the path exists

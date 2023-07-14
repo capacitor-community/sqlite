@@ -759,6 +759,7 @@ This resembles calling addSQLiteSuffix and deleteOldDatabases, but it is more pe
 | ------------- | ------------------- | ---------------------------------------------------- |
 | **`changes`** | <code>number</code> | the number of changes from an execute or run command |
 | **`lastId`**  | <code>number</code> | the lastId created from a run command                |
+| **`values`**  | <code>any[]</code>  | values when RETURNING                                |
 
 
 #### capSQLiteValues

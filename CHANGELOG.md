@@ -1,3 +1,10 @@
+# 5.0.5 (2023-07-14)
+
+### Added Features
+
+ - insert/delete/update with returning discussion#435
+ - add Returning.md documentation
+
 # 5.0.5-2 (2023-07-03)
 
 ### Bug Fixes
@@ -22,7 +29,7 @@
 
  - Electron Plugin: Remove `@journeyapps/sqlcipher` and `sqlite3` packages
 
-### Added
+### Added Features
 
  - Electron Plugin: Add `better-sqlite3-multiple-ciphers` package
  - Electron Plugin: Add `electron-json-storage` package to store the passphrase for database encryption

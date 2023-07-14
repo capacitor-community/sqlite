@@ -1167,6 +1167,7 @@ Check if a non conformed database exists without connection
 | ------------- | ------------------- | ---------------------------------------------------- |
 | **`changes`** | <code>number</code> | the number of changes from an execute or run command |
 | **`lastId`**  | <code>number</code> | the lastId created from a run command                |
+| **`values`**  | <code>any[]</code>  | values when RETURNING                                |
 
 
 #### capSQLiteExecuteOptions
@@ -1181,12 +1182,13 @@ Check if a non conformed database exists without connection
 
 #### capSQLiteSetOptions
 
-| Prop              | Type                        | Description                                               | Since         |
-| ----------------- | --------------------------- | --------------------------------------------------------- | ------------- |
-| **`database`**    | <code>string</code>         | The database name                                         |               |
-| **`set`**         | <code>capSQLiteSet[]</code> | The batch of raw SQL statements as Array of capSQLLiteSet |               |
-| **`transaction`** | <code>boolean</code>        | Enable / Disable transactions default Enable (true)       | 3.0.0-beta.10 |
-| **`readonly`**    | <code>boolean</code>        | ReadOnly / ReadWrite default ReadWrite (false)            | 4.1.0-7       |
+| Prop              | Type                        | Description                                                            | Since         |
+| ----------------- | --------------------------- | ---------------------------------------------------------------------- | ------------- |
+| **`database`**    | <code>string</code>         | The database name                                                      |               |
+| **`set`**         | <code>capSQLiteSet[]</code> | The batch of raw SQL statements as Array of capSQLLiteSet              |               |
+| **`transaction`** | <code>boolean</code>        | Enable / Disable transactions default Enable (true)                    | 3.0.0-beta.10 |
+| **`readonly`**    | <code>boolean</code>        | ReadOnly / ReadWrite default ReadWrite (false)                         | 4.1.0-7       |
+| **`returnMode`**  | <code>string</code>         | return mode default 'no' value 'all' value 'one' for Electron platform | 5.0.5-3       |
 
 
 #### capSQLiteSet
@@ -1199,13 +1201,14 @@ Check if a non conformed database exists without connection
 
 #### capSQLiteRunOptions
 
-| Prop              | Type                 | Description                                         | Since         |
-| ----------------- | -------------------- | --------------------------------------------------- | ------------- |
-| **`database`**    | <code>string</code>  | The database name                                   |               |
-| **`statement`**   | <code>string</code>  | A statement                                         |               |
-| **`values`**      | <code>any[]</code>   | A set of values for a statement                     |               |
-| **`transaction`** | <code>boolean</code> | Enable / Disable transactions default Enable (true) | 3.0.0-beta.10 |
-| **`readonly`**    | <code>boolean</code> | ReadOnly / ReadWrite default ReadWrite (false)      | 4.1.0-7       |
+| Prop              | Type                 | Description                                                            | Since         |
+| ----------------- | -------------------- | ---------------------------------------------------------------------- | ------------- |
+| **`database`**    | <code>string</code>  | The database name                                                      |               |
+| **`statement`**   | <code>string</code>  | A statement                                                            |               |
+| **`values`**      | <code>any[]</code>   | A set of values for a statement                                        |               |
+| **`transaction`** | <code>boolean</code> | Enable / Disable transactions default Enable (true)                    | 3.0.0-beta.10 |
+| **`readonly`**    | <code>boolean</code> | ReadOnly / ReadWrite default ReadWrite (false)                         | 4.1.0-7       |
+| **`returnMode`**  | <code>string</code>  | return mode default 'no' value 'all' value 'one' for Electron platform | 5.0.5-3       |
 
 
 #### capSQLiteValues

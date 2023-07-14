@@ -1,7 +1,6 @@
 package com.getcapacitor.community.database.sqlite.SQLite;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.util.Log;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -9,9 +8,6 @@ import androidx.biometric.BiometricManager;
 import androidx.biometric.BiometricPrompt;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
-import androidx.security.crypto.MasterKey;
-import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.util.concurrent.Executor;
 
 public class UtilsBiometric {

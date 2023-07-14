@@ -26,7 +26,7 @@ public class NotificationCenter {
     public synchronized void addMethodForNotification(String notificationName, MyRunnable r) {
         ArrayList<MyRunnable> list = registredObjects.get(notificationName);
         if (list == null) {
-            list = new ArrayList<MyRunnable>();
+            list = new ArrayList<>();
             registredObjects.put(notificationName, list);
         }
         list.add(r);

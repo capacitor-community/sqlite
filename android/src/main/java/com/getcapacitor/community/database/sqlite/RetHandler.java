@@ -27,7 +27,6 @@ public class RetHandler {
         if (res != null) {
             ret.put("result", res);
             call.resolve(ret);
-            return;
         } else {
             call.resolve();
         }
@@ -51,7 +50,6 @@ public class RetHandler {
         if (res != null) {
             ret.put("version", res);
             call.resolve(ret);
-            return;
         } else {
             call.resolve();
         }
@@ -70,11 +68,9 @@ public class RetHandler {
             ret.put("message", message);
             Log.v(TAG, "*** ERROR " + message);
             call.reject(message);
-            return;
         } else {
             ret.put("changes", res);
             call.resolve(ret);
-            return;
         }
     }
 
@@ -91,11 +87,9 @@ public class RetHandler {
             ret.put("message", message);
             Log.v(TAG, "*** ERROR " + message);
             call.reject(message);
-            return;
         } else {
             ret.put("values", res);
             call.resolve(ret);
-            return;
         }
     }
 
@@ -112,11 +106,9 @@ public class RetHandler {
             ret.put("message", message);
             Log.v(TAG, "*** ERROR " + message);
             call.reject(message);
-            return;
         } else {
             ret.put("syncDate", res);
             call.resolve(ret);
-            return;
         }
     }
 
@@ -133,11 +125,9 @@ public class RetHandler {
             ret.put("message", message);
             Log.v(TAG, "*** ERROR " + message);
             call.reject(message);
-            return;
         } else {
             ret.put("export", res);
             call.resolve(ret);
-            return;
         }
     }
 
@@ -159,7 +149,6 @@ public class RetHandler {
         if (res != null) {
             ret.put("path", res);
             call.resolve(ret);
-            return;
         } else {
             call.resolve();
         }
@@ -183,7 +172,6 @@ public class RetHandler {
         if (res != null) {
             ret.put("url", res);
             call.resolve(ret);
-            return;
         } else {
             call.resolve();
         }

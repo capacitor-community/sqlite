@@ -5,29 +5,27 @@ import com.getcapacitor.JSObject;
 import com.getcapacitor.community.database.sqlite.NotificationCenter;
 import com.getcapacitor.community.database.sqlite.SQLite.Database;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsDrop;
-import com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLite;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class ExportToJson {
 
     private static final String TAG = ImportFromJson.class.getName();
-    private UtilsJson uJson = new UtilsJson();
-    private UtilsSQLite uSqlite = new UtilsSQLite();
-    private UtilsDrop _uDrop = new UtilsDrop();
+    private final UtilsJson uJson = new UtilsJson();
+    private final UtilsDrop _uDrop = new UtilsDrop();
 
     /**
      * Notify progress export event
-     * @param msg
+     * @param msg message to notify
      */
     public void notifyExportProgressEvent(String msg) {
         String message = "Export: " + msg;
-        Map<String, Object> info = new HashMap<String, Object>() {
+        Map<String, Object> info = new HashMap<>() {
             {
                 put("progress", message);
             }
@@ -39,29 +37,29 @@ public class ExportToJson {
      * GetLastExportDate method
      * get the last export date
      *
-     * @return
-     * @throws Exception
+     * @param mDb Database
+     * @return Long lastExportDate
+     * @throws Exception message
      */
+
     public Long getLastExportDate(Database mDb) throws Exception {
         long lastExportDate = -1;
         String stmt = "SELECT sync_date FROM sync_table WHERE id = 2;";
-        JSArray retQuery = new JSArray();
 
         try {
             boolean isSyncTable = uJson.isTableExists(mDb, "sync_table");
             if (!isSyncTable) {
                 throw new Exception("GetSyncDate: No sync_table available");
             }
-            retQuery = mDb.selectSQL(stmt, new ArrayList<Object>());
+            JSArray retQuery = mDb.selectSQL(stmt, new ArrayList<>());
             List<JSObject> lQuery = retQuery.toList();
             if (lQuery.size() == 1) {
                 long syncDate = lQuery.get(0).getLong("sync_date");
                 if (syncDate > 0) lastExportDate = syncDate;
             }
+            return lastExportDate;
         } catch (Exception e) {
             throw new Exception("GetSyncDate: " + e.getMessage());
-        } finally {
-            return lastExportDate;
         }
     }
 
@@ -71,18 +69,18 @@ public class ExportToJson {
             if (!isSyncTable) {
                 throw new Exception("SetLastExportDate: No sync_table available");
             }
-            String stmt = "";
+            String stmt;
             Long lastExportDate = getLastExportDate(mDb);
             if (lastExportDate > 0) {
                 stmt = "UPDATE sync_table SET sync_date = " + sTime + " WHERE id = 2;";
             } else {
                 stmt = "INSERT INTO sync_table (sync_date) VALUES (" + sTime + ");";
             }
-            long lastId = mDb.prepareSQL(stmt, new ArrayList<>(), false);
+            JSObject retObj = mDb.prepareSQL(stmt, new ArrayList<>(), false, "no");
+            long lastId = retObj.getLong("lastId");
             if (lastId < 0) {
                 throw new Exception("SetLastExportDate: lastId < 0");
             }
-            return;
         } catch (Exception e) {
             throw new Exception("SetLastExportDate: " + e.getMessage());
         }
@@ -90,7 +88,7 @@ public class ExportToJson {
 
     /**
      * Delete Exported Rows
-     * @throws Exception
+     * @throws Exception message
      */
     public void delExportedRows(Database mDb) throws Exception {
         try {
@@ -111,15 +109,15 @@ public class ExportToJson {
             }
             // Loop through the tables
             for (String table : tables) {
-                long lastId = -1;
+                long lastId;
                 // define the delete statement
                 String delStmt = "DELETE FROM " + table + " WHERE sql_deleted = 1 " + "AND last_modified < " + lastExportDate + ";";
-                lastId = mDb.prepareSQL(delStmt, new ArrayList<>(), true);
+                JSObject retObj = mDb.prepareSQL(delStmt, new ArrayList<>(), true, "no");
+                lastId = retObj.getLong("lastId");
                 if (lastId < 0) {
                     throw new Exception("SetLastExportDate: lastId < 0");
                 }
             }
-            return;
         } catch (Exception e) {
             throw new Exception("DelExportedRows: " + e.getMessage());
         }
@@ -127,20 +125,20 @@ public class ExportToJson {
 
     /**
      * Create Export Json Object from Database (Schema, Data)
-     * @param db
-     * @param sqlObj
-     * @return
+     * @param db Database
+     * @param sqlObj Json SQLite Object
+     * @return JsonSQLite
      */
     public JsonSQLite createExportObject(Database db, JsonSQLite sqlObj) throws Exception {
         JsonSQLite retObj = new JsonSQLite();
         ArrayList<JsonView> views = new ArrayList<>();
-        ArrayList<JsonTable> tables = new ArrayList<>();
-        Boolean isSyncTable = false;
+        ArrayList<JsonTable> tables;
+        boolean isSyncTable;
         try {
             // Get Views
             String stmtV = "SELECT name,sql FROM sqlite_master WHERE ";
             stmtV += "type = 'view' AND name NOT LIKE 'sqlite_%';";
-            JSArray resViews = db.selectSQL(stmtV, new ArrayList<Object>());
+            JSArray resViews = db.selectSQL(stmtV, new ArrayList<>());
             if (resViews.length() > 0) {
                 for (int i = 0; i < resViews.length(); i++) {
                     JSONObject oView = resViews.getJSONObject(i);
@@ -157,7 +155,7 @@ public class ExportToJson {
             stmt += "type = 'table' AND name NOT LIKE 'sqlite_%' AND ";
             stmt += "name NOT LIKE 'android_%' AND ";
             stmt += "name NOT LIKE 'sync_table';";
-            JSArray resTables = db.selectSQL(stmt, new ArrayList<Object>());
+            JSArray resTables = db.selectSQL(stmt, new ArrayList<>());
             if (resTables.length() == 0) {
                 throw new Exception("CreateExportObject: table's names failed");
             } else {
@@ -166,16 +164,12 @@ public class ExportToJson {
                     throw new Exception("No sync_table available");
                 }
 
-                switch (sqlObj.getMode()) {
-                    case "partial":
-                        tables = getTablesPartial(db, resTables);
-                        break;
-                    case "full":
-                        tables = getTablesFull(db, resTables);
-                        break;
-                    default:
-                        throw new Exception("CreateExportObject: expMode " + sqlObj.getMode() + " not defined");
-                }
+                tables =
+                    switch (sqlObj.getMode()) {
+                        case "partial" -> getTablesPartial(db, resTables);
+                        case "full" -> getTablesFull(db, resTables);
+                        default -> throw new Exception("CreateExportObject: expMode " + sqlObj.getMode() + " not defined");
+                    };
                 if (tables.size() > 0) {
                     retObj.setDatabase(sqlObj.getDatabase());
                     retObj.setVersion(sqlObj.getVersion());
@@ -195,10 +189,10 @@ public class ExportToJson {
 
     /**
      * get Tables when Mode is Full
-     * @param mDb
-     * @param resTables
-     * @return
-     * @throws Exception
+     * @param mDb Database
+     * @param resTables JSArray
+     * @return ArrayList of JsonTable
+     * @throws Exception message
      */
     private ArrayList<JsonTable> getTablesFull(Database mDb, JSArray resTables) throws Exception {
         ArrayList<JsonTable> tables = new ArrayList<>();
@@ -213,6 +207,8 @@ public class ExportToJson {
                 } else {
                     throw new Exception("GetTablesFull: no name");
                 }
+                if (tableName == null) throw new Exception("GetTablesFull: no name");
+
                 if (lTables.get(i).has("sql")) {
                     sqlStmt = lTables.get(i).getString("sql");
                 } else {
@@ -270,53 +266,53 @@ public class ExportToJson {
                 msg += " " + (i + 1) + "/" + lTables.size() + " ...";
                 notifyExportProgressEvent(msg);
             }
-        } catch (Exception e) {
-            throw new Exception("GetTablesFull: " + e.getMessage());
-        } finally {
             String msg = "Full: Table's export completed";
             notifyExportProgressEvent(msg);
             return tables;
+        } catch (Exception e) {
+            String msg = "Full: Table's export failed";
+            notifyExportProgressEvent(msg);
+            throw new Exception("GetTablesFull: " + e.getMessage());
         }
     }
 
     /**
      * Modify ',' by '§' for Embedded Parentheses
-     * @param sqlStmt
-     * @return
+     * @param sqlStmt SQLite statement
+     * @return String
      */
     private String modEmbeddedParentheses(String sqlStmt) throws Exception {
-        String stmt = sqlStmt;
-        List<Integer> oPars = getIndices(stmt, "(");
-        List<Integer> cPars = getIndices(stmt, ")");
+        List<Integer> oPars = getIndices(sqlStmt, "(");
+        List<Integer> cPars = getIndices(sqlStmt, ")");
         if (oPars.size() != cPars.size()) {
             throw new Exception("ModEmbeddedParentheses: Not same number of " + "opening and closing parentheses");
         }
-        if (oPars.size() == 0) return stmt;
-        String resStmt = stmt.substring(0, oPars.get(0) - 1);
+        if (oPars.size() == 0) return sqlStmt;
+        StringBuilder resStmt = new StringBuilder(sqlStmt.substring(0, oPars.get(0) - 1));
         for (int i = 0; i < oPars.size(); i++) {
             String str;
             if (i < oPars.size() - 1) {
                 if (oPars.get(i + 1) < cPars.get(i)) {
-                    str = stmt.substring(oPars.get(i) - 1, cPars.get(i + 1));
+                    str = sqlStmt.substring(oPars.get(i) - 1, cPars.get(i + 1));
                     i++;
                 } else {
-                    str = stmt.substring(oPars.get(i) - 1, cPars.get(i));
+                    str = sqlStmt.substring(oPars.get(i) - 1, cPars.get(i));
                 }
             } else {
-                str = stmt.substring(oPars.get(i) - 1, cPars.get(i));
+                str = sqlStmt.substring(oPars.get(i) - 1, cPars.get(i));
             }
             String newS = str.replaceAll(",", "§");
-            resStmt += newS;
+            resStmt.append(newS);
             if (i < oPars.size() - 1) {
-                resStmt += stmt.substring(cPars.get(i), oPars.get(i + 1) - 1);
+                resStmt.append(sqlStmt.substring(cPars.get(i), oPars.get(i + 1) - 1));
             }
         }
-        resStmt += stmt.substring(cPars.get(cPars.size() - 1), stmt.length());
-        return resStmt;
+        resStmt.append(sqlStmt.substring(cPars.get(cPars.size() - 1)));
+        return resStmt.toString();
     }
 
     private List<Integer> getIndices(String textString, String search) {
-        List<Integer> indexes = new ArrayList<Integer>();
+        List<Integer> indexes = new ArrayList<>();
 
         int index = 0;
         while (index != -1) {
@@ -331,8 +327,8 @@ public class ExportToJson {
 
     /**
      * Get Schema
-     * @param sqlStmt
-     * @return
+     * @param sqlStmt SQLite statement
+     * @return ArrayList<JsonColumn>
      */
     private ArrayList<JsonColumn> getSchema(String sqlStmt) throws Exception {
         String msg = "GetSchema: ";
@@ -345,22 +341,22 @@ public class ExportToJson {
             String[] sch = sqlStmt.split(",");
             // for each element of the array split the
             // first word as key
-            for (int j = 0; j < sch.length; j++) {
-                String sc = sch[j].replaceAll("\n", "").trim();
+            for (String s : sch) {
+                String sc = s.replaceAll("\n", "").trim();
                 String[] row = sc.trim().split(" ", 2);
                 JsonColumn jsonRow = new JsonColumn();
-                Integer oPar;
-                Integer cPar;
+                int oPar;
+                int cPar;
                 switch (row[0].toUpperCase()) {
-                    case "FOREIGN":
+                    case "FOREIGN" -> {
                         oPar = sc.indexOf("(");
                         cPar = sc.indexOf(")");
                         String fk = sc.substring(oPar + 1, cPar);
                         row[0] = fk.replaceAll("§", ",");
                         row[1] = sc.substring(cPar + 2);
                         jsonRow.setForeignkey(row[0]);
-                        break;
-                    case "PRIMARY":
+                    }
+                    case "PRIMARY" -> {
                         oPar = sc.indexOf("(");
                         cPar = sc.indexOf(")");
                         String pk = sc.substring(oPar + 1, cPar);
@@ -368,32 +364,30 @@ public class ExportToJson {
                         row[0] = row[0].replaceAll("_ ", "_");
                         row[1] = sc.substring(cPar + 2);
                         jsonRow.setConstraint(row[0]);
-                        break;
-                    case "CONSTRAINT":
+                    }
+                    case "CONSTRAINT" -> {
                         String[] tRow = row[1].trim().split(" ", 2);
                         row[0] = tRow[0];
                         jsonRow.setConstraint(row[0]);
                         row[1] = tRow[1];
-                        break;
-                    default:
-                        jsonRow.setColumn(row[0]);
+                    }
+                    default -> jsonRow.setColumn(row[0]);
                 }
                 jsonRow.setValue(row[1].replaceAll("§", ","));
                 schema.add(jsonRow);
             }
+            return schema;
         } catch (JSONException e) {
             throw new Exception(msg + e.getMessage());
-        } finally {
-            return schema;
         }
     }
 
     /**
      * Get Indexes
-     * @param mDb
-     * @param tableName
-     * @return
-     * @throws Exception
+     * @param mDb Database
+     * @param tableName table name
+     * @return ArrayList<JsonIndex>
+     * @throws Exception message
      */
     private ArrayList<JsonIndex> getIndexes(Database mDb, String tableName) throws Exception {
         String msg = "GetIndexes: ";
@@ -403,39 +397,42 @@ public class ExportToJson {
         stmt += "type = 'index' AND tbl_name = '" + tableName;
         stmt += "' AND sql NOTNULL;";
         try {
-            JSArray retIndexes = mDb.selectSQL(stmt, new ArrayList<Object>());
+            JSArray retIndexes = mDb.selectSQL(stmt, new ArrayList<>());
             List<JSObject> lIndexes = retIndexes.toList();
             if (lIndexes.size() > 0) {
                 for (int j = 0; j < lIndexes.size(); j++) {
                     JsonIndex jsonRow = new JsonIndex();
-                    if (lIndexes.get(j).getString("tbl_name").equals(tableName)) {
+                    if (Objects.equals(lIndexes.get(j).getString("tbl_name"), tableName)) {
                         jsonRow.setName(lIndexes.get(j).getString("name"));
                         String sql = lIndexes.get(j).getString("sql");
-                        if (sql.contains("UNIQUE")) {
+                        if (sql != null && sql.contains("UNIQUE")) {
                             jsonRow.setMode("UNIQUE");
                         }
-                        Integer oPar = sql.lastIndexOf("(");
-                        Integer cPar = sql.lastIndexOf(")");
-                        jsonRow.setValue(sql.substring(oPar + 1, cPar));
-                        indexes.add(jsonRow);
+                        if (sql != null) {
+                            int oPar = sql.lastIndexOf("(");
+                            int cPar = sql.lastIndexOf(")");
+                            jsonRow.setValue(sql.substring(oPar + 1, cPar));
+                            indexes.add(jsonRow);
+                        } else {
+                            throw new Exception(msg + "sql statement is null");
+                        }
                     } else {
                         throw new Exception(msg + "table name doesn't match");
                     }
                 }
             }
+            return indexes;
         } catch (JSONException e) {
             throw new Exception(msg + e.getMessage());
-        } finally {
-            return indexes;
         }
     }
 
     /**
      * Get Triggers
-     * @param mDb
-     * @param tableName
-     * @return
-     * @throws Exception
+     * @param mDb Database
+     * @param tableName table name
+     * @return ArrayList<JsonTrigger>
+     * @throws Exception message
      */
     private ArrayList<JsonTrigger> getTriggers(Database mDb, String tableName) throws Exception {
         String msg = "Error: getTriggers ";
@@ -445,15 +442,19 @@ public class ExportToJson {
         stmt += "type = 'trigger' AND tbl_name = '" + tableName;
         stmt += "' AND sql NOTNULL;";
         try {
-            JSArray retTriggers = mDb.selectSQL(stmt, new ArrayList<Object>());
+            JSArray retTriggers = mDb.selectSQL(stmt, new ArrayList<>());
             List<JSObject> lTriggers = retTriggers.toList();
             if (lTriggers.size() > 0) {
                 for (int j = 0; j < lTriggers.size(); j++) {
                     JsonTrigger jsonRow = new JsonTrigger();
-                    if (lTriggers.get(j).getString("tbl_name").equals(tableName)) {
+                    if (Objects.equals(lTriggers.get(j).getString("tbl_name"), tableName)) {
                         String name = lTriggers.get(j).getString("name");
                         String sql = lTriggers.get(j).getString("sql");
-                        String[] sqlArr = sql.split(name);
+                        String[] sqlArr;
+                        if (sql == null || name == null) {
+                            throw new Exception(msg + "sql statement or name is null");
+                        }
+                        sqlArr = sql.split(name);
                         if (sqlArr.length != 2) {
                             throw new Exception(msg + "sql split name does not return 2 values");
                         }
@@ -466,8 +467,8 @@ public class ExportToJson {
                             throw new Exception(msg + "sql split tableName does not return 2 values");
                         }
                         String condition = "";
-                        String logic = "";
-                        if (!sqlArr[1].trim().substring(0, 5).toUpperCase().equals("BEGIN")) {
+                        String logic;
+                        if (!sqlArr[1].trim().substring(0, 5).equalsIgnoreCase("BEGIN")) {
                             sqlArr = sqlArr[1].trim().split("BEGIN");
                             if (sqlArr.length != 2) {
                                 throw new Exception(msg + "sql split BEGIN does not return 2 values");
@@ -490,25 +491,24 @@ public class ExportToJson {
                     }
                 }
             }
+            return triggers;
         } catch (JSONException e) {
             throw new Exception(msg + e.getMessage());
-        } finally {
-            return triggers;
         }
     }
 
     /**
      * Get Tables when Mode is Partial
-     * @param mDb
-     * @param resTables
-     * @return
-     * @throws Exception
+     * @param mDb Database
+     * @param resTables  tables
+     * @return ArrayList<JsonTable>
+     * @throws Exception message
      */
     private ArrayList<JsonTable> getTablesPartial(Database mDb, JSArray resTables) throws Exception {
         ArrayList<JsonTable> tables = new ArrayList<>();
-        long syncDate = 0;
-        JSObject modTables = new JSObject();
-        ArrayList<String> modTablesKeys = new ArrayList<>();
+        long syncDate;
+        JSObject modTables;
+        ArrayList<String> modTablesKeys;
 
         try {
             // Get the syncDate and the Modified Tables
@@ -523,6 +523,9 @@ public class ExportToJson {
             } else {
                 throw new Exception("GetTablesPartial: no modTables");
             }
+            if (modTables == null) {
+                throw new Exception("GetTablesPartial: no modTables");
+            }
             modTablesKeys = uJson.getJSObjectKeys(modTables);
 
             // Loop trough tables
@@ -535,12 +538,17 @@ public class ExportToJson {
                 } else {
                     throw new Exception("GetTablesPartial: no name");
                 }
+                if (tableName == null) {
+                    throw new Exception("GetTablesPartial: no name");
+                }
                 if (lTables.get(i).has("sql")) {
                     sqlStmt = lTables.get(i).getString("sql");
                 } else {
                     throw new Exception("GetTablesPartial: no sql");
                 }
-                if (modTablesKeys.size() == 0 || modTablesKeys.indexOf(tableName) == -1 || modTables.getString(tableName).equals("No")) {
+                if (
+                    modTablesKeys.size() == 0 || !modTablesKeys.contains(tableName) || Objects.equals(modTables.getString(tableName), "No")
+                ) {
                     continue;
                 }
                 JsonTable table = new JsonTable();
@@ -548,7 +556,7 @@ public class ExportToJson {
                 ArrayList<JsonColumn> schema = new ArrayList<>();
                 ArrayList<JsonIndex> indexes = new ArrayList<>();
                 ArrayList<JsonTrigger> triggers = new ArrayList<>();
-                if (modTables.getString(tableName).equals("Create")) {
+                if (Objects.equals(modTables.getString(tableName), "Create")) {
                     // create Table's Schema
                     schema = getSchema(sqlStmt);
                     if (schema.size() > 0) {
@@ -573,7 +581,7 @@ public class ExportToJson {
                 }
                 // create Table's Data
                 String query;
-                if (modTables.getString(tableName).equals("Create")) {
+                if (Objects.equals(modTables.getString(tableName), "Create")) {
                     query = "SELECT * FROM " + tableName + ";";
                 } else {
                     query = "SELECT * FROM " + tableName + " WHERE last_modified >= " + syncDate + ";";
@@ -606,26 +614,27 @@ public class ExportToJson {
                 msg += " " + (i + 1) + "/" + lTables.size() + " ...";
                 notifyExportProgressEvent(msg);
             }
-        } catch (Exception e) {
-            throw new Exception("GetTablesPartial: " + e.getMessage());
-        } finally {
             String msg = "Partial: Table's export completed";
             notifyExportProgressEvent(msg);
             return tables;
+        } catch (Exception e) {
+            String msg = "Partial: Table's export failed";
+            notifyExportProgressEvent(msg);
+            throw new Exception("GetTablesPartial: " + e.getMessage());
         }
     }
 
     /**
      * Get Tables Data when Mode is Partial
-     * @param mDb
-     * @param resTables
-     * @return
-     * @throws Exception
+     * @param mDb Database
+     * @param resTables tables
+     * @return JSObject
+     * @throws Exception message
      */
     private JSObject getPartialModeData(Database mDb, JSArray resTables) throws Exception {
         JSObject retData = new JSObject();
         Long syncDate;
-        JSObject modTables = new JSObject();
+        JSObject modTables;
 
         try {
             // get the sync date if expMode = "partial"
@@ -638,48 +647,46 @@ public class ExportToJson {
             modTables = getTablesModified(mDb, resTables, syncDate);
             retData.put("syncDate", syncDate);
             retData.put("modTables", modTables);
+            return retData;
         } catch (Exception e) {
             throw new Exception("GetPartialModeData: " + e.getMessage());
-        } finally {
-            return retData;
         }
     }
 
     /**
      * Get Synchronization Date
-     * @param mDb
-     * @return
-     * @throws Exception
+     * @param mDb Database
+     * @return Long synchronization date
+     * @throws Exception message
      */
     public Long getSyncDate(Database mDb) throws Exception {
         long ret = -1;
         String stmt = "SELECT sync_date FROM sync_table WHERE id = 1;";
-        JSArray retQuery = new JSArray();
+        JSArray retQuery;
         try {
             boolean isSyncTable = uJson.isTableExists(mDb, "sync_table");
             if (!isSyncTable) {
                 throw new Exception("No sync_table available");
             }
-            retQuery = mDb.selectSQL(stmt, new ArrayList<Object>());
+            retQuery = mDb.selectSQL(stmt, new ArrayList<>());
             List<JSObject> lQuery = retQuery.toList();
             if (lQuery.size() == 1) {
                 long syncDate = lQuery.get(0).getLong("sync_date");
                 if (syncDate > 0) ret = syncDate;
             }
+            return ret;
         } catch (Exception e) {
             throw new Exception("GetSyncDate: " + e.getMessage());
-        } finally {
-            return ret;
         }
     }
 
     /**
      * Get the tables which have been modified since last sync
-     * @param mDb
-     * @param resTables
-     * @param syncDate
-     * @return
-     * @throws Exception
+     * @param mDb Database
+     * @param resTables tables
+     * @param syncDate synchronization date
+     * @return JSObject
+     * @throws Exception message
      */
     private JSObject getTablesModified(Database mDb, JSArray resTables, Long syncDate) throws Exception {
         JSObject retObj = new JSObject();
@@ -694,13 +701,13 @@ public class ExportToJson {
                     throw new Exception("GetTablesModified: no name");
                 }
                 String stmt = "SELECT count(*) AS count FROM " + tableName + ";";
-                JSArray retQuery = mDb.selectSQL(stmt, new ArrayList<Object>());
+                JSArray retQuery = mDb.selectSQL(stmt, new ArrayList<>());
                 List<JSObject> lQuery = retQuery.toList();
                 if (lQuery.size() != 1) break;
                 long totalCount = lQuery.get(0).getLong("count");
                 // get total count of modified since last sync
                 stmt = "SELECT count(*) AS count FROM " + tableName + " WHERE last_modified >= " + syncDate + ";";
-                retQuery = mDb.selectSQL(stmt, new ArrayList<Object>());
+                retQuery = mDb.selectSQL(stmt, new ArrayList<>());
                 lQuery = retQuery.toList();
                 if (lQuery.size() != 1) break;
                 long totalModCnt = lQuery.get(0).getLong("count");
@@ -713,10 +720,9 @@ public class ExportToJson {
                 }
                 retObj.put(tableName, mode);
             }
+            return retObj;
         } catch (Exception e) {
             throw new Exception("GetTablesModified: " + e.getMessage());
-        } finally {
-            return retObj;
         }
     }
 }

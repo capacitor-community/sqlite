@@ -2,13 +2,9 @@ package com.getcapacitor.community.database.sqlite.SQLite;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.text.Editable;
-import android.util.Log;
-import androidx.sqlite.db.SupportSQLiteDatabase;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Arrays;
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteException;
 import net.sqlcipher.database.SQLiteStatement;
@@ -125,8 +121,14 @@ public class UtilsSQLCipher {
             st.close();
             db.close();
 
-            originalFile.delete();
-            newFile.renameTo(originalFile);
+            boolean delFile = originalFile.delete();
+            if (!delFile) {
+                throw new FileNotFoundException(originalFile.getAbsolutePath() + " not deleted");
+            }
+            boolean renFile = newFile.renameTo(originalFile);
+            if (!renFile) {
+                throw new FileNotFoundException(originalFile.getAbsolutePath() + " not renamed");
+            }
         } else {
             throw new FileNotFoundException(originalFile.getAbsolutePath() + " not found");
         }

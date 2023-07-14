@@ -16,23 +16,19 @@ export class UtilsJson {
    * @param isOpen
    * @param tableName
    */
-  public isTableExists(
-    mDB: any,
-    isOpen: boolean,
-    tableName: string,
-  ): boolean {
-      const msg = 'IsTableExists';
-      let ret = false;
-      if (!isOpen) {
-        throw new Error(`${msg} database not opened`);
-      }
-      let query = 'SELECT name FROM sqlite_master WHERE ';
-      query += `type='table' AND name='${tableName}';`;
-      const rows: any[] = this.sqliteUtil.queryAll(mDB, query, []);
-      if (rows.length > 0) {
-        ret = true;
-      } 
-      return ret;
+  public isTableExists(mDB: any, isOpen: boolean, tableName: string): boolean {
+    const msg = 'IsTableExists';
+    let ret = false;
+    if (!isOpen) {
+      throw new Error(`${msg} database not opened`);
+    }
+    let query = 'SELECT name FROM sqlite_master WHERE ';
+    query += `type='table' AND name='${tableName}';`;
+    const rows: any[] = this.sqliteUtil.queryAll(mDB, query, []);
+    if (rows.length > 0) {
+      ret = true;
+    }
+    return ret;
   }
   /**
    * IsViewExists
@@ -40,23 +36,19 @@ export class UtilsJson {
    * @param isOpen
    * @param viewName
    */
-  public isViewExists(
-    mDB: any,
-    isOpen: boolean,
-    viewName: string,
-  ): boolean {
+  public isViewExists(mDB: any, isOpen: boolean, viewName: string): boolean {
     const msg = 'IsViewExists';
     let ret = false;
     if (!isOpen) {
-        throw new Error(`${msg} database not opened`);
-      }
-      let query = 'SELECT name FROM sqlite_master WHERE ';
-      query += `type='view' AND name='${viewName}';`;
-      const rows: any[] = this.sqliteUtil.queryAll(mDB, query, []);
-      if (rows.length > 0) {
-        ret = true;
-      } 
-      return ret;
+      throw new Error(`${msg} database not opened`);
+    }
+    let query = 'SELECT name FROM sqlite_master WHERE ';
+    query += `type='view' AND name='${viewName}';`;
+    const rows: any[] = this.sqliteUtil.queryAll(mDB, query, []);
+    if (rows.length > 0) {
+      ret = true;
+    }
+    return ret;
   }
   /**
    * CreateSchema
@@ -93,9 +85,7 @@ export class UtilsJson {
           this.sqliteUtil.rollbackTransaction(mDB, true);
           throw new Error(`CreateSchema: ${msg}`);
         } catch (err) {
-          throw new Error(
-            `${msg} changes < 0${err}: ${msg}`,
-          );
+          throw new Error(`${msg} changes < 0${err}: ${msg}`);
         }
       }
     }
@@ -221,11 +211,7 @@ export class UtilsJson {
    * @param table
    * @param mode
    */
-  public createDataTable(
-    mDB: any,
-    table: any,
-    mode: string,
-  ): Changes {
+  public createDataTable(mDB: any, table: any, mode: string): Changes {
     let lastId = -1;
     const msg = 'CreateDataTable';
     let results: Changes;
@@ -233,20 +219,18 @@ export class UtilsJson {
       // Check if the table exists
       const tableExists = this.isTableExists(mDB, true, table.name);
       if (!tableExists) {
-        throw new Error (
-          `${msg} ${table.name} does not exist`,
-        );
+        throw new Error(`${msg} ${table.name} does not exist`);
       }
 
       // Get the column names and types
-      const tableNamesTypes: any =
-        this.sqliteUtil.getTableColumnNamesTypes(mDB, table.name);
+      const tableNamesTypes: any = this.sqliteUtil.getTableColumnNamesTypes(
+        mDB,
+        table.name,
+      );
       const tableColumnTypes: string[] = tableNamesTypes.types;
       const tableColumnNames: string[] = tableNamesTypes.names;
       if (tableColumnTypes.length === 0) {
-        throw new Error (
-          `${msg} ${table.name} info does not exist`,
-        );
+        throw new Error(`${msg} ${table.name} info does not exist`);
       }
       // Loop on Table Values
       for (let j = 0; j < table.values.length; j++) {
@@ -261,21 +245,15 @@ export class UtilsJson {
           mode,
         );
 
-        isRun = this.checkUpdate(
-          mDB,
-          stmt,
-          row,
-          table.name,
-          tableColumnNames,
-        );
+        isRun = this.checkUpdate(mDB, stmt, row, table.name, tableColumnNames);
         if (isRun) {
           if (stmt.substring(0, 6).toUpperCase() === 'DELETE') {
             row = [];
           }
-          results = this.sqliteUtil.prepareRun(mDB, stmt, row, true);
+          results = this.sqliteUtil.prepareRun(mDB, stmt, row, true, 'no');
           lastId = results.lastId;
           if (lastId < 0) {
-            throw new Error (`${msg} lastId < 0`);
+            throw new Error(`${msg} lastId < 0`);
           }
         } else {
           lastId = 0;
@@ -283,7 +261,7 @@ export class UtilsJson {
       }
       return results;
     } catch (err) {
-      throw new Error (`${msg} ${err}`);
+      throw new Error(`${msg} ${err}`);
     }
   }
   /**
@@ -311,10 +289,9 @@ export class UtilsJson {
       row.length === 0 ||
       tColNames.length === 0
     ) {
-      throw new Error (
-          `${msg} Table ${tableName} ` +
-            `values row ${j} not correct length`
-        );
+      throw new Error(
+        `${msg} Table ${tableName} ` + `values row ${j} not correct length`,
+      );
     }
     try {
       const retisIdExists: boolean = this.isIdExists(
@@ -353,9 +330,10 @@ export class UtilsJson {
           // Update
           const setString: string = this.setNameForUpdate(tColNames);
           if (setString.length === 0) {
-            throw new Error (`${msg} Table ${tableName} ` +
-                  `values row ${j} not set to String`
-            )
+            throw new Error(
+              `${msg} Table ${tableName} ` +
+                `values row ${j} not set to String`,
+            );
           }
           stmt = `UPDATE ${tableName} SET ${setString} WHERE `;
           if (typeof row[0] == 'string') {
@@ -367,7 +345,7 @@ export class UtilsJson {
       }
       return stmt;
     } catch (err) {
-      throw new Error (`${msg} ${err.message}`);
+      throw new Error(`${msg} ${err.message}`);
     }
   }
   /**
@@ -414,10 +392,10 @@ export class UtilsJson {
           return false;
         } else {
           const msg1 = 'Both arrays not the same length';
-          throw new Error (`${msg} ${msg1}`);
+          throw new Error(`${msg} ${msg1}`);
         }
       } catch (err) {
-        throw new Error (`${msg} ${err.message}`);
+        throw new Error(`${msg} ${err.message}`);
       }
     } else {
       return isRun;
@@ -429,11 +407,7 @@ export class UtilsJson {
    * @param query
    * @param tableName
    */
-  public getValues(
-    mDb: any,
-    query: string,
-    tableName: string,
-  ): any[] {
+  public getValues(mDb: any, query: string, tableName: string): any[] {
     const msg = 'GetValues';
     const values: any[] = [];
     try {
@@ -446,7 +420,7 @@ export class UtilsJson {
       if (Object.keys(tableNamesTypes).includes('names')) {
         rowNames = tableNamesTypes.names;
       } else {
-        throw new Error (`${msg} Table ${tableName} no names`);
+        throw new Error(`${msg} Table ${tableName} no names`);
       }
       const retValues = this.sqliteUtil.queryAll(mDb, query, []);
       for (const rValue of retValues) {
@@ -462,7 +436,7 @@ export class UtilsJson {
       }
       return values;
     } catch (err) {
-      throw new Error (`${msg} ${err}`);
+      throw new Error(`${msg} ${err}`);
     }
   }
   /**
@@ -534,7 +508,7 @@ export class UtilsJson {
       if (resQuery.length === 1) ret = true;
       return ret;
     } catch (err) {
-      throw new Error (`${msg} ${err}`);
+      throw new Error(`${msg} ${err}`);
     }
   }
 
@@ -544,16 +518,16 @@ export class UtilsJson {
    */
   private createQuestionMarkString(length: number): string {
     const msg = 'CreateQuestionMarkString';
-      let retString = '';
-      for (let i = 0; i < length; i++) {
-        retString += '?,';
-      }
-      if (retString.length > 1) {
-        retString = retString.slice(0, -1);
-        return retString;
-      } else {
-        throw new Error (`${msg} length = 0`);
-      }
+    let retString = '';
+    for (let i = 0; i < length; i++) {
+      retString += '?,';
+    }
+    if (retString.length > 1) {
+      retString = retString.slice(0, -1);
+      return retString;
+    } else {
+      throw new Error(`${msg} length = 0`);
+    }
   }
 
   /**
@@ -570,7 +544,7 @@ export class UtilsJson {
       retString = retString.slice(0, -1);
       return retString;
     } else {
-      throw new Error (`${msg} length = 0`);
+      throw new Error(`${msg} length = 0`);
     }
   }
 
@@ -802,7 +776,7 @@ export class UtilsJson {
       }
       const isValid: boolean = this.isSchema(sch);
       if (!isValid) {
-        throw new Error (`${msg} schema[${i}] not valid`);
+        throw new Error(`${msg} schema[${i}] not valid`);
       }
     }
     return;
@@ -828,7 +802,7 @@ export class UtilsJson {
 
       const isValid: boolean = this.isIndexes(index);
       if (!isValid) {
-        throw new Error (`${msg} indexes[${i}] not valid`);
+        throw new Error(`${msg} indexes[${i}] not valid`);
       }
     }
     return;
@@ -857,9 +831,7 @@ export class UtilsJson {
 
       const isValid: boolean = this.isTriggers(trigger);
       if (!isValid) {
-        throw new Error (
-          `${msg} triggers[${i}] not valid`,
-        );
+        throw new Error(`${msg} triggers[${i}] not valid`);
       }
     }
     return;
@@ -882,7 +854,7 @@ export class UtilsJson {
 
       const isValid: boolean = this.isView(view);
       if (!isValid) {
-        throw new Error (`${msg} views[${i}] not valid`);
+        throw new Error(`${msg} views[${i}] not valid`);
       }
     }
     return;
@@ -898,11 +870,11 @@ export class UtilsJson {
     try {
       const results = this.sqliteUtil.execute(mDB, stmt, true);
       if (results.changes < 0) {
-        throw new Error (`${msg} ${view.name} failed`);
+        throw new Error(`${msg} ${view.name} failed`);
       }
       return results;
     } catch (err) {
-      throw new Error (`${msg} ${err}`);
+      throw new Error(`${msg} ${err}`);
     }
   }
 }

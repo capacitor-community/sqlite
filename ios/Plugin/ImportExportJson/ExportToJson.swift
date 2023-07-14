@@ -88,6 +88,7 @@ class ExportToJson {
     // MARK: - ExportToJson - SetLastExportDate
 
     class func setLastExportDate(mDB: Database, sTime: Int) throws {
+        var lastId: Int64 = -1
         do {
             let isExists: Bool = try UtilsJson.isTableExists(
                 mDB: mDB, tableName: "sync_table")
@@ -103,8 +104,10 @@ class ExportToJson {
             } else {
                 stmt = "INSERT INTO sync_table (sync_date) VALUES (\(sTime));"
             }
-            let lastId: Int64 = try UtilsSQLCipher.prepareSQL(
-                mDB: mDB, sql: stmt, values: [], fromJson: false)
+            let resp = try UtilsSQLCipher.prepareSQL(
+                mDB: mDB, sql: stmt, values: [], fromJson: false,
+                returnMode: "no")
+            lastId = resp.0
             if lastId < 0 {
                 throw ExportToJsonError.setLastExportDate(
                     message: "lastId < 0")
@@ -149,9 +152,11 @@ class ExportToJson {
                 // define the delete statement
                 let delStmt = "DELETE FROM \(table) WHERE sql_deleted = 1 " +
                     "AND last_modified < \(lastExportDate);"
-                lastId = try UtilsSQLCipher.prepareSQL(mDB: mDB, sql: delStmt,
-                                                       values: [],
-                                                       fromJson: true)
+                let resp = try UtilsSQLCipher.prepareSQL(mDB: mDB, sql: delStmt,
+                                                         values: [],
+                                                         fromJson: true,
+                                                         returnMode: "no")
+                lastId = resp.0
                 if lastId < 0 {
                     let msg = "DelExportedRows: lastId < 0"
                     throw ExportToJsonError.delExportedRows(message: msg)

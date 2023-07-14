@@ -2,9 +2,7 @@ package com.getcapacitor.community.database.sqlite.SQLite;
 
 import android.content.Context;
 import android.content.res.AssetManager;
-import android.os.Build;
 import android.util.Log;
-import androidx.annotation.RequiresApi;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -12,16 +10,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.FileChannel;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -90,7 +80,10 @@ public class UtilsFile {
             String pathDB = new File(context.getFilesDir().getParentFile(), "databases").getAbsolutePath();
             File dirDB = new File(pathDB);
             if (!dirDB.isDirectory()) {
-                dirDB.mkdir();
+                boolean nDir = dirDB.mkdir();
+                if (!nDir) {
+                    throw new Exception("Cannot create dir" + pathDB);
+                }
             }
 
             // look into the public/assets/databases to get databases to copy
@@ -228,7 +221,10 @@ public class UtilsFile {
 
         try {
             if (!toFile.exists()) {
-                toFile.createNewFile();
+                boolean cFile = toFile.createNewFile();
+                if (!cFile) {
+                    throw new Exception("Cannot create file" + dbName);
+                }
             }
             copyFileFromFile(file, toFile);
             return true;
@@ -240,13 +236,19 @@ public class UtilsFile {
 
     public Boolean copyFromNames(Context context, String fromPath, String fromName, String toPath, String toName) {
         File fromFile = new File(fromPath, fromName);
-        fromFile.setReadable(true, false);
+        boolean fFile = fromFile.setReadable(true, false);
+        if (!fFile) {
+            Log.e(TAG, "Error: in fromFile " + fromName);
+            return false;
+        }
         File toFile = context.getDatabasePath(toName);
         try {
             if (!toFile.exists()) {
-                toFile.createNewFile();
-                //                toFile.setReadable(true, false);
-
+                boolean cFile = toFile.createNewFile();
+                if (!cFile) {
+                    Log.e(TAG, "Error: in toFile " + toName);
+                    return false;
+                }
             }
             copyFileFromFile(fromFile, toFile);
             return true;
@@ -372,10 +374,20 @@ public class UtilsFile {
     }
 
     private static void copyFileFromFile(File sourceFile, File destFile) throws IOException {
-        if (!destFile.getParentFile().exists()) destFile.getParentFile().mkdirs();
+        if (!destFile.getParentFile().exists()) {
+            boolean mDir = destFile.getParentFile().mkdirs();
+            if (!mDir) {
+                String message = "failed in creating directory";
+                throw new IOException(message);
+            }
+        }
 
         if (!destFile.exists()) {
-            destFile.createNewFile();
+            boolean cFile = destFile.createNewFile();
+            if (!cFile) {
+                String message = "failed in creating new file";
+                throw new IOException(message);
+            }
         }
 
         FileChannel source = null;

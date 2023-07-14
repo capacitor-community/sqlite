@@ -297,13 +297,17 @@ class Database {
 
     // MARK: - ExecSet
 
-    func execSet(set: [[String: Any]], transaction: Bool = true) throws -> [String: Int64] {
+    // swiftlint:disable function_body_length
+    func execSet(set: [[String: Any]], transaction: Bool = true,
+                 returnMode: String = "no") throws -> [String: Any] {
         var msg: String = "Failed in execSet : "
         let initChanges = UtilsSQLCipher.dbChanges(mDB: mDb)
         var changes: Int = -1
         var lastId: Int64 = -1
-        var changesDict: [String: Int64] = ["lastId": lastId,
-                                            "changes": Int64(changes)]
+        var response: [[String: Any]] = []
+        var changesDict: [String: Any] = ["lastId": lastId,
+                                          "changes": changes,
+                                          "values": [[:]]]
 
         // Start a transaction
         if transaction {
@@ -316,12 +320,15 @@ class Database {
         }
         // Execute the query
         do {
-            lastId = try UtilsSQLCipher
-                .executeSet(mDB: self, set: set)
+            let resp = try UtilsSQLCipher
+                .executeSet(mDB: self, set: set, returnMode: returnMode)
+            lastId = resp.0
+            response = resp.1
             changes = UtilsSQLCipher
                 .dbChanges(mDB: mDb) - initChanges
-            changesDict["changes"] = Int64(changes)
+            changesDict["changes"] = changes
             changesDict["lastId"] = lastId
+            changesDict["values"] = response
 
         } catch UtilsSQLCipherError
                     .executeSet(let message) {
@@ -352,12 +359,13 @@ class Database {
 
     // MARK: - RunSQL
 
-    func runSQL(sql: String, values: [Any], transaction: Bool = true) throws -> [String: Int64] {
+    func runSQL(sql: String, values: [Any], transaction: Bool = true,
+                returnMode: String = "no") throws -> [String: Any] {
         var msg: String = "Failed in runSQL : "
         var changes: Int = -1
         var lastId: Int64 = -1
+        var response: [[String: Any]] = []
         let initChanges = UtilsSQLCipher.dbChanges(mDB: mDb)
-
         // Start a transaction
         if transaction {
             do {
@@ -370,9 +378,11 @@ class Database {
         }
         // Execute the query
         do {
-            lastId = try UtilsSQLCipher
+            let resp = try UtilsSQLCipher
                 .prepareSQL(mDB: self, sql: sql, values: values,
-                            fromJson: false)
+                            fromJson: false, returnMode: returnMode)
+            lastId = resp.0
+            response = resp.1
         } catch UtilsSQLCipherError.prepareSQL(let message) {
             if transaction {
                 do {
@@ -400,8 +410,9 @@ class Database {
             }
         }
         changes = UtilsSQLCipher.dbChanges(mDB: mDb) - initChanges
-        let result: [String: Int64] = ["changes": Int64(changes),
-                                       "lastId": lastId]
+        let result: [String: Any] = ["changes": changes,
+                                     "lastId": lastId,
+                                     "values": response]
         return result
     }
 
@@ -511,6 +522,8 @@ class Database {
 
     func setSyncDate(syncDate: String ) throws -> Bool {
         var retBool: Bool = false
+        var lastId: Int64 = -1
+        var resp: [String: Any] = [:]
         do {
             let isExists: Bool = try UtilsJson.isTableExists(
                 mDB: self, tableName: "sync_table")
@@ -524,8 +537,9 @@ class Database {
                 let syncTime: Int = Int(date.timeIntervalSince1970)
                 var stmt: String = "UPDATE sync_table SET sync_date = "
                 stmt.append("\(syncTime) WHERE id = 1;")
-                let retRun = try runSQL(sql: stmt, values: [])
-                if let lastId: Int64 = retRun["lastId"] {
+                resp = try runSQL(sql: stmt, values: [])
+                if let mLastId: Int64 = resp["lastId"] as? Int64 {
+                    lastId = mLastId
                     if lastId != -1 {
                         retBool = true
                     }

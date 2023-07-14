@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
 import java.io.File;
-import net.sqlcipher.database.SQLiteDatabase;
 
 public class UtilsSecret {
 

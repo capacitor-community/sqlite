@@ -1,7 +1,6 @@
 package com.getcapacitor.community.database.sqlite.SQLite;
 
 import android.util.Log;
-import com.getcapacitor.JSObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Dictionary;

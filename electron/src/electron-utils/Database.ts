@@ -94,9 +94,7 @@ export class Database {
       );
       this._isDbOpen = true;
       if (!this.readonly) {
-        const curVersion: number = this.sqliteUtil.getVersion(
-          this.database,
-        );
+        const curVersion: number = this.sqliteUtil.getVersion(this.database);
         if (
           this.version > curVersion &&
           Object.keys(this.upgradeVersionDict).length > 0
@@ -140,9 +138,9 @@ export class Database {
   dbClose(): void {
     this.ensureDatabaseIsOpen();
     try {
-      this.sqliteUtil.closeDB(this.database);  
+      this.sqliteUtil.closeDB(this.database);
     } catch (err) {
-      throw new Error (`Close failed: ${this.dbName}  ${err}`);
+      throw new Error(`Close failed: ${this.dbName}  ${err}`);
     } finally {
       this._isDbOpen = false;
     }
@@ -175,8 +173,7 @@ export class Database {
     this.ensureDatabaseIsOpen();
 
     try {
-      const currentVersion: number = this.sqliteUtil.getVersion(
-                                      this.database);
+      const currentVersion: number = this.sqliteUtil.getVersion(this.database);
       return currentVersion;
     } catch (err) {
       if (this._isDbOpen) this.sqliteUtil.closeDB(this.database);
@@ -317,11 +314,7 @@ export class Database {
       let stmt = `UPDATE sync_table SET sync_date = `;
       stmt += `${syncDateUnixTimestamp} WHERE id = 1;`;
 
-      const results = this.sqliteUtil.execute(
-        this.database,
-        stmt,
-        false,
-      );
+      const results = this.sqliteUtil.execute(this.database, stmt, false);
 
       if (results.changes < 0) {
         return { result: false, message: 'setSyncDate failed' };
@@ -349,9 +342,7 @@ export class Database {
       if (!isTable) {
         throw new Error('No sync_table available');
       }
-      const syncDate: number = this.exportToJsonUtil.getSyncDate(
-        this.database,
-      );
+      const syncDate: number = this.exportToJsonUtil.getSyncDate(this.database);
       if (syncDate > 0) {
         return { syncDate };
       } else {
@@ -373,9 +364,7 @@ export class Database {
 
     try {
       if (transaction) {
-        const mode: string = this.sqliteUtil.getJournalMode(
-          this.database,
-        );
+        const mode: string = this.sqliteUtil.getJournalMode(this.database);
         console.log(`$$$ in executeSQL journal_mode: ${mode} $$$`);
         this.sqliteUtil.beginTransaction(this.database, this._isDbOpen);
       }
@@ -394,10 +383,7 @@ export class Database {
       let message = `${executeError}`;
       try {
         if (transaction) {
-          this.sqliteUtil.rollbackTransaction(
-            this.database,
-            this._isDbOpen,
-          );
+          this.sqliteUtil.rollbackTransaction(this.database, this._isDbOpen);
         }
       } catch (rollbackErr) {
         message += ` : ${rollbackErr}`;
@@ -416,11 +402,7 @@ export class Database {
     this.ensureDatabaseIsOpen();
 
     try {
-      const selectResult = this.sqliteUtil.queryAll(
-        this.database,
-        sql,
-        values,
-      );
+      const selectResult = this.sqliteUtil.queryAll(this.database, sql, values);
       return selectResult;
     } catch (err) {
       throw new Error(`SelectSQL: ${err}`);
@@ -437,16 +419,14 @@ export class Database {
     statement: string,
     values: any[],
     transaction: boolean,
+    returnMode: string,
   ): Changes {
     this.ensureDatabaseIsOpen();
-
 
     try {
       // start a transaction
       if (transaction) {
-        const mode: string = this.sqliteUtil.getJournalMode(
-          this.database,
-        );
+        const mode: string = this.sqliteUtil.getJournalMode(this.database);
         console.log(`$$$ in runSQL journal_mode: ${mode} $$$`);
         this.sqliteUtil.beginTransaction(this.database, this._isDbOpen);
       }
@@ -459,13 +439,11 @@ export class Database {
         statement,
         values,
         false,
+        returnMode,
       );
       if (results.lastId < 0) {
         if (transaction) {
-          this.sqliteUtil.rollbackTransaction(
-            this.database,
-            this._isDbOpen,
-          );
+          this.sqliteUtil.rollbackTransaction(this.database, this._isDbOpen);
         }
 
         throw new Error(`RunSQL: return LastId < 0`);
@@ -476,10 +454,7 @@ export class Database {
       return results;
     } catch (err) {
       if (transaction) {
-        this.sqliteUtil.rollbackTransaction(
-          this.database,
-          this._isDbOpen,
-        );
+        this.sqliteUtil.rollbackTransaction(this.database, this._isDbOpen);
       }
       throw new Error(`RunSQL: ${err}`);
     }
@@ -491,17 +466,14 @@ export class Database {
    * @param set: any[]
    * @returns Promise<{changes:number, lastId:number}>
    */
-  execSet(set: any[], transaction: boolean): Changes {
+  execSet(set: any[], transaction: boolean, returnMode: string): Changes {
     this.ensureDatabaseIsOpen();
 
     let results: Changes = { changes: 0, lastId: -1 };
     try {
-
       // start a transaction
       if (transaction) {
-        const mode: string = this.sqliteUtil.getJournalMode(
-          this.database,
-        );
+        const mode: string = this.sqliteUtil.getJournalMode(this.database);
         console.log(`$$$ in execSet journal_mode: ${mode} $$$`);
         this.sqliteUtil.beginTransaction(this.database, this._isDbOpen);
       }
@@ -513,21 +485,18 @@ export class Database {
         this.database,
         set,
         false,
+        returnMode,
       );
       if (transaction) {
         this.sqliteUtil.commitTransaction(this.database, this._isDbOpen);
       }
-
       return results;
     } catch (err) {
       const message: string = err;
 
       try {
         if (transaction) {
-          this.sqliteUtil.rollbackTransaction(
-            this.database,
-            this._isDbOpen,
-          );
+          this.sqliteUtil.rollbackTransaction(this.database, this._isDbOpen);
         }
       } catch (err) {
         throw new Error(`ExecSet: ${message}: ` + `${err}`);
@@ -565,10 +534,7 @@ export class Database {
 
     try {
       // set Foreign Keys Off
-      this.sqliteUtil.setForeignKeyConstraintsEnabled(
-        this.database,
-        false,
-      );
+      this.sqliteUtil.setForeignKeyConstraintsEnabled(this.database, false);
       if (jsonData.tables && jsonData.tables.length > 0) {
         // create the database schema
         changes = this.importFromJsonUtil.createDatabaseSchema(
@@ -586,16 +552,10 @@ export class Database {
       }
       if (jsonData.views && jsonData.views.length > 0) {
         // create the views
-        changes += this.importFromJsonUtil.createViews(
-          this.database,
-          jsonData,
-        );
+        changes += this.importFromJsonUtil.createViews(this.database, jsonData);
       }
       // set Foreign Keys On
-      this.sqliteUtil.setForeignKeyConstraintsEnabled(
-        this.database,
-        true,
-      );
+      this.sqliteUtil.setForeignKeyConstraintsEnabled(this.database, true);
 
       return changes;
     } catch (err) {
@@ -623,8 +583,10 @@ export class Database {
           new Date().toISOString(),
         );
       }
-      const jsonResult: JsonSQLite =
-        this.exportToJsonUtil.createExportObject(this.database, inJson);
+      const jsonResult: JsonSQLite = this.exportToJsonUtil.createExportObject(
+        this.database,
+        inJson,
+      );
       const keys = Object.keys(jsonResult);
       if (keys.length === 0) {
         const msg =

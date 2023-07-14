@@ -408,7 +408,8 @@ public class ImportFromJson {
                     if (stmt.substring(0, 6).toUpperCase().equals("DELETE")) {
                         row = new ArrayList<>();
                     }
-                    long lastId = mDb.prepareSQL(stmt, row, true);
+                    JSObject retObj = mDb.prepareSQL(stmt, row, true, "no");
+                    long lastId = retObj.getLong("lastId");
                     if (lastId < 0) {
                         throw new Exception("CreateTableData: lastId < 0");
                     }

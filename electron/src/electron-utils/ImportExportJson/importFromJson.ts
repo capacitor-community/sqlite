@@ -13,10 +13,7 @@ export class ImportFromJson {
    * @param mDB
    * @param jsonData
    */
-  public createDatabaseSchema(
-    mDB: any,
-    jsonData: JsonSQLite,
-  ): number {
+  public createDatabaseSchema(mDB: any, jsonData: JsonSQLite): number {
     let changes = -1;
     const version: number = jsonData.version;
     try {
@@ -30,14 +27,11 @@ export class ImportFromJson {
       changes = this.jsonUtil.createSchema(mDB, jsonData);
       return changes;
     } catch (err) {
-      throw new Error ('CreateDatabaseSchema: ' + `${err}`);
+      throw new Error('CreateDatabaseSchema: ' + `${err}`);
     }
   }
-  public createTablesData(
-    mDB: any,
-    jsonData: JsonSQLite,
-  ): number {
-    const msg = 'CreateTablesData'
+  public createTablesData(mDB: any, jsonData: JsonSQLite): number {
+    const msg = 'CreateTablesData';
     let results: Changes;
     let isValue = false;
     let message = '';
@@ -45,17 +39,13 @@ export class ImportFromJson {
       // start a transaction
       this.sqliteUtil.beginTransaction(mDB, true);
     } catch (err) {
-      throw new Error (`${msg} ${err}`);
+      throw new Error(`${msg} ${err}`);
     }
     for (const jTable of jsonData.tables) {
       if (jTable.values != null && jTable.values.length >= 1) {
         // Create the table's data
         try {
-          results = this.jsonUtil.createDataTable(
-            mDB,
-            jTable,
-            jsonData.mode,
-          );
+          results = this.jsonUtil.createDataTable(mDB, jTable, jsonData.mode);
           if (results.lastId < 0) break;
           isValue = true;
         } catch (err) {
@@ -70,15 +60,15 @@ export class ImportFromJson {
         this.sqliteUtil.commitTransaction(mDB, true);
         return results.changes;
       } catch (err) {
-        throw new Error (`${msg} ${err}`);
+        throw new Error(`${msg} ${err}`);
       }
     } else {
       if (message.length > 0) {
         try {
           this.sqliteUtil.rollbackTransaction(mDB, true);
-          throw new Error (`${msg} ${message}`);
+          throw new Error(`${msg} ${message}`);
         } catch (err) {
-          throw new Error (`${msg} ${err}: ${message}`);
+          throw new Error(`${msg} ${err}: ${message}`);
         }
       } else {
         // case were no values given
@@ -100,7 +90,7 @@ export class ImportFromJson {
       // start a transaction
       this.sqliteUtil.beginTransaction(mDB, true);
     } catch (err) {
-      throw new Error (`${msg} ${err}`);
+      throw new Error(`${msg} ${err}`);
     }
     for (const jView of jsonData.views) {
       if (jView.value != null) {
@@ -120,15 +110,15 @@ export class ImportFromJson {
         this.sqliteUtil.commitTransaction(mDB, true);
         return results.changes;
       } catch (err) {
-        throw new Error (`${msg} ${err}`);
+        throw new Error(`${msg} ${err}`);
       }
     } else {
       if (message.length > 0) {
         try {
           this.sqliteUtil.rollbackTransaction(mDB, true);
-          throw new Error (`${msg} ${message}`);
+          throw new Error(`${msg} ${message}`);
         } catch (err) {
-          throw new Error (`${msg} ${err}: ${message}`);
+          throw new Error(`${msg} ${err}: ${message}`);
         }
       } else {
         // case were no views given

@@ -735,7 +735,7 @@ enum CapacitorSQLiteError: Error {
     // MARK: - ExecuteSet
 
     @objc func executeSet(_ dbName: String, set: [[String: Any]],
-                          transaction: Bool, readonly: Bool)
+                          transaction: Bool, readonly: Bool, returnMode: String)
     throws -> [String: Any] {
         if isInit {
             let mDbName = CapacitorSQLite.getDatabaseName(dbName: dbName)
@@ -750,7 +750,8 @@ enum CapacitorSQLiteError: Error {
             }
             if !mDb.isNCDB() && mDb.isDBOpen() {
                 do {
-                    let res = try mDb.execSet(set: set, transaction: transaction)
+                    let res = try mDb.execSet(set: set, transaction: transaction,
+                                              returnMode: returnMode)
                     return res
                 } catch DatabaseError.execSet(let message) {
                     throw CapacitorSQLiteError.failed(message: message)
@@ -771,8 +772,9 @@ enum CapacitorSQLiteError: Error {
 
     // swiftlint:disable function_body_length
     // swiftlint:disable cyclomatic_complexity
+    // swiftlint:disable function_parameter_count
     @objc func run(_ dbName: String, statement: String, values: [Any],
-                   transaction: Bool, readonly: Bool)
+                   transaction: Bool, readonly: Bool, returnMode: String)
     throws -> [String: Any] {
         if isInit {
             let mDbName = CapacitorSQLite.getDatabaseName(dbName: dbName)
@@ -834,7 +836,8 @@ enum CapacitorSQLiteError: Error {
                         }
                     }
                     let res = try mDb.runSQL(sql: statement, values: val,
-                                             transaction: transaction)
+                                             transaction: transaction,
+                                             returnMode: returnMode)
                     return res
                 } catch DatabaseError.runSQL(let message) {
                     throw CapacitorSQLiteError.failed(message: message)
@@ -850,6 +853,7 @@ enum CapacitorSQLiteError: Error {
             throw CapacitorSQLiteError.failed(message: initMessage)
         }
     }
+    // swiftlint:enable function_parameter_count
     // swiftlint:enable cyclomatic_complexity
     // swiftlint:enable function_body_length
 

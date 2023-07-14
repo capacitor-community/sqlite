@@ -27,7 +27,7 @@ export class UtilsDrop {
         msg = 'DropViews';
         break;
       default:
-        throw new Error (`DropElements: ${type} ` + 'not found');
+        throw new Error(`DropElements: ${type} ` + 'not found');
     }
     // get the element's names
     let stmt = 'SELECT name FROM sqlite_master WHERE ';
@@ -43,20 +43,15 @@ export class UtilsDrop {
           statements.push(stmt);
         }
         for (const stmt of statements) {
-          const results = this.sqliteUtil.prepareRun(
-            db,
-            stmt,
-            [],
-            false,
-          );
+          const results = this.sqliteUtil.prepareRun(db, stmt, [], false, 'no');
           if (results.lastId < 0) {
-            throw new Error (`${msg}: lastId < 0`);
+            throw new Error(`${msg}: lastId < 0`);
           }
         }
       }
       return;
     } catch (err) {
-      throw new Error (`${msg}: ${err}`);
+      throw new Error(`${msg}: ${err}`);
     }
   }
   /**
@@ -75,10 +70,10 @@ export class UtilsDrop {
       // drop views
       this.dropElements(db, 'view');
       // vacuum the database
-      this.sqliteUtil.prepareRun(db, 'VACUUM;', [], false);
+      this.sqliteUtil.prepareRun(db, 'VACUUM;', [], false, 'no');
       return;
     } catch (err) {
-      throw new Error (`DropAll: ${err}`);
+      throw new Error(`DropAll: ${err}`);
     }
   }
   /**
@@ -86,10 +81,7 @@ export class UtilsDrop {
    * @param db
    * @param alterTables
    */
-  public dropTempTables(
-    db: any,
-    alterTables: Record<string, string[]>,
-  ): void {
+  public dropTempTables(db: any, alterTables: Record<string, string[]>): void {
     const tempTables: string[] = Object.keys(alterTables);
     const statements: string[] = [];
     for (const tTable of tempTables) {
@@ -98,17 +90,13 @@ export class UtilsDrop {
       statements.push(stmt);
     }
     try {
-      const results = this.sqliteUtil.execute(
-        db,
-        statements.join('\n'),
-        false,
-      );
+      const results = this.sqliteUtil.execute(db, statements.join('\n'), false);
       if (results.changes < 0) {
-        throw new Error ('DropTempTables: changes < 0');
+        throw new Error('DropTempTables: changes < 0');
       }
       return;
     } catch (err) {
-      throw new Error (`DropTempTables: ${err}`);
+      throw new Error(`DropTempTables: ${err}`);
     }
   }
 }

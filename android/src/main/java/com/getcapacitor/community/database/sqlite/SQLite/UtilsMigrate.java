@@ -1,7 +1,6 @@
 package com.getcapacitor.community.database.sqlite.SQLite;
 
 import android.content.Context;
-import com.getcapacitor.community.database.sqlite.SQLite.UtilsFile;
 import java.io.File;
 import java.util.ArrayList;
 
@@ -14,7 +13,10 @@ public class UtilsMigrate {
         String pathDB = new File(context.getFilesDir().getParentFile(), "databases").getAbsolutePath();
         File dirDB = new File(pathDB);
         if (!dirDB.isDirectory()) {
-            dirDB.mkdir();
+            boolean nDir = dirDB.mkdir();
+            if (!nDir) {
+                throw new Exception("Cannot create dir" + pathDB);
+            }
         }
         String pathFiles = this.getFolder(context, folderPath);
         // check if the path exists
@@ -30,7 +32,10 @@ public class UtilsMigrate {
         String pathDB = new File(context.getFilesDir().getParentFile(), "databases").getAbsolutePath();
         File dirDB = new File(pathDB);
         if (!dirDB.isDirectory()) {
-            dirDB.mkdir();
+            boolean nDir = dirDB.mkdir();
+            if (!nDir) {
+                throw new Exception("Cannot create dir" + pathDB);
+            }
         }
         String pathFiles = this.getFolder(context, folderPath);
         // check if the path exists
@@ -129,7 +134,10 @@ public class UtilsMigrate {
         String pathDB = new File(context.getFilesDir().getParentFile(), "databases").getAbsolutePath();
         File dirDB = new File(pathDB);
         if (!dirDB.isDirectory()) {
-            dirDB.mkdir();
+            boolean nDir = dirDB.mkdir();
+            if (!nDir) {
+                throw new Exception("Cannot create dir" + pathDB);
+            }
         }
         String pathFiles = this.getFolder(context, folderPath);
         // check if the path exists

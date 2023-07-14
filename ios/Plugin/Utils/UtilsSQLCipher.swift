@@ -37,6 +37,9 @@ enum UtilsSQLCipherError: Error {
     case openDBNoPassword(message: String)
     case openDBStoredPassword(message: String)
     case openDBGlobalPassword(message: String)
+    case returningWorkAround(message: String)
+    case getUpdDelReturnedValues(message: String)
+    case getFirstPK(message: String)
 }
 enum State: String {
     case DOESNOTEXIST, UNENCRYPTED, ENCRYPTEDSECRET,
@@ -414,20 +417,40 @@ class UtilsSQLCipher {
     // swiftlint:disable function_body_length
     // swiftlint:disable cyclomatic_complexity
     class func prepareSQL(mDB: Database, sql: String, values: [Any],
-                          fromJson: Bool) throws -> Int64 {
+                          fromJson: Bool, returnMode: String) throws -> (Int64, [[String: Any]]) {
         var msg: String = "Error prepareSQL: "
         if !mDB.isDBOpen() {
             msg.append("Database not opened")
             throw UtilsSQLCipherError.prepareSQL(message: msg)
         }
+        let systemVersion = UIDevice.current.systemVersion
         var runSQLStatement: OpaquePointer?
         var message: String = ""
         var lastId: Int64 = -1
         var sqlStmt = sql
+        var names: String = ""
+        var result: [[String: Any]] = []
+        var retMode: String
+        if #available(iOS 15, *) {
+            retMode = returnMode
+        } else {
+            retMode = returnMode
+            if retMode != "no" {
+                retMode = "wA\(retMode)"
+            }
+        }
+
+        if (retMode == "no" || retMode.prefix(2) == "wA") &&
+            sqlStmt.uppercased().contains("RETURNING") {
+            let stmtNames = getStmtAndRetColNames(sqlStmt: sqlStmt,
+                                                  retMode: retMode)
+            sqlStmt = stmtNames["stmt"] ?? sqlStmt
+            names = stmtNames["names"] ?? ""
+        }
         // Check for DELETE statement
         if !fromJson && sqlStmt.prefix(6).uppercased() == "DELETE" {
             do {
-                sqlStmt = try deleteSQL(mDB: mDB, sql: sql,
+                sqlStmt = try deleteSQL(mDB: mDB, sql: sqlStmt,
                                         values: values)
             } catch UtilsSQLCipherError.deleteSQL(let message) {
                 let msg = "Error: prepareSQL \(message)"
@@ -438,6 +461,7 @@ class UtilsSQLCipher {
             mDB.mDb, sqlStmt, -1, &runSQLStatement, nil)
         if returnCode == SQLITE_OK {
             if !values.isEmpty {
+                //                retMode = "no"
                 // do the binding of values
                 var idx: Int = 1
                 for value in values {
@@ -452,12 +476,35 @@ class UtilsSQLCipher {
                     if message.count > 0 { break }
                 }
             }
-            returnCode = sqlite3_step(runSQLStatement)
-            if returnCode != SQLITE_DONE {
-                let errmsg: String = String(
-                    cString: sqlite3_errmsg(mDB.mDb))
-                message = "Error: prepareSQL step failed rc: "
-                message.append("\(returnCode) message: \(errmsg)")
+            if retMode == "no" {
+                returnCode = sqlite3_step(runSQLStatement)
+                if returnCode != SQLITE_DONE {
+                    let errmsg: String = String(
+                        cString: sqlite3_errmsg(mDB.mDb))
+                    message = "Error: prepareSQL step failed rc: "
+                    message.append("\(returnCode) message: \(errmsg)")
+                }
+            } else {
+                if retMode.prefix(2) == "wA" {
+                    do {
+                        result = try UtilsSQLCipher.returningWorkAround(
+                            mDB: mDB,
+                            runSQLStatement: runSQLStatement, sqlStmt: sqlStmt,
+                            names: names, returnMode: retMode)
+                    } catch UtilsSQLCipherError
+                                .returningWorkAround(let message) {
+                        throw UtilsSQLCipherError.prepareSQL(message: message)
+                    }
+                } else {
+
+                    do {
+                        result = try UtilsSQLCipher.fetchColumnInfo(
+                            handle: runSQLStatement, returnMode: retMode)
+                    } catch UtilsSQLCipherError
+                                .fetchColumnInfo(let message) {
+                        throw UtilsSQLCipherError.prepareSQL(message: message)
+                    }
+                }
             }
         } else {
             let errmsg: String = String(
@@ -476,9 +523,156 @@ class UtilsSQLCipher {
             throw UtilsSQLCipherError.prepareSQL(message: message)
         } else {
             lastId = Int64(sqlite3_last_insert_rowid(mDB.mDb))
-            return lastId
+            return (lastId, result)
         }
     }
+
+    // MARK: - getStmtAndRetColNames
+
+    class func getStmtAndRetColNames(sqlStmt: String, retMode: String) -> [String: String] {
+        let retWord = "RETURNING"
+
+        var retStmtNames: [String: String] = [:]
+        retStmtNames["stmt"] = sqlStmt
+        retStmtNames["names"] = ""
+        if let range = sqlStmt.uppercased().range(of: retWord) {
+            let prefix = sqlStmt.prefix(upTo: range.lowerBound)
+            retStmtNames["stmt"] = "\(prefix);"
+            retStmtNames["names"] = ""
+            if retMode.prefix(2) == "wA" {
+                let suffix = sqlStmt.suffix(from: range.upperBound)
+                let names = "\(suffix)".trimmingLeadingAndTrailingSpaces()
+                if names.suffix(1) == ";" {
+                    retStmtNames["names"] = String(names.dropLast())
+                }
+            }
+
+        }
+        return retStmtNames
+    }
+
+    // MARK: - returningWorkAround
+
+    class func returningWorkAround(mDB: Database, runSQLStatement: OpaquePointer?,
+                                   sqlStmt: String, names: String,
+                                   returnMode: String) throws -> [[String: Any]] {
+        var result: [[String: Any]] = []
+        let initLastId = Int64(sqlite3_last_insert_rowid(mDB.mDb))
+        if sqlStmt.prefix(6).uppercased() == "DELETE" && names.count > 0 {
+            do {
+                result = try getUpdDelReturnedValues(mDB: mDB, sqlStmt: sqlStmt,
+                                                     names: names )
+            } catch UtilsSQLCipherError
+                        .getUpdDelReturnedValues(let message) {
+                throw UtilsSQLCipherError.returningWorkAround(message: message)
+            }
+        }
+        let returnCode: Int32 = sqlite3_step(runSQLStatement)
+        if returnCode != SQLITE_DONE {
+            let errmsg: String = String(
+                cString: sqlite3_errmsg(mDB.mDb))
+            var message = "Error: prepareSQL step failed rc: "
+            message.append("\(returnCode) message: \(errmsg)")
+            throw UtilsSQLCipherError.returningWorkAround(message: message)
+
+        }
+        if sqlStmt.prefix(6).uppercased() == "INSERT" {
+            let lastId = Int64(sqlite3_last_insert_rowid(mDB.mDb))
+            let tableName = extractTableName(from: sqlStmt)
+            if let tblName = tableName {
+                var query = "SELECT \(names) FROM \(tblName) WHERE rowid "
+                if returnMode == "wAone" {
+                    query += "= \(initLastId + 1);"
+                } else {
+                    query += "BETWEEN \(initLastId + 1) AND \(lastId);"
+                }
+                do {
+                    result = try querySQL(mDB: mDB, sql: query, values: [])
+                } catch UtilsSQLCipherError.querySQL(let message) {
+                    throw UtilsSQLCipherError.returningWorkAround(message: message)
+                }
+
+            }
+
+        } else if sqlStmt.prefix(6).uppercased() == "UPDATE" {
+            do {
+                result = try getUpdDelReturnedValues(mDB: mDB, sqlStmt: sqlStmt,
+                                                     names: names )
+            } catch UtilsSQLCipherError
+                        .getUpdDelReturnedValues(let message) {
+                throw UtilsSQLCipherError.returningWorkAround(message: message)
+            }
+
+        }
+
+        return result
+    }
+
+    // MARK: - getUpdDelReturnedValues
+
+    class func getUpdDelReturnedValues(mDB: Database, sqlStmt: String,
+                                       names: String ) throws -> [[String: Any]] {
+        var result: [[String: Any]] = []
+        let tableName = extractTableName(from: sqlStmt)
+        let whereClause = extractWhereClause(from: sqlStmt)
+        if let tblName = tableName {
+            if var wClause = whereClause {
+                if wClause.suffix(1) == ";" {
+                    wClause = String(wClause.dropLast())
+                }
+                do {
+                    var query: String = "SELECT \(names) FROM \(tblName) WHERE "
+                    query += "\(wClause);"
+                    result = try querySQL(mDB: mDB, sql: query, values: [])
+                } catch UtilsSQLCipherError.querySQL(let message) {
+                    throw UtilsSQLCipherError.getUpdDelReturnedValues(message: message)
+                }
+            }
+        }
+        return result
+    }
+
+    // MARK: - extractTableName
+
+    class func extractTableName(from statement: String) -> String? {
+        let pattern = "(?:INSERT\\s+INTO|UPDATE|DELETE\\s+FROM)\\s+([^\\s]+)"
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else { return nil }
+
+        let range = NSRange(location: 0, length: statement.count)
+        if let match = regex.firstMatch(in: statement, options: [], range: range) {
+            let tableNameRange = match.range(at: 1)
+            if let tableNameRange = Range(tableNameRange, in: statement) {
+                let tableName = String(statement[tableNameRange])
+                return tableName
+            }
+        }
+
+        return nil
+    }
+
+    // MARK: - extractWhereClause
+
+    class func extractWhereClause(from statement: String) -> String? {
+        let pattern = "WHERE(.+?)(?:ORDER\\s+BY|LIMIT|$)"
+        guard let regex = try? NSRegularExpression(
+                pattern: pattern,
+                options: [.caseInsensitive, .dotMatchesLineSeparators]) else {
+            return nil
+
+        }
+
+        let range = NSRange(location: 0, length: statement.count)
+        if let match = regex.firstMatch(in: statement, options: [], range: range) {
+            let whereClauseRange = match.range(at: 1)
+            if let whereClauseRange = Range(whereClauseRange, in: statement) {
+                let whereClause = String(statement[whereClauseRange])
+                return whereClause.trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+        }
+
+        return nil
+    }
+
     // swiftlint:enable cyclomatic_complexity
     // swiftlint:enable function_body_length
 
@@ -530,6 +724,7 @@ class UtilsSQLCipher {
     class func findReferencesAndUpdate(mDB: Database, tableName: String,
                                        whereStmt: String,
                                        values: [Any]) throws {
+        var lastId: Int64 = -1
         do {
             var references = try getReferences(mDB: mDB,
                                                tableName: tableName)
@@ -590,9 +785,10 @@ class UtilsSQLCipher {
                     }
                 }
 
-                let lastId = try prepareSQL(mDB: mDB, sql: stmt,
-                                            values: selValues,
-                                            fromJson: false)
+                let resp = try prepareSQL(mDB: mDB, sql: stmt,
+                                          values: selValues,
+                                          fromJson: false, returnMode: "no")
+                lastId = resp.0
                 if lastId == -1 {
                     let msg = "UPDATE sql_deleted failed for references " +
                         "table: \(refTable) "
@@ -825,7 +1021,7 @@ class UtilsSQLCipher {
 
     class func querySQL(mDB: Database, sql: String,
                         values: [Any]) throws -> [[String: Any]] {
-        var msg: String = "Error prepareSQL: "
+        var msg: String = "Error querySQL: "
         if !mDB.isDBOpen() {
             msg.append("Database not opened")
             throw UtilsSQLCipherError.querySQL(message: msg)
@@ -845,7 +1041,7 @@ class UtilsSQLCipher {
             if message.count == 0 {
                 do {
                     result = try UtilsSQLCipher.fetchColumnInfo(
-                        handle: selectSQLStatement)
+                        handle: selectSQLStatement, returnMode: "all")
                 } catch UtilsSQLCipherError
                             .fetchColumnInfo(let message) {
                     throw UtilsSQLCipherError.querySQL(message: message)
@@ -875,7 +1071,7 @@ class UtilsSQLCipher {
 
     // swiftlint:disable function_body_length
     // swiftlint:disable cyclomatic_complexity
-    class func fetchColumnInfo(handle: OpaquePointer?)
+    class func fetchColumnInfo(handle: OpaquePointer?, returnMode: String)
     throws -> [[String: Any]] {
         var result: [[String: Any]] = []
         var columnCount: Int32 = 0
@@ -937,7 +1133,9 @@ class UtilsSQLCipher {
                 }
             }
             result.append(rowData)
-
+            if returnMode == "one" {
+                break
+            }
         }
         return result
     }
@@ -1026,14 +1224,16 @@ class UtilsSQLCipher {
 
     // MARK: - ExecuteSet
 
-    class func executeSet(mDB: Database, set: [[String: Any]])
-    throws -> Int64 {
+    // swiftlint:disable function_body_length
+    class func executeSet(mDB: Database, set: [[String: Any]], returnMode: String)
+    throws -> (Int64, [[String: Any]]) {
         var msg: String = "Error executeSet: "
         if !mDB.isDBOpen() {
             msg.append("Database not opened")
             throw UtilsSQLCipherError.executeSet(message: msg)
         }
         var lastId: Int64 = -1
+        var response: [[String: Any]] = []
         do {
             for dict  in set {
                 guard let sql: String = dict["statement"] as? String
@@ -1046,38 +1246,70 @@ class UtilsSQLCipher {
                     throw UtilsSQLCipherError.executeSet(
                         message: "No values given")
                 }
+                var respSet: [[String: Any]] = []
                 let isArray = values.count > 0 ? UtilsSQLCipher.parse(mVar: values[0]) : false
                 if isArray {
                     if let arrValues = values as? [[Any]] {
                         for vals in arrValues {
-                            lastId = try UtilsSQLCipher
+                            let resp = try UtilsSQLCipher
                                 .prepareSQL(mDB: mDB, sql: sql,
-                                            values: vals, fromJson: false)
+                                            values: vals, fromJson: false,
+                                            returnMode: returnMode)
+                            lastId = resp.0
+                            respSet = resp.1
+
                             if  lastId == -1 {
                                 let message: String = "lastId < 0"
                                 throw UtilsSQLCipherError
                                 .executeSet(message: message)
                             }
+
+                            response = addToResponse(response: response,
+                                                     respSet: respSet)
                         }
                     }
                 } else {
-                    lastId = try UtilsSQLCipher
+                    let resp = try UtilsSQLCipher
                         .prepareSQL(mDB: mDB, sql: sql, values: values,
-                                    fromJson: false)
+                                    fromJson: false, returnMode: returnMode)
+                    lastId = resp.0
+                    respSet = resp.1
                     if  lastId == -1 {
                         let message: String = "lastId < 0"
                         throw UtilsSQLCipherError.executeSet(
                             message: message)
                     }
+                    response = addToResponse(response: response, respSet: respSet)
                 }
             }
 
-            return lastId
+            return (lastId, response)
         } catch UtilsSQLCipherError.prepareSQL(let message) {
             throw UtilsSQLCipherError.executeSet(
                 message: message)
         }
     }
+
+    class func addToResponse(response: [[String: Any]],
+                             respSet: [[String: Any]]) -> [[String: Any]] {
+        var retResponse = response
+        var mRespSet = respSet
+        if !retResponse.isEmpty {
+            let keysInArray1 = ["ios_columns"]
+            mRespSet = mRespSet.filter { dict2 in
+                guard let dict2Key = dict2.keys.first else {
+                    return true // Keep dictionaries without any keys
+                }
+                return !keysInArray1.contains(dict2Key)
+
+            }
+        }
+        retResponse.append(contentsOf: mRespSet)
+
+        return retResponse
+
+    }
+    // swiftlint:enable function_body_length
 
     // MARK: - RestoreDB
 

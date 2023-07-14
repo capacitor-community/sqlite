@@ -18,10 +18,7 @@ export class ExportToJson {
    * @param mDB
    * @param sqlObj
    */
-  public createExportObject(
-    mDB: any,
-    sqlObj: JsonSQLite,
-  ): JsonSQLite {
+  public createExportObject(mDB: any, sqlObj: JsonSQLite): JsonSQLite {
     const msg = 'CreateExportObject';
     const retObj: JsonSQLite = {} as JsonSQLite;
     let tables: JsonTable[] = [];
@@ -33,15 +30,11 @@ export class ExportToJson {
       // get Table's name
       const resTables: any[] = this.getTablesNameSQL(mDB);
       if (resTables.length === 0) {
-        throw new Error (`${msg} table's names failed`);
+        throw new Error(`${msg} table's names failed`);
       } else {
-        const isTable = this.jsonUtil.isTableExists(
-          mDB,
-          true,
-          'sync_table',
-        );
+        const isTable = this.jsonUtil.isTableExists(mDB, true, 'sync_table');
         if (!isTable && sqlObj.mode === 'partial') {
-          throw new Error (`${msg} No sync_table available`);
+          throw new Error(`${msg} No sync_table available`);
         }
 
         switch (sqlObj.mode) {
@@ -54,13 +47,12 @@ export class ExportToJson {
             break;
           }
           default: {
-            errmsg =
-              `${msg} expMode ${sqlObj.mode} not defined`;
+            errmsg = `${msg} expMode ${sqlObj.mode} not defined`;
             break;
           }
         }
         if (errmsg.length > 0) {
-          throw new Error (errmsg);
+          throw new Error(errmsg);
         }
         if (tables.length > 0) {
           retObj.database = sqlObj.database;
@@ -75,7 +67,7 @@ export class ExportToJson {
         return retObj;
       }
     } catch (err) {
-      throw new Error (`${msg} ${err}`);
+      throw new Error(`${msg} ${err}`);
     }
   }
   /**
@@ -93,11 +85,11 @@ export class ExportToJson {
       retQuery = this.sqliteUtil.queryAll(mDb, sql, []);
       return retQuery;
     } catch (err) {
-      throw new Error (`${msg} ${err}`);
+      throw new Error(`${msg} ${err}`);
     }
   }
   public getLastExportDate(mDb: any): number {
-    const msg = "GetLastExportDate";
+    const msg = 'GetLastExportDate';
     let retDate = -1;
     try {
       // get the last sync date
@@ -109,7 +101,7 @@ export class ExportToJson {
       }
       return retDate;
     } catch (err) {
-      throw new Error (`${msg} ${err}`);
+      throw new Error(`${msg} ${err}`);
     }
   }
   /**
@@ -118,32 +110,25 @@ export class ExportToJson {
    * @param lastExportedDate
    * @returns
    */
-  public setLastExportDate(
-    mDb: any,
-    lastExportedDate: string,
-  ): any {
-    const msg = "SetLastExportDate";
+  public setLastExportDate(mDb: any, lastExportedDate: string): any {
+    const msg = 'SetLastExportDate';
     try {
-      const isTable = this.jsonUtil.isTableExists(
-        mDb,
-        true,
-        'sync_table',
-      );
+      const isTable = this.jsonUtil.isTableExists(mDb, true, 'sync_table');
       if (!isTable) {
-        throw new Error (`${msg} No sync_table available`);
+        throw new Error(`${msg} No sync_table available`);
       }
       const sDate: number = Math.round(
         new Date(lastExportedDate).getTime() / 1000,
       );
       let stmt = '';
-      if ((this.getLastExportDate(mDb)) > 0) {
+      if (this.getLastExportDate(mDb) > 0) {
         stmt = `UPDATE sync_table SET sync_date = ${sDate} WHERE id = 2;`;
       } else {
         stmt = `INSERT INTO sync_table (sync_date) VALUES (${sDate});`;
       }
       const results = this.sqliteUtil.execute(mDb, stmt, false);
       if (results.changes < 0) {
-        return { result: false, message: `${msg} failed`};
+        return { result: false, message: `${msg} failed` };
       } else {
         return { result: true };
       }
@@ -155,42 +140,43 @@ export class ExportToJson {
     }
   }
   public delExportedRows(mDb: any): void {
-    const msg = "DelExportedRows";
+    const msg = 'DelExportedRows';
     let lastExportDate: number;
     try {
       // check if synchronization table exists
-      const isTable = this.jsonUtil.isTableExists(
-        mDb,
-        true,
-        'sync_table',
-      );
+      const isTable = this.jsonUtil.isTableExists(mDb, true, 'sync_table');
       if (!isTable) {
-        throw new Error (`${msg} No sync_table available`);
+        throw new Error(`${msg} No sync_table available`);
       }
       // get the last export date
       lastExportDate = this.getLastExportDate(mDb);
       if (lastExportDate < 0) {
-        throw new Error (
-          `${msg} no last exported date available`);
+        throw new Error(`${msg} no last exported date available`);
       }
       // get the table' name list
       const resTables: any[] = this.sqliteUtil.getTablesNames(mDb);
       if (resTables.length === 0) {
-        throw new Error (`${msg} No table's names returned`);
+        throw new Error(`${msg} No table's names returned`);
       }
       // Loop through the tables
       for (const table of resTables) {
         // define the delete statement
         const delStmt = `DELETE FROM ${table}
               WHERE sql_deleted = 1 AND last_modified < ${lastExportDate};`;
-        const results = this.sqliteUtil.prepareRun(mDb, delStmt, [], true);
+        const results = this.sqliteUtil.prepareRun(
+          mDb,
+          delStmt,
+          [],
+          true,
+          'no',
+        );
         if (results.lastId < 0) {
-          throw new Error (`${msg} lastId < 0`);
+          throw new Error(`${msg} lastId < 0`);
         }
       }
       return;
     } catch (err) {
-      throw new Error (`${msg} failed: ${err.message}`);
+      throw new Error(`${msg} failed: ${err.message}`);
     }
   }
   /**
@@ -212,7 +198,7 @@ export class ExportToJson {
       }
       return views;
     } catch (err) {
-      throw new Error (`getViewsName: ${err}`);
+      throw new Error(`getViewsName: ${err}`);
     }
   }
   /**
@@ -220,7 +206,7 @@ export class ExportToJson {
    * @param mDb
    */
   public getSyncDate(mDb: any): number {
-    const msg = "GetSyncDate";
+    const msg = 'GetSyncDate';
     let retDate = -1;
     // get the last sync date
     const stmt = `SELECT sync_date FROM sync_table WHERE id = ?;`;
@@ -230,7 +216,7 @@ export class ExportToJson {
       retDate = row[key];
       return retDate;
     } else {
-      throw new Error (`${msg} no syncDate`);
+      throw new Error(`${msg} no syncDate`);
     }
   }
   /**
@@ -238,11 +224,8 @@ export class ExportToJson {
    * @param mDb
    * @param resTables
    */
-  private getTablesFull(
-    mDb: any,
-    resTables: any[],
-  ): JsonTable[] {
-    const msg = 'GetTablesFull'
+  private getTablesFull(mDb: any, resTables: any[]): JsonTable[] {
+    const msg = 'GetTablesFull';
     const tables: JsonTable[] = [];
     let errmsg = '';
     try {
@@ -287,11 +270,7 @@ export class ExportToJson {
         }
         // create Table's Data
         const query = `SELECT * FROM ${tableName};`;
-        const values: any[] = this.jsonUtil.getValues(
-          mDb,
-          query,
-          tableName,
-        );
+        const values: any[] = this.jsonUtil.getValues(mDb, query, tableName);
         table.name = tableName;
         if (schema.length > 0) {
           table.schema = schema;
@@ -316,11 +295,11 @@ export class ExportToJson {
         tables.push(table);
       }
       if (errmsg.length > 0) {
-        throw new Error (errmsg);
+        throw new Error(errmsg);
       }
       return tables;
     } catch (err) {
-      throw new Error (`${msg} ${err}`);
+      throw new Error(`${msg} ${err}`);
     }
   }
 
@@ -330,10 +309,8 @@ export class ExportToJson {
    * @param sqlStmt
    * @param tableName
    */
-  private getSchema(
-    sqlStmt: string /*,tableName: string,*/,
-  ): JsonColumn[] {
-    const msg ='GetSchema';
+  private getSchema(sqlStmt: string /*,tableName: string,*/): JsonColumn[] {
+    const msg = 'GetSchema';
     const schema: JsonColumn[] = [];
     // take the substring between parenthesis
     const openPar: number = sqlStmt.indexOf('(');
@@ -386,7 +363,7 @@ export class ExportToJson {
       }
       return schema;
     } catch (err) {
-      throw new Error (`${msg} ${err}`);
+      throw new Error(`${msg} ${err}`);
     }
   }
 
@@ -429,12 +406,12 @@ export class ExportToJson {
           }
         }
         if (errmsg.length > 0) {
-          throw new Error (errmsg);
+          throw new Error(errmsg);
         }
       }
       return indexes;
     } catch (err) {
-      throw new Error (`${msg} ${err}`);
+      throw new Error(`${msg} ${err}`);
     }
   }
   /**
@@ -443,10 +420,7 @@ export class ExportToJson {
    * @param sqlStmt
    * @param tableName
    */
-  private getTriggers(
-    mDb: any,
-    tableName: string,
-  ): JsonTrigger[] {
+  private getTriggers(mDb: any, tableName: string): JsonTrigger[] {
     const msg = 'GetTriggers';
     const triggers: JsonTrigger[] = [];
     try {
@@ -464,19 +438,19 @@ export class ExportToJson {
               const name: string = rTrg['name'];
               let sqlArr: string[] = sql.split(name);
               if (sqlArr.length != 2) {
-                throw new Error (
+                throw new Error(
                   `${msg} sql split name does not return 2 values`,
                 );
               }
               if (!sqlArr[1].includes(tableName)) {
-                throw new Error (
+                throw new Error(
                   `${msg} sql split does not contains ${tableName}`,
                 );
               }
               const timeEvent = sqlArr[1].split(tableName, 1)[0].trim();
               sqlArr = sqlArr[1].split(timeEvent + ' ' + tableName);
               if (sqlArr.length != 2) {
-                throw new Error (
+                throw new Error(
                   `${msg} sql split tableName does not return 2 values`,
                 );
               }
@@ -485,7 +459,7 @@ export class ExportToJson {
               if (sqlArr[1].trim().substring(0, 5).toUpperCase() !== 'BEGIN') {
                 sqlArr = sqlArr[1].trim().split('BEGIN');
                 if (sqlArr.length != 2) {
-                  throw new Error (
+                  throw new Error(
                     `${msg} sql split BEGIN does not return 2 values`,
                   );
                 }
@@ -502,20 +476,16 @@ export class ExportToJson {
               trigger.timeevent = timeEvent;
               triggers.push(trigger);
             } else {
-              throw new Error (
-                `${msg} Table ${tableName} doesn't match`,
-              );
+              throw new Error(`${msg} Table ${tableName} doesn't match`);
             }
           } else {
-            throw new Error (
-              `${msg} Table ${tableName} creating indexes`,
-            );
+            throw new Error(`${msg} Table ${tableName} creating indexes`);
           }
         }
       }
       return triggers;
     } catch (err) {
-      throw new Error (`${msg} ${err}`);
+      throw new Error(`${msg} ${err}`);
     }
   }
   /**
@@ -523,10 +493,7 @@ export class ExportToJson {
    * @param mDb
    * @param resTables
    */
-  private getTablesPartial(
-    mDb: any,
-    resTables: any[],
-  ): JsonTable[] {
+  private getTablesPartial(mDb: any, resTables: any[]): JsonTable[] {
     const msg = 'GetTablesPartial';
     const tables: JsonTable[] = [];
     let modTables: any = {};
@@ -535,10 +502,7 @@ export class ExportToJson {
     let errmsg = '';
     try {
       // Get the syncDate and the Modified Tables
-      const partialModeData: any = this.getPartialModeData(
-        mDb,
-        resTables,
-      );
+      const partialModeData: any = this.getPartialModeData(mDb, resTables);
       if (Object.keys(partialModeData).includes('syncDate')) {
         syncDate = partialModeData.syncDate;
       }
@@ -603,11 +567,7 @@ export class ExportToJson {
             `SELECT * FROM ${tableName} ` +
             `WHERE last_modified > ${syncDate};`;
         }
-        const values: any[] = this.jsonUtil.getValues(
-          mDb,
-          query,
-          tableName,
-        );
+        const values: any[] = this.jsonUtil.getValues(mDb, query, tableName);
 
         // check the table object validity
         table.name = tableName;
@@ -630,11 +590,11 @@ export class ExportToJson {
         tables.push(table);
       }
       if (errmsg.length > 0) {
-        throw new Error (errmsg);
+        throw new Error(errmsg);
       }
       return tables;
     } catch (err) {
-      throw new Error (`${msg} ${err}`);
+      throw new Error(`${msg} ${err}`);
     }
   }
   /**
@@ -649,30 +609,22 @@ export class ExportToJson {
       // get the synchronization date
       const syncDate: number = this.getSyncDate(mDb);
       if (syncDate <= 0) {
-        throw new Error (`${msg} no syncDate`);
+        throw new Error(`${msg} no syncDate`);
       }
       // get the tables which have been updated
       // since last synchronization
-      const modTables: any = this.getTablesModified(
-        mDb,
-        resTables,
-        syncDate,
-      );
+      const modTables: any = this.getTablesModified(mDb, resTables, syncDate);
       if (modTables.length <= 0) {
-        throw new Error (`${msg} no modTables`);
+        throw new Error(`${msg} no modTables`);
       }
       retData.syncDate = syncDate;
       retData.modTables = modTables;
       return retData;
     } catch (err) {
-      throw new Error (`${msg} ${err}`);
+      throw new Error(`${msg} ${err}`);
     }
   }
-  private getTablesModified(
-    mDb: any,
-    tables: any[],
-    syncDate: number,
-  ): any {
+  private getTablesModified(mDb: any, tables: any[], syncDate: number): any {
     const msg = 'GetTablesModified';
     let errmsg = '';
     try {
@@ -707,11 +659,11 @@ export class ExportToJson {
         retModified[key] = mode;
       }
       if (errmsg.length > 0) {
-        throw new Error (errmsg);
+        throw new Error(errmsg);
       }
       return retModified;
     } catch (err) {
-      throw new Error (`${msg} ${err}`);
+      throw new Error(`${msg} ${err}`);
     }
   }
   private modEmbeddedParentheses(sstr: string): string {
@@ -719,8 +671,7 @@ export class ExportToJson {
     const oParArray: number[] = this.indexOfChar(sstr, '(');
     const cParArray: number[] = this.indexOfChar(sstr, ')');
     if (oParArray.length != cParArray.length) {
-      throw new Error (
-        `${msg} Not same number of '(' & ')'`);
+      throw new Error(`${msg} Not same number of '(' & ')'`);
     }
     if (oParArray.length === 0) {
       return sstr;

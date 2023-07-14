@@ -23,7 +23,7 @@ export class UtilsEncryption {
           '',
           false,
         );
-        this.sqliteUtil.pragmaReKey(mDB,'',password);
+        this.sqliteUtil.pragmaReKey(mDB, '', password);
         this.sqliteUtil.closeDB(mDB);
         return Promise.resolve();
       } catch (err) {

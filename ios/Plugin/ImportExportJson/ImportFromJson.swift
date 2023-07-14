@@ -384,6 +384,7 @@ class ImportFromJson {
         mDB: Database, mode: String,
         mValues: [[UncertainValue<String, Int, Double>]],
         tableName: String) throws {
+        var lastId: Int64 = -1
         // Check if table exists
         do {
             let isTab: Bool = try UtilsJson
@@ -443,8 +444,9 @@ class ImportFromJson {
                     if stmt.prefix(6) == "DELETE" {
                         rowValues = []
                     }
-                    let lastId: Int64 = try UtilsSQLCipher.prepareSQL(
-                        mDB: mDB, sql: stmt, values: rowValues, fromJson: true)
+                    let resp = try UtilsSQLCipher.prepareSQL(
+                        mDB: mDB, sql: stmt, values: rowValues, fromJson: true, returnMode: "no")
+                    lastId = resp.0
                     if lastId < 0 {
                         throw ImportFromJsonError.createTableData(
                             message: "lastId < 0")

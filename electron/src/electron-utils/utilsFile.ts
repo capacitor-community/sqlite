@@ -50,27 +50,27 @@ export class UtilsFile {
         ).toString(),
       );
     }
-    this.isEncryption = this.capConfig.plugins.CapacitorSQLite.electronIsEncryption
-                        ? this.capConfig.plugins.CapacitorSQLite.electronIsEncryption
-                        : false;
+    this.isEncryption = this.capConfig.plugins.CapacitorSQLite
+      .electronIsEncryption
+      ? this.capConfig.plugins.CapacitorSQLite.electronIsEncryption
+      : false;
     this.osType = this.Os.type();
     switch (this.osType) {
       case 'Darwin':
-        this.pathDB =
-          this.capConfig.plugins.CapacitorSQLite.electronMacLocation 
-          ? this.capConfig.plugins.CapacitorSQLite.electronMacLocation 
+        this.pathDB = this.capConfig.plugins.CapacitorSQLite.electronMacLocation
+          ? this.capConfig.plugins.CapacitorSQLite.electronMacLocation
           : 'Databases';
         break;
       case 'Linux':
-        this.pathDB =
-          this.capConfig.plugins.CapacitorSQLite.electronLinuxLocation
-          ? this.capConfig.plugins.CapacitorSQLite.electronLinuxLocation 
+        this.pathDB = this.capConfig.plugins.CapacitorSQLite
+          .electronLinuxLocation
+          ? this.capConfig.plugins.CapacitorSQLite.electronLinuxLocation
           : 'Databases';
         break;
       case 'Windows_NT':
-        this.pathDB =
-          this.capConfig.plugins.CapacitorSQLite.electronWindowsLocation
-          ? this.capConfig.plugins.CapacitorSQLite.electronWindowsLocation 
+        this.pathDB = this.capConfig.plugins.CapacitorSQLite
+          .electronWindowsLocation
+          ? this.capConfig.plugins.CapacitorSQLite.electronWindowsLocation
           : 'Databases';
         break;
       default:
@@ -80,8 +80,8 @@ export class UtilsFile {
   }
   /**
    * Get isEncryption from config
-   * @returns 
-   */ 
+   * @returns
+   */
   public getIsEncryption(): boolean {
     return this.isEncryption;
   }
@@ -596,26 +596,29 @@ export class UtilsFile {
       fileStream.on('finish', resolve);
     });
   }
-  public readFileAsPromise(path: string, options: {start: number, end: number}): Promise<string> {
+  public readFileAsPromise(
+    path: string,
+    options: { start: number; end: number },
+  ): Promise<string> {
     return new Promise((resolve, reject) => {
       const fileStream = this.NodeFs.createReadStream(path, options);
-  
+
       const chunks: any[] = [];
       fileStream.on('data', (data: any) => {
         chunks.push(data);
       });
-  
+
       fileStream.on('close', () => {
         resolve(chunks.toString());
       });
-  
-      fileStream.on('error', (err:any) => {
+
+      fileStream.on('error', (err: any) => {
         const msg = err.message ? err.message : err;
         reject(msg);
       });
     });
   }
-  
+
   /**
    * CreateFolderIfNotExists
    * Create directory

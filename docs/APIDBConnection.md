@@ -169,7 +169,7 @@ Execute SQLite DB Connection Query
 ### run(...)
 
 ```typescript
-run(statement: string, values?: any[] | undefined, transaction?: boolean | undefined) => Promise<capSQLiteChanges>
+run(statement: string, values?: any[] | undefined, transaction?: boolean | undefined, returnMode?: string | undefined) => Promise<capSQLiteChanges>
 ```
 
 Execute SQLite DB Connection Raw Statement
@@ -179,6 +179,7 @@ Execute SQLite DB Connection Raw Statement
 | **`statement`**   | <code>string</code>  |             |
 | **`values`**      | <code>any[]</code>   | (optional)  |
 | **`transaction`** | <code>boolean</code> |             |
+| **`returnMode`**  | <code>string</code>  |             |
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
 
@@ -190,7 +191,7 @@ Execute SQLite DB Connection Raw Statement
 ### executeSet(...)
 
 ```typescript
-executeSet(set: capSQLiteSet[], transaction?: boolean | undefined) => Promise<capSQLiteChanges>
+executeSet(set: capSQLiteSet[], transaction?: boolean | undefined, returnMode?: string | undefined) => Promise<capSQLiteChanges>
 ```
 
 Execute SQLite DB Connection Set
@@ -199,6 +200,7 @@ Execute SQLite DB Connection Set
 | ----------------- | --------------------------- |
 | **`set`**         | <code>capSQLiteSet[]</code> |
 | **`transaction`** | <code>boolean</code>        |
+| **`returnMode`**  | <code>string</code>         |
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
 
@@ -408,6 +410,7 @@ executeTransaction(txn: { statement: string; values?: any[]; }[]) => Promise<voi
 | ------------- | ------------------- | ---------------------------------------------------- |
 | **`changes`** | <code>number</code> | the number of changes from an execute or run command |
 | **`lastId`**  | <code>number</code> | the lastId created from a run command                |
+| **`values`**  | <code>any[]</code>  | values when RETURNING                                |
 
 
 #### DBSQLiteValues

@@ -767,10 +767,12 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         }
         let transaction: Bool = call.getBool("transaction") ?? true
         let readOnly: Bool = call.getBool("readonly") ?? false
+        let returnMode: String = call.getString("returnMode") ?? "no"
         do {
             if let res = try implementation?.executeSet(dbName, set: set,
                                                         transaction: transaction,
-                                                        readonly: readOnly) {
+                                                        readonly: readOnly,
+                                                        returnMode: returnMode) {
                 retHandler.rChanges(call: call, ret: res)
                 return
             } else {
@@ -823,13 +825,15 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         }
         let transaction: Bool = call.getBool("transaction") ?? true
         let readOnly: Bool = call.getBool("readonly") ?? false
+        let returnMode: String = call.getString("returnMode") ?? "no"
         do {
             if let res = try
                 implementation?.run(dbName,
                                     statement: statement,
                                     values: values,
                                     transaction: transaction,
-                                    readonly: readOnly) {
+                                    readonly: readOnly,
+                                    returnMode: returnMode) {
                 retHandler.rChanges(call: call, ret: res)
                 return
             } else {
@@ -1414,7 +1418,6 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
         DispatchQueue.global(qos: .background).async {
-
             do {
                 try self.implementation?.getFromHTTPRequest(call, url: url)
                 DispatchQueue.main.async {

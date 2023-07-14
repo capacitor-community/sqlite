@@ -506,6 +506,14 @@ export interface capSQLiteSetOptions {
    * @since 4.1.0-7
    */
   readonly?: boolean;
+  /**
+   * return mode
+   * default 'no'
+   * value 'all'
+   * value 'one' for Electron platform
+   * @since 5.0.5-3
+   */
+  returnMode?: string;
 }
 export interface capSQLiteRunOptions {
   /**
@@ -532,6 +540,14 @@ export interface capSQLiteRunOptions {
    * @since 4.1.0-7
    */
   readonly?: boolean;
+  /**
+   * return mode
+   * default 'no'
+   * value 'all'
+   * value 'one' for Electron platform
+   * @since 5.0.5-3
+   */
+  returnMode?: string;
 }
 export interface capSQLiteQueryOptions {
   /**
@@ -721,6 +737,10 @@ export interface Changes {
    * the lastId created from a run command
    */
   lastId?: number;
+  /**
+   * values when RETURNING
+   */
+  values?: any[];
 }
 export interface capSQLiteValues {
   /**
@@ -1572,7 +1592,7 @@ export class SQLiteConnection implements ISQLiteConnection {
       const res = await this.sqlite.getDatabaseList();
       const values: string[] = res.values;
       values.sort();
-      const ret = {values: values};
+      const ret = { values: values };
       return Promise.resolve(ret);
     } catch (err) {
       return Promise.reject(err);
@@ -1705,6 +1725,7 @@ export interface ISQLiteDBConnection {
     statement: string,
     values?: any[],
     transaction?: boolean,
+    returnMode?: string,
   ): Promise<capSQLiteChanges>;
   /**
    * Execute SQLite DB Connection Set
@@ -1715,6 +1736,7 @@ export interface ISQLiteDBConnection {
   executeSet(
     set: capSQLiteSet[],
     transaction?: boolean,
+    returnMode?: string,
   ): Promise<capSQLiteChanges>;
   /**
    * Check if a SQLite DB Connection exists
@@ -1898,22 +1920,9 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
           readonly: this.readonly,
         });
       }
-      if (res && typeof res.values[0] === 'object') {
-        if (Object.keys(res.values[0]).includes('ios_columns')) {
-          const columnList: string[] = res.values[0]['ios_columns'];
-          const iosRes: any[] = [];
-          for (let i = 1; i < res.values.length; i++) {
-            const rowJson: any = res.values[i];
-            const resRowJson: any = {};
-            for (const item of columnList) {
-              resRowJson[item] = rowJson[item];
-            }
-            iosRes.push(resRowJson);
-          }
-          res = {};
-          res['values'] = iosRes;
-        }
-      }
+
+      // reorder rows for ios
+      res = await this.reorderRows(res);
       return Promise.resolve(res);
     } catch (err) {
       return Promise.reject(err);
@@ -1923,28 +1932,39 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
     statement: string,
     values?: any[],
     transaction = true,
+    returnMode = 'no',
   ): Promise<capSQLiteChanges> {
     let res: any;
     try {
       if (!this.readonly) {
         if (values && values.length > 0) {
+          const mRetMode = statement.toUpperCase().includes('RETURNING')
+            ? returnMode
+            : 'no';
           res = await this.sqlite.run({
             database: this.dbName,
             statement: statement,
             values: values,
             transaction: transaction,
             readonly: false,
+            returnMode: mRetMode,
           });
           //        }
         } else {
+          const mRetMode = statement.toUpperCase().includes('RETURNING')
+            ? returnMode
+            : 'no';
           res = await this.sqlite.run({
             database: this.dbName,
             statement: statement,
             values: [],
             transaction: transaction,
             readonly: false,
+            returnMode: mRetMode,
           });
         }
+        // reorder rows for ios
+        res.changes = await this.reorderRows(res.changes);
         return Promise.resolve(res);
       } else {
         return Promise.reject('not allowed in read-only mode');
@@ -1956,16 +1976,21 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
   async executeSet(
     set: capSQLiteSet[],
     transaction = true,
+    returnMode = 'no',
   ): Promise<capSQLiteChanges> {
+    let res: any;
     try {
       if (!this.readonly) {
-        const res: any = await this.sqlite.executeSet({
+        res = await this.sqlite.executeSet({
           database: this.dbName,
           set: set,
           transaction: transaction,
           readonly: false,
+          returnMode: returnMode,
         });
         //      }
+        // reorder rows for ios
+        res.changes = await this.reorderRows(res.changes);
         return Promise.resolve(res);
       } else {
         return Promise.reject('not allowed in read-only mode');
@@ -2111,12 +2136,16 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
         }
         for (const task of txn) {
           if (task.values && task.values.length > 0) {
+            const retMode = task.statement.toUpperCase().includes('RETURNING')
+              ? 'all'
+              : 'no';
             const ret = await this.sqlite.run({
               database: this.dbName,
               statement: task.statement,
               values: task.values,
               transaction: false,
               readonly: false,
+              returnMode: retMode,
             });
             if (ret.changes.lastId === -1) {
               await this.execute('ROLLBACK;', false);
@@ -2159,5 +2188,25 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
       });
       return Promise.reject(err);
     }
+  }
+  private async reorderRows(res: any): Promise<any> {
+    const retRes: any = res;
+    if (res?.values && typeof res.values[0] === 'object') {
+      if (Object.keys(res.values[0]).includes('ios_columns')) {
+        const columnList: string[] = res.values[0]['ios_columns'];
+        const iosRes: any[] = [];
+        for (let i = 1; i < res.values.length; i++) {
+          const rowJson: any = res.values[i];
+          const resRowJson: any = {};
+          for (const item of columnList) {
+            resRowJson[item] = rowJson[item];
+          }
+          iosRes.push(resRowJson);
+        }
+        retRes['values'] = iosRes;
+      }
+    }
+
+    return Promise.resolve(retRes);
   }
 }
