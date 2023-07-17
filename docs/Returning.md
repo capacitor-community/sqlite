@@ -9,9 +9,9 @@
   <strong>capSQLiteChanges</strong> has been amended by adding a values field, {changes: {changes:number, lastId: number, values:any[]}}<br>
   Three returned modes are available 
   <ul>
-   <ui> - 'all' returns in values  all the modifications</ui>
-   <ui> - 'one' returns in values  the first modification</ui>
-   <ui> - 'no'  default do not return any modifications</ui>
+   <ui> - 'all' returns in values  all the modifications</ui><br>
+   <ui> - 'one' returns in values  the first modification</ui><br>
+   <ui> - 'no'  default do not return any modifications</ui><br>
   </ul>
 </p>
 
