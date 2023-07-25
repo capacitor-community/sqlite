@@ -17,7 +17,7 @@ public class UtilsSecret {
     private GlobalSQLite globVar = new GlobalSQLite();
     private UtilsSQLCipher uCipher = new UtilsSQLCipher();
 
-    private SharedPreferences sharedPreferences;
+    private static SharedPreferences sharedPreferences;
     private Context context;
 
     public UtilsSecret(Context context, SharedPreferences sharedPreferences) {
@@ -158,7 +158,7 @@ public class UtilsSecret {
         sharedPreferences.edit().putString("secret", passphrase).apply();
     }
 
-    public String getPassphrase() {
+    public static String getPassphrase() {
         String passphrase = sharedPreferences.getString("secret", "");
         return passphrase;
     }
@@ -167,7 +167,7 @@ public class UtilsSecret {
         sharedPreferences.edit().remove("secret").commit();
     }
 
-    public Boolean isPassphrase() {
+    public static Boolean isPassphrase() {
         if (!getPassphrase().isEmpty()) {
             return true;
         }

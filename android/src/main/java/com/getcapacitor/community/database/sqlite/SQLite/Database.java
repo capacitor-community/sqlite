@@ -18,6 +18,7 @@ import com.getcapacitor.JSObject;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.ExportToJson;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.ImportFromJson;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.JsonSQLite;
+import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.UtilsEncryption;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.UtilsJson;
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -1167,6 +1168,14 @@ public class Database {
                     }
                 }
             }
+            if (this._encrypted && this._isEncryption) {
+                retObj.put("encrypted", true);
+                retObj.put("overwrite", true);
+                String base64Str = UtilsEncryption.encryptJSONObject(this._context, retObj);
+                retObj = new JSObject();
+                retObj.put("expData", base64Str);
+            }
+
             return retObj;
         } catch (Exception e) {
             Log.e(TAG, "Error: exportToJson " + e.getMessage());

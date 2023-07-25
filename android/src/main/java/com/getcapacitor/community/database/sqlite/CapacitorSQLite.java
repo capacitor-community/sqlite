@@ -19,6 +19,7 @@ import com.getcapacitor.community.database.sqlite.SQLite.BiometricListener;
 import com.getcapacitor.community.database.sqlite.SQLite.Database;
 import com.getcapacitor.community.database.sqlite.SQLite.GlobalSQLite;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.JsonSQLite;
+import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.UtilsEncryption;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.UtilsJson;
 import com.getcapacitor.community.database.sqlite.SQLite.SqliteConfig;
 import com.getcapacitor.community.database.sqlite.SQLite.UtilsBiometric;
@@ -1071,6 +1072,12 @@ public class CapacitorSQLite {
     public JSObject importFromJson(String parsingData) throws Exception {
         try {
             JSObject jsonObject = new JSObject(parsingData);
+            if (jsonObject.has("expData")) {
+                // Decrypt the data
+                // test decrypt to be removed
+                JSObject decryptJson = UtilsEncryption.decryptJSONObject(this.context, jsonObject.getString("expData"));
+                jsonObject = decryptJson;
+            }
             JsonSQLite jsonSQL = new JsonSQLite();
             boolean isValid = jsonSQL.isJsonSQLite(jsonObject, isEncryption);
             if (!isValid) {
@@ -1154,6 +1161,8 @@ public class CapacitorSQLite {
                 if (ret.length() == 0) {
                     String msg = "ExportToJson: : return Object is empty " + "No data to synchronize";
                     throw new Exception(msg);
+                } else if (ret.length() == 1 && ret.has("expData")) {
+                    return ret;
                 } else if (ret.length() == 5 || ret.length() == 6 || ret.length() == 7) {
                     return ret;
                 } else {

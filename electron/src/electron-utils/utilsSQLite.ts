@@ -40,12 +40,12 @@ export class UtilsSQLite {
     let mDB: any;
     if (!readonly) {
       mDB = new this.BCSQLite3(pathDB, {
-        verbose: console.log,
+        //        verbose: console.log,
         fileMustExist: false,
       });
     } else {
       mDB = new this.BCSQLite3(pathDB, {
-        verbose: console.log,
+        //        verbose: console.log,
         readonly: true,
         fileMustExist: true,
       });

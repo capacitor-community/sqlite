@@ -594,6 +594,15 @@ class Database {
                 "expMode": expMode, "version": dbVersion]
             retObj = try ExportToJson
                 .createExportObject(mDB: self, data: data)
+            if isEncryption && encrypted {
+                retObj["overwrite"] = true
+                let base64Str = try UtilsJson.encryptDictionaryToBase64(
+                    retObj,
+                    forAccount: account)
+                retObj = [:]
+                retObj["expData"] = base64Str
+            }
+
         } catch UtilsJsonError.tableNotExists(let message) {
             throw DatabaseError.exportToJson(message: message)
         } catch ExportToJsonError.setLastExportDate(let message) {
@@ -617,7 +626,7 @@ class Database {
 
     // MARK: - ImportFromJson
 
-    func importFromJson(jsonSQLite: JsonSQLite)
+    func importFromJson(importData: ImportData)
     throws -> [String: Int] {
         var changes: Int = 0
 
@@ -627,18 +636,21 @@ class Database {
             try UtilsSQLCipher
                 .setForeignKeyConstraintsEnabled(mDB: self,
                                                  toggle: false)
-            if jsonSQLite.tables.count > 0 {
+            if importData.tables.count > 0 {
                 changes = try ImportFromJson
                     .createDatabaseSchema(mDB: self,
-                                          jsonSQLite: jsonSQLite)
+                                          tables: importData.tables,
+                                          mode: importData.mode,
+                                          version: importData.version)
                 if changes != -1 {
                     // Create the Database Data
                     changes += try ImportFromJson
                         .createDatabaseData(mDB: self,
-                                            jsonSQLite: jsonSQLite)
+                                            tables: importData.tables,
+                                            mode: importData.mode)
                 }
             }
-            if let mViews = jsonSQLite.views {
+            if let mViews = importData.views {
                 if mViews.count > 0 {
                     changes += try ImportFromJson
                         .createViews(mDB: self, views: mViews)

@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import CryptoKit
+import CommonCrypto
 
 enum UtilsJsonError: Error {
     case tableNotExists(message: String)
@@ -20,7 +22,12 @@ enum UtilsJsonError: Error {
     case isLastModified(message: String)
     case isSqlDeleted(message: String)
     case checkUpdate(message: String)
-    case checkValues(message: String)}
+    case checkValues(message: String)
+    case encryptDictionaryToBase64(message: String)
+    case decryptBase64ToDictionary(message: String)
+}
+
+var mSalt = "jeep_capacitor_sqlite"
 
 // swiftlint:disable file_length
 // swiftlint:disable type_body_length
@@ -466,6 +473,121 @@ class UtilsJson {
         return isViews
     }
 
+    // MARK: encryptDictionaryToBase64
+
+    class func encryptDictionaryToBase64(_ dictionary: [String: Any], forAccount account: String) throws -> String {
+        // Encryption using Swift Crypto and Keychain-stored passphrase
+
+        let jsonData = try JSONSerialization.data(withJSONObject: dictionary)
+
+        let isPassPhrase = try UtilsSecret.isPassphrase(account: account)
+        if !isPassPhrase {
+            throw UtilsJsonError.encryptDictionaryToBase64(
+                message: "No passphrase stored")
+        }
+        let passphrase = UtilsSecret.getPassphrase(account: account)
+        // Generate a constant salt
+        let salt = Data(mSalt.utf8)
+
+        // Derive the encryption key using the passphrase and salt
+        guard let key = deriveSymmetricKeyFromPassphrase(passphrase, salt: salt) else {
+            throw UtilsJsonError.encryptDictionaryToBase64(
+                message: "No Encryption key returned")
+        }
+        let symKey = SymmetricKey(data: key)
+
+        // Use Swift Crypto to perform AES encryption with GCM mode
+        let sealedBox = try AES.GCM.seal(jsonData, using: symKey, nonce: AES.GCM.Nonce())
+
+        if let combined = sealedBox.combined {
+            // combined the salt and the encrypted data
+            var saltAndEncryptedData = salt
+            saltAndEncryptedData.append(combined)
+            // Convert to base64 string
+
+            let base64String = saltAndEncryptedData.base64EncodedString()
+            return base64String
+        } else {
+            throw UtilsJsonError.encryptDictionaryToBase64(
+                message: "Conversion to base64String failed")
+
+        }
+
+    }
+
+    // MARK: decrypt DictionaryToBase64
+
+    class func decryptBase64ToDictionary(_ base64String: String,
+                                         forAccount account: String)
+    throws -> [String: Any] {
+        guard let data = Data(base64Encoded: base64String) else {
+            throw UtilsJsonError.decryptBase64ToDictionary(
+                message: "Conversion from Base64 to Dictionary failed")
+
+        }
+        let isPassPhrase = try UtilsSecret.isPassphrase(account: account)
+        if !isPassPhrase {
+            throw UtilsJsonError.decryptBase64ToDictionary(
+                message: "No passphrase stored")
+        }
+        let passphrase = UtilsSecret.getPassphrase(account: account)
+        // Generate a constant salt
+        let salt = Data(mSalt.utf8)
+
+        // Derive the encryption key using the passphrase and salt
+        guard let key = deriveSymmetricKeyFromPassphrase(passphrase,
+                                                         salt: salt) else {
+            throw UtilsJsonError.encryptDictionaryToBase64(
+                message: "No Encryption key returned")
+        }
+        let symKey = SymmetricKey(data: key)
+
+        // Extract the encrypted data from the remaining bytes
+        let encryptedData = data.suffix(from: salt.count)
+
+        // Convert the base64 string to a sealed box
+        let sealedBox = try AES.GCM.SealedBox(combined: encryptedData)
+
+        // Decrypt the ciphertext using AES GCM open
+        let decryptedData = try AES.GCM.open(sealedBox, using: symKey)
+
+        // Convert decrypted data to dictionary
+        let dictionary = try JSONSerialization.jsonObject(
+            with: decryptedData) as? [String: Any] ?? [:]
+
+        return dictionary
+    }
+
+    // MARK: deriveSymmetricKeyFromPassphrase
+
+    class func deriveSymmetricKeyFromPassphrase(_ passphrase: String,
+                                                salt: Data)
+    -> Data? {
+
+        let passphraseData = Data(passphrase.utf8)
+        let keyLength = kCCKeySizeAES256
+        let iterations: UInt32 = 10000
+        var derivedKeyData = Data(count: keyLength)
+        let derivedCount = derivedKeyData.count
+        let derivationStatus = derivedKeyData.withUnsafeMutableBytes { derivedKeyUnsafeMutableRawBufferPointer in
+            passphraseData.withUnsafeBytes { passphraseUnsafeRawBufferPointer in
+                salt.withUnsafeBytes { saltUnsafeRawBufferPointer in
+                    CCKeyDerivationPBKDF(
+                        CCPBKDFAlgorithm(kCCPBKDF2),
+                        passphraseUnsafeRawBufferPointer.baseAddress,
+                        passphraseData.count,
+                        saltUnsafeRawBufferPointer.baseAddress,
+                        salt.count,
+                        CCPseudoRandomAlgorithm(kCCPRFHmacAlgSHA256),
+                        iterations,
+                        derivedKeyUnsafeMutableRawBufferPointer.baseAddress,
+                        derivedCount
+                    )
+                }
+            }
+        }
+        return derivationStatus == kCCSuccess ? derivedKeyData : nil
+    }
 }
 // swiftlint:enable type_body_length
 // swiftlint:enable file_length

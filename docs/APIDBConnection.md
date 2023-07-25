@@ -14,6 +14,8 @@
 * [`close()`](#close)
 * [`getUrl()`](#geturl)
 * [`getVersion()`](#getversion)
+* [`loadExtension(...)`](#loadextension)
+* [`enableLoadExtension(...)`](#enableloadextension)
 * [`execute(...)`](#execute)
 * [`query(...)`](#query)
 * [`run(...)`](#run)
@@ -122,6 +124,40 @@ Get the a SQLite DB Version
 **Returns:** <code>Promise&lt;<a href="#capversionresult">capVersionResult</a>&gt;</code>
 
 **Since:** 3.2.0
+
+--------------------
+
+
+### loadExtension(...)
+
+```typescript
+loadExtension(path: string) => Promise<void>
+```
+
+Load a SQlite extension
+
+| Param      | Type                | Description            |
+| ---------- | ------------------- | ---------------------- |
+| **`path`** | <code>string</code> | :SQlite extension path |
+
+**Since:** 5.0.6
+
+--------------------
+
+
+### enableLoadExtension(...)
+
+```typescript
+enableLoadExtension(toggle: boolean) => Promise<void>
+```
+
+Enable Or Disable Extension Loading
+
+| Param        | Type                 | Description       |
+| ------------ | -------------------- | ----------------- |
+| **`toggle`** | <code>boolean</code> | true:on false:off |
+
+**Since:** 5.0.6
 
 --------------------
 

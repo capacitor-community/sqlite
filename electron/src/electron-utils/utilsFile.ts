@@ -76,7 +76,6 @@ export class UtilsFile {
       default:
         console.log('other operating system');
     }
-    console.log(`&&& Databases path: ${this.pathDB}`);
   }
   /**
    * Get isEncryption from config

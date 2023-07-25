@@ -7,6 +7,13 @@
 //
 
 import Foundation
+
+public struct EncryptJson: Codable {
+    let expData: String
+    public func show() {
+        print("expData: \(expData) ")
+    }
+}
 public struct JsonSQLite: Codable {
     let database: String
     let version: Int

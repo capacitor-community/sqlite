@@ -1022,112 +1022,140 @@ enum CapacitorSQLiteError: Error {
     throws -> [String: Int] {
         if isInit {
             var mDb: Database
-            if let data = ("["+parsingData+"]").data(using: .utf8) {
+            var importData: ImportData
+            // check if json object is encrypted
+            if parsingData.contains("expData") {
+                guard let data = ("["+parsingData+"]")
+                        .data(using: .utf8) else {
+                    let msg: String = "Stringify Encrypted Json Object " +
+                        "not Valid"
+                    throw CapacitorSQLiteError.failed(message: msg)
+                }
+                var encryptJson: [EncryptJson]
+                do {
+                    encryptJson = try JSONDecoder()
+                        .decode([EncryptJson].self, from: data)
+                    let dict: [String: Any] = try
+                        UtilsJson.decryptBase64ToDictionary(
+                            encryptJson[0].expData,
+                            forAccount: account)
+                    importData = ImportData(jsonDict: dict)
+                } catch let error {
+                    var msg: String = "Encrypted Json Object not Valid "
+                    msg.append("\(error)")
+                    throw CapacitorSQLiteError.failed(message: msg)
+                }
+
+            } else {
+
+                guard let data = ("["+parsingData+"]")
+                        .data(using: .utf8) else {
+                    let msg: String = "Stringify Json Object not Valid"
+                    throw CapacitorSQLiteError.failed(message: msg)
+                }
                 var jsonSQLite: [JsonSQLite]
                 do {
                     jsonSQLite = try JSONDecoder()
                         .decode([JsonSQLite].self, from: data)
+                    importData = ImportData(jsonSQLite: jsonSQLite[0])
+                    jsonSQLite = []
                 } catch let error {
                     var msg: String = "Stringify Json Object not Valid "
                     msg.append("\(error)")
                     throw CapacitorSQLiteError.failed(message: msg)
                 }
-                let encrypted: Bool = jsonSQLite[0].encrypted
-                var overwrite: Bool = false
-                if let mOverwrite = jsonSQLite[0].overwrite {
-                    overwrite = mOverwrite
-                }
-                let mode: String = jsonSQLite[0].mode
-                let inMode: String = encrypted ? "secret"
-                    : "no-encryption"
-                let version: Int = jsonSQLite[0].version
-                var dbName: String = CapacitorSQLite.getDatabaseName(
-                    dbName: jsonSQLite[0].database
-                )
-                dbName.append("SQLite.db")
-                // open the database
-                do {
-                    mDb = try Database(
-                        databaseLocation: databaseLocation, databaseName: dbName,
-                        encrypted: encrypted, isEncryption: isEncryption,
-                        account: account,
-                        mode: inMode, version: version, readonly: false,
-                        vUpgDict: [:])
-                    if overwrite && mode == "full" {
-                        let isExists = UtilsFile
-                            .isFileExist(databaseLocation: databaseLocation,
-                                         fileName: dbName)
-                        if isExists {
-                            _ = try UtilsFile
-                                .deleteFile(fileName: dbName,
-                                            databaseLocation: databaseLocation)
-                        }
-                    }
-                    try mDb.open()
-                } catch UtilsFileError.deleteFileFailed {
-                    let message = "Delete Database failed"
-                    throw CapacitorSQLiteError.failed(message: message)
-                } catch DatabaseError.open(let message) {
-                    throw CapacitorSQLiteError.failed(message: message)
-                } catch let error {
-                    let msg: String = "\(error)"
-                    throw CapacitorSQLiteError.failed(message: msg)
-                }
-                // check if the database as some tables
-                do {
-                    let tableList: [String] = try mDb.getTableNames()
-                    if mode == "full" && tableList.count > 0 {
-                        let curVersion = try mDb.getVersion()
-                        if version < curVersion {
-                            var msg: String = "ImportFromJson: Cannot import a "
-                            msg += "version lower than \(curVersion)"
-                            throw CapacitorSQLiteError.failed(message: msg)
-                        }
-                        if curVersion == version {
-                            var res: [String: Int] = [:]
-                            res["changes"] = 0
-                            return res
-                        }
-                    }
 
-                } catch DatabaseError.getTableNames(let message) {
-                    throw CapacitorSQLiteError.failed(message: message)
-                } catch let error {
-                    let msg: String = "\(error)"
+            }
+            let encrypted: Bool = importData.encrypted
+            let overwrite: Bool = importData.overwrite ?
+                importData.overwrite : false
+            let mode: String = importData.mode
+            let inMode: String = encrypted ? "secret"
+                : "no-encryption"
+            let version: Int = importData.version
+            var dbName: String = CapacitorSQLite.getDatabaseName(
+                dbName: importData.database
+            )
+            dbName.append("SQLite.db")
+            // open the database
+            do {
+                mDb = try Database(
+                    databaseLocation: databaseLocation, databaseName: dbName,
+                    encrypted: encrypted, isEncryption: isEncryption,
+                    account: account,
+                    mode: inMode, version: version, readonly: false,
+                    vUpgDict: [:])
+                if overwrite && mode == "full" {
+                    let isExists = UtilsFile
+                        .isFileExist(databaseLocation: databaseLocation,
+                                     fileName: dbName)
+                    if isExists {
+                        _ = try UtilsFile
+                            .deleteFile(fileName: dbName,
+                                        databaseLocation: databaseLocation)
+                    }
+                }
+                try mDb.open()
+            } catch UtilsFileError.deleteFileFailed {
+                let message = "Delete Database failed"
+                throw CapacitorSQLiteError.failed(message: message)
+            } catch DatabaseError.open(let message) {
+                throw CapacitorSQLiteError.failed(message: message)
+            } catch let error {
+                let msg: String = "\(error)"
+                throw CapacitorSQLiteError.failed(message: msg)
+            }
+            // check if the database as some tables
+            do {
+                let tableList: [String] = try mDb.getTableNames()
+                if mode == "full" && tableList.count > 0 {
+                    let curVersion = try mDb.getVersion()
+                    if version < curVersion {
+                        var msg: String = "ImportFromJson: Cannot import a "
+                        msg += "version lower than \(curVersion)"
+                        throw CapacitorSQLiteError.failed(message: msg)
+                    }
+                    if curVersion == version {
+                        var res: [String: Int] = [:]
+                        res["changes"] = 0
+                        return res
+                    }
+                }
+
+            } catch DatabaseError.getTableNames(let message) {
+                throw CapacitorSQLiteError.failed(message: message)
+            } catch let error {
+                let msg: String = "\(error)"
+                throw CapacitorSQLiteError.failed(message: msg)
+            }
+            // import from Json Object
+            do {
+                let res: [String: Int] = try mDb
+                    .importFromJson(importData: importData)
+                try mDb.close()
+                if let result = res["changes"] {
+                    if result < 0 {
+                        let msg: String = "changes < 0"
+                        throw CapacitorSQLiteError
+                        .failed(message: msg)
+                    } else {
+                        return res
+                    }
+                } else {
+                    let msg: String = "changes not found"
                     throw CapacitorSQLiteError.failed(message: msg)
                 }
-                // import from Json Object
+            } catch DatabaseError.importFromJson(let message) {
+                var msg = message
                 do {
-                    let res: [String: Int] = try mDb
-                        .importFromJson(jsonSQLite: jsonSQLite[0])
                     try mDb.close()
-                    if let result = res["changes"] {
-                        if result < 0 {
-                            let msg: String = "changes < 0"
-                            throw CapacitorSQLiteError
-                            .failed(message: msg)
-                        } else {
-                            return res
-                        }
-                    } else {
-                        let msg: String = "changes not found"
-                        throw CapacitorSQLiteError.failed(message: msg)
-                    }
-                } catch DatabaseError.importFromJson(let message) {
-                    var msg = message
-                    do {
-                        try mDb.close()
-                        throw CapacitorSQLiteError.failed(message: msg)
-                    } catch DatabaseError.close(let message) {
-                        msg.append(" \(message)")
-                        throw CapacitorSQLiteError.failed(message: msg)
-                    }
+                    throw CapacitorSQLiteError.failed(message: msg)
                 } catch DatabaseError.close(let message) {
-                    throw CapacitorSQLiteError.failed(message: message)
+                    msg.append(" \(message)")
+                    throw CapacitorSQLiteError.failed(message: msg)
                 }
-            } else {
-                let msg: String = "Stringify Json Object not Valid"
-                throw CapacitorSQLiteError.failed(message: msg)
+            } catch DatabaseError.close(let message) {
+                throw CapacitorSQLiteError.failed(message: message)
             }
         } else {
             throw CapacitorSQLiteError.failed(message: initMessage)
@@ -1156,7 +1184,8 @@ enum CapacitorSQLiteError: Error {
                         var msg: String = "return Object is empty "
                         msg.append("No data to synchronize")
                         throw CapacitorSQLiteError.failed(message: msg)
-
+                    } else if res.count == 1 && res.contains(where: { $0.key == "expData" }) {
+                        return res
                     } else if res.count == 5 || res.count == 6 ||
                                 res.count == 7 {
                         return res

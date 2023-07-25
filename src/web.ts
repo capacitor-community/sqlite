@@ -32,6 +32,8 @@ import type {
   capSQLiteUrl,
   capSQLiteValues,
   capVersionResult,
+  capSQLiteExtensionPath,
+  capSQLiteExtensionEnable,
 } from './definitions';
 
 export class CapacitorSQLiteWeb
@@ -589,6 +591,14 @@ export class CapacitorSQLiteWeb
   }
 
   async isInConfigBiometricAuth(): Promise<capSQLiteResult> {
+    throw this.unimplemented('Not implemented on web.');
+  }
+  async loadExtension(options: capSQLiteExtensionPath): Promise<void> {
+    console.log('loadExtension', options);
+    throw this.unimplemented('Not implemented on web.');
+  }
+  async enableLoadExtension(options: capSQLiteExtensionEnable): Promise<void> {
+    console.log('enableLoadExtension', options);
     throw this.unimplemented('Not implemented on web.');
   }
 }

@@ -1,6 +1,7 @@
 import type {
   capSQLiteVersionUpgrade,
   JsonSQLite,
+  EncryptJson,
   Changes,
 } from '../../../src/definitions';
 import { GlobalSQLite } from '../GlobalSQLite';
@@ -8,6 +9,7 @@ import { GlobalSQLite } from '../GlobalSQLite';
 import { ExportToJson } from './ImportExportJson/exportToJson';
 import { ImportFromJson } from './ImportExportJson/importFromJson';
 import { UtilsJson } from './ImportExportJson/utilsJson';
+import { UtilsJsonEncryption } from './ImportExportJson/utilsJsonEncryption';
 import { UtilsEncryption } from './utilsEncryption';
 import { UtilsFile } from './utilsFile';
 import { UtilsSQLite } from './utilsSQLite';
@@ -19,9 +21,11 @@ export class Database {
   private dbName: string;
   private _encrypted: boolean;
   private _mode: string;
+  private _isEncryption: boolean;
   private version: number;
   private readonly: boolean;
   private pathDB: string;
+  private jsonEncryptUtil: UtilsJsonEncryption = new UtilsJsonEncryption();
   private fileUtil: UtilsFile = new UtilsFile();
   private sqliteUtil: UtilsSQLite = new UtilsSQLite();
   private jsonUtil: UtilsJson = new UtilsJson();
@@ -39,6 +43,7 @@ export class Database {
     encrypted: boolean,
     mode: string,
     version: number,
+    isEncryption: boolean,
     readonly: boolean,
     upgDict: Record<number, capSQLiteVersionUpgrade>,
     globalUtil?: GlobalSQLite,
@@ -46,6 +51,7 @@ export class Database {
     this.dbName = dbName;
     this._encrypted = encrypted;
     this._mode = mode;
+    this._isEncryption = isEncryption;
     this.version = version;
     this.readonly = readonly;
     this.upgradeVersionDict = upgDict;
@@ -55,6 +61,8 @@ export class Database {
 
     if (this.pathDB.length === 0)
       throw new Error('Could not generate a path to ' + dbName);
+    console.log(`&&& Databases path: ${this.pathDB}`);
+  
   }
   /**
    * IsDBOpen
@@ -80,6 +88,7 @@ export class Database {
         (this._mode === 'secret' || this._mode === 'encryption')
       ) {
         password = this.secretUtil.getPassphrase();
+
         if (password.length <= 0) {
           password = this.globalUtil.secret;
         }
@@ -583,7 +592,7 @@ export class Database {
           new Date().toISOString(),
         );
       }
-      const jsonResult: JsonSQLite = this.exportToJsonUtil.createExportObject(
+      let jsonResult: any = this.exportToJsonUtil.createExportObject(
         this.database,
         inJson,
       );
@@ -593,8 +602,17 @@ export class Database {
           `ExportJson: return Object is empty ` + `No data to synchronize`;
         throw new Error(msg);
       }
+      let isValid = this.jsonUtil.isJsonSQLite(jsonResult);
 
-      const isValid = this.jsonUtil.isJsonSQLite(jsonResult);
+      if (this._encrypted && this._isEncryption) {
+        jsonResult.overwrite = true;
+        jsonResult.encrypted = true;
+        const base64Str: string =
+          this.jsonEncryptUtil.encryptJSONObject(jsonResult);
+        jsonResult = {} as EncryptJson;
+        jsonResult.expData = base64Str;
+        isValid = true;
+      }
 
       if (isValid) {
         return jsonResult;

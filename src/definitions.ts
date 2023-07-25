@@ -121,6 +121,20 @@ export interface CapacitorSQLitePlugin {
    */
   close(options: capSQLiteOptions): Promise<void>;
   /**
+   * Load a SQlite extension
+   * @param options :capSQLiteExtensionPath
+   * @returns Promise<void>
+   * @since 5.0.6
+   */
+  //  loadExtension(options: capSQLiteExtensionPath): Promise<void>;
+  /**
+   * Enable Or Disable Extension Loading
+   * @param options
+   * @returns Promise<void>
+   * @since 5.0.6
+   */
+  //  enableLoadExtension(options: capSQLiteExtensionEnable): Promise<void>;
+  /**
    * GetUrl get the database Url
    * @param options: capSQLiteOptions
    * @returns Promise<capSQLiteUrl>
@@ -391,6 +405,38 @@ export interface capEchoOptions {
    */
   value?: string;
 }
+export interface capSQLiteExtensionPath {
+  /**
+   * The database name
+   */
+  database?: string;
+  /**
+   * The extension path
+   */
+  path?: string;
+  /**
+   * ReadOnly / ReadWrite
+   * default ReadWrite (false)
+   * @since 4.1.0-7
+   */
+  readonly?: boolean;
+}
+export interface capSQLiteExtensionEnable {
+  /**
+   * The database name
+   */
+  database?: string;
+  /**
+   * The enabling toggle (1: ON, 0: OFF)
+   */
+  toggle?: boolean;
+  /**
+   * ReadOnly / ReadWrite
+   * default ReadWrite (false)
+   * @since 4.1.0-7
+   */
+  readonly?: boolean;
+}
 export interface capConnectionOptions {
   /**
    * The database name
@@ -436,6 +482,7 @@ export interface capSQLiteOptions {
    */
   readonly?: boolean;
 }
+
 export interface capNCDatabasePathOptions {
   /**
    * the database path
@@ -769,6 +816,12 @@ export interface capSQLiteSyncDate {
 }
 
 /* JSON Types */
+export interface EncryptJson {
+  /**
+   * The encrypted JsonSQLite base64 string
+   */
+  expData: string;
+}
 export interface JsonSQLite {
   /**
    * The database name
@@ -1700,6 +1753,20 @@ export interface ISQLiteDBConnection {
    */
   getVersion(): Promise<capVersionResult>;
   /**
+   * Load a SQlite extension
+   * @param path :SQlite extension path
+   * @returns Promise<void>
+   * @since 5.0.6
+   */
+  loadExtension(path: string): Promise<void>;
+  /**
+   * Enable Or Disable Extension Loading
+   * @param toggle true:on false:off
+   * @returns Promise<void>
+   * @since 5.0.6
+   */
+  enableLoadExtension(toggle: boolean): Promise<void>;
+  /**
    * Execute SQLite DB Connection Statements
    * @param statements
    * @returns Promise<capSQLiteChanges>
@@ -1849,6 +1916,43 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
       return Promise.reject(err);
     }
   }
+
+  async loadExtension(path: string): Promise<void> {
+    try {
+      console.log(`database: ${this.dbName}`);
+      console.log(`readonly: ${this.readonly}}`);
+      console.log(`path: ${path}}`);
+      await this.sqlite.loadExtension({
+        database: this.dbName,
+        path: path,
+        readonly: this.readonly,
+      });
+      console.log(`loadExtension successful`);
+      return Promise.resolve();
+    } catch (err) {
+      console.log(`loadExtension failed `);
+      return Promise.reject(err);
+    }
+  }
+  async enableLoadExtension(toggle: boolean): Promise<void> {
+    try {
+      console.log(`database: ${this.dbName}`);
+      console.log(`readonly: ${this.readonly}`);
+      console.log(`toggle: ${toggle}`);
+      await this.sqlite.enableLoadExtension({
+        database: this.dbName,
+        toggle: toggle,
+        readonly: this.readonly,
+      });
+      console.log(`enableLoadExtension successful`);
+      return Promise.resolve();
+    } catch (err) {
+      console.log(err);
+      console.log(`enableLoadExtension failed `);
+      return Promise.reject(err);
+    }
+  }
+
   async getUrl(): Promise<capSQLiteUrl> {
     try {
       const res: capSQLiteUrl = await this.sqlite.getUrl({

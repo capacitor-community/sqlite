@@ -1301,7 +1301,6 @@ class UtilsSQLCipher {
                     return true // Keep dictionaries without any keys
                 }
                 return !keysInArray1.contains(dict2Key)
-
             }
         }
         retResponse.append(contentsOf: mRespSet)

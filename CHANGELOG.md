@@ -1,3 +1,9 @@
+# 5.0.6 (2023-07-25)
+
+### Added Features
+
+ - Export encrypted data when database is encrypted issue#227
+
 # 5.0.5 (2023-07-14)
 
 ### Added Features

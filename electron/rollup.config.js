@@ -17,6 +17,8 @@ export default {
     'electron',
     'electron-json-storage',
     'better-sqlite3-multiple-ciphers',
+    'crypto',
+    'crypto-js',
     'path',
     'fs',
     'os',

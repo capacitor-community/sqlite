@@ -39,6 +39,7 @@ import type {
 import { GlobalSQLite } from './GlobalSQLite';
 import { Database } from './electron-utils/Database';
 import { UtilsJson } from './electron-utils/ImportExportJson/utilsJson';
+import { UtilsJsonEncryption } from './electron-utils/ImportExportJson/utilsJsonEncryption';
 import { UtilsFile } from './electron-utils/utilsFile';
 import { UtilsSQLite } from './electron-utils/utilsSQLite';
 import { UtilsSecret } from './electron-utils/utilsSecret';
@@ -51,6 +52,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   private databases: { [databasename: string]: Database } = {};
   private fileUtil: UtilsFile = new UtilsFile();
   private jsonUtil: UtilsJson = new UtilsJson();
+  private jsonEncryptUtil: UtilsJsonEncryption = new UtilsJsonEncryption();
   private sqliteUtil: UtilsSQLite = new UtilsSQLite();
   private secretUtil: UtilsSecret = new UtilsSecret();
   private globalUtil: GlobalSQLite = new GlobalSQLite();
@@ -99,6 +101,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       encrypted,
       inMode,
       version,
+      this.isEncryption,
       readonly,
       upgrades,
       this.globalUtil,
@@ -463,7 +466,14 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   ): Promise<capSQLiteChanges> {
     const jsonString: string = this.getOptionValue(options, 'jsonstring');
 
-    const jsonObj = JSON.parse(jsonString);
+    let jsonObj = JSON.parse(jsonString);
+    let inMode = 'no-encryption';
+    const key = 'expData';
+    if (key in jsonObj) {
+      // Decrypt the data
+      inMode = 'secret';
+      jsonObj = this.jsonEncryptUtil.decryptJSONObject(jsonObj.expData);
+    }
     const isValid = this.jsonUtil.isJsonSQLite(jsonObj);
 
     if (!isValid) {
@@ -475,19 +485,19 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     const targetDbVersion: number = vJsonObj.version ?? 1;
     const overwrite: boolean = vJsonObj.overwrite ?? false;
     const encrypted: boolean = vJsonObj.encrypted ?? false;
-    const mode: string = vJsonObj.mode ?? 'no-encryption';
+    const mode: string = vJsonObj.mode ?? 'full';
     if (!this.isEncryption && encrypted) {
       throw new Error(
         'Must set electronIsEncryption = true in capacitor.config.ts',
       );
     }
-
     // Create the database
     const database: Database = new Database(
       dbName,
       encrypted,
-      mode,
+      inMode,
       targetDbVersion,
+      this.isEncryption,
       false,
       {},
       this.globalUtil,
@@ -518,7 +528,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       // Import the JsonSQLite Object
       const changes = await database.importJson(vJsonObj);
       // Close the database
-      await database.dbClose();
+      database.dbClose();
       return { changes: { changes: changes } };
     } catch (err) {
       throw new Error(`ImportFromJson: ${err}`);
@@ -531,10 +541,9 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     const readonly: boolean = options.readonly ? options.readonly : false;
     const connName = readonly ? 'RO_' + dbName : 'RW_' + dbName;
     const database = this.getDatabaseConnectionOrThrowError(connName);
-
     if (database.isDBOpen()) {
       try {
-        const exportJsonResult: any = await database.exportJson(exportMode);
+        const exportJsonResult: any = database.exportJson(exportMode);
         const resultKeys = Object.keys(exportJsonResult);
 
         if (resultKeys.includes('message')) {

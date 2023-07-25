@@ -35,6 +35,7 @@
 		2C7E571E2A3864C400C04517 /* UtilsUpgrade.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7E57132A3864C400C04517 /* UtilsUpgrade.swift */; };
 		2C7E57212A38655600C04517 /* Data.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7E571F2A38655600C04517 /* Data.swift */; };
 		2C7E57222A38655600C04517 /* Array.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7E57202A38655600C04517 /* Array.swift */; };
+		2C97B3FF2A6E999800A979E8 /* ImportData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C97B3FE2A6E999800A979E8 /* ImportData.swift */; };
 		2CB4368728EEEFF500C973AA /* UtilsDownloadFromHTTP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB4368628EEEFF500C973AA /* UtilsDownloadFromHTTP.swift */; };
 		2CB89AE327C57603001F464B /* BiometricIDAuthentication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB89AE227C57603001F464B /* BiometricIDAuthentication.swift */; };
 		2CB9B9342601EEE500743730 /* JsonSQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB9B9312601EEE500743730 /* JsonSQLite.swift */; };
@@ -91,6 +92,7 @@
 		2C7E57132A3864C400C04517 /* UtilsUpgrade.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilsUpgrade.swift; sourceTree = "<group>"; };
 		2C7E571F2A38655600C04517 /* Data.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Data.swift; sourceTree = "<group>"; };
 		2C7E57202A38655600C04517 /* Array.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Array.swift; sourceTree = "<group>"; };
+		2C97B3FE2A6E999800A979E8 /* ImportData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImportData.swift; sourceTree = "<group>"; };
 		2CB4368628EEEFF500C973AA /* UtilsDownloadFromHTTP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilsDownloadFromHTTP.swift; sourceTree = "<group>"; };
 		2CB89AE227C57603001F464B /* BiometricIDAuthentication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiometricIDAuthentication.swift; sourceTree = "<group>"; };
 		2CB9B9312601EEE500743730 /* JsonSQLite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JsonSQLite.swift; sourceTree = "<group>"; };
@@ -192,6 +194,7 @@
 		2CB9B9302601EEE500743730 /* ImportExportJson */ = {
 			isa = PBXGroup;
 			children = (
+				2C97B3FE2A6E999800A979E8 /* ImportData.swift */,
 				2CB9B9312601EEE500743730 /* JsonSQLite.swift */,
 				2CB9B9322601EEE500743730 /* ImportFromJson.swift */,
 				2CB9B9332601EEE500743730 /* ExportToJson.swift */,
@@ -478,6 +481,7 @@
 				2C7E57142A3864C400C04517 /* UtilsBinding.swift in Sources */,
 				2C7E57172A3864C400C04517 /* UtilsEncryption.swift in Sources */,
 				2C7E57152A3864C400C04517 /* UtilsDownloadFromHTTP.swift in Sources */,
+				2C97B3FF2A6E999800A979E8 /* ImportData.swift in Sources */,
 				2C7E571E2A3864C400C04517 /* UtilsUpgrade.swift in Sources */,
 				2C7E57182A3864C400C04517 /* UtilsFile.swift in Sources */,
 				2C3AF2F925B591ED00C5EF2F /* UtilsBinding.swift in Sources */,
