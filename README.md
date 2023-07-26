@@ -171,8 +171,11 @@ npm install --save better-sqlite3-multiple-ciphers
 npm install --save electron-json-storage
 npm install --save jszip
 npm install --save node-fetch@2.6.7
+npm install --save crypto
+npm install --save crypto-js
 npm install --save-dev @types/better-sqlite3
 npm install --save-dev @types/electron-json-storage
+npm install --save-dev @types/crypto-js
 ```
 - **Important**: `node-fetch` version must be `<=2.6.7`; otherwise [you'll get an error](https://github.com/capacitor-community/sqlite/issues/349 "you'll get an error ERR_REQUIRE_ESM") running the app. 
 
