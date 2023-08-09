@@ -1,3 +1,10 @@
+# 5.0.7-1 (2023-08-09)
+
+### Bug Fixes
+
+ - Fix iOS & Web(jeep-sqlite@2.4.0) DELETE From when FOREIGN KEYS and sql_deleted column issue#445. Still to be fixed for Android and Electron
+ - Add support for Math functions iOS issue#446
+
 # 5.0.6 (2023-07-25)
 
 ### Added Features

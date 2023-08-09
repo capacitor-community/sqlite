@@ -62,7 +62,6 @@ export class Database {
     if (this.pathDB.length === 0)
       throw new Error('Could not generate a path to ' + dbName);
     console.log(`&&& Databases path: ${this.pathDB}`);
-  
   }
   /**
    * IsDBOpen
