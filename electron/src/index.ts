@@ -51,9 +51,9 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   > = {};
   private databases: { [databasename: string]: Database } = {};
   private fileUtil: UtilsFile = new UtilsFile();
+  private sqliteUtil: UtilsSQLite = new UtilsSQLite();
   private jsonUtil: UtilsJson = new UtilsJson();
   private jsonEncryptUtil: UtilsJsonEncryption = new UtilsJsonEncryption();
-  private sqliteUtil: UtilsSQLite = new UtilsSQLite();
   private secretUtil: UtilsSecret = new UtilsSecret();
   private globalUtil: GlobalSQLite = new GlobalSQLite();
   private isEncryption: boolean = this.fileUtil.getIsEncryption();

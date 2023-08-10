@@ -1,3 +1,9 @@
+# 5.0.7-2 (2023-08-10)
+
+### Bug Fixes
+
+ - Fix Electron DELETE From when FOREIGN KEYS and sql_deleted column issue#445. Still to be fixed for Android
+ 
 # 5.0.7-1 (2023-08-09)
 
 ### Bug Fixes
