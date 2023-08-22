@@ -205,6 +205,54 @@ export class CapacitorSQLiteWeb
       throw new Error(`${err}`);
     }
   }
+  async beginTransaction(options: capSQLiteOptions): Promise<capSQLiteChanges> {
+    this.ensureJeepSqliteIsAvailable();
+    this.ensureWebstoreIsOpen();
+
+    try {
+      const changes: capSQLiteChanges =
+        await this.jeepSqliteElement.beginTransaction(options);
+      return changes;
+    } catch (err) {
+      throw new Error(`${err}`);
+    }
+  }
+  async commitTransaction(options: capSQLiteOptions): Promise<capSQLiteChanges> {
+    this.ensureJeepSqliteIsAvailable();
+    this.ensureWebstoreIsOpen();
+
+    try {
+      const changes: capSQLiteChanges =
+        await this.jeepSqliteElement.commitTransaction(options);
+      return changes;
+    } catch (err) {
+      throw new Error(`${err}`);
+    }
+  }
+  async rollbackTransaction(options: capSQLiteOptions): Promise<capSQLiteChanges> {
+    this.ensureJeepSqliteIsAvailable();
+    this.ensureWebstoreIsOpen();
+
+    try {
+      const changes: capSQLiteChanges =
+        await this.jeepSqliteElement.rollbackTransaction(options);
+      return changes;
+    } catch (err) {
+      throw new Error(`${err}`);
+    }
+  }
+  async isTransactionActive(options: capSQLiteOptions): Promise<capSQLiteResult> {
+    this.ensureJeepSqliteIsAvailable();
+    this.ensureWebstoreIsOpen();
+
+    try {
+      const result: capSQLiteResult =
+        await this.jeepSqliteElement.isTransactionActive(options);
+      return result;
+    } catch (err) {
+      throw new Error(`${err}`);
+    }
+  } 
 
   async getTableList(options: capSQLiteOptions): Promise<capSQLiteValues> {
     this.ensureJeepSqliteIsAvailable();

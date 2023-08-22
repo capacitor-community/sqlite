@@ -7,13 +7,15 @@
 
 import Foundation
 enum UtilsSQLStatementError: Error {
-    case extractColumnNames(message:String)
-    case extractForeignKeyInfo(message:String)
-    case addPrefixToWhereClause(message:String)
+    case extractColumnNames(message: String)
+    case extractForeignKeyInfo(message: String)
+    case addPrefixToWhereClause(message: String)
 }
 
+// swiftlint:disable file_length
+// swiftlint:disable type_body_length
 class UtilsSQLStatement {
-  
+
     // MARK: - extractTableName
 
     class func extractTableName(from statement: String) -> String? {
@@ -38,7 +40,7 @@ class UtilsSQLStatement {
     }
 
     // MARK: - extractWhereClause
-    
+
     class func extractWhereClause(from statement: String) -> String? {
         let pattern = "WHERE(.+?)(?:ORDER\\s+BY|LIMIT|$)"
         guard let regex = try? NSRegularExpression(
@@ -63,55 +65,55 @@ class UtilsSQLStatement {
 
         return nil
     }
-    
+
     // MARK: - addPrefixToWhereClause
-    
-    class func addPrefixToWhereClause(_ whereClause: String, from: [String],
-                                      to: [String],prefix: String)
-                                                    throws -> String {
+
+    class func addPrefixToWhereClause(_ whereClause: String,
+                                        from: [String],
+                                        to: [String], prefix: String)
+    throws -> String {
         var columnValuePairs: [String]
         if whereClause.contains("AND") {
             if #available(iOS 16.0, *) {
-                let subSequenceArray = whereClause
-                                .split(separator: "AND")
+                let subSequenceArray = whereClause.split(separator: "AND")
                 columnValuePairs = subSequenceArray.map { String($0) }
             } else {
                 columnValuePairs = whereClause
-                                .components(separatedBy: "AND")
+                    .components(separatedBy: "AND")
             }
         } else {
             columnValuePairs = [whereClause]
         }
         let modifiedPairs = try columnValuePairs.map { pair -> String in
             let pattern = #"(\w+)\s*(=|IN|BETWEEN|LIKE)\s*(.+)"#
-                          
+
             if let range = pair.range(of: pattern, options: .regularExpression) {
                 let match = String(pair[range])
                 let regex = try NSRegularExpression(pattern: pattern)
                 let matchRange = NSRange(match.startIndex..., in: match)
-                
+
                 if let matchResult = regex.firstMatch(in: match, range: matchRange) {
                     let columnRange = Range(matchResult.range(at: 1), in: match)!
                     let operatorRange = Range(matchResult.range(at: 2), in: match)!
                     let valueRange = Range(matchResult.range(at: 3), in: match)!
-                    
+
                     let column = String(match[columnRange]).trimmingCharacters(in: .whitespacesAndNewlines)
                     let mOperator = String(match[operatorRange]).trimmingCharacters(in: .whitespacesAndNewlines)
                     let value = String(match[valueRange]).trimmingCharacters(in: .whitespacesAndNewlines)
-                    
+
                     var newColumn = column
                     if let index = UtilsSQLStatement
                         .findIndexOfStringInArray(column, to), index != -1 {
                         guard let mNewColumn = UtilsSQLStatement
-                            .getStringAtIndex(from, index) else {
+                                .getStringAtIndex(from, index) else {
                             let msg = "addPrefixToWhereClause: index " +
-                                        "mistmatch "
+                                "mistmatch "
                             throw UtilsSQLStatementError
-                                .addPrefixToWhereClause(message: msg)
+                            .addPrefixToWhereClause(message: msg)
                         }
                         newColumn = mNewColumn
                     }
-                    
+
                     let modifiedColumn = "\(prefix)\(newColumn)"
                     return "\(modifiedColumn) \(mOperator) \(value)"
                 }
@@ -119,17 +121,17 @@ class UtilsSQLStatement {
             return pair
         }
         return modifiedPairs.joined(separator: " AND ")
-                                                        
+
     }
-    
+
     // MARK: - findIndexOfStringInArray
-    
+
     class func findIndexOfStringInArray(_ target: String, _ array: [String]) -> Int? {
         return array.firstIndex(of: target)
     }
-    
+
     // MARK: - getStringAtIndex
-    
+
     class func getStringAtIndex(_ array: [String], _ index: Int) -> String? {
         if index >= 0 && index < array.count {
             return array[index]
@@ -138,10 +140,11 @@ class UtilsSQLStatement {
         }
     }
     // MARK: - extractForeignKeyInfo
-    
+
+    // swiftlint:enable type_body_length
     class func extractForeignKeyInfo(from sqlStatement: String)
-                                                        throws ->
-                                                [String: Any] {
+    throws ->
+    [String: Any] {
         var foreignKeyInfo: [String: Any] = [:]
         // Define the regular expression patterns for extracting the
         // FOREIGN KEY clause and composite primary keys
@@ -151,9 +154,9 @@ class UtilsSQLStatement {
         guard let regex = try? NSRegularExpression(
                 pattern: foreignKeyPattern, options: []) else {
             let msg = "extractForeignKeyInfo: creating regular " +
-                        "expression pattern"
+                "expression pattern"
             throw UtilsSQLStatementError
-                        .extractForeignKeyInfo(message: msg)
+            .extractForeignKeyInfo(message: msg)
 
         }
 
@@ -168,8 +171,8 @@ class UtilsSQLStatement {
             if let foreignKeyColumnsRangeInString =
                 Range(foreignKeyColumnsRange, in: sqlStatement) {
                 let foreignKeyColumns =
-                String(sqlStatement[foreignKeyColumnsRangeInString])
-                                .components(separatedBy: ", ")
+                    String(sqlStatement[foreignKeyColumnsRangeInString])
+                    .components(separatedBy: ", ")
 
                 // Extract the referenced table and columns
                 let referencedTableRange = match.range(at: 2)
@@ -207,13 +210,13 @@ class UtilsSQLStatement {
                 } else {
                     let msg = "extractForeignKeyInfo: No match found"
                     throw UtilsSQLStatementError
-                        .extractForeignKeyInfo(message: msg)
+                    .extractForeignKeyInfo(message: msg)
                 }
             }
         } else {
             let msg = "extractForeignKeyInfo: No FOREIGN KEY found"
             throw UtilsSQLStatementError
-                        .extractForeignKeyInfo(message: msg)
+            .extractForeignKeyInfo(message: msg)
         }
         foreignKeyInfo["forKeys"] = []
         foreignKeyInfo["tableName"] = ""
@@ -221,41 +224,36 @@ class UtilsSQLStatement {
         foreignKeyInfo["action"] = "NO_ACTION"
         return foreignKeyInfo
     }
-    
+    // swiftlint:enable type_body_length
 
     // MARK: - extractColumnNames
-    
-    class func extractColumnNames(from whereClause: String)
-                                            throws -> [String] {
-        let regexPattern = #"\b(\w+)\s*(?=(?:[=<>]|IN\s*\(VALUES\s*|\bBETWEEN\b|\bLIKE\s*'))|(?<=\()\s*(\w+),\s*(\w+)\s*(?=\))"#
 
-        do {
+    class func extractColumnNames(from whereClause: String) -> [String] {
+        let keywords: Set<String> = ["AND", "OR", "IN", "VALUES", "LIKE", "BETWEEN", "NOT"]
+        let tokens = whereClause.components(separatedBy: CharacterSet(charactersIn: " ,()"))
 
-            let regex = try NSRegularExpression(pattern: regexPattern)
-            let matches = regex.matches(in: whereClause, range: NSRange(whereClause.startIndex..., in: whereClause))
-            var columnNames: [String] = []
+        var columns = [String]()
+        var inClause = false
+        var inValues = false
 
-            for match in matches {
-                for rangeIdx in 1..<match.numberOfRanges {
-                    let range = match.range(at: rangeIdx)
-                    if range.location != NSNotFound, let columnNameRange = Range(range, in: whereClause) {
-                        let columnName = String(whereClause[columnNameRange])
-                        columnNames.append(columnName)
-                    }
-                }
+        for token in tokens {
+            if token == "IN" {
+                inClause = true
+            } else if inClause && token == "(" {
+                inValues = true
+            } else if inValues && token == ")" {
+                inValues = false
+            } else if token.range(of: "\\b[a-zA-Z]\\w*\\b", options: .regularExpression) != nil
+                        && !inValues && !keywords.contains(token.uppercased()) {
+                columns.append(token)
             }
-
-            return columnNames
-
-        } catch {
-            let msg = "Error creating regular expression: " +
-                        "\(error.localizedDescription)"
-            throw UtilsSQLStatementError.extractColumnNames(message: msg)
         }
+
+        return Array(Set(columns))
     }
-           
+
     // MARK: - flattenMultilineString
-    
+
     class func flattenMultilineString(_ input: String) -> String {
         let lines = input
             .components(separatedBy: CharacterSet.newlines)
@@ -265,7 +263,7 @@ class UtilsSQLStatement {
     // MARK: - getStmtAndRetColNames
 
     class func getStmtAndRetColNames(sqlStmt: String, retMode: String)
-                                                -> [String: String] {
+    -> [String: String] {
         let retWord = "RETURNING"
 
         var retStmtNames: [String: String] = [:]
@@ -291,12 +289,12 @@ class UtilsSQLStatement {
     // MARK: - extractCombinedPrimaryKey
 
     class func extractCombinedPrimaryKey(from whereClause: String)
-                                        -> [[String]]? {
+    -> [[String]]? {
         // Regular expression pattern to match the combined primary
         // key comparison with IN operator or without it
         // meaning = operator
         let pattern = #"WHERE\s*\((.+?)\)\s*(?:=|IN)\s*\((.+?)\)"#
-        
+
         guard let regex = try? NSRegularExpression(pattern: pattern,
                                                    options: []) else {
             print("Invalid regular expression pattern.")
@@ -309,7 +307,7 @@ class UtilsSQLStatement {
         var primaryKeySets: [[String]] = []
 
         for match in matches {
-            
+
             let keysRange = Range(match.range(at: 1), in: whereClause)!
             let keysString = String(whereClause[keysRange])
             let keys = keysString.split(separator: ",").map {
@@ -318,14 +316,14 @@ class UtilsSQLStatement {
         }
         return primaryKeySets.isEmpty ? nil : primaryKeySets
     }
-    
+
     // MARK: - getWhereStatementForCombinedPK
 
     class func getWhereStmtForCombinedPK(whStmt: String,
                                          withRefs: [String],
                                          colNames: [String],
                                          keys: [[String]])
-                                                    -> String {
+    -> String {
         var retWhere: String = whStmt
         var repKeys: [String] = []
         for grpKeys in keys {
@@ -342,18 +340,18 @@ class UtilsSQLStatement {
         }
         return retWhere
     }
-    
+
     // MARK: - replaceAllString
 
     class func replaceAllString(originalStr: String, searchStr: String,
                                 replaceStr: String) -> String {
         let modifiedStr = originalStr
-                .replacingOccurrences(of: searchStr, with: replaceStr)
+            .replacingOccurrences(of: searchStr, with: replaceStr)
         return modifiedStr
     }
-    
+
     // MARK: - replaceString
-    
+
     class func replaceString(originalStr: String, searchStr: String,
                              replaceStr: String) -> String {
         var modifiedStr = originalStr
@@ -362,13 +360,13 @@ class UtilsSQLStatement {
         }
         return modifiedStr
     }
-    
+
     // MARK: - getWhereStmtForNonCombinedPK
 
     class func getWhereStmtForNonCombinedPK(whStmt: String,
                                             withRefs: [String],
                                             colNames: [String])
-                                                    -> String {
+    -> String {
         var whereStmt = ""
         var stmt: String = String(whStmt.stringRange(
                                     fromIdx: 6,
@@ -385,22 +383,22 @@ class UtilsSQLStatement {
                 let indicesEqual: [Int] = stmt
                     .indicesOf(string: "=",
                                fromIdx: idxs[0])
-                
+
                 if indicesEqual.count > 0 {
                     let indicesAnd: [Int] = stmt
                         .indicesOf(string: "AND",
                                    fromIdx: indicesEqual[0])
                     if indicesAnd.count > 0 {
                         valStr = String(stmt.stringRange(
-                            fromIdx: indicesEqual[0] + 1,
-                            toIdx: indicesAnd[0] - 1))
+                                            fromIdx: indicesEqual[0] + 1,
+                                            toIdx: indicesAnd[0] - 1))
                         stmt = String(stmt.stringRange(
-                            fromIdx: indicesAnd[0] + 3,
-                            toIdx: stmt.count))
+                                        fromIdx: indicesAnd[0] + 3,
+                                        toIdx: stmt.count))
                     } else {
                         valStr = String(stmt.stringRange(
-                            fromIdx: indicesEqual[0] + 1,
-                            toIdx: stmt.count))
+                                            fromIdx: indicesEqual[0] + 1,
+                                            toIdx: stmt.count))
                     }
                     if idx > 0 {
                         whereStmt += " AND "
@@ -416,9 +414,9 @@ class UtilsSQLStatement {
         whereStmt = "WHERE " + whereStmt
         return whereStmt
     }
-    
+
     // MARK: - updateWhere
-    
+
     class func updateWhere(whStmt: String, withRefs: [String],
                            colNames: [String]) -> String {
         var whereStmt = ""
@@ -448,3 +446,5 @@ class UtilsSQLStatement {
         return whereStmt
     }
 }
+// swiftlint:enable type_body_length
+// swiftlint:enable file_length

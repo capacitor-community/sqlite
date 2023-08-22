@@ -451,6 +451,128 @@ public class CapacitorSQLite {
             throw new Exception(msg);
         }
     }
+    /**
+     * BeginTransaction
+     *
+     * @param dbName Database name
+     * @return JSObject changes
+     * @throws Exception message
+     */
+    public JSObject beginTransaction(String dbName) throws Exception {
+        JSObject retObj = new JSObject();
+        dbName = getDatabaseName(dbName);
+        String connName = "RW_" + dbName;
+        Database db = dbDict.get(connName);
+        if (db != null) {
+            if (!db.isNCDB() && db.isOpen()) {
+                try {
+                    Integer res =  db.beginTransaction();
+                    retObj.put("changes", res);
+                    return retObj;
+                } catch (Exception e) {
+                    throw new Exception(e.getMessage());
+                }
+            } else {
+                String msg = "database " + dbName + " not opened";
+                throw new Exception(msg);
+            }
+        } else {
+            String msg = "No available connection for database " + dbName;
+            throw new Exception(msg);
+        }
+    }
+
+    /**
+     * CommitTransaction
+     *
+     * @param dbName Database name
+     * @return JSObject changes
+     * @throws Exception message
+     */
+    public JSObject commitTransaction(String dbName) throws Exception {
+        JSObject retObj = new JSObject();
+        dbName = getDatabaseName(dbName);
+        String connName = "RW_" + dbName;
+        Database db = dbDict.get(connName);
+        if (db != null) {
+            if (!db.isNCDB() && db.isOpen()) {
+                try {
+                    Integer res =  db.commitTransaction();
+                    retObj.put("changes", res);
+                    return retObj;
+                } catch (Exception e) {
+                    throw new Exception(e.getMessage());
+                }
+            } else {
+                String msg = "database " + dbName + " not opened";
+                throw new Exception(msg);
+            }
+        } else {
+            String msg = "No available connection for database " + dbName;
+            throw new Exception(msg);
+        }
+    }
+
+    /**
+     * Rollback Transaction
+     *
+     * @param dbName Database name
+     * @return JSObject changes
+     * @throws Exception message
+     */
+    public JSObject rollbackTransaction(String dbName) throws Exception {
+        JSObject retObj = new JSObject();
+        dbName = getDatabaseName(dbName);
+        String connName = "RW_" + dbName;
+        Database db = dbDict.get(connName);
+        if (db != null) {
+            if (!db.isNCDB() && db.isOpen()) {
+                try {
+                    Integer res =  db.rollbackTransaction();
+                    retObj.put("changes", res);
+                    return retObj;
+                } catch (Exception e) {
+                    throw new Exception(e.getMessage());
+                }
+            } else {
+                String msg = "database " + dbName + " not opened";
+                throw new Exception(msg);
+            }
+        } else {
+            String msg = "No available connection for database " + dbName;
+            throw new Exception(msg);
+        }
+    }
+
+    /**
+     * IsTransactionActive
+     *
+     * @param dbName database name
+     * @return Boolean
+     * @throws Exception message
+     */
+    public Boolean isTransactionActive(String dbName) throws Exception {
+        dbName = getDatabaseName(dbName);
+        String connName = "RW_" + dbName;
+        Database db = dbDict.get(connName);
+        if (db != null) {
+            if (!db.isNCDB() && db.isOpen()) {
+                try {
+                    boolean res = db.isAvailTrans();
+                    return res;
+                } catch (Exception e) {
+                    throw new Exception(e.getMessage());
+                }
+
+            } else {
+                String msg = "database " + dbName + " not opened";
+                throw new Exception(msg);
+            }
+        } else {
+            String msg = "No available connection for database " + dbName;
+            throw new Exception(msg);
+        }
+    }
 
     /**
      * GetUrl
@@ -846,7 +968,7 @@ public class CapacitorSQLite {
                     }
                 } else {
                     try {
-                        res = db.runSQL(statement, null, transaction, returnMode);
+                        res = db.runSQL(statement, new ArrayList<>(), transaction, returnMode);
                         return res;
                     } catch (Exception e) {
                         throw new Exception(e.getMessage());

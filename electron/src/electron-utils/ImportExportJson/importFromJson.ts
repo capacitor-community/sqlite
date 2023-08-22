@@ -1,4 +1,5 @@
 import type { JsonSQLite, Changes } from '../../../../src/definitions';
+import type { Database } from '../Database';
 import { UtilsDrop } from '../utilsDrop';
 import { UtilsSQLite } from '../utilsSQLite';
 
@@ -13,15 +14,15 @@ export class ImportFromJson {
    * @param mDB
    * @param jsonData
    */
-  public createDatabaseSchema(mDB: any, jsonData: JsonSQLite): number {
+  public createDatabaseSchema(mDB: Database, jsonData: JsonSQLite): number {
     let changes = -1;
     const version: number = jsonData.version;
     try {
       // set User Version PRAGMA
-      this.sqliteUtil.setVersion(mDB, version);
+      this.sqliteUtil.setVersion(mDB.database, version);
       // DROP ALL when mode="full"
       if (jsonData.mode === 'full') {
-        this.dropUtil.dropAll(mDB);
+        this.dropUtil.dropAll(mDB.database);
       }
       // create database schema
       changes = this.jsonUtil.createSchema(mDB, jsonData);
@@ -30,14 +31,15 @@ export class ImportFromJson {
       throw new Error('CreateDatabaseSchema: ' + `${err}`);
     }
   }
-  public createTablesData(mDB: any, jsonData: JsonSQLite): number {
+  public createTablesData(mDB: Database, jsonData: JsonSQLite): number {
     const msg = 'CreateTablesData';
     let results: Changes;
     let isValue = false;
     let message = '';
     try {
       // start a transaction
-      this.sqliteUtil.beginTransaction(mDB, true);
+      this.sqliteUtil.beginTransaction(mDB.database, true);
+      mDB.setIsTransActive(true);
     } catch (err) {
       throw new Error(`${msg} ${err}`);
     }
@@ -45,7 +47,7 @@ export class ImportFromJson {
       if (jTable.values != null && jTable.values.length >= 1) {
         // Create the table's data
         try {
-          results = this.jsonUtil.createDataTable(mDB, jTable, jsonData.mode);
+          results = this.jsonUtil.createDataTable(mDB.database, jTable, jsonData.mode);
           if (results.lastId < 0) break;
           isValue = true;
         } catch (err) {
@@ -57,7 +59,8 @@ export class ImportFromJson {
     }
     if (isValue) {
       try {
-        this.sqliteUtil.commitTransaction(mDB, true);
+        this.sqliteUtil.commitTransaction(mDB.database, true);
+        mDB.setIsTransActive(false);
         return results.changes;
       } catch (err) {
         throw new Error(`${msg} ${err}`);
@@ -65,7 +68,8 @@ export class ImportFromJson {
     } else {
       if (message.length > 0) {
         try {
-          this.sqliteUtil.rollbackTransaction(mDB, true);
+          this.sqliteUtil.rollbackTransaction(mDB.database, true);
+          mDB.setIsTransActive(false);
           throw new Error(`${msg} ${message}`);
         } catch (err) {
           throw new Error(`${msg} ${err}: ${message}`);
@@ -81,14 +85,15 @@ export class ImportFromJson {
    * @param mDB
    * @param jsonData
    */
-  public createViews(mDB: any, jsonData: JsonSQLite): number {
+  public createViews(mDB: Database, jsonData: JsonSQLite): number {
     const msg = 'CreateViews';
     let isView = false;
     let message = '';
     let results: Changes;
     try {
       // start a transaction
-      this.sqliteUtil.beginTransaction(mDB, true);
+      this.sqliteUtil.beginTransaction(mDB.database, true);
+      mDB.setIsTransActive(true);
     } catch (err) {
       throw new Error(`${msg} ${err}`);
     }
@@ -96,7 +101,7 @@ export class ImportFromJson {
       if (jView.value != null) {
         // Create the view
         try {
-          results = this.jsonUtil.createView(mDB, jView);
+          results = this.jsonUtil.createView(mDB.database, jView);
           isView = true;
         } catch (err) {
           message = err;
@@ -107,7 +112,8 @@ export class ImportFromJson {
     }
     if (isView) {
       try {
-        this.sqliteUtil.commitTransaction(mDB, true);
+        this.sqliteUtil.commitTransaction(mDB.database, true);
+        mDB.setIsTransActive(false);
         return results.changes;
       } catch (err) {
         throw new Error(`${msg} ${err}`);
@@ -115,7 +121,8 @@ export class ImportFromJson {
     } else {
       if (message.length > 0) {
         try {
-          this.sqliteUtil.rollbackTransaction(mDB, true);
+          this.sqliteUtil.rollbackTransaction(mDB.database, true);
+          mDB.setIsTransActive(false);
           throw new Error(`${msg} ${message}`);
         } catch (err) {
           throw new Error(`${msg} ${err}: ${message}`);

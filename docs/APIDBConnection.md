@@ -12,6 +12,10 @@
 * [`getConnectionReadOnly()`](#getconnectionreadonly)
 * [`open()`](#open)
 * [`close()`](#close)
+* [`beginTransaction()`](#begintransaction)
+* [`commitTransaction()`](#committransaction)
+* [`rollbackTransaction()`](#rollbacktransaction)
+* [`isTransactionActive()`](#istransactionactive)
 * [`getUrl()`](#geturl)
 * [`getVersion()`](#getversion)
 * [`loadExtension(...)`](#loadextension)
@@ -98,6 +102,66 @@ Close a SQLite DB Connection
 --------------------
 
 
+### beginTransaction()
+
+```typescript
+beginTransaction() => Promise<capSQLiteChanges>
+```
+
+Begin Database Transaction
+
+**Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
+
+**Since:** 5.0.7
+
+--------------------
+
+
+### commitTransaction()
+
+```typescript
+commitTransaction() => Promise<capSQLiteChanges>
+```
+
+Commit Database Transaction
+
+**Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
+
+**Since:** 5.0.7
+
+--------------------
+
+
+### rollbackTransaction()
+
+```typescript
+rollbackTransaction() => Promise<capSQLiteChanges>
+```
+
+Rollback Database Transaction
+
+**Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
+
+**Since:** 5.0.7
+
+--------------------
+
+
+### isTransactionActive()
+
+```typescript
+isTransactionActive() => Promise<capSQLiteResult>
+```
+
+Is Database Transaction Active
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 5.0.7
+
+--------------------
+
+
 ### getUrl()
 
 ```typescript
@@ -165,7 +229,7 @@ Enable Or Disable Extension Loading
 ### execute(...)
 
 ```typescript
-execute(statements: string, transaction?: boolean | undefined) => Promise<capSQLiteChanges>
+execute(statements: string, transaction?: boolean | undefined, isSQL92?: boolean | undefined) => Promise<capSQLiteChanges>
 ```
 
 Execute SQLite DB Connection Statements
@@ -174,6 +238,7 @@ Execute SQLite DB Connection Statements
 | ----------------- | -------------------- |
 | **`statements`**  | <code>string</code>  |
 | **`transaction`** | <code>boolean</code> |
+| **`isSQL92`**     | <code>boolean</code> |
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
 
@@ -185,15 +250,16 @@ Execute SQLite DB Connection Statements
 ### query(...)
 
 ```typescript
-query(statement: string, values?: any[] | undefined) => Promise<DBSQLiteValues>
+query(statement: string, values?: any[] | undefined, isSQL92?: boolean | undefined) => Promise<DBSQLiteValues>
 ```
 
 Execute SQLite DB Connection Query
 
-| Param           | Type                | Description |
-| --------------- | ------------------- | ----------- |
-| **`statement`** | <code>string</code> |             |
-| **`values`**    | <code>any[]</code>  | (optional)  |
+| Param           | Type                 | Description |
+| --------------- | -------------------- | ----------- |
+| **`statement`** | <code>string</code>  |             |
+| **`values`**    | <code>any[]</code>   | (optional)  |
+| **`isSQL92`**   | <code>boolean</code> |             |
 
 **Returns:** <code>Promise&lt;<a href="#dbsqlitevalues">DBSQLiteValues</a>&gt;</code>
 
@@ -205,7 +271,7 @@ Execute SQLite DB Connection Query
 ### run(...)
 
 ```typescript
-run(statement: string, values?: any[] | undefined, transaction?: boolean | undefined, returnMode?: string | undefined) => Promise<capSQLiteChanges>
+run(statement: string, values?: any[] | undefined, transaction?: boolean | undefined, returnMode?: string | undefined, isSQL92?: boolean | undefined) => Promise<capSQLiteChanges>
 ```
 
 Execute SQLite DB Connection Raw Statement
@@ -216,6 +282,7 @@ Execute SQLite DB Connection Raw Statement
 | **`values`**      | <code>any[]</code>   | (optional)  |
 | **`transaction`** | <code>boolean</code> |             |
 | **`returnMode`**  | <code>string</code>  |             |
+| **`isSQL92`**     | <code>boolean</code> |             |
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
 
@@ -227,7 +294,7 @@ Execute SQLite DB Connection Raw Statement
 ### executeSet(...)
 
 ```typescript
-executeSet(set: capSQLiteSet[], transaction?: boolean | undefined, returnMode?: string | undefined) => Promise<capSQLiteChanges>
+executeSet(set: capSQLiteSet[], transaction?: boolean | undefined, returnMode?: string | undefined, isSQL92?: boolean | undefined) => Promise<capSQLiteChanges>
 ```
 
 Execute SQLite DB Connection Set
@@ -237,6 +304,7 @@ Execute SQLite DB Connection Set
 | **`set`**         | <code>capSQLiteSet[]</code> |
 | **`transaction`** | <code>boolean</code>        |
 | **`returnMode`**  | <code>string</code>         |
+| **`isSQL92`**     | <code>boolean</code>        |
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
 
@@ -404,12 +472,15 @@ Remove rows with sql_deleted = 1 after an export
 ### executeTransaction(...)
 
 ```typescript
-executeTransaction(txn: { statement: string; values?: any[]; }[]) => Promise<void>
+executeTransaction(txn: { statement: string; values?: any[]; }[], isSQL92: boolean) => Promise<capSQLiteChanges>
 ```
 
-| Param     | Type                                                  |
-| --------- | ----------------------------------------------------- |
-| **`txn`** | <code>{ statement: string; values?: any[]; }[]</code> |
+| Param         | Type                                                  |
+| ------------- | ----------------------------------------------------- |
+| **`txn`**     | <code>{ statement: string; values?: any[]; }[]</code> |
+| **`isSQL92`** | <code>boolean</code>                                  |
+
+**Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
 
 **Since:** 3.4.0
 
@@ -417,20 +488,6 @@ executeTransaction(txn: { statement: string; values?: any[]; }[]) => Promise<voi
 
 
 ### Interfaces
-
-
-#### capSQLiteUrl
-
-| Prop      | Type                | Description    |
-| --------- | ------------------- | -------------- |
-| **`url`** | <code>string</code> | a returned url |
-
-
-#### capVersionResult
-
-| Prop          | Type                | Description     |
-| ------------- | ------------------- | --------------- |
-| **`version`** | <code>number</code> | Number returned |
 
 
 #### capSQLiteChanges
@@ -449,6 +506,27 @@ executeTransaction(txn: { statement: string; values?: any[]; }[]) => Promise<voi
 | **`values`**  | <code>any[]</code>  | values when RETURNING                                |
 
 
+#### capSQLiteResult
+
+| Prop         | Type                 | Description                                   |
+| ------------ | -------------------- | --------------------------------------------- |
+| **`result`** | <code>boolean</code> | result set to true when successful else false |
+
+
+#### capSQLiteUrl
+
+| Prop      | Type                | Description    |
+| --------- | ------------------- | -------------- |
+| **`url`** | <code>string</code> | a returned url |
+
+
+#### capVersionResult
+
+| Prop          | Type                | Description     |
+| ------------- | ------------------- | --------------- |
+| **`version`** | <code>number</code> | Number returned |
+
+
 #### DBSQLiteValues
 
 | Prop         | Type               | Description                      |
@@ -462,13 +540,6 @@ executeTransaction(txn: { statement: string; values?: any[]; }[]) => Promise<voi
 | --------------- | ------------------- | -------------------------------- |
 | **`statement`** | <code>string</code> | A statement                      |
 | **`values`**    | <code>any[]</code>  | the data values list as an Array |
-
-
-#### capSQLiteResult
-
-| Prop         | Type                 | Description                                   |
-| ------------ | -------------------- | --------------------------------------------- |
-| **`result`** | <code>boolean</code> | result set to true when successful else false |
 
 
 #### capSQLiteJson

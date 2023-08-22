@@ -1,3 +1,19 @@
+# 5.0.7 ()
+
+### Added Features
+
+ - Add a paramater isSQL92 default to true in execute, executeSet, run and query methods for ELECTRON plugin ONLY. if set to false the statements you were using in sqlite3 based release will be converted to SQL92 statement. As this is time consuming, we will advise you to cereate SQL statement compliant to SQL92.
+
+ - Add new methods `(beginTransaction,commitTransaction,rollbackTransaction,isTransactionActive)`, that let you control the transaction process flow. In that case you MUST set the transition to false in any method you call.
+
+### Bug Fixes
+
+ - Fix Android DELETE From when FOREIGN KEYS and sql_deleted column issue#445.
+
+ - Fix SQL92 compatibility issue #451
+
+ - Modify `transaction` method to handle the new transaction process flow
+
 # 5.0.7-2 (2023-08-10)
 
 ### Bug Fixes

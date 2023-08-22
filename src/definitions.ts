@@ -121,6 +121,34 @@ export interface CapacitorSQLitePlugin {
    */
   close(options: capSQLiteOptions): Promise<void>;
   /**
+   * Begin Database Transaction
+   * @param options  
+   * @returns capSQLiteChanges
+   * @since 5.0.7
+   */
+  beginTransaction(options: capSQLiteOptions): Promise<capSQLiteChanges>;
+  /**
+   * Commit Database Transaction
+   * @param options  
+   * @returns capSQLiteChanges
+   * @since 5.0.7
+   */
+  commitTransaction(options: capSQLiteOptions): Promise<capSQLiteChanges>;
+    /**
+   * Rollback Database Transaction
+   * @param options  
+   * @returns capSQLiteChanges
+   * @since 5.0.7
+   */
+  rollbackTransaction(options: capSQLiteOptions): Promise<capSQLiteChanges>;
+  /**
+   * Is Database Transaction Active
+   * @param options  
+   * @returns capSQLiteResult
+   * @since 5.0.7
+   */
+  isTransactionActive(options: capSQLiteOptions): Promise<capSQLiteResult>; 
+  /**
    * Load a SQlite extension
    * @param options :capSQLiteExtensionPath
    * @returns Promise<void>
@@ -531,6 +559,14 @@ export interface capSQLiteExecuteOptions {
    * @since 4.1.0-7
    */
   readonly?: boolean;
+  /**
+   * Compatibility SQL92
+   * !!! ELECTRON ONLY
+   * default (true)
+   * @since 5.0.7
+   */
+  isSQL92?: boolean;
+
 }
 export interface capSQLiteSetOptions {
   /**
@@ -561,6 +597,13 @@ export interface capSQLiteSetOptions {
    * @since 5.0.5-3
    */
   returnMode?: string;
+  /**
+   * Compatibility SQL92
+   * !!! ELECTRON ONLY
+   * default (true)
+   * @since 5.0.7
+   */
+  isSQL92?: boolean;
 }
 export interface capSQLiteRunOptions {
   /**
@@ -595,6 +638,13 @@ export interface capSQLiteRunOptions {
    * @since 5.0.5-3
    */
   returnMode?: string;
+  /**
+   * Compatibility SQL92
+   * !!! ELECTRON ONLY
+   * default (true)
+   * @since 5.0.7
+   */
+  isSQL92?: boolean;
 }
 export interface capSQLiteQueryOptions {
   /**
@@ -617,6 +667,13 @@ export interface capSQLiteQueryOptions {
    * @since 4.1.0-7
    */
   readonly?: boolean;
+  /**
+   * Compatibility SQL92
+   * !!! ELECTRON ONLY
+   * default (true)
+   * @since 5.0.7
+   */
+  isSQL92?: boolean;
 }
 export interface capSQLiteImportOptions {
   /**
@@ -1741,6 +1798,30 @@ export interface ISQLiteDBConnection {
    */
   close(): Promise<void>;
   /**
+   * Begin Database Transaction
+   * @returns capSQLiteChanges
+   * @since 5.0.7
+   */
+  beginTransaction(): Promise<capSQLiteChanges>;
+  /**
+   * Commit Database Transaction
+   * @returns capSQLiteChanges
+   * @since 5.0.7
+   */
+  commitTransaction(): Promise<capSQLiteChanges>;
+  /**
+   * Rollback Database Transaction
+   * @returns capSQLiteChanges
+   * @since 5.0.7
+   */
+  rollbackTransaction(): Promise<capSQLiteChanges>;
+  /**
+   * Is Database Transaction Active
+   * @returns capSQLiteResult
+   * @since 5.0.7
+   */
+  isTransactionActive(): Promise<capSQLiteResult>;   
+  /**
    * Get Database Url
    * @returns Promise<capSQLiteUrl>
    * @since 3.3.3-4
@@ -1772,7 +1853,7 @@ export interface ISQLiteDBConnection {
    * @returns Promise<capSQLiteChanges>
    * @since 2.9.0 refactor
    */
-  execute(statements: string, transaction?: boolean): Promise<capSQLiteChanges>;
+  execute(statements: string, transaction?: boolean, isSQL92?: boolean): Promise<capSQLiteChanges>;
   /**
    * Execute SQLite DB Connection Query
    * @param statement
@@ -1780,7 +1861,7 @@ export interface ISQLiteDBConnection {
    * @returns Promise<Promise<DBSQLiteValues>
    * @since 2.9.0 refactor
    */
-  query(statement: string, values?: any[]): Promise<DBSQLiteValues>;
+  query(statement: string, values?: any[], isSQL92?: boolean): Promise<DBSQLiteValues>;
   /**
    * Execute SQLite DB Connection Raw Statement
    * @param statement
@@ -1793,6 +1874,7 @@ export interface ISQLiteDBConnection {
     values?: any[],
     transaction?: boolean,
     returnMode?: string,
+    isSQL92?: boolean
   ): Promise<capSQLiteChanges>;
   /**
    * Execute SQLite DB Connection Set
@@ -1804,6 +1886,7 @@ export interface ISQLiteDBConnection {
     set: capSQLiteSet[],
     transaction?: boolean,
     returnMode?: string,
+    isSQL92?: boolean
   ): Promise<capSQLiteChanges>;
   /**
    * Check if a SQLite DB Connection exists
@@ -1870,12 +1953,14 @@ export interface ISQLiteDBConnection {
   /**
    *
    * @param txn
-   * @returns Promise<void>
+   * @param isSQL92
+   * @returns Promise<capSQLiteChanges> since 5.0.7
    * @since 3.4.0
    */
   executeTransaction(
     txn: { statement: string; values?: any[] }[],
-  ): Promise<void>;
+    isSQL92: boolean
+  ): Promise<capSQLiteChanges>;
 }
 /**
  * SQLiteDBConnection Class
@@ -1916,39 +2001,64 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
       return Promise.reject(err);
     }
   }
+  async beginTransaction(): Promise<capSQLiteChanges> {
+    try {
+      const changes: capSQLiteChanges = await this.sqlite
+                          .beginTransaction({database: this.dbName});
+      return Promise.resolve(changes);
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async commitTransaction(): Promise<capSQLiteChanges> {
+    try {
+      const changes: capSQLiteChanges = await this.sqlite
+                          .commitTransaction({database: this.dbName});
+      return Promise.resolve(changes);
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+  async rollbackTransaction(): Promise<capSQLiteChanges> {
+    try {
+      const changes: capSQLiteChanges = await this.sqlite
+                          .rollbackTransaction({database: this.dbName});
+      return Promise.resolve(changes);
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  } 
+  async isTransactionActive(): Promise<capSQLiteResult> {
+    try {
+      const result: capSQLiteResult = await this.sqlite
+                          .isTransactionActive({database: this.dbName});
+      return Promise.resolve(result);
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }  
 
   async loadExtension(path: string): Promise<void> {
     try {
-      console.log(`database: ${this.dbName}`);
-      console.log(`readonly: ${this.readonly}}`);
-      console.log(`path: ${path}}`);
       await this.sqlite.loadExtension({
         database: this.dbName,
         path: path,
         readonly: this.readonly,
       });
-      console.log(`loadExtension successful`);
       return Promise.resolve();
     } catch (err) {
-      console.log(`loadExtension failed `);
       return Promise.reject(err);
     }
   }
   async enableLoadExtension(toggle: boolean): Promise<void> {
     try {
-      console.log(`database: ${this.dbName}`);
-      console.log(`readonly: ${this.readonly}`);
-      console.log(`toggle: ${toggle}`);
       await this.sqlite.enableLoadExtension({
         database: this.dbName,
         toggle: toggle,
         readonly: this.readonly,
       });
-      console.log(`enableLoadExtension successful`);
       return Promise.resolve();
     } catch (err) {
-      console.log(err);
-      console.log(`enableLoadExtension failed `);
       return Promise.reject(err);
     }
   }
@@ -1989,6 +2099,7 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
   async execute(
     statements: string,
     transaction = true,
+    isSQL92 = true
   ): Promise<capSQLiteChanges> {
     try {
       if (!this.readonly) {
@@ -1997,6 +2108,7 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
           statements: statements,
           transaction: transaction,
           readonly: false,
+          isSQL92: isSQL92
         });
         return Promise.resolve(res);
       } else {
@@ -2006,7 +2118,7 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
       return Promise.reject(err);
     }
   }
-  async query(statement: string, values?: any[]): Promise<DBSQLiteValues> {
+  async query(statement: string, values?: any[], isSQL92 = true): Promise<DBSQLiteValues> {
     let res: any;
     try {
       if (values && values.length > 0) {
@@ -2015,6 +2127,7 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
           statement: statement,
           values: values,
           readonly: this.readonly,
+          isSql92 : true
         });
       } else {
         res = await this.sqlite.query({
@@ -2022,6 +2135,7 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
           statement: statement,
           values: [],
           readonly: this.readonly,
+          isSQL92: isSQL92
         });
       }
 
@@ -2037,6 +2151,7 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
     values?: any[],
     transaction = true,
     returnMode = 'no',
+    isSQL92 = true
   ): Promise<capSQLiteChanges> {
     let res: any;
     try {
@@ -2052,6 +2167,7 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
             transaction: transaction,
             readonly: false,
             returnMode: mRetMode,
+            isSQL92: true
           });
           //        }
         } else {
@@ -2065,6 +2181,7 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
             transaction: transaction,
             readonly: false,
             returnMode: mRetMode,
+            isSQL92: isSQL92
           });
         }
         // reorder rows for ios
@@ -2081,6 +2198,7 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
     set: capSQLiteSet[],
     transaction = true,
     returnMode = 'no',
+    isSQL92 = true
   ): Promise<capSQLiteChanges> {
     let res: any;
     try {
@@ -2091,6 +2209,7 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
           transaction: transaction,
           readonly: false,
           returnMode: returnMode,
+          isSQL92: isSQL92
         });
         //      }
         // reorder rows for ios
@@ -2226,18 +2345,26 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
   }
 
   async executeTransaction(
-    txn: { statement: string; values?: any[] }[],
-  ): Promise<void> {
-    try {
-      if (!this.readonly) {
-        const ret = await this.sqlite.execute({
-          database: this.dbName,
-          statements: 'BEGIN TRANSACTION;',
-          transaction: false,
+    txn: { statement: string; values?: any[]}[],
+    isSQL92 = true 
+  ): Promise<capSQLiteChanges> {
+    let changes = 0;
+    let isActive = false;
+    if (!this.readonly) {
+      try {
+          await this.sqlite.beginTransaction({
+          database: this.dbName
         });
-        if (ret.changes.changes < 0) {
-          return Promise.reject('Error in BEGIN TRANSACTION');
+        isActive = await this.sqlite.isTransactionActive({
+          database: this.dbName
+        });
+        if(!isActive) {
+          return Promise.reject('After Begin Transaction, no transaction active');
         }
+      } catch (err) {
+        return Promise.reject(err);
+      }
+      try {
         for (const task of txn) {
           if (task.values && task.values.length > 0) {
             const retMode = task.statement.toUpperCase().includes('RETURNING')
@@ -2250,11 +2377,12 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
               transaction: false,
               readonly: false,
               returnMode: retMode,
+              isSQL92: isSQL92
             });
-            if (ret.changes.lastId === -1) {
-              await this.execute('ROLLBACK;', false);
-              return Promise.reject('Error in transaction run ');
+            if (ret.changes.changes <= 0) {
+              throw new Error('Error in transaction method run ');
             }
+            changes += ret.changes.changes;
           } else {
             const ret = await this.sqlite.execute({
               database: this.dbName,
@@ -2262,37 +2390,43 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
               transaction: false,
               readonly: false,
             });
+            isActive = await this.sqlite.isTransactionActive({
+              database: this.dbName
+            });
             if (ret.changes.changes < 0) {
-              await this.sqlite.execute({
-                database: this.dbName,
-                statements: 'ROLLBACK;',
-                transaction: false,
-                readonly: false,
-              });
-              return Promise.reject('Error in transaction execute ');
+              throw new Error('Error in transaction method execute ');
             }
+            changes += ret.changes.changes;
           }
         }
-        await this.sqlite.execute({
-          database: this.dbName,
-          statements: 'COMMIT;',
-          transaction: false,
-          readonly: false,
+        isActive = await this.sqlite.isTransactionActive({
+          database: this.dbName
         });
-        return Promise.resolve();
-      } else {
-        return Promise.reject('not allowed in read-only mode');
+        if(isActive) {
+          const retC = await this.sqlite.commitTransaction({
+            database: this.dbName
+          });
+          changes += retC.changes.changes;
+        }
+        const retChanges = {changes:{changes:changes}}
+        return Promise.resolve(retChanges);
+      } catch (err: any) {
+        const msg = err.message ? err.message : err;
+        isActive = await this.sqlite.isTransactionActive({
+          database: this.dbName
+        });
+        if(isActive) {
+          await this.sqlite.rollbackTransaction({
+            database: this.dbName,
+          });
+        }
+        return Promise.reject(msg);
       }
-    } catch (err: any) {
-      await this.sqlite.execute({
-        database: this.dbName,
-        statements: 'ROLLBACK;',
-        transaction: false,
-        readonly: false,
-      });
-      return Promise.reject(err);
+   
+    } else {
+        return Promise.reject('not allowed in read-only mode');
     }
-  }
+ }
   private async reorderRows(res: any): Promise<any> {
     const retRes: any = res;
     if (res?.values && typeof res.values[0] === 'object') {

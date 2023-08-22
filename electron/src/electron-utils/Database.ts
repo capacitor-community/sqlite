@@ -10,6 +10,7 @@ import { ExportToJson } from './ImportExportJson/exportToJson';
 import { ImportFromJson } from './ImportExportJson/importFromJson';
 import { UtilsJson } from './ImportExportJson/utilsJson';
 import { UtilsJsonEncryption } from './ImportExportJson/utilsJsonEncryption';
+import { UtilsSQL92Compatibility } from './UtilsSQL92Compatibility';
 import { UtilsEncryption } from './utilsEncryption';
 import { UtilsFile } from './utilsFile';
 import { UtilsSQLite } from './utilsSQLite';
@@ -17,6 +18,7 @@ import { UtilsSecret } from './utilsSecret';
 import { UtilsUpgrade } from './utilsUpgrade';
 
 export class Database {
+  public database: any;
   private _isDbOpen: boolean;
   private dbName: string;
   private _encrypted: boolean;
@@ -35,8 +37,10 @@ export class Database {
   private upgradeUtil: UtilsUpgrade = new UtilsUpgrade();
   private importFromJsonUtil: ImportFromJson = new ImportFromJson();
   private exportToJsonUtil: ExportToJson = new ExportToJson();
-  private database: any;
   private upgradeVersionDict: Record<number, capSQLiteVersionUpgrade> = {};
+  private sql92Utils: UtilsSQL92Compatibility = new UtilsSQL92Compatibility();
+  private isTransactionActive: boolean;
+
 
   constructor(
     dbName: string,
@@ -57,6 +61,7 @@ export class Database {
     this.upgradeVersionDict = upgDict;
     this.pathDB = this.fileUtil.getFilePath(dbName);
     this._isDbOpen = false;
+    this.isTransactionActive = false;
     this.globalUtil = globalUtil ? globalUtil : new GlobalSQLite();
 
     if (this.pathDB.length === 0)
@@ -115,7 +120,7 @@ export class Database {
 
             // execute the upgrade flow process
             await this.upgradeUtil.onUpgrade(
-              this.database,
+              this,
               this.upgradeVersionDict,
               curVersion,
               this.version,
@@ -144,8 +149,8 @@ export class Database {
    * @returns Promise<boolean>
    */
   dbClose(): void {
-    this.ensureDatabaseIsOpen();
     try {
+      this.ensureDatabaseIsOpen();
       this.sqliteUtil.closeDB(this.database);
     } catch (err) {
       throw new Error(`Close failed: ${this.dbName}  ${err}`);
@@ -154,6 +159,68 @@ export class Database {
     }
     return;
   }
+  /**
+   * IsTransActive
+   * Is Database Transaction Active
+   * @returns 
+   */
+  isTransActive(): boolean {
+    return this.isTransactionActive;
+  }
+  /**
+   * SetIsTransActive
+   * Set the Database Transaction to Active
+   * @returns 
+   */
+  setIsTransActive(value: boolean): void {
+    this.isTransactionActive = value;
+  }
+  /**
+   * DbBeginTransaction
+   * Database Begin Transaction
+   * @returns 
+   */
+  dbBeginTransaction(): number {
+    try {
+      this.ensureDatabaseIsOpen();
+      this.sqliteUtil.beginTransaction(this.database,true);
+      this.setIsTransActive(true);
+      return 0;
+    } catch (err) {
+      throw new Error(`DbBeginTransaction: ${err}`);
+    }
+  }
+  /**
+   * DbCommitTransaction
+   * Database Commit Transaction
+   * @returns 
+   */
+  dbCommitTransaction(): number {
+    try {
+      this.ensureDatabaseIsOpen();
+      this.sqliteUtil.commitTransaction(this.database,true);
+      this.setIsTransActive(false);
+      return 0;
+    } catch (err) {
+      throw new Error(`DbCommitTransaction: ${err}`);
+    }
+  }
+  /**
+   * DbRollbackTransaction
+   * Database Rollback Transaction
+   * @returns 
+   */
+  dbRollbackTransaction(): number {
+    try {
+      this.ensureDatabaseIsOpen();
+      this.sqliteUtil.rollbackTransaction(this.database,true);
+      this.setIsTransActive(false);
+      return 0;
+    } catch (err) {
+      throw new Error(`DbCommitTransaction: ${err}`);
+    }
+  }
+
   /**
    * ChangeSecret
    * open the @journeyapps/sqlcipher sqlite3 database
@@ -282,7 +349,7 @@ export class Database {
                               );`;
           stmts += `INSERT INTO sync_table (sync_date) VALUES (
                               ${date});`;
-          const results = this.sqliteUtil.execute(this.database, stmts, false);
+          const results = this.sqliteUtil.execute(this.database, stmts, false, true);
           changes = results.changes;
           if (results.changes < 0) {
             throw new Error(`CreateSyncTable: failed changes < 0`);
@@ -322,7 +389,7 @@ export class Database {
       let stmt = `UPDATE sync_table SET sync_date = `;
       stmt += `${syncDateUnixTimestamp} WHERE id = 1;`;
 
-      const results = this.sqliteUtil.execute(this.database, stmt, false);
+      const results = this.sqliteUtil.execute(this.database, stmt, false, true);
 
       if (results.changes < 0) {
         return { result: false, message: 'setSyncDate failed' };
@@ -365,9 +432,12 @@ export class Database {
    * ExecuteSQL
    * execute raw sql statements store in a string
    * @param sql: string
+   * @param transaction: boolean
+   * @param isSQL92: boolean
    * @returns Promise<number>
    */
-  executeSQL(sql: string, transaction: boolean): number {
+  executeSQL(sql: string, transaction: boolean,
+                            isSQL92: boolean): number {
     this.ensureDatabaseIsOpen();
 
     try {
@@ -376,7 +446,7 @@ export class Database {
         console.log(`$$$ in executeSQL journal_mode: ${mode} $$$`);
         this.sqliteUtil.beginTransaction(this.database, this._isDbOpen);
       }
-      const results = this.sqliteUtil.execute(this.database, sql, false);
+      const results = this.sqliteUtil.execute(this.database, sql, false, isSQL92);
 
       if (results.changes < 0) {
         throw new Error('ExecuteSQL: changes < 0');
@@ -404,13 +474,15 @@ export class Database {
    * execute a sql query with/without binding values
    * @param sql: string
    * @param values: string[]
+   * @param isSQL92: boolean
    * @returns Promise<any[]>
    */
-  selectSQL(sql: any, values: any[]): any[] {
+  selectSQL(sql: any, values: any[], isSQL92: boolean ): any[] {
     this.ensureDatabaseIsOpen();
 
     try {
-      const selectResult = this.sqliteUtil.queryAll(this.database, sql, values);
+      const selectResult = this.sqliteUtil.queryAll(this.database,
+                                              sql, values, isSQL92);
       return selectResult;
     } catch (err) {
       throw new Error(`SelectSQL: ${err}`);
@@ -421,6 +493,7 @@ export class Database {
    * execute a raw sql statement with/without binding values
    * @param sql: string
    * @param values: string[]
+   * @param isSQL92: boolean,
    * @returns Promise<{changes:number, lastId:number}>
    */
   runSQL(
@@ -428,6 +501,7 @@ export class Database {
     values: any[],
     transaction: boolean,
     returnMode: string,
+    isSQL92: boolean
   ): Changes {
     this.ensureDatabaseIsOpen();
 
@@ -442,9 +516,13 @@ export class Database {
       throw new Error(`RunSQL: ${err}`);
     }
     try {
+      let nStmt = statement;
+      if(!isSQL92 && values.length === 0) {
+        nStmt = this.sql92Utils.compatibleSQL92(statement);
+      }
       const results = this.sqliteUtil.prepareRun(
         this.database,
-        statement,
+        nStmt,
         values,
         false,
         returnMode,
@@ -472,9 +550,13 @@ export class Database {
    * ExecSet
    * execute a set of raw sql statements with/without binding values
    * @param set: any[]
+   * @param transaction: boolean,
+   * @param returnMode: string,
+   * @param isSQL92: boolean,
    * @returns Promise<{changes:number, lastId:number}>
    */
-  execSet(set: any[], transaction: boolean, returnMode: string): Changes {
+  execSet(set: any[], transaction: boolean, returnMode: string,
+                              isSQL92: boolean): Changes {
     this.ensureDatabaseIsOpen();
 
     let results: Changes = { changes: 0, lastId: -1 };
@@ -494,6 +576,7 @@ export class Database {
         set,
         false,
         returnMode,
+        isSQL92
       );
       if (transaction) {
         this.sqliteUtil.commitTransaction(this.database, this._isDbOpen);
@@ -546,21 +629,21 @@ export class Database {
       if (jsonData.tables && jsonData.tables.length > 0) {
         // create the database schema
         changes = this.importFromJsonUtil.createDatabaseSchema(
-          this.database,
+          this,
           jsonData,
         );
 
         if (changes != -1) {
           // create the tables data
           changes += this.importFromJsonUtil.createTablesData(
-            this.database,
+            this,
             jsonData,
           );
         }
       }
       if (jsonData.views && jsonData.views.length > 0) {
         // create the views
-        changes += this.importFromJsonUtil.createViews(this.database, jsonData);
+        changes += this.importFromJsonUtil.createViews(this, jsonData);
       }
       // set Foreign Keys On
       this.sqliteUtil.setForeignKeyConstraintsEnabled(this.database, true);

@@ -5,6 +5,10 @@ import static android.database.Cursor.FIELD_TYPE_FLOAT;
 import static android.database.Cursor.FIELD_TYPE_INTEGER;
 import static android.database.Cursor.FIELD_TYPE_NULL;
 import static android.database.Cursor.FIELD_TYPE_STRING;
+import static com.getcapacitor.community.database.sqlite.SQLite.UtilsDelete.findReferencesAndUpdate;
+import static com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLStatement.extractColumnNames;
+import static com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLStatement.extractTableName;
+import static com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLStatement.extractWhereClause;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -23,13 +27,10 @@ import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.UtilsJ
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Dictionary;
 import java.util.List;
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import net.sqlcipher.Cursor;
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteException;
@@ -61,6 +62,7 @@ public class Database {
     private final ImportFromJson fromJson = new ImportFromJson();
     private final ExportToJson toJson = new ExportToJson();
     private Boolean ncDB = false;
+    private boolean isAvailableTransaction = false;
 
     public Database(
         Context context,
@@ -132,6 +134,84 @@ public class Database {
      */
     public Boolean isNCDB() {
         return ncDB;
+    }
+
+    /**
+     * IsAvailTrans method
+     *
+     * @return database transaction is active
+     */
+    public boolean isAvailTrans() {
+        return _db.inTransaction();
+    }
+    /**
+     * BeginTransaction method
+     *
+     * @return begin a database transaction
+     */
+    public Integer beginTransaction() throws Exception {
+        if (_db.isOpen()) {
+            try {
+                if( isAvailTrans()) {
+                    throw new Exception("Already in transaction");
+                }
+                _db.beginTransaction();
+                return 0;
+            } catch (Exception e) {
+                String msg = "Failed in beginTransaction" + e.getMessage();
+                Log.v(TAG, msg);
+                throw new Exception(msg);
+            }
+        } else {
+            throw new Exception("Database not opened");
+        }
+
+    }
+    /**
+     * CommitTransaction method
+     *
+     * @return commit a database transaction
+     */
+    public Integer commitTransaction() throws Exception {
+        if (_db.isOpen()) {
+            try {
+                if(!isAvailTrans()) {
+                    throw new Exception("No transaction active");
+                }
+                _db.setTransactionSuccessful();
+                return 0;
+            } catch (Exception e) {
+                String msg = "Failed in commitTransaction" + e.getMessage();
+                Log.v(TAG, msg);
+                throw new Exception(msg);
+            }
+        } else {
+            throw new Exception("Database not opened");
+        }
+
+    }
+
+    /**
+     * Rollback Transaction method
+     *
+     * @return rollback a database transaction
+     */
+    public Integer rollbackTransaction() throws Exception {
+        if (_db.isOpen()) {
+            try {
+                if( isAvailTrans()) {
+                    _db.endTransaction();
+                }
+                return 0;
+            } catch (Exception e) {
+                String msg = "Failed in rollbackTransaction" + e.getMessage();
+                Log.v(TAG, msg);
+                throw new Exception(msg);
+            }
+        } else {
+            throw new Exception("Database not opened");
+        }
+
     }
 
     /**
@@ -315,7 +395,7 @@ public class Database {
         try {
             if (_db != null && _db.isOpen()) {
                 Integer initChanges = _uSqlite.dbChanges(_db);
-                if (transaction) _db.beginTransaction();
+                if (transaction) beginTransaction();
                 for (String cmd : statements) {
                     if (!cmd.endsWith(";")) cmd += ";";
                     String nCmd = cmd;
@@ -328,7 +408,7 @@ public class Database {
                 }
                 changes = _uSqlite.dbChanges(_db) - initChanges;
                 if (changes != -1) {
-                    if (transaction) _db.setTransactionSuccessful();
+                    if (transaction) commitTransaction();
                     retObj.put("changes", changes);
                 }
                 return retObj;
@@ -338,7 +418,7 @@ public class Database {
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         } finally {
-            if (_db != null && transaction && _db.inTransaction()) _db.endTransaction();
+            if (_db != null && transaction && _db.inTransaction()) rollbackTransaction();
         }
     }
 
@@ -357,7 +437,7 @@ public class Database {
         try {
             if (_db != null && _db.isOpen()) {
                 int initChanges = _uSqlite.dbChanges(_db);
-                if (transaction) _db.beginTransaction();
+                if (transaction) beginTransaction();
                 for (int i = 0; i < set.length(); i++) {
                     JSONObject row = set.getJSONObject(i);
                     String statement = row.getString("statement");
@@ -388,7 +468,7 @@ public class Database {
                 }
                 changes = _uSqlite.dbChanges(_db) - initChanges;
                 if (changes >= 0) {
-                    if (transaction) _db.setTransactionSuccessful();
+                    if (transaction) commitTransaction();
                     changes = _uSqlite.dbChanges(_db) - initChanges;
                     retObj.put("changes", changes);
                     retObj.put("lastId", lastId);
@@ -403,7 +483,7 @@ public class Database {
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         } finally {
-            if (_db != null && transaction && _db.inTransaction()) _db.endTransaction();
+            if (_db != null && transaction && _db.inTransaction()) rollbackTransaction();
         }
     }
 
@@ -452,10 +532,10 @@ public class Database {
         try {
             if (_db != null && _db.isOpen() && statement.length() > 0) {
                 int initChanges = _uSqlite.dbChanges(_db);
-                if (transaction) _db.beginTransaction();
+                if (transaction) beginTransaction();
                 JSObject response = prepareSQL(statement, values, false, returnMode);
                 lastId = response.getLong("lastId");
-                if (lastId != -1 && transaction) _db.setTransactionSuccessful();
+                if (lastId != -1 && transaction) commitTransaction();
                 changes = _uSqlite.dbChanges(_db) - initChanges;
                 retObj.put("changes", changes);
                 retObj.put("lastId", lastId);
@@ -467,7 +547,7 @@ public class Database {
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         } finally {
-            if (_db != null && transaction && _db.inTransaction()) _db.endTransaction();
+            if (_db != null && transaction && _db.inTransaction()) rollbackTransaction();
         }
     }
 
@@ -603,6 +683,7 @@ public class Database {
         return retVals;
     }
 
+    /*
     private static String extractTableName(String statement) {
         Pattern pattern = Pattern.compile("(?i)(?:INSERT\\s+INTO|UPDATE|DELETE\\s+FROM)\\s+(\\w+)");
         Matcher matcher = pattern.matcher(statement);
@@ -628,7 +709,7 @@ public class Database {
 
         return null;
     }
-
+*/
     /**
      * DeleteSQL method
      *
@@ -640,34 +721,55 @@ public class Database {
      */
     public String deleteSQL(Database mDB, String statement, ArrayList<Object> values) throws Exception {
         String sqlStmt = statement;
+        String msg = "DeleteSQL";
+
         try {
-            Boolean isLast = _uJson.isLastModified(mDB);
-            Boolean isDel = _uJson.isSqlDeleted(mDB);
-            if (isLast && isDel) {
-                // Replace DELETE by UPDATE and set sql_deleted to 1
-                Integer wIdx = statement.toUpperCase().indexOf("WHERE");
-                String preStmt = statement.substring(0, wIdx - 1);
-                String clauseStmt = statement.substring(wIdx);
-                String tableName = preStmt.substring(("DELETE FROM").length()).trim();
-                sqlStmt = "UPDATE " + tableName + " SET sql_deleted = 1 " + clauseStmt;
-                // Find REFERENCES if any and update the sql_deleted column
-                findReferencesAndUpdate(mDB, tableName, clauseStmt, values);
+            boolean isLast = this._uJson.isLastModified(mDB);
+            boolean isDel = this._uJson.isSqlDeleted(mDB);
+
+            if (!isLast || !isDel) {
+                return sqlStmt;
             }
+
+            // Replace DELETE by UPDATE
+            // set sql_deleted to 1
+            String whereClause = extractWhereClause(sqlStmt);
+
+            if (whereClause == null) {
+                throw new Exception("deleteSQL: cannot find a WHERE clause");
+            }
+
+            String tableName = extractTableName(sqlStmt);
+
+            if (tableName == null) {
+                throw new Exception("deleteSQL: cannot find a WHERE clause");
+            }
+            String[] colNames = extractColumnNames(whereClause).toArray(new String[0]);
+
+            if (colNames.length == 0) {
+                throw new Exception("deleteSQL: Did not find column names in the WHERE Statement");
+            }
+            String setStmt = "sql_deleted = 1";
+
+            // Find REFERENCES if any and update the sql_deleted column
+            boolean hasToUpdate = findReferencesAndUpdate(mDB, tableName, whereClause, colNames, values);
+
+            if (hasToUpdate) {
+                String whereStmt = whereClause.endsWith(";") ? whereClause.substring(0, whereClause.length() - 1) : whereClause;
+
+                sqlStmt = "UPDATE " + tableName + " SET " + setStmt + " WHERE " + whereStmt + " AND sql_deleted = 0;";
+            } else {
+                sqlStmt = "";
+            }
+
             return sqlStmt;
-        } catch (Exception e) {
-            throw new Exception(e.getMessage());
+        } catch (Exception err) {
+            String errmsg = err.getMessage() != null ? err.getMessage() : err.toString();
+            throw new Exception(msg + " " + errmsg);
         }
     }
 
-    /**
-     * FindReferencesAndUpdate method
-     *
-     * @param mDB
-     * @param tableName
-     * @param whereStmt
-     * @param values
-     * @throws Exception
-     */
+    /*
     public void findReferencesAndUpdate(Database mDB, String tableName, String whereStmt, ArrayList<Object> values) throws Exception {
         try {
             ArrayList<String> references = getReferences(mDB, tableName);
@@ -738,12 +840,6 @@ public class Database {
         }
     }
 
-    /**
-     * GetReferenceTableName method
-     *
-     * @param refValue
-     * @return
-     */
     public String getReferenceTableName(String refValue) {
         String tableName = "";
         if (refValue.length() > 0) {
@@ -757,12 +853,6 @@ public class Database {
         return tableName;
     }
 
-    /**
-     * GetWithRefsColumnName
-     *
-     * @param refValue
-     * @return
-     */
     public String[] getWithRefsColumnName(String refValue) {
         String[] colNames = new String[0];
         if (refValue.length() > 0) {
@@ -777,12 +867,6 @@ public class Database {
         return colNames;
     }
 
-    /**
-     * GetReferencedColumnName method
-     *
-     * @param refValue
-     * @return
-     */
     public String[] getReferencedColumnName(String refValue) {
         String[] colNames = new String[0];
         if (refValue.length() > 0) {
@@ -797,14 +881,6 @@ public class Database {
         return colNames;
     }
 
-    /**
-     * UpdateWhere method
-     *
-     * @param whStmt
-     * @param withRefsNames
-     * @param colNames
-     * @return
-     */
     public String updateWhere(String whStmt, String[] withRefsNames, String[] colNames) {
         String whereStmt = "";
         if (whStmt.length() > 0) {
@@ -848,14 +924,6 @@ public class Database {
         return whereStmt;
     }
 
-    /**
-     * GetReferences method
-     *
-     * @param mDB
-     * @param tableName
-     * @return
-     * @throws Exception
-     */
     public ArrayList<String> getReferences(Database mDB, String tableName) throws Exception {
         String sqlStmt =
             "SELECT sql FROM sqlite_master " +
@@ -876,13 +944,6 @@ public class Database {
         }
     }
 
-    /**
-     * GetRefs
-     *
-     * @param str
-     * @return
-     * @throws Exception
-     */
     private ArrayList<String> getRefs(String str) throws Exception {
         ArrayList<String> retRefs = new ArrayList<String>();
         String[] arrFor = str.split("(?i)FOREIGN KEY", -1);
@@ -900,6 +961,7 @@ public class Database {
         return retRefs;
     }
 
+  */
     /**
      * SelectSQL Method
      * Query a raw sql statement with or without binding values
@@ -1024,8 +1086,8 @@ public class Database {
         // check if the table has already been created
         boolean isExists = _uJson.isTableExists(this, "sync_table");
         if (!isExists) {
-            boolean isLastModified = _uJson.isLastModified(this);
-            boolean isSqlDeleted = _uJson.isSqlDeleted(this);
+            boolean isLastModified = this._uJson.isLastModified(this);
+            boolean isSqlDeleted = this._uJson.isSqlDeleted(this);
             if (isLastModified && isSqlDeleted) {
                 Date date = new Date();
                 long syncTime = date.getTime() / 1000L;

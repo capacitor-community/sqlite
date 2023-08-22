@@ -20,6 +20,7 @@ enum UtilsDeleteError: Error {
     case upDateWhereForCascade(message: String)
 }
 
+// swiftlint:disable file_length
 // swiftlint:disable type_body_length
 class UtilsDelete {
 
@@ -54,7 +55,7 @@ class UtilsDelete {
                 guard let refTable = foreignKeyInfo["tableName"]
                         as? String else {
                     let msg = "findReferencesAndUpdate: no foreignKeyInfo " +
-                                "tableName"
+                        "tableName"
                     throw UtilsDeleteError
                     .findReferencesAndUpdate(message: msg)
                 }
@@ -63,23 +64,23 @@ class UtilsDelete {
                 }
                 // get the with ref columnName
                 guard let withRefsNames = foreignKeyInfo["forKeys"]
-                                    as? [String] else {
+                        as? [String] else {
 
                     let msg = "findReferencesAndUpdate: no foreignKeyInfo " +
-                                "forKeys"
+                        "forKeys"
                     throw UtilsDeleteError
                     .findReferencesAndUpdate(message: msg)
                 }
                 guard let colNames = foreignKeyInfo["refKeys"]
                         as? [String] else {
                     let msg = "findReferencesAndUpdate: no foreignKeyInfo " +
-                                "refKeys"
+                        "refKeys"
                     throw UtilsDeleteError
                     .findReferencesAndUpdate(message: msg)
                 }
                 if colNames.count != withRefsNames.count {
                     let msg = "findReferencesAndUpdate: no foreignKeyInfo " +
-                                "colNames"
+                        "colNames"
                     throw UtilsDeleteError
                     .findReferencesAndUpdate(message: msg)
 
@@ -102,58 +103,58 @@ class UtilsDelete {
                 if !checkValuesMatch(withRefsNames,
                                      against: initColNames) {
                     // Search for related items in tableName
-                    let result: (String,[[String: Any]]) = try UtilsDelete
+                    let result: (String, [[String: Any]]) = try UtilsDelete
                         .searchForRelatedItems(mDB: mDB,
                                                updTableName: updTableName,
                                                tableName: tableName,
                                                whStmt: whereStmt,
                                                withRefsNames: withRefsNames,
                                                colNames: colNames,
-                                               values: values);
+                                               values: values)
                     let key: String = result.0
                     let relatedItems: [Any] = result.1
                     if relatedItems.count == 0 && key.count <= 0 {
-                      continue
+                        continue
                     }
 
                     // case no match
                     if updTableName != tableName {
                         switch action {
-                            case "CASCADE":
-                                // updTableName
-                                // update all related element
-                                // set sql_deleted = 1 and last_modified
-                                // tableName
-                                //update all by sending return true
-                                results = try upDateWhereForCascade(
-                                    results: result)
+                        case "CASCADE":
+                            // updTableName
+                            // update all related element
+                            // set sql_deleted = 1 and last_modified
+                            // tableName
+                            //update all by sending return true
+                            results = try upDateWhereForCascade(
+                                results: result)
 
-                            case "RESTRICT":
-                                // find for elements related in updTableName
-                                // if some elements
-                                // send a message
-                                // do not update tableName
-                                // return false
-                                // If no related elements in updTableName
-                                // return true to update tableName
-                                results = try upDateWhereForRestrict(
-                                    results: result)
+                        case "RESTRICT":
+                            // find for elements related in updTableName
+                            // if some elements
+                            // send a message
+                            // do not update tableName
+                            // return false
+                            // If no related elements in updTableName
+                            // return true to update tableName
+                            results = try upDateWhereForRestrict(
+                                results: result)
 
-                            default:
-                                // updTableName
-                                // update the result_id result_slug to Null
-                                // update the last_modified
-                                // keep sql_deleted to 0
-                                // return true to update tableName
-                                results = try upDateWhereForDefault(
-                                    withRefsNames: withRefsNames,
-                                    results: result)
+                        default:
+                            // updTableName
+                            // update the result_id result_slug to Null
+                            // update the last_modified
+                            // keep sql_deleted to 0
+                            // return true to update tableName
+                            results = try upDateWhereForDefault(
+                                withRefsNames: withRefsNames,
+                                results: result)
                         }
                     }
 
                 } else {
                     let msg = "Not implemented. Please transfer your " +
-                                "example to the maintener"
+                        "example to the maintener"
                     throw UtilsDeleteError
                     .findReferencesAndUpdate(message: msg)
                 }
@@ -194,7 +195,7 @@ class UtilsDelete {
     // MARK: - upDateWhereForDefault
 
     class func upDateWhereForDefault(withRefsNames: [String],
-                                     results: (String,[[String:Any]]))
+                                     results: (String, [[String: Any]]))
     throws -> ((setStmt: String, uWhereStmt: String)) {
 
         var setStmt = ""
@@ -225,31 +226,31 @@ class UtilsDelete {
 
         uWhereStmt += ");"
 
-         return(setStmt, uWhereStmt)
+        return(setStmt, uWhereStmt)
     }
 
     // MARK: - upDateWhereForRestrict
 
-    class func upDateWhereForRestrict(results: (String,[[String: Any]]))
-                throws -> ((setStmt: String, uWhereStmt: String)) {
+    class func upDateWhereForRestrict(results: (String, [[String: Any]]))
+    throws -> ((setStmt: String, uWhereStmt: String)) {
 
-         // Search for related items in tableName
+        // Search for related items in tableName
         let setStmt = ""
         let uWhereStmt = ""
         let relatedItems = results.1
 
         if !relatedItems.isEmpty {
             let msg = "Restrict mode related items exist" +
-                        " please delete them first"
+                " please delete them first"
             throw UtilsDeleteError
-                .upDateWhereForRestrict(message: msg)
+            .upDateWhereForRestrict(message: msg)
         }
         return(setStmt, uWhereStmt)
     }
 
     // MARK: - upDateWhereForCascade
 
-    class func upDateWhereForCascade(results: (String,[[String:Any]]))
+    class func upDateWhereForCascade(results: (String, [[String: Any]]))
     throws -> ((setStmt: String, uWhereStmt: String)) {
 
         // Search for related items in tableName
@@ -285,48 +286,48 @@ class UtilsDelete {
                                      tableName: String, whStmt: String,
                                      withRefsNames: [String],
                                      colNames: [String], values: [Any])
-                                throws -> (String,[[String: Any]]) {
+    throws -> (String, [[String: Any]]) {
         var relatedItems: [[String: Any]] = []
         var key: String = ""
         let t1Names = withRefsNames.map { "t1.\($0)" }
         let t2Names = colNames.map { "t2.\($0)" }
 
-         do {
-             var whereClause = try UtilsSQLStatement
-                             .addPrefixToWhereClause(whStmt, from: colNames,
-                                                     to: withRefsNames,
-                                                     prefix: "t2.")
-             if whereClause.hasSuffix(";") {
-                 whereClause = String(whereClause.dropLast())
-             }
-             let resultString = zip(t1Names, t2Names)
-                                .map {"\($0) = \($1)" }
-                                .joined(separator: " AND ")
+        do {
+            var whereClause = try UtilsSQLStatement
+                .addPrefixToWhereClause(whStmt, from: colNames,
+                                        to: withRefsNames,
+                                        prefix: "t2.")
+            if whereClause.hasSuffix(";") {
+                whereClause = String(whereClause.dropLast())
+            }
+            let resultString = zip(t1Names, t2Names)
+                .map {"\($0) = \($1)" }
+                .joined(separator: " AND ")
 
-             let sql = "SELECT t1.rowid FROM \(updTableName) t1 " +
-                        "JOIN \(tableName) t2 ON \(resultString) " +
-                        "WHERE \(whereClause) AND t1.sql_deleted = 0;"
-             var vals = try UtilsSQLCipher.querySQL(mDB: mDB, sql: sql,
-                                                    values: values)
-             if vals.count > 1 {
-                 if let mVals = vals[0]["ios_columns"] as? [String] {
-                     key = mVals[0]
-                     let keyToRemove = "ios_columns"
-                     vals.removeAll { dict in
-                         return dict.keys.contains(keyToRemove)
-                     }
-                     for val in vals {
-                         relatedItems.append(val)
-                     }
-                 }
-             }
-             return (key, relatedItems)
-         } catch UtilsSQLStatementError.addPrefixToWhereClause(let message) {
-             throw UtilsDeleteError
-             .searchForRelatedItems(message: message)
+            let sql = "SELECT t1.rowid FROM \(updTableName) t1 " +
+                "JOIN \(tableName) t2 ON \(resultString) " +
+                "WHERE \(whereClause) AND t1.sql_deleted = 0;"
+            var vals = try UtilsSQLCipher.querySQL(mDB: mDB, sql: sql,
+                                                   values: values)
+            if vals.count > 1 {
+                if let mVals = vals[0]["ios_columns"] as? [String] {
+                    key = mVals[0]
+                    let keyToRemove = "ios_columns"
+                    vals.removeAll { dict in
+                        return dict.keys.contains(keyToRemove)
+                    }
+                    for val in vals {
+                        relatedItems.append(val)
+                    }
+                }
+            }
+            return (key, relatedItems)
+        } catch UtilsSQLStatementError.addPrefixToWhereClause(let message) {
+            throw UtilsDeleteError
+            .searchForRelatedItems(message: message)
         } catch UtilsSQLCipherError.querySQL(let message) {
-             throw UtilsDeleteError
-             .searchForRelatedItems(message: message)
+            throw UtilsDeleteError
+            .searchForRelatedItems(message: message)
         }
     }
     // swiftlint:enable function_parameter_count
@@ -337,14 +338,14 @@ class UtilsDelete {
     class func executeUpdateForDelete(mDB: Database, tableName: String,
                                       whereStmt: String, setStmt: String,
                                       colNames: [String], values: [Any])
-                                      throws {
+    throws {
         var lastId: Int64 = -1
-       //update sql_deleted for this references
+        //update sql_deleted for this references
         let stmt = "UPDATE \(tableName) SET \(setStmt) \(whereStmt)"
         var selValues: [Any] = []
         if !values.isEmpty {
             var arrVal: [String] =  whereStmt
-                                .components(separatedBy: "?")
+                .components(separatedBy: "?")
             if arrVal[arrVal.count - 1] == ";" {
                 arrVal.removeLast()
             }
@@ -359,8 +360,8 @@ class UtilsDelete {
         }
 
         let resp = try UtilsSQLCipher.prepareSQL(mDB: mDB, sql: stmt,
-                                  values: selValues,
-                                  fromJson: false, returnMode: "no")
+                                                 values: selValues,
+                                                 fromJson: false, returnMode: "no")
         lastId = resp.0
         if lastId == -1 {
             let msg = "UPDATE sql_deleted failed for " +
@@ -378,16 +379,16 @@ class UtilsDelete {
         return Int(currentTime)
     }
 
-   // MARK: - checkValuesMatch
+    // MARK: - checkValuesMatch
 
-   class func checkValuesMatch(_ array1: [String],
-                               against array2: [String]) -> Bool {
-       for value in array1 {
-           if !array2.contains(value) {
-               return false
-           }
-       }
-       return true
+    class func checkValuesMatch(_ array1: [String],
+                                against array2: [String]) -> Bool {
+        for value in array1 {
+            if !array2.contains(value) {
+                return false
+            }
+        }
+        return true
     }
 
     // MARK: - getReferences
@@ -402,7 +403,7 @@ class UtilsDelete {
         sqlStmt += "sql LIKE('%ON DELETE%');"
         do {
             var references: [[String: Any]] = try UtilsSQLCipher
-                    .querySQL(mDB: mDB, sql: sqlStmt,values: [])
+                .querySQL(mDB: mDB, sql: sqlStmt, values: [])
             var retRefs = [String]()
             var tableWithRefs: String = ""
             if references.count > 1 {
@@ -426,7 +427,7 @@ class UtilsDelete {
     // MARK: - getRefs
 
     class func getRefs(sqlStatement: String)
-            throws -> (tableName: String, foreignKeys: [String]) {
+    throws -> (tableName: String, foreignKeys: [String]) {
         var tableName = ""
         var foreignKeys = [String]()
         let statement = UtilsSQLStatement
@@ -440,33 +441,33 @@ class UtilsDelete {
             if let tableNameMatch = tableNameRegex
                 .firstMatch(in: statement, options: [],
                             range: NSRange(location: 0,
-                               length: statement.utf16.count)) {
+                                           length: statement.utf16.count)) {
                 let tableNameRange = Range(tableNameMatch.range(
-                            at: 1), in: statement)!
+                                            at: 1), in: statement)!
                 tableName = String(statement[tableNameRange])
             }
 
             // Regular expression pattern to match the FOREIGN KEY
             // constraints
             // swiftlint:disable line_length
-           let foreignKeyPattern = #"FOREIGN\s+KEY\s+\([^)]+\)\s+REFERENCES\s+(\w+)\s*\([^)]+\)\s+ON\s+DELETE\s+(CASCADE|RESTRICT|SET\s+DEFAULT|SET\s+NULL|NO\s+ACTION)"#
+            let foreignKeyPattern = #"FOREIGN\s+KEY\s+\([^)]+\)\s+REFERENCES\s+(\w+)\s*\([^)]+\)\s+ON\s+DELETE\s+(CASCADE|RESTRICT|SET\s+DEFAULT|SET\s+NULL|NO\s+ACTION)"#
             // swiftlint:enable line_length
 
             let foreignKeyRegex = try NSRegularExpression(
-                        pattern: foreignKeyPattern, options: [])
+                pattern: foreignKeyPattern, options: [])
             let foreignKeyMatches = foreignKeyRegex
-                        .matches(in: statement, options: [],
-                                 range: NSRange(location: 0,
-                                 length: statement.utf16.count))
+                .matches(in: statement, options: [],
+                         range: NSRange(location: 0,
+                                        length: statement.utf16.count))
             for foreignKeyMatch in foreignKeyMatches {
-              let foreignKeyRange = Range(
+                let foreignKeyRange = Range(
                     foreignKeyMatch.range(at: 0), in: statement)!
-              let foreignKey = String(statement[foreignKeyRange])
-              foreignKeys.append(foreignKey)
+                let foreignKey = String(statement[foreignKeyRange])
+                foreignKeys.append(foreignKey)
             }
         } catch {
             let msg = "getRefs: Error creating regular expression: " +
-                        "\(error)"
+                "\(error)"
             throw UtilsDeleteError.getRefs(message: msg)
         }
         return (tableName, foreignKeys)
@@ -477,12 +478,12 @@ class UtilsDelete {
     class func getUpdDelReturnedValues(mDB: Database,
                                        sqlStmt: String,
                                        names: String )
-                                            throws -> [[String: Any]] {
+    throws -> [[String: Any]] {
         var result: [[String: Any]] = []
         let tableName = UtilsSQLStatement
-                        .extractTableName(from: sqlStmt)
+            .extractTableName(from: sqlStmt)
         let whereClause = UtilsSQLStatement
-                        .extractWhereClause(from: sqlStmt)
+            .extractWhereClause(from: sqlStmt)
         if let tblName = tableName {
             if var wClause = whereClause {
                 if wClause.suffix(1) == ";" {
@@ -490,13 +491,13 @@ class UtilsDelete {
                 }
                 do {
                     var query: String = "SELECT \(names) FROM " +
-                            "\(tblName) WHERE "
+                        "\(tblName) WHERE "
                     query += "\(wClause);"
                     result = try UtilsSQLCipher
                         .querySQL(mDB: mDB, sql: query, values: [])
                 } catch UtilsSQLCipherError.querySQL(let message) {
                     throw UtilsDeleteError
-                        .getUpdDelReturnedValues(message: message)
+                    .getUpdDelReturnedValues(message: message)
                 }
             }
         }
@@ -504,3 +505,4 @@ class UtilsDelete {
     }
 }
 // swiftlint:enable type_body_length
+// swiftlint:enable file_length

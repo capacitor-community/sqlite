@@ -33,7 +33,7 @@ export class UtilsDrop {
     let stmt = 'SELECT name FROM sqlite_master WHERE ';
     stmt += `type = '${type}' ${stmt1};`;
     try {
-      const elements: any[] = this.sqliteUtil.queryAll(db, stmt, []);
+      const elements: any[] = this.sqliteUtil.queryAll(db, stmt, [], true);
       if (elements.length > 0) {
         const upType: string = type.toUpperCase();
         const statements: string[] = [];
@@ -90,7 +90,7 @@ export class UtilsDrop {
       statements.push(stmt);
     }
     try {
-      const results = this.sqliteUtil.execute(db, statements.join('\n'), false);
+      const results = this.sqliteUtil.execute(db, statements.join('\n'), false, true);
       if (results.changes < 0) {
         throw new Error('DropTempTables: changes < 0');
       }

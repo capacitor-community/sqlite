@@ -443,6 +443,125 @@ enum CapacitorSQLiteError: Error {
             throw CapacitorSQLiteError.failed(message: initMessage)
         }
     }
+    
+    // MARK: - BeginTransaction
+
+    @objc public func beginTransaction(_ dbName: String) throws -> [String: Any] {
+        if isInit {
+            let mDbName = CapacitorSQLite.getDatabaseName(dbName: dbName)
+            let connName: String = "RW_\(mDbName)"
+            guard let mDb: Database = dbDict[connName] else {
+                let msg = "Connection to \(mDbName) not available"
+                throw CapacitorSQLiteError.failed(message: msg)
+            }
+            if !mDb.isNCDB() && mDb.isDBOpen() {
+                do {
+                    let res = try mDb.beginTransaction()
+                    return ["changes": res]
+                } catch DatabaseError.beginTransaction(let message) {
+                    throw CapacitorSQLiteError.failed(message: message)
+                } catch let error {
+                    let msg: String = "\(error)"
+                    throw CapacitorSQLiteError.failed(message: msg)
+                }
+            } else {
+                let msg = "Database \(mDbName) not opened or in read-only"
+                throw CapacitorSQLiteError.failed(message: msg)
+            }
+        } else {
+            throw CapacitorSQLiteError.failed(message: initMessage)
+        }
+    }
+    
+    // MARK: - CommitTransaction
+
+    @objc public func commitTransaction(_ dbName: String) throws -> [String: Any] {
+        if isInit {
+            let mDbName = CapacitorSQLite.getDatabaseName(dbName: dbName)
+            let connName: String = "RW_\(mDbName)"
+            guard let mDb: Database = dbDict[connName] else {
+                let msg = "Connection to \(mDbName) not available"
+                throw CapacitorSQLiteError.failed(message: msg)
+            }
+            if !mDb.isNCDB() && mDb.isDBOpen() {
+                do {
+                    let res = try mDb.commitTransaction()
+                    return ["changes": res]
+                } catch DatabaseError.commitTransaction(let message) {
+                    throw CapacitorSQLiteError.failed(message: message)
+                } catch let error {
+                    let msg: String = "\(error)"
+                    throw CapacitorSQLiteError.failed(message: msg)
+                }
+            } else {
+                let msg = "Database \(mDbName) not opened or in read-only"
+                throw CapacitorSQLiteError.failed(message: msg)
+            }
+        } else {
+            throw CapacitorSQLiteError.failed(message: initMessage)
+        }
+    }
+    
+    // MARK: - RollbackTransaction
+
+    @objc public func rollbackTransaction(_ dbName: String)
+                                                throws -> [String: Any] {
+        if isInit {
+            let mDbName = CapacitorSQLite.getDatabaseName(dbName: dbName)
+            let connName: String = "RW_\(mDbName)"
+            guard let mDb: Database = dbDict[connName] else {
+                let msg = "Connection to \(mDbName) not available"
+                throw CapacitorSQLiteError.failed(message: msg)
+            }
+            if !mDb.isNCDB() && mDb.isDBOpen() {
+                do {
+                    let res = try mDb.rollbackTransaction()
+                    return ["changes": res]
+                } catch DatabaseError.rollbackTransaction(let message) {
+                    throw CapacitorSQLiteError.failed(message: message)
+                } catch let error {
+                    let msg: String = "\(error)"
+                    throw CapacitorSQLiteError.failed(message: msg)
+                }
+            } else {
+                let msg = "Database \(mDbName) not opened or in read-only"
+                throw CapacitorSQLiteError.failed(message: msg)
+            }
+        } else {
+            throw CapacitorSQLiteError.failed(message: initMessage)
+        }
+    }
+
+    // MARK: - IsTransactionActive
+
+    @objc public func isTransactionActive(_ dbName: String) throws -> NSNumber {
+        if isInit {
+            let mDbName = CapacitorSQLite.getDatabaseName(dbName: dbName)
+            let connName: String = "RW_\(mDbName)"
+            guard let mDb: Database = dbDict[connName] else {
+                let msg = "Connection to \(mDbName) not available"
+                throw CapacitorSQLiteError.failed(message: msg)
+            }
+            if !mDb.isNCDB() && mDb.isDBOpen() {
+
+                do {
+                    let isAvail = try mDb.isAvailTrans()
+                    if isAvail {
+                        return 1
+                    } else {
+                        return 0
+                    }
+                } catch DatabaseError.isAvailTrans(let message) {
+                    throw CapacitorSQLiteError.failed(message: message)
+                }
+            } else {
+                let msg = "Database \(mDbName) not opened or in read-only"
+                throw CapacitorSQLiteError.failed(message: msg)
+            }
+        } else {
+            throw CapacitorSQLiteError.failed(message: initMessage)
+        }
+    }
 
     // MARK: - getUrl
 

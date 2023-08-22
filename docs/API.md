@@ -159,6 +159,10 @@ Note that in general in SQLite this is not recommended, since it makes your quer
 * [`echo(...)`](#echo)
 * [`open(...)`](#open)
 * [`close(...)`](#close)
+* [`beginTransaction(...)`](#begintransaction)
+* [`commitTransaction(...)`](#committransaction)
+* [`rollbackTransaction(...)`](#rollbacktransaction)
+* [`isTransactionActive(...)`](#istransactionactive)
 * [`getUrl(...)`](#geturl)
 * [`getVersion(...)`](#getversion)
 * [`execute(...)`](#execute)
@@ -439,6 +443,82 @@ Close a SQLite database
 | **`options`** | <code><a href="#capsqliteoptions">capSQLiteOptions</a></code> | : <a href="#capsqliteoptions">capSQLiteOptions</a> |
 
 **Since:** 0.0.1
+
+--------------------
+
+
+### beginTransaction(...)
+
+```typescript
+beginTransaction(options: capSQLiteOptions) => Promise<capSQLiteChanges>
+```
+
+Begin Database Transaction
+
+| Param         | Type                                                          |
+| ------------- | ------------------------------------------------------------- |
+| **`options`** | <code><a href="#capsqliteoptions">capSQLiteOptions</a></code> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
+
+**Since:** 5.0.7
+
+--------------------
+
+
+### commitTransaction(...)
+
+```typescript
+commitTransaction(options: capSQLiteOptions) => Promise<capSQLiteChanges>
+```
+
+Commit Database Transaction
+
+| Param         | Type                                                          |
+| ------------- | ------------------------------------------------------------- |
+| **`options`** | <code><a href="#capsqliteoptions">capSQLiteOptions</a></code> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
+
+**Since:** 5.0.7
+
+--------------------
+
+
+### rollbackTransaction(...)
+
+```typescript
+rollbackTransaction(options: capSQLiteOptions) => Promise<capSQLiteChanges>
+```
+
+Rollback Database Transaction
+
+| Param         | Type                                                          |
+| ------------- | ------------------------------------------------------------- |
+| **`options`** | <code><a href="#capsqliteoptions">capSQLiteOptions</a></code> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
+
+**Since:** 5.0.7
+
+--------------------
+
+
+### isTransactionActive(...)
+
+```typescript
+isTransactionActive(options: capSQLiteOptions) => Promise<capSQLiteResult>
+```
+
+Is Database Transaction Active
+
+| Param         | Type                                                          |
+| ------------- | ------------------------------------------------------------- |
+| **`options`** | <code><a href="#capsqliteoptions">capSQLiteOptions</a></code> |
+
+**Returns:** <code>Promise&lt;<a href="#capsqliteresult">capSQLiteResult</a>&gt;</code>
+
+**Since:** 5.0.7
 
 --------------------
 
@@ -1140,20 +1220,6 @@ Check if a non conformed database exists without connection
 | **`value`** | <code>string</code> | String to be echoed |
 
 
-#### capSQLiteUrl
-
-| Prop      | Type                | Description    |
-| --------- | ------------------- | -------------- |
-| **`url`** | <code>string</code> | a returned url |
-
-
-#### capVersionResult
-
-| Prop          | Type                | Description     |
-| ------------- | ------------------- | --------------- |
-| **`version`** | <code>number</code> | Number returned |
-
-
 #### capSQLiteChanges
 
 | Prop          | Type                                        | Description                               |
@@ -1170,14 +1236,29 @@ Check if a non conformed database exists without connection
 | **`values`**  | <code>any[]</code>  | values when RETURNING                                |
 
 
+#### capSQLiteUrl
+
+| Prop      | Type                | Description    |
+| --------- | ------------------- | -------------- |
+| **`url`** | <code>string</code> | a returned url |
+
+
+#### capVersionResult
+
+| Prop          | Type                | Description     |
+| ------------- | ------------------- | --------------- |
+| **`version`** | <code>number</code> | Number returned |
+
+
 #### capSQLiteExecuteOptions
 
-| Prop              | Type                 | Description                                         | Since         |
-| ----------------- | -------------------- | --------------------------------------------------- | ------------- |
-| **`database`**    | <code>string</code>  | The database name                                   |               |
-| **`statements`**  | <code>string</code>  | The batch of raw SQL statements as string           |               |
-| **`transaction`** | <code>boolean</code> | Enable / Disable transactions default Enable (true) | 3.0.0-beta.10 |
-| **`readonly`**    | <code>boolean</code> | ReadOnly / ReadWrite default ReadWrite (false)      | 4.1.0-7       |
+| Prop              | Type                 | Description                                          | Since         |
+| ----------------- | -------------------- | ---------------------------------------------------- | ------------- |
+| **`database`**    | <code>string</code>  | The database name                                    |               |
+| **`statements`**  | <code>string</code>  | The batch of raw SQL statements as string            |               |
+| **`transaction`** | <code>boolean</code> | Enable / Disable transactions default Enable (true)  | 3.0.0-beta.10 |
+| **`readonly`**    | <code>boolean</code> | ReadOnly / ReadWrite default ReadWrite (false)       | 4.1.0-7       |
+| **`isSQL92`**     | <code>boolean</code> | Compatibility SQL92 !!! ELECTRON ONLY default (true) | 5.0.7         |
 
 
 #### capSQLiteSetOptions
@@ -1189,6 +1270,7 @@ Check if a non conformed database exists without connection
 | **`transaction`** | <code>boolean</code>        | Enable / Disable transactions default Enable (true)                    | 3.0.0-beta.10 |
 | **`readonly`**    | <code>boolean</code>        | ReadOnly / ReadWrite default ReadWrite (false)                         | 4.1.0-7       |
 | **`returnMode`**  | <code>string</code>         | return mode default 'no' value 'all' value 'one' for Electron platform | 5.0.5-3       |
+| **`isSQL92`**     | <code>boolean</code>        | Compatibility SQL92 !!! ELECTRON ONLY default (true)                   | 5.0.7         |
 
 
 #### capSQLiteSet
@@ -1209,6 +1291,7 @@ Check if a non conformed database exists without connection
 | **`transaction`** | <code>boolean</code> | Enable / Disable transactions default Enable (true)                    | 3.0.0-beta.10 |
 | **`readonly`**    | <code>boolean</code> | ReadOnly / ReadWrite default ReadWrite (false)                         | 4.1.0-7       |
 | **`returnMode`**  | <code>string</code>  | return mode default 'no' value 'all' value 'one' for Electron platform | 5.0.5-3       |
+| **`isSQL92`**     | <code>boolean</code> | Compatibility SQL92 !!! ELECTRON ONLY default (true)                   | 5.0.7         |
 
 
 #### capSQLiteValues
@@ -1220,12 +1303,13 @@ Check if a non conformed database exists without connection
 
 #### capSQLiteQueryOptions
 
-| Prop            | Type                 | Description                                     | Since         |
-| --------------- | -------------------- | ----------------------------------------------- | ------------- |
-| **`database`**  | <code>string</code>  | The database name                               |               |
-| **`statement`** | <code>string</code>  | A statement                                     |               |
-| **`values`**    | <code>any[]</code>   | A set of values for a statement Change to any[] | 3.0.0-beta.11 |
-| **`readonly`**  | <code>boolean</code> | ReadOnly / ReadWrite default ReadWrite (false)  | 4.1.0-7       |
+| Prop            | Type                 | Description                                          | Since         |
+| --------------- | -------------------- | ---------------------------------------------------- | ------------- |
+| **`database`**  | <code>string</code>  | The database name                                    |               |
+| **`statement`** | <code>string</code>  | A statement                                          |               |
+| **`values`**    | <code>any[]</code>   | A set of values for a statement Change to any[]      | 3.0.0-beta.11 |
+| **`readonly`**  | <code>boolean</code> | ReadOnly / ReadWrite default ReadWrite (false)       | 4.1.0-7       |
+| **`isSQL92`**   | <code>boolean</code> | Compatibility SQL92 !!! ELECTRON ONLY default (true) | 5.0.7         |
 
 
 #### capSQLiteTableOptions

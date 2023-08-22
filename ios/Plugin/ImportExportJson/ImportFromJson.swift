@@ -82,6 +82,7 @@ class ImportFromJson {
         do {
             // Start a transaction
             try UtilsSQLCipher.beginTransaction(mDB: mDB)
+            mDB.setIsTransActive(newValue: true)
         } catch UtilsSQLCipherError.beginTransaction(let message) {
             throw ImportFromJsonError.createSchema(message: message)
         }
@@ -103,7 +104,8 @@ class ImportFromJson {
                         // Rollback the transaction
                         try UtilsSQLCipher
                             .rollbackTransaction(mDB: mDB)
-                    } catch UtilsSQLCipherError
+                        mDB.setIsTransActive(newValue: false)
+                   } catch UtilsSQLCipherError
                                 .rollbackTransaction(let message) {
                         throw ImportFromJsonError
                         .createSchema(message: message)
@@ -111,6 +113,7 @@ class ImportFromJson {
                 }
                 // Commit the transaction
                 try UtilsSQLCipher.commitTransaction(mDB: mDB)
+                mDB.setIsTransActive(newValue: false)
 
             } catch UtilsSQLCipherError.execute(let message) {
                 var msg = message
@@ -118,6 +121,7 @@ class ImportFromJson {
                     // Rollback the transaction
                     try UtilsSQLCipher
                         .rollbackTransaction(mDB: mDB)
+                    mDB.setIsTransActive(newValue: false)
                     throw ImportFromJsonError
                     .createSchema(message: message)
                 } catch UtilsSQLCipherError
@@ -135,6 +139,7 @@ class ImportFromJson {
                 changes = 0
                 // Commit the transaction
                 try UtilsSQLCipher.commitTransaction(mDB: mDB)
+                mDB.setIsTransActive(newValue: false)
             }
         }
         return changes
@@ -314,6 +319,7 @@ class ImportFromJson {
             initChanges = UtilsSQLCipher.dbChanges(mDB: mDB.mDb)
             // Start a transaction
             try UtilsSQLCipher.beginTransaction(mDB: mDB)
+            mDB.setIsTransActive(newValue: true)
         } catch UtilsSQLCipherError.beginTransaction(let message) {
             throw ImportFromJsonError.createDatabaseData(message: message)
         }
@@ -341,6 +347,7 @@ class ImportFromJson {
                             // Rollback the transaction
                             try UtilsSQLCipher
                                 .rollbackTransaction(mDB: mDB)
+                            mDB.setIsTransActive(newValue: false)
                             throw ImportFromJsonError
                             .createDatabaseData(message: message)
                         } catch UtilsSQLCipherError
@@ -359,6 +366,7 @@ class ImportFromJson {
         do {
             // Commit the transaction
             try UtilsSQLCipher.commitTransaction(mDB: mDB)
+            mDB.setIsTransActive(newValue: false)
             changes = UtilsSQLCipher.dbChanges(mDB: mDB.mDb) -
                 initChanges
             let msg = "Tables data creation completed changes: \(changes)"
@@ -566,6 +574,7 @@ class ImportFromJson {
             initChanges = UtilsSQLCipher.dbChanges(mDB: mDB.mDb)
             // Start a transaction
             try UtilsSQLCipher.beginTransaction(mDB: mDB)
+            mDB.setIsTransActive(newValue: true)
         } catch UtilsSQLCipherError.beginTransaction(let message) {
             throw ImportFromJsonError.createDatabaseData(message: message)
         }
@@ -590,6 +599,7 @@ class ImportFromJson {
             do {
                 // Commit the transaction
                 try UtilsSQLCipher.commitTransaction(mDB: mDB)
+                mDB.setIsTransActive(newValue: false)
                 changes = UtilsSQLCipher
                     .dbChanges(mDB: mDB.mDb) - initChanges
             } catch UtilsSQLCipherError.commitTransaction(
@@ -604,7 +614,8 @@ class ImportFromJson {
                     // Rollback the transaction
                     try UtilsSQLCipher
                         .rollbackTransaction(mDB: mDB)
-                    throw ImportFromJsonError
+                    mDB.setIsTransActive(newValue: false)
+                   throw ImportFromJsonError
                     .createViews(message: msg)
                 } catch UtilsSQLCipherError
                             .rollbackTransaction(let message) {

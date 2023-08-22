@@ -35,9 +35,9 @@ The main change is related to the delete table's rows when a synchronization tab
   ```
   CREATE TRIGGER YOUR_TABLE_NAME_trigger_last_modified
     AFTER UPDATE ON YOUR_TABLE_NAME
-    FOR EACH ROW WHEN NEW.last_modified < OLD.last_modified
+    FOR EACH ROW WHEN NEW.last_modified <= OLD.last_modified
     BEGIN
-        UPDATE YOUR_TABLE_NAME SET last_modified= (strftime('%s', 'now')) WHERE id=OLD.id;
+        UPDATE YOUR_TABLE_NAME SET last_modified= (strftime('%s', 'now')) WHERE id=NEW.id;
     END;
   ```
 - an new column `sql_deleted` must be added to each of your tables as

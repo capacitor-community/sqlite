@@ -25,6 +25,10 @@ enum DatabaseError: Error {
     case importFromJson(message: String)
     case getTableNames(message: String)
     case deleteExportedRows(message: String)
+    case isAvailTrans(message: String)
+    case beginTransaction(message: String)
+    case commitTransaction(message: String)
+    case rollbackTransaction(message: String)
 }
 // swiftlint:disable file_length
 // swiftlint:disable type_body_length
@@ -44,6 +48,7 @@ class Database {
     let uUpg: UtilsUpgrade = UtilsUpgrade()
     var readOnly: Bool = false
     var ncDB: Bool = false
+    var isAvailableTransaction = false
 
     // MARK: - Init
     init(databaseLocation: String, databaseName: String,
@@ -219,6 +224,77 @@ class Database {
             }
         }
         return
+    }
+
+    // MARK: - IsAvailTrans
+
+    func isAvailTrans() throws -> Bool {
+        if isOpen {
+            return isAvailableTransaction
+        } else {
+            let msg: String = "Failed in isAvailTrans database not opened"
+            throw DatabaseError.isAvailTrans(message: msg)
+        }
+    }
+    
+    // MARK: - SetIsTransActive
+
+    func setIsTransActive(newValue: Bool ) {
+        isAvailableTransaction = newValue
+    }
+
+    // MARK: - BeginTransaction
+
+    func beginTransaction() throws -> Int {
+        if isOpen {
+            do {
+                try UtilsSQLCipher.beginTransaction(mDB: self)
+                setIsTransActive(newValue: true)
+                return 0
+            } catch UtilsSQLCipherError.beginTransaction(let message) {
+                let msg: String = "Failed in beginTransaction \(message)"
+                throw DatabaseError.beginTransaction(message: msg)
+            }
+        } else {
+            let msg: String = "Failed in beginTransaction database not opened"
+            throw DatabaseError.beginTransaction(message: msg)
+        }
+    }
+
+    // MARK: - CommitTransaction
+
+    func commitTransaction() throws -> Int {
+        if isOpen {
+            do {
+                try UtilsSQLCipher.commitTransaction(mDB: self)
+                setIsTransActive(newValue: false)
+                return 0
+            } catch UtilsSQLCipherError.commitTransaction(let message) {
+                let msg: String = "Failed in commitTransaction \(message)"
+                throw DatabaseError.commitTransaction(message: msg)
+            }
+        } else {
+            let msg: String = "Failed in commitTransaction database not opened"
+            throw DatabaseError.commitTransaction(message: msg)
+        }
+    }
+
+    // MARK: - RollbackTransaction
+
+    func rollbackTransaction() throws -> Int {
+        if isOpen {
+            do {
+                try UtilsSQLCipher.rollbackTransaction(mDB: self)
+                setIsTransActive(newValue: false)
+                return 0
+            } catch UtilsSQLCipherError.rollbackTransaction(let message) {
+                let msg: String = "Failed in rollbackTransaction \(message)"
+                throw DatabaseError.rollbackTransaction(message: msg)
+            }
+        } else {
+            let msg: String = "Failed in rollbackTransaction database not opened"
+            throw DatabaseError.rollbackTransaction(message: msg)
+        }
     }
 
     // MARK: - GetVersion

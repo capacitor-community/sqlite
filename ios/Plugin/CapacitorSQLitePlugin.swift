@@ -322,6 +322,134 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         }
     }
 
+    // MARK: - BeginTransaction
+
+    @objc func beginTransaction(_ call: CAPPluginCall) {
+        guard let dbName = call.options["database"] as? String else {
+            retHandler.rChanges(
+                call: call, ret: ["changes": -1],
+                message: "BeginTransaction: Must provide a database name")
+            return
+        }
+        do {
+            if let ret = try implementation?.beginTransaction(dbName) {
+                retHandler.rChanges(call: call, ret: ret)
+                return
+            } else {
+                retHandler.rChanges(
+                    call: call, ret: ["changes": -1],
+                    message: "BeginTransaction: Does not return a valid execute")
+                return
+            }
+        } catch CapacitorSQLiteError.failed(let message) {
+            let msg = "BeginTransaction: \(message)"
+            retHandler.rChanges(
+                call: call, ret: ["changes": -1],
+                message: msg)
+            return
+        } catch let error {
+            retHandler.rChanges(
+                call: call, ret: ["changes": -1],
+                message: "BeginTransaction: \(error)")
+            return
+        }
+    }
+
+    // MARK: - CommitTransaction
+
+    @objc func commitTransaction(_ call: CAPPluginCall) {
+        guard let dbName = call.options["database"] as? String else {
+            retHandler.rChanges(
+                call: call, ret: ["changes": -1],
+                message: "CommitTransaction: Must provide a database name")
+            return
+        }
+        do {
+            if let ret = try implementation?.commitTransaction(dbName) {
+                retHandler.rChanges(call: call, ret: ret)
+                return
+            } else {
+                retHandler.rChanges(
+                    call: call, ret: ["changes": -1],
+                    message: "CommitTransaction: Does not return a valid execute")
+                return
+            }
+        } catch CapacitorSQLiteError.failed(let message) {
+            let msg = "CommitTransaction: \(message)"
+            retHandler.rChanges(
+                call: call, ret: ["changes": -1],
+                message: msg)
+            return
+        } catch let error {
+            retHandler.rChanges(
+                call: call, ret: ["changes": -1],
+                message: "CommitTransaction: \(error)")
+            return
+        }
+    }
+
+    // MARK: - RollbackTransaction
+
+    @objc func rollbackTransaction(_ call: CAPPluginCall) {
+        guard let dbName = call.options["database"] as? String else {
+            retHandler.rChanges(
+                call: call, ret: ["changes": -1],
+                message: "RollbackTransaction: Must provide a database name")
+            return
+        }
+        do {
+            if let ret = try implementation?.rollbackTransaction(dbName) {
+                retHandler.rChanges(call: call, ret: ret)
+                return
+            } else {
+                retHandler.rChanges(
+                    call: call, ret: ["changes": -1],
+                    message: "RollbackTransaction: Does not return a valid execute")
+                return
+            }
+        } catch CapacitorSQLiteError.failed(let message) {
+            let msg = "RollbackTransaction: \(message)"
+            retHandler.rChanges(
+                call: call, ret: ["changes": -1],
+                message: msg)
+            return
+        } catch let error {
+            retHandler.rChanges(
+                call: call, ret: ["changes": -1],
+                message: "RollbackTransaction: \(error)")
+            return
+        }
+    }
+
+    // MARK: - IsTransactionActive
+
+    @objc func isTransactionActive(_ call: CAPPluginCall) {
+        guard let dbName = call.options["database"] as? String else {
+            retHandler.rResult(
+                call: call,
+                message: "IsTransactionActive: Must provide a database name")
+            return
+        }
+        do {
+            let res = try implementation?.isTransactionActive(dbName)
+            var bRes: Bool = false
+            if res == 1 {
+                bRes = true
+            }
+            retHandler.rResult(call: call, ret: bRes)
+            return
+        } catch CapacitorSQLiteError.failed(let message) {
+            let msg = "IsTransactionActive: \(message)"
+            retHandler.rResult(call: call, message: msg)
+            return
+        } catch let error {
+            retHandler.rResult(
+                call: call,
+                message: "IsTransactionActive: \(error)")
+            return
+        }
+    }
+
     // MARK: - GetUrl
 
     @objc func getUrl(_ call: CAPPluginCall) {

@@ -77,7 +77,7 @@ public class ImportFromJson {
         SupportSQLiteDatabase db = mDb.getDb();
         try {
             if (mDb != null && mDb.isOpen() && jsonSQL != null) {
-                db.beginTransaction();
+                mDb.beginTransaction();
                 // Create a Schema Statement
                 ArrayList<String> statements = createSchemaStatement(jsonSQL);
                 if (statements.size() > 0) {
@@ -87,7 +87,7 @@ public class ImportFromJson {
                     }
                     changes = _uSqlite.dbChanges(db) - initChanges;
                     if (changes >= 0) {
-                        db.setTransactionSuccessful();
+                        mDb.commitTransaction();
                     }
                 } else {
                     if (jsonSQL.getMode().equals("partial")) {
@@ -104,7 +104,7 @@ public class ImportFromJson {
         } catch (Exception e) {
             throw new Exception("CreateSchema: " + e.getMessage());
         } finally {
-            if (db != null && db.inTransaction()) db.endTransaction();
+            if (db != null && db.inTransaction()) mDb.rollbackTransaction();
         }
         return changes;
     }
@@ -317,7 +317,7 @@ public class ImportFromJson {
         try {
             if (mDb != null && mDb.isOpen() && jsonSQL != null) {
                 initChanges = _uSqlite.dbChanges(db);
-                db.beginTransaction();
+                mDb.beginTransaction();
                 for (int i = 0; i < jsonSQL.getTables().size(); i++) {
                     if (jsonSQL.getTables().get(i).getValues().size() > 0) {
                         isValues = true;
@@ -341,7 +341,7 @@ public class ImportFromJson {
                 } else {
                     changes = _uSqlite.dbChanges(db) - initChanges;
                     if (changes >= 0) {
-                        db.setTransactionSuccessful();
+                        mDb.commitTransaction();
                         notifyImportProgressEvent("Tables data creation completed changes: " + changes);
                     }
                 }
@@ -355,7 +355,7 @@ public class ImportFromJson {
         } catch (Exception e) {
             throw new Exception("CreateDatabaseData: " + e.getMessage());
         } finally {
-            if (db != null && db.inTransaction()) db.endTransaction();
+            if (db != null && db.inTransaction()) mDb.rollbackTransaction();
         }
         return changes;
     }
@@ -605,7 +605,7 @@ public class ImportFromJson {
         SupportSQLiteDatabase db = mDb.getDb();
         try {
             if (mDb != null && mDb.isOpen() && views.size() > 0) {
-                db.beginTransaction();
+                mDb.beginTransaction();
                 // Create Views
                 Integer initChanges = _uSqlite.dbChanges(db);
                 for (JsonView view : views) {
@@ -623,7 +623,7 @@ public class ImportFromJson {
                 }
                 changes = _uSqlite.dbChanges(db) - initChanges;
                 if (changes >= 0) {
-                    db.setTransactionSuccessful();
+                    mDb.commitTransaction();
                 }
             } else {
                 throw new Exception("CreateViews: Database not opened");
@@ -631,7 +631,7 @@ public class ImportFromJson {
         } catch (Exception e) {
             throw new Exception("CreateViews: " + e.getMessage());
         } finally {
-            if (db != null && db.inTransaction()) db.endTransaction();
+            if (db != null && db.inTransaction()) mDb.rollbackTransaction();
         }
         return changes;
     }

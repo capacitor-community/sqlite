@@ -1,4 +1,3 @@
-
 class UtilsDeleteError {
   static upDateWhereForDefault(message: string) {
     return new UtilsDeleteError(message);
@@ -17,29 +16,26 @@ class UtilsDeleteError {
 }
 
 export class UtilsDelete {
-
   public getReferencedTableName(refValue: string): string {
     let tableName = '';
 
     if (refValue.length > 0) {
-      const arr: string[] = refValue.split(new RegExp('REFERENCES','i'));
+      const arr: string[] = refValue.split(new RegExp('REFERENCES', 'i'));
       if (arr.length === 2) {
-        const oPar: number = arr[1].indexOf("(");
+        const oPar: number = arr[1].indexOf('(');
         tableName = arr[1].substring(0, oPar).trim();
       }
     }
     return tableName;
   }
 
-
   public upDateWhereForDefault(
-                    withRefsNames: string[],
-                    results: { key: string, relatedItems: any[] }
-                  ): { setStmt: string; uWhereStmt: string } {
+    withRefsNames: string[],
+    results: { key: string; relatedItems: any[] },
+  ): { setStmt: string; uWhereStmt: string } {
     let setStmt = '';
     let uWhereStmt = '';
     try {
-
       const key = results.key;
       const cols: any[] = [];
       for (const relItem of results.relatedItems) {
@@ -71,9 +67,10 @@ export class UtilsDelete {
     return { setStmt, uWhereStmt };
   }
 
-  public upDateWhereForRestrict(
-                        results: { key: string, relatedItems: any[] }
-                      ): { setStmt: string; uWhereStmt: string } {
+  public upDateWhereForRestrict(results: {
+    key: string;
+    relatedItems: any[];
+  }): { setStmt: string; uWhereStmt: string } {
     try {
       const setStmt = '';
       const uWhereStmt = '';
@@ -85,14 +82,13 @@ export class UtilsDelete {
       return { setStmt, uWhereStmt };
     } catch (error) {
       const msg = error.message ? error.message : error;
-      throw UtilsDeleteError.upDateWhereForRestrict(
-        msg
-      );
+      throw UtilsDeleteError.upDateWhereForRestrict(msg);
     }
   }
-  public upDateWhereForCascade(
-                      results: { key: string, relatedItems: any[] }
-                    ): { setStmt: string; uWhereStmt: string } {
+  public upDateWhereForCascade(results: { key: string; relatedItems: any[] }): {
+    setStmt: string;
+    uWhereStmt: string;
+  } {
     let setStmt = '';
     let uWhereStmt = '';
     try {
@@ -115,7 +111,6 @@ export class UtilsDelete {
         uWhereStmt = uWhereStmt.slice(0, -1);
       }
       uWhereStmt += ');';
-
     } catch (error) {
       const msg = error.message ? error.message : error;
       throw UtilsDeleteError.upDateWhereForCascade(msg);

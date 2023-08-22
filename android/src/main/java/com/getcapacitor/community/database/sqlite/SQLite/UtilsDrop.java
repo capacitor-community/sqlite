@@ -190,19 +190,19 @@ public class UtilsDrop {
     public void dropAll(Database db) throws Exception {
         Boolean success = false;
         try {
-            db.getDb().beginTransaction();
+            db.beginTransaction();
             dropTables(db);
             dropIndexes(db);
             dropTriggers(db);
             dropViews(db);
-            db.getDb().setTransactionSuccessful();
+            db.commitTransaction();
             success = true;
         } catch (Exception e) {
             String msg = "DropAll failed: " + e;
             Log.d(TAG, msg);
             throw new Exception(msg);
         } finally {
-            if (success) db.getDb().endTransaction();
+            if (success) db.rollbackTransaction();
             try {
                 db.getDb().execSQL("VACUUM;");
             } catch (Exception e) {

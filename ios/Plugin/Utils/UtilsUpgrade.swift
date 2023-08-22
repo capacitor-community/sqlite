@@ -52,6 +52,7 @@ class UtilsUpgrade {
         do {
             do {
                 try UtilsSQLCipher.beginTransaction(mDB: mDB)
+                mDB.setIsTransActive(newValue: true)
             } catch UtilsSQLCipherError.beginTransaction(let message) {
                 throw DatabaseError.executeSQL(message: "Error: onUpgrade: \(message)")
             }
@@ -63,6 +64,7 @@ class UtilsUpgrade {
 
             do {
                 try UtilsSQLCipher.commitTransaction(mDB: mDB)
+                mDB.setIsTransActive(newValue: false)
             } catch UtilsSQLCipherError.commitTransaction(let message) {
                 throw DatabaseError.executeSQL(message: "Error: onUpgrade: \(message)")
             }
@@ -70,6 +72,7 @@ class UtilsUpgrade {
         } catch DatabaseError.executeSQL(let message) {
             do {
                 try UtilsSQLCipher.rollbackTransaction(mDB: mDB)
+                mDB.setIsTransActive(newValue: false)
             } catch UtilsSQLCipherError.rollbackTransaction(let message2) {
                 throw DatabaseError.executeSQL(message: "Error: onUpgrade: \(message) \(message2)")
             }

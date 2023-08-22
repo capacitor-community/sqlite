@@ -369,7 +369,119 @@ public class CapacitorSQLitePlugin extends Plugin {
             rHandler.retResult(call, null, loadMessage);
         }
     }
+    /**
+     * BeginTransaction Method
+     * Begin a Database Transaction
+     *
+     * @param call PluginCall
+     */
+    @PluginMethod
+    public void beginTransaction(PluginCall call) {
+        JSObject retRes = new JSObject();
+        retRes.put("changes", Integer.valueOf(-1));
+        if (!call.getData().has("database")) {
+            String msg = "BeginTransaction: Must provide a database name";
+            rHandler.retChanges(call, retRes, msg);
+            return;
+        }
+        String dbName = call.getString("database");
 
+        if (implementation != null) {
+            try {
+                JSObject res = implementation.beginTransaction(dbName);
+                rHandler.retChanges(call, res, null);
+            } catch (Exception e) {
+                String msg = "BeginTransaction: " + e.getMessage();
+                rHandler.retChanges(call, retRes, msg);
+            }
+        } else {
+            rHandler.retChanges(call, retRes, loadMessage);
+        }
+    }
+    /**
+     * CommitTransaction Method
+     * Commit a Database Transaction
+     *
+     * @param call PluginCall
+     */
+    @PluginMethod
+    public void commitTransaction(PluginCall call) {
+        JSObject retRes = new JSObject();
+        retRes.put("changes", Integer.valueOf(-1));
+        if (!call.getData().has("database")) {
+            String msg = "CommitTransaction: Must provide a database name";
+            rHandler.retChanges(call, retRes, msg);
+            return;
+        }
+        String dbName = call.getString("database");
+
+        if (implementation != null) {
+            try {
+                JSObject res = implementation.commitTransaction(dbName);
+                rHandler.retChanges(call, res, null);
+            } catch (Exception e) {
+                String msg = "CommitTransaction: " + e.getMessage();
+                rHandler.retChanges(call, retRes, msg);
+            }
+        } else {
+            rHandler.retChanges(call, retRes, loadMessage);
+        }
+    }
+
+    /**
+     * RollbackTransaction Method
+     * Rollbact a Database Transaction
+     *
+     * @param call PluginCall
+     */
+    @PluginMethod
+    public void rollbackTransaction(PluginCall call) {
+        JSObject retRes = new JSObject();
+        retRes.put("changes", Integer.valueOf(-1));
+        if (!call.getData().has("database")) {
+            String msg = "RollbackTransaction: Must provide a database name";
+            rHandler.retChanges(call, retRes, msg);
+            return;
+        }
+        String dbName = call.getString("database");
+
+        if (implementation != null) {
+            try {
+                JSObject res = implementation.rollbackTransaction(dbName);
+                rHandler.retChanges(call, res, null);
+            } catch (Exception e) {
+                String msg = "RollbackTransaction: " + e.getMessage();
+                rHandler.retChanges(call, retRes, msg);
+            }
+        } else {
+            rHandler.retChanges(call, retRes, loadMessage);
+        }
+    }
+    /**
+     * IsTransactionActive Method
+     * Check if a Database Transaction is Active
+     *
+     * @param call PluginCall
+     */
+    @PluginMethod
+    public void isTransactionActive(PluginCall call) {
+        if (!call.getData().has("database")) {
+            rHandler.retResult(call, null, "Must provide a database name");
+            return;
+        }
+        String dbName = call.getString("database");
+        if (implementation != null) {
+            try {
+                Boolean res = implementation.isTransactionActive(dbName);
+                rHandler.retResult(call, res, null);
+            } catch (Exception e) {
+                String msg = "IsTransactionActive: " + e.getMessage();
+                rHandler.retResult(call, null, msg);
+            }
+        } else {
+            rHandler.retResult(call, null, loadMessage);
+        }
+    }
     /**
      * GetUrl Method
      * Get a database Url

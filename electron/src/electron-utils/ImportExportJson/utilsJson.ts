@@ -5,6 +5,7 @@ import type {
   JsonView,
   Changes,
 } from '../../../../src/definitions';
+import type { Database } from '../Database';
 import { UtilsSQLite } from '../utilsSQLite';
 
 export class UtilsJson {
@@ -24,7 +25,7 @@ export class UtilsJson {
     }
     let query = 'SELECT name FROM sqlite_master WHERE ';
     query += `type='table' AND name='${tableName}';`;
-    const rows: any[] = this.sqliteUtil.queryAll(mDB, query, []);
+    const rows: any[] = this.sqliteUtil.queryAll(mDB, query, [], true);
     if (rows.length > 0) {
       ret = true;
     }
@@ -44,7 +45,7 @@ export class UtilsJson {
     }
     let query = 'SELECT name FROM sqlite_master WHERE ';
     query += `type='view' AND name='${viewName}';`;
-    const rows: any[] = this.sqliteUtil.queryAll(mDB, query, []);
+    const rows: any[] = this.sqliteUtil.queryAll(mDB, query, [], true);
     if (rows.length > 0) {
       ret = true;
     }
@@ -55,13 +56,14 @@ export class UtilsJson {
    * @param mDB
    * @param jsonData
    */
-  public createSchema(mDB: any, jsonData: any): number {
+  public createSchema(mDB: Database, jsonData: any): number {
     // create the database schema
     const msg = 'CreateSchema';
     let changes = 0;
     try {
       // start a transaction
-      this.sqliteUtil.beginTransaction(mDB, true);
+      this.sqliteUtil.beginTransaction(mDB.database, true);
+      mDB.setIsTransActive(true);
     } catch (err) {
       throw new Error(`${msg} ${err}`);
     }
@@ -70,11 +72,12 @@ export class UtilsJson {
     if (stmts.length > 0) {
       const schemaStmt: string = stmts.join('\n');
       try {
-        const results = this.sqliteUtil.execute(mDB, schemaStmt, true);
+        const results = this.sqliteUtil.execute(mDB.database, schemaStmt, true, true);
         changes = results.changes;
         if (changes < 0) {
           try {
-            this.sqliteUtil.rollbackTransaction(mDB, true);
+            this.sqliteUtil.rollbackTransaction(mDB.database, true);
+            mDB.setIsTransActive(false);
           } catch (err) {
             throw new Error(`${msg} changes < 0 ${err}`);
           }
@@ -82,7 +85,8 @@ export class UtilsJson {
       } catch (err) {
         const msg = err;
         try {
-          this.sqliteUtil.rollbackTransaction(mDB, true);
+          this.sqliteUtil.rollbackTransaction(mDB.database, true);
+          mDB.setIsTransActive(false);
           throw new Error(`CreateSchema: ${msg}`);
         } catch (err) {
           throw new Error(`${msg} changes < 0${err}: ${msg}`);
@@ -90,7 +94,8 @@ export class UtilsJson {
       }
     }
     try {
-      this.sqliteUtil.commitTransaction(mDB, true);
+      this.sqliteUtil.commitTransaction(mDB.database, true);
+      mDB.setIsTransActive(false);
       return changes;
     } catch (err) {
       throw new Error(`${msg} ${err}`);
@@ -422,7 +427,7 @@ export class UtilsJson {
       } else {
         throw new Error(`${msg} Table ${tableName} no names`);
       }
-      const retValues = this.sqliteUtil.queryAll(mDb, query, []);
+      const retValues = this.sqliteUtil.queryAll(mDb, query, [], true);
       for (const rValue of retValues) {
         const row: any[] = [];
         for (const rName of rowNames) {
@@ -504,7 +509,7 @@ export class UtilsJson {
     if (typeof key === 'string') query += `'${key}';`;
 
     try {
-      const resQuery: any[] = this.sqliteUtil.queryAll(mDB, query, []);
+      const resQuery: any[] = this.sqliteUtil.queryAll(mDB, query, [], true);
       if (resQuery.length === 1) ret = true;
       return ret;
     } catch (err) {
@@ -868,7 +873,7 @@ export class UtilsJson {
     const msg = 'CreateView';
     const stmt = `CREATE VIEW IF NOT EXISTS ${view.name} AS ${view.value};`;
     try {
-      const results = this.sqliteUtil.execute(mDB, stmt, true);
+      const results = this.sqliteUtil.execute(mDB, stmt, true, true);
       if (results.changes < 0) {
         throw new Error(`${msg} ${view.name} failed`);
       }

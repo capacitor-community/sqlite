@@ -82,7 +82,7 @@ export class ExportToJson {
     sql += "AND name NOT LIKE 'sqlite_%';";
     let retQuery: any[] = [];
     try {
-      retQuery = this.sqliteUtil.queryAll(mDb, sql, []);
+      retQuery = this.sqliteUtil.queryAll(mDb, sql, [], true);
       return retQuery;
     } catch (err) {
       throw new Error(`${msg} ${err}`);
@@ -94,7 +94,7 @@ export class ExportToJson {
     try {
       // get the last sync date
       const stmt = `SELECT sync_date FROM sync_table WHERE id = ?;`;
-      const row = this.sqliteUtil.queryOne(mDb, stmt, [2]);
+      const row = this.sqliteUtil.queryOne(mDb, stmt, [2], true);
       if (row != null) {
         const key: any = Object.keys(row)[0];
         retDate = row[key];
@@ -126,7 +126,7 @@ export class ExportToJson {
       } else {
         stmt = `INSERT INTO sync_table (sync_date) VALUES (${sDate});`;
       }
-      const results = this.sqliteUtil.execute(mDb, stmt, false);
+      const results = this.sqliteUtil.execute(mDb, stmt, false, true);
       if (results.changes < 0) {
         return { result: false, message: `${msg} failed` };
       } else {
@@ -189,7 +189,7 @@ export class ExportToJson {
     sql += "type='view' AND name NOT LIKE 'sqlite_%';";
     let retQuery: any[] = [];
     try {
-      retQuery = this.sqliteUtil.queryAll(mDb, sql, []);
+      retQuery = this.sqliteUtil.queryAll(mDb, sql, [], true);
       for (const query of retQuery) {
         const view: JsonView = {} as JsonView;
         view.name = query.name;
@@ -210,7 +210,7 @@ export class ExportToJson {
     let retDate = -1;
     // get the last sync date
     const stmt = `SELECT sync_date FROM sync_table WHERE id = ?;`;
-    const row = this.sqliteUtil.queryOne(mDb, stmt, [1]);
+    const row = this.sqliteUtil.queryOne(mDb, stmt, [1], true);
     if (row != null) {
       const key: any = Object.keys(row)[0];
       retDate = row[key];
@@ -381,7 +381,7 @@ export class ExportToJson {
       let stmt = 'SELECT name,tbl_name,sql FROM sqlite_master WHERE ';
       stmt += `type = 'index' AND tbl_name = '${tableName}' `;
       stmt += `AND sql NOTNULL;`;
-      const retIndexes = this.sqliteUtil.queryAll(mDb, stmt, []);
+      const retIndexes = this.sqliteUtil.queryAll(mDb, stmt, [], true);
       if (retIndexes.length > 0) {
         for (const rIndex of retIndexes) {
           const keys: string[] = Object.keys(rIndex);
@@ -427,7 +427,7 @@ export class ExportToJson {
       let stmt = 'SELECT name,tbl_name,sql FROM sqlite_master WHERE ';
       stmt += `type = 'trigger' AND tbl_name = '${tableName}' `;
       stmt += `AND sql NOT NULL;`;
-      const retTriggers = this.sqliteUtil.queryAll(mDb, stmt, []);
+      const retTriggers = this.sqliteUtil.queryAll(mDb, stmt, [], true);
       if (retTriggers.length > 0) {
         for (const rTrg of retTriggers) {
           const keys: string[] = Object.keys(rTrg);
@@ -634,7 +634,7 @@ export class ExportToJson {
         // get total count of the table
         let stmt = 'SELECT count(*) AS tcount  ';
         stmt += `FROM ${rTable.name};`;
-        let retQuery: any[] = this.sqliteUtil.queryAll(mDb, stmt, []);
+        let retQuery: any[] = this.sqliteUtil.queryAll(mDb, stmt, [], true);
         if (retQuery.length != 1) {
           errmsg = `${msg} total count not returned`;
           break;
@@ -644,7 +644,7 @@ export class ExportToJson {
         stmt = 'SELECT count(*) AS mcount FROM ';
         stmt += `${rTable.name} WHERE last_modified > `;
         stmt += `${syncDate};`;
-        retQuery = this.sqliteUtil.queryAll(mDb, stmt, []);
+        retQuery = this.sqliteUtil.queryAll(mDb, stmt, [], true);
         if (retQuery.length != 1) break;
         const totalModifiedCount: number = retQuery[0]['mcount'];
 

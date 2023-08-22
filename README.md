@@ -242,6 +242,10 @@ npm install --save-dev @types/crypto-js
 | isInConfigBiometricAuth     | ✅      | ✅  | ❌        | ❌  | since 4.6.2-2
 | getFromLocalDiskToStore     | ❌      | ❌  | ❌        | ✅  | since 4.6.3
 | saveToLocalDisk             | ❌      | ❌  | ❌        | ✅  | since 4.6.3
+| beginTransaction            | ✅      | ✅  | ✅        | ✅  | since 5.0.7
+| commitTransaction           | ✅      | ✅  | ✅        | ✅  | since 5.0.7
+| rollbackTransaction         | ✅      | ✅  | ✅        | ✅  | since 5.0.7
+| isTransactionActive         | ✅      | ✅  | ✅        | ✅  | since 5.0.7
 
 
 ## Documentation & APIs

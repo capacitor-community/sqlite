@@ -633,6 +633,7 @@ class UtilsSQLCipher {
 
     // MARK: - deleteSQL
 
+    // swiftlint:disable function_body_length
     class func deleteSQL(mDB: Database, sql: String, values: [Any])
     throws -> String {
         var sqlStmt = sql
@@ -657,9 +658,9 @@ class UtilsSQLCipher {
                         "WHERE clause"
                     throw UtilsSQLCipherError.deleteSQL(message: msg)
                 }
-                guard let colNames = try? UtilsSQLStatement
-                        .extractColumnNames(from: whereClause)
-                else {
+                let colNames = UtilsSQLStatement
+                    .extractColumnNames(from: whereClause)
+                if colNames.count == 0 {
                     let msg = "Did not find column names in the" +
                         "WHERE Statement"
                     throw UtilsSQLCipherError.deleteSQL(message: msg)
@@ -695,6 +696,7 @@ class UtilsSQLCipher {
             throw UtilsSQLCipherError.deleteSQL(message: message)
         }
     }
+    // swiftlint:enable function_body_length
 
     // MARK: - querySQL
 
@@ -835,6 +837,7 @@ class UtilsSQLCipher {
 
     // MARK: - Execute
 
+    // swiftlint:disable function_body_length
     class func execute(mDB: Database, sql: String) throws {
         var msg: String = "Error execute: "
         if !mDB.isDBOpen() {
@@ -886,6 +889,7 @@ class UtilsSQLCipher {
         }
         return
     }
+    // swiftlint:enable function_body_length
 
     // MARK: - DeleteDB
 
@@ -917,6 +921,7 @@ class UtilsSQLCipher {
     // MARK: - ExecuteSet
 
     // swiftlint:disable function_body_length
+    // swiftlint:disable cyclomatic_complexity
     class func executeSet(mDB: Database, set: [[String: Any]],
                           returnMode: String)
     throws -> (Int64, [[String: Any]]) {
@@ -986,6 +991,8 @@ class UtilsSQLCipher {
                 message: message)
         }
     }
+    // swiftlint:enable cyclomatic_complexity
+    // swiftlint:enable function_body_length
 
     class func addToResponse(response: [[String: Any]],
                              respSet: [[String: Any]]) -> [[String: Any]] {
