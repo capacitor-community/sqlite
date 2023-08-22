@@ -920,6 +920,18 @@ export class UtilsSQLite {
         cSql = this.cleanStatement(sql);
       }
       const stmt = mDB.prepare(cSql);
+
+      if(!stmt.reader) {
+        // statement doesn't returns data
+        if (values != null && values.length > 0) {
+          stmt.run(values);
+        }
+        else {
+          stmt.run();
+        }
+        return []
+      }
+
       let rows;
       if (values != null && values.length > 0) {
         rows = stmt.all(values);
