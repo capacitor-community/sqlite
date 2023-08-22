@@ -14,6 +14,8 @@
 
  - Modify `transaction` method to handle the new transaction process flow
 
+ - fix Call stmt.run() for statement without return #457 PR from Guilherme Oliveira
+
 # 5.0.7-2 (2023-08-10)
 
 ### Bug Fixes
