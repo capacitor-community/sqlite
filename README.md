@@ -275,6 +275,8 @@ npm install --save-dev electron-builder@24.6.3
 
 - [Electron Better SQLite3](https://github.com/capacitor-community/sqlite/blob/master/docs/ElectronBetterSQLite3.md)
 
+- [Enable minified build on Android](https://github.com/capacitor-community/sqlite/blob/master/docs/AndroidMinify.md)
+
 ## Applications demonstrating the use of the plugin and related documentation
 
 ### Ionic/Angular
