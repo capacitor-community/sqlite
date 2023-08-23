@@ -20,7 +20,7 @@ android {
 }
 ```
 
-Now you need to modify the proguard configuration file. This will configure how Gradle compiles your application. Proguard files act like a CLI append, you just put flags in there.
+Now you need to modify the proguard configuration file. You will find your proguard file here: `android/app/proguard-rules.pro`. This will configure how Gradle compiles your application. Proguard files act like a CLI append, you just put flags in there.
 
 ```pro
 -keep class net.sqlcipher.** { *; }
@@ -32,4 +32,5 @@ This will exclude minification of all SQLCipher classes and class-members so Cap
 Read more about that topic here:
 
 - https://github.com/ionic-team/capacitor/issues/739
+- https://capacitorjs.com/docs/android/troubleshooting#using-proguard
 - https://medium.com/@jonfinerty/beginner-to-proguard-b3327ff3a831
