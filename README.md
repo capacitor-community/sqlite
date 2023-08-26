@@ -277,6 +277,11 @@ npm install --save-dev electron-builder@24.6.3
 
 - [Enable minified build on Android](https://github.com/capacitor-community/sqlite/blob/master/docs/AndroidMinify.md)
 
+
+## Tutorials Blog
+
+ - [JeepQ Capacitor Plugin Tutorials](https://jepiqueau.github.io/)
+
 ## Applications demonstrating the use of the plugin and related documentation
 
 ### Ionic/Angular
