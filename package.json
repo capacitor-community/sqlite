@@ -1,6 +1,6 @@
 {
   "name": "@capacitor-community/sqlite",
-  "version": "5.0.7",
+  "version": "5.0.8",
   "description": "Community plugin for native & electron SQLite databases",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
@@ -17,8 +17,8 @@
   ],
   "author": "Jean Pierre Quéau",
   "license": "MIT",
-  "engines" : { 
-    "node" : ">=16.0.0" 
+  "engines": {
+    "node": ">=16.0.0"
   },
   "repository": {
     "type": "git",
