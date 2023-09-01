@@ -1285,7 +1285,7 @@ enum CapacitorSQLiteError: Error {
 
     // MARK: - exportToJson
 
-    @objc func exportToJson(_ dbName: String, expMode: String, readonly: Bool)
+    @objc func exportToJson(_ dbName: String, expMode: String, readonly: Bool, encrypted: Bool)
     throws -> [String: Any] {
         if isInit {
             let mDbName = CapacitorSQLite.getDatabaseName(dbName: dbName)
@@ -1298,7 +1298,9 @@ enum CapacitorSQLiteError: Error {
 
                 do {
                     let res: [String: Any] = try
-                        mDb.exportToJson(expMode: expMode)
+                        mDb.exportToJson(
+                            expMode: expMode,
+                            isEncrypted: encrypted)
                     if res.count == 0 {
                         var msg: String = "return Object is empty "
                         msg.append("No data to synchronize")

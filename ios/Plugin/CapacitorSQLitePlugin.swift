@@ -1214,11 +1214,13 @@ public class CapacitorSQLitePlugin: CAPPlugin {
             return
         }
         let readOnly: Bool = call.getBool("readonly") ?? false
+        let encrypted: Bool = call.getBool("encrypted") ?? false
 
         do {
             let res: [String: Any] = try implementation?
                 .exportToJson(dbName, expMode: expMode,
-                              readonly: readOnly) ?? [:]
+                              readonly: readOnly,
+                              encrypted: encrypted) ?? [:]
             retHandler.rJsonSQLite(call: call, ret: res)
             return
         } catch CapacitorSQLiteError.failed(let message) {

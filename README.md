@@ -75,7 +75,7 @@ const config: CapacitorConfig = {
         biometricTitle : "Biometric login for capacitor sqlite",
         biometricSubTitle : "Log in using your biometric"
       },
-      electronIsEncryption: false,
+      electronIsEncryption: true,
       electronWindowsLocation: "C:\\ProgramData\\CapacitorDatabases",
       electronMacLocation: "/Volumes/Development_Lacie/Development/Databases",
       electronLinuxLocation: "Databases"
@@ -95,6 +95,12 @@ export default config;
  - [Capacitor documentation](https://capacitorjs.com/docs/)
  - [Datatypes In SQLite Version 3](https://www.sqlite.org/datatype3.html)
  - [IncrementalUpgradeDatabaseVersion](https://capacitorjs.com/docs/IncrementalUpgradeDatabaseVersion.md)
+
+
+## Tutorials Blog
+
+ - [JeepQ Capacitor Plugin Tutorials](https://jepiqueau.github.io/)
+
 
 ## Web Quirks
 
@@ -277,10 +283,6 @@ npm install --save-dev electron-builder@24.6.3
 
 - [Enable minified build on Android](https://github.com/capacitor-community/sqlite/blob/master/docs/AndroidMinify.md)
 
-
-## Tutorials Blog
-
- - [JeepQ Capacitor Plugin Tutorials](https://jepiqueau.github.io/)
 
 ## Applications demonstrating the use of the plugin and related documentation
 

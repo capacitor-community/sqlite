@@ -1,7 +1,12 @@
+# 5.0.7 (2023-09-01)
 
 ### Added Features
 
  - Add Tutorials Blog in README.md
+
+### Bug Fixes
+
+ - Fix Cannot export encrypted database as plain JSON anymore issue#462
 
 # 5.0.7 (2023-08-22)
 

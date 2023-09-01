@@ -652,7 +652,8 @@ class Database {
 
     // MARK: - ExportToJson
 
-    func exportToJson(expMode: String) throws -> [String: Any] {
+    func exportToJson(expMode: String, isEncrypted: Bool)
+                                throws -> [String: Any] {
         var retObj: [String: Any] = [:]
 
         do {
@@ -670,7 +671,7 @@ class Database {
                 "expMode": expMode, "version": dbVersion]
             retObj = try ExportToJson
                 .createExportObject(mDB: self, data: data)
-            if isEncryption && encrypted {
+            if isEncryption && encrypted && isEncrypted {
                 retObj["overwrite"] = true
                 let base64Str = try UtilsJson.encryptDictionaryToBase64(
                     retObj,

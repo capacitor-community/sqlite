@@ -1199,7 +1199,7 @@ public class Database {
      * @param mode
      * @return
      */
-    public JSObject exportToJson(String mode) throws Exception {
+    public JSObject exportToJson(String mode, Boolean isEncrypted) throws Exception {
         JsonSQLite inJson = new JsonSQLite();
         JSObject retObj = new JSObject();
         inJson.setDatabase(_dbName.substring(0, _dbName.length() - 9));
@@ -1230,7 +1230,7 @@ public class Database {
                     }
                 }
             }
-            if (this._encrypted && this._isEncryption) {
+            if (this._encrypted && this._isEncryption && isEncrypted) {
                 retObj.put("encrypted", true);
                 retObj.put("overwrite", true);
                 String base64Str = UtilsEncryption.encryptJSONObject(this._context, retObj);

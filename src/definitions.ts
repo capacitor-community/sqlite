@@ -699,6 +699,15 @@ export interface capSQLiteExportOptions {
    * @since 4.1.0-7
    */
   readonly?: boolean;
+  /**
+   * Encrypted
+   * When your database is encrypted
+   * Choose the export Json Object
+   * Encrypted (true) / Unencrypted (false)
+   * default false
+   * @since 5.0.8
+   */
+  encrypted?: boolean
 }
 export interface capSQLiteFromAssetsOptions {
   /**
@@ -1610,8 +1619,8 @@ export class SQLiteConnection implements ISQLiteConnection {
   async checkConnectionsConsistency(): Promise<capSQLiteResult> {
     try {
       const keys = [...this._connectionDict.keys()];
-      const openModes = [];
-      const dbNames = [];
+      const openModes: string[] = [];
+      const dbNames: string[] = [];
       for (const key of keys) {
         openModes.push(key.substring(0, 2));
         dbNames.push(key.substring(3));
@@ -1850,6 +1859,8 @@ export interface ISQLiteDBConnection {
   /**
    * Execute SQLite DB Connection Statements
    * @param statements
+   * @param transaction (optional)
+   * @param isSQL92 (optional)
    * @returns Promise<capSQLiteChanges>
    * @since 2.9.0 refactor
    */
@@ -1858,6 +1869,7 @@ export interface ISQLiteDBConnection {
    * Execute SQLite DB Connection Query
    * @param statement
    * @param values (optional)
+   * @param isSQL92 (optional)
    * @returns Promise<Promise<DBSQLiteValues>
    * @since 2.9.0 refactor
    */
@@ -1866,6 +1878,9 @@ export interface ISQLiteDBConnection {
    * Execute SQLite DB Connection Raw Statement
    * @param statement
    * @param values (optional)
+   * @param transaction (optional)
+   * @param returnMode (optional)
+   * @param isSQL92 (optional)
    * @returns Promise<capSQLiteChanges>
    * @since 2.9.0 refactor
    */
@@ -1879,6 +1894,9 @@ export interface ISQLiteDBConnection {
   /**
    * Execute SQLite DB Connection Set
    * @param set
+   * @param transaction (optional)
+   * @param returnMode (optional)
+   * @param isSQL92 (optional)
    * @returns Promise<capSQLiteChanges>
    * @since 2.9.0 refactor
    */
@@ -1939,10 +1957,11 @@ export interface ISQLiteDBConnection {
   /**
    * Export the given database to a JSON Object
    * @param mode
+   * @param encrypted (optional) since 5.0.8 not for Web platform
    * @returns Promise<capSQLiteJson>
    * @since 2.9.0 refactor
    */
-  exportToJson(mode: string): Promise<capSQLiteJson>;
+  exportToJson(mode: string, encrypted?: boolean): Promise<capSQLiteJson>;
   /**
    * Remove rows with sql_deleted = 1 after an export
    * @returns Promise<void>
@@ -1980,6 +1999,9 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
   }
 
   async open(): Promise<void> {
+    const jeepSQlEL = document.querySelector("jeep-sqlite")
+    console.log(`in definition open jeepSQlEL: `,jeepSQlEL )
+
     try {
       await this.sqlite.open({
         database: this.dbName,
@@ -2316,12 +2338,13 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
       return Promise.reject(err);
     }
   }
-  async exportToJson(mode: string): Promise<capSQLiteJson> {
+  async exportToJson(mode: string, encrypted = false): Promise<capSQLiteJson> {
     try {
       const res: any = await this.sqlite.exportToJson({
         database: this.dbName,
         jsonexportmode: mode,
         readonly: this.readonly,
+        encrypted: encrypted,
       });
       return Promise.resolve(res);
     } catch (err) {

@@ -234,11 +234,11 @@ execute(statements: string, transaction?: boolean | undefined, isSQL92?: boolean
 
 Execute SQLite DB Connection Statements
 
-| Param             | Type                 |
-| ----------------- | -------------------- |
-| **`statements`**  | <code>string</code>  |
-| **`transaction`** | <code>boolean</code> |
-| **`isSQL92`**     | <code>boolean</code> |
+| Param             | Type                 | Description |
+| ----------------- | -------------------- | ----------- |
+| **`statements`**  | <code>string</code>  |             |
+| **`transaction`** | <code>boolean</code> | (optional)  |
+| **`isSQL92`**     | <code>boolean</code> | (optional)  |
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
 
@@ -259,7 +259,7 @@ Execute SQLite DB Connection Query
 | --------------- | -------------------- | ----------- |
 | **`statement`** | <code>string</code>  |             |
 | **`values`**    | <code>any[]</code>   | (optional)  |
-| **`isSQL92`**   | <code>boolean</code> |             |
+| **`isSQL92`**   | <code>boolean</code> | (optional)  |
 
 **Returns:** <code>Promise&lt;<a href="#dbsqlitevalues">DBSQLiteValues</a>&gt;</code>
 
@@ -280,9 +280,9 @@ Execute SQLite DB Connection Raw Statement
 | ----------------- | -------------------- | ----------- |
 | **`statement`**   | <code>string</code>  |             |
 | **`values`**      | <code>any[]</code>   | (optional)  |
-| **`transaction`** | <code>boolean</code> |             |
-| **`returnMode`**  | <code>string</code>  |             |
-| **`isSQL92`**     | <code>boolean</code> |             |
+| **`transaction`** | <code>boolean</code> | (optional)  |
+| **`returnMode`**  | <code>string</code>  | (optional)  |
+| **`isSQL92`**     | <code>boolean</code> | (optional)  |
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
 
@@ -299,12 +299,12 @@ executeSet(set: capSQLiteSet[], transaction?: boolean | undefined, returnMode?: 
 
 Execute SQLite DB Connection Set
 
-| Param             | Type                        |
-| ----------------- | --------------------------- |
-| **`set`**         | <code>capSQLiteSet[]</code> |
-| **`transaction`** | <code>boolean</code>        |
-| **`returnMode`**  | <code>string</code>         |
-| **`isSQL92`**     | <code>boolean</code>        |
+| Param             | Type                        | Description |
+| ----------------- | --------------------------- | ----------- |
+| **`set`**         | <code>capSQLiteSet[]</code> |             |
+| **`transaction`** | <code>boolean</code>        | (optional)  |
+| **`returnMode`**  | <code>string</code>         | (optional)  |
+| **`isSQL92`**     | <code>boolean</code>        | (optional)  |
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
 
@@ -440,14 +440,15 @@ Get the synchronization date
 ### exportToJson(...)
 
 ```typescript
-exportToJson(mode: string) => Promise<capSQLiteJson>
+exportToJson(mode: string, encrypted?: boolean | undefined) => Promise<capSQLiteJson>
 ```
 
 Export the given database to a JSON Object
 
-| Param      | Type                |
-| ---------- | ------------------- |
-| **`mode`** | <code>string</code> |
+| Param           | Type                 | Description                                 |
+| --------------- | -------------------- | ------------------------------------------- |
+| **`mode`**      | <code>string</code>  |                                             |
+| **`encrypted`** | <code>boolean</code> | (optional) since 5.0.8 not for Web platform |
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitejson">capSQLiteJson</a>&gt;</code>
 

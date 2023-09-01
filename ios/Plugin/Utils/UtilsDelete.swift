@@ -33,7 +33,7 @@ class UtilsDelete {
                                        initColNames: [String],
                                        values: [Any]) throws -> Bool {
         do {
-            var retBool: Bool = true
+            let retBool: Bool = true
             let result = try getReferences(mDB: mDB,
                                            tableName: tableName)
             let references = result.retRefs
@@ -95,8 +95,8 @@ class UtilsDelete {
                     continue
                 }
 
-                var updTableName: String = tableNameWithRefs
-                var updColNames: [String] = withRefsNames
+                let updTableName: String = tableNameWithRefs
+                let updColNames: [String] = withRefsNames
                 var results: (setStmt: String, uWhereStmt: String)
                 results.uWhereStmt = ""
                 results.setStmt = ""

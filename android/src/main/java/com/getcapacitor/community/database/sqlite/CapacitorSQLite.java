@@ -1269,7 +1269,8 @@ public class CapacitorSQLite {
         }
     }
 
-    public JSObject exportToJson(String dbName, String expMode, Boolean readonly) throws Exception {
+    public JSObject exportToJson(String dbName, String expMode,
+                                 Boolean readonly, Boolean encrypted) throws Exception {
         dbName = getDatabaseName(dbName);
         String connName = readonly ? "RO_" + dbName : "RW_" + dbName;
         Database db = dbDict.get(connName);
@@ -1279,7 +1280,7 @@ public class CapacitorSQLite {
                     String msg = "ExportToJson: db not opened";
                     throw new Exception(msg);
                 }
-                JSObject ret = db.exportToJson(expMode);
+                JSObject ret = db.exportToJson(expMode, encrypted);
                 if (ret.length() == 0) {
                     String msg = "ExportToJson: : return Object is empty " + "No data to synchronize";
                     throw new Exception(msg);

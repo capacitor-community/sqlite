@@ -1448,10 +1448,12 @@ public class CapacitorSQLitePlugin extends Plugin {
             return;
         }
         Boolean readOnly = call.getBoolean("readonly", false);
+        Boolean encrypted = call.getBoolean("encrypted", false);
 
         if (implementation != null) {
             try {
-                JSObject res = implementation.exportToJson(dbName, expMode, readOnly);
+                JSObject res = implementation.exportToJson(dbName, expMode,
+                                                           readOnly, encrypted);
                 rHandler.retJSObject(call, res, null);
             } catch (Exception e) {
                 String msg = "ExportToJson: " + e.getMessage();

@@ -1398,11 +1398,12 @@ Check if a non conformed database exists without connection
 
 #### capSQLiteExportOptions
 
-| Prop                 | Type                 | Description                                             | Since   |
-| -------------------- | -------------------- | ------------------------------------------------------- | ------- |
-| **`database`**       | <code>string</code>  | The database name                                       |         |
-| **`jsonexportmode`** | <code>string</code>  | Set the mode to export JSON Object: "full" or "partial" |         |
-| **`readonly`**       | <code>boolean</code> | ReadOnly / ReadWrite default ReadWrite (false)          | 4.1.0-7 |
+| Prop                 | Type                 | Description                                                                                                                  | Since   |
+| -------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------- |
+| **`database`**       | <code>string</code>  | The database name                                                                                                            |         |
+| **`jsonexportmode`** | <code>string</code>  | Set the mode to export JSON Object: "full" or "partial"                                                                      |         |
+| **`readonly`**       | <code>boolean</code> | ReadOnly / ReadWrite default ReadWrite (false)                                                                               | 4.1.0-7 |
+| **`encrypted`**      | <code>boolean</code> | Encrypted When your database is encrypted Choose the export Json Object Encrypted (true) / Unencrypted (false) default false | 5.0.8   |
 
 
 #### capSQLiteSyncDateOptions

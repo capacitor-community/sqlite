@@ -654,7 +654,7 @@ export class Database {
     }
   }
 
-  public exportJson(mode: string): any {
+  public exportJson(mode: string, encrypted: boolean): any {
     const inJson: JsonSQLite = {} as JsonSQLite;
     inJson.database = this.dbName.slice(0, -9);
     inJson.version = this.version;
@@ -686,7 +686,7 @@ export class Database {
       }
       let isValid = this.jsonUtil.isJsonSQLite(jsonResult);
 
-      if (this._encrypted && this._isEncryption) {
+      if (this._encrypted && this._isEncryption && encrypted) {
         jsonResult.overwrite = true;
         jsonResult.encrypted = true;
         const base64Str: string =

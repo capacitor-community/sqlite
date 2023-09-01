@@ -610,12 +610,13 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   async exportToJson(options: capSQLiteExportOptions): Promise<capSQLiteJson> {
     const dbName: string = this.getOptionValue(options, 'database');
     const exportMode: string = this.getOptionValue(options, 'jsonexportmode');
-    const readonly: boolean = options.readonly ? options.readonly : false;
+    const readonly: boolean = this.getOptionValue(options,'readonly',false);
+    const encrypted: boolean = this.getOptionValue(options,'encrypted', false);
     const connName = readonly ? 'RO_' + dbName : 'RW_' + dbName;
     const database = this.getDatabaseConnectionOrThrowError(connName);
     if (database.isDBOpen()) {
       try {
-        const exportJsonResult: any = database.exportJson(exportMode);
+        const exportJsonResult: any = database.exportJson(exportMode, encrypted);
         const resultKeys = Object.keys(exportJsonResult);
 
         if (resultKeys.includes('message')) {
@@ -1189,3 +1190,5 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     throw new Error('Not implemented on web.');
   }
 }
+
+
