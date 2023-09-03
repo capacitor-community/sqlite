@@ -1999,8 +1999,6 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
   }
 
   async open(): Promise<void> {
-    const jeepSQlEL = document.querySelector("jeep-sqlite")
-    console.log(`in definition open jeepSQlEL: `,jeepSQlEL )
 
     try {
       await this.sqlite.open({

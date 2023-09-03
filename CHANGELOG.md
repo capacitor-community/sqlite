@@ -1,3 +1,15 @@
+# 5.2.3 (2023-09-03)
+
+### Chore
+
+ - Update to @capacitor/core@5.2.3
+ - Update to @capacitor/ios@5.2.3
+ - Update to @capacitor/android@5.2.3
+
+### Bug Fixes
+
+ - Remove console.log in definition.ts
+
 # 5.0.8 (2023-09-01)
 
 ### Added Features
