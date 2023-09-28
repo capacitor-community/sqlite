@@ -105,7 +105,7 @@ class ImportFromJson {
                         try UtilsSQLCipher
                             .rollbackTransaction(mDB: mDB)
                         mDB.setIsTransActive(newValue: false)
-                   } catch UtilsSQLCipherError
+                    } catch UtilsSQLCipherError
                                 .rollbackTransaction(let message) {
                         throw ImportFromJsonError
                         .createSchema(message: message)
@@ -615,7 +615,7 @@ class ImportFromJson {
                     try UtilsSQLCipher
                         .rollbackTransaction(mDB: mDB)
                     mDB.setIsTransActive(newValue: false)
-                   throw ImportFromJsonError
+                    throw ImportFromJsonError
                     .createViews(message: msg)
                 } catch UtilsSQLCipherError
                             .rollbackTransaction(let message) {

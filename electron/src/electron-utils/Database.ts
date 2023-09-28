@@ -41,7 +41,6 @@ export class Database {
   private sql92Utils: UtilsSQL92Compatibility = new UtilsSQL92Compatibility();
   private isTransactionActive: boolean;
 
-
   constructor(
     dbName: string,
     encrypted: boolean,
@@ -162,7 +161,7 @@ export class Database {
   /**
    * IsTransActive
    * Is Database Transaction Active
-   * @returns 
+   * @returns
    */
   isTransActive(): boolean {
     return this.isTransactionActive;
@@ -170,7 +169,7 @@ export class Database {
   /**
    * SetIsTransActive
    * Set the Database Transaction to Active
-   * @returns 
+   * @returns
    */
   setIsTransActive(value: boolean): void {
     this.isTransactionActive = value;
@@ -178,12 +177,12 @@ export class Database {
   /**
    * DbBeginTransaction
    * Database Begin Transaction
-   * @returns 
+   * @returns
    */
   dbBeginTransaction(): number {
     try {
       this.ensureDatabaseIsOpen();
-      this.sqliteUtil.beginTransaction(this.database,true);
+      this.sqliteUtil.beginTransaction(this.database, true);
       this.setIsTransActive(true);
       return 0;
     } catch (err) {
@@ -193,12 +192,12 @@ export class Database {
   /**
    * DbCommitTransaction
    * Database Commit Transaction
-   * @returns 
+   * @returns
    */
   dbCommitTransaction(): number {
     try {
       this.ensureDatabaseIsOpen();
-      this.sqliteUtil.commitTransaction(this.database,true);
+      this.sqliteUtil.commitTransaction(this.database, true);
       this.setIsTransActive(false);
       return 0;
     } catch (err) {
@@ -208,12 +207,12 @@ export class Database {
   /**
    * DbRollbackTransaction
    * Database Rollback Transaction
-   * @returns 
+   * @returns
    */
   dbRollbackTransaction(): number {
     try {
       this.ensureDatabaseIsOpen();
-      this.sqliteUtil.rollbackTransaction(this.database,true);
+      this.sqliteUtil.rollbackTransaction(this.database, true);
       this.setIsTransActive(false);
       return 0;
     } catch (err) {
@@ -349,7 +348,12 @@ export class Database {
                               );`;
           stmts += `INSERT INTO sync_table (sync_date) VALUES (
                               ${date});`;
-          const results = this.sqliteUtil.execute(this.database, stmts, false, true);
+          const results = this.sqliteUtil.execute(
+            this.database,
+            stmts,
+            false,
+            true,
+          );
           changes = results.changes;
           if (results.changes < 0) {
             throw new Error(`CreateSyncTable: failed changes < 0`);
@@ -436,8 +440,7 @@ export class Database {
    * @param isSQL92: boolean
    * @returns Promise<number>
    */
-  executeSQL(sql: string, transaction: boolean,
-                            isSQL92: boolean): number {
+  executeSQL(sql: string, transaction: boolean, isSQL92: boolean): number {
     this.ensureDatabaseIsOpen();
 
     try {
@@ -446,7 +449,12 @@ export class Database {
         console.log(`$$$ in executeSQL journal_mode: ${mode} $$$`);
         this.sqliteUtil.beginTransaction(this.database, this._isDbOpen);
       }
-      const results = this.sqliteUtil.execute(this.database, sql, false, isSQL92);
+      const results = this.sqliteUtil.execute(
+        this.database,
+        sql,
+        false,
+        isSQL92,
+      );
 
       if (results.changes < 0) {
         throw new Error('ExecuteSQL: changes < 0');
@@ -477,12 +485,16 @@ export class Database {
    * @param isSQL92: boolean
    * @returns Promise<any[]>
    */
-  selectSQL(sql: any, values: any[], isSQL92: boolean ): any[] {
+  selectSQL(sql: any, values: any[], isSQL92: boolean): any[] {
     this.ensureDatabaseIsOpen();
 
     try {
-      const selectResult = this.sqliteUtil.queryAll(this.database,
-                                              sql, values, isSQL92);
+      const selectResult = this.sqliteUtil.queryAll(
+        this.database,
+        sql,
+        values,
+        isSQL92,
+      );
       return selectResult;
     } catch (err) {
       throw new Error(`SelectSQL: ${err}`);
@@ -501,7 +513,7 @@ export class Database {
     values: any[],
     transaction: boolean,
     returnMode: string,
-    isSQL92: boolean
+    isSQL92: boolean,
   ): Changes {
     this.ensureDatabaseIsOpen();
 
@@ -517,7 +529,7 @@ export class Database {
     }
     try {
       let nStmt = statement;
-      if(!isSQL92 && values.length === 0) {
+      if (!isSQL92 && values.length === 0) {
         nStmt = this.sql92Utils.compatibleSQL92(statement);
       }
       const results = this.sqliteUtil.prepareRun(
@@ -555,8 +567,12 @@ export class Database {
    * @param isSQL92: boolean,
    * @returns Promise<{changes:number, lastId:number}>
    */
-  execSet(set: any[], transaction: boolean, returnMode: string,
-                              isSQL92: boolean): Changes {
+  execSet(
+    set: any[],
+    transaction: boolean,
+    returnMode: string,
+    isSQL92: boolean,
+  ): Changes {
     this.ensureDatabaseIsOpen();
 
     let results: Changes = { changes: 0, lastId: -1 };
@@ -576,7 +592,7 @@ export class Database {
         set,
         false,
         returnMode,
-        isSQL92
+        isSQL92,
       );
       if (transaction) {
         this.sqliteUtil.commitTransaction(this.database, this._isDbOpen);
@@ -628,17 +644,11 @@ export class Database {
       this.sqliteUtil.setForeignKeyConstraintsEnabled(this.database, false);
       if (jsonData.tables && jsonData.tables.length > 0) {
         // create the database schema
-        changes = this.importFromJsonUtil.createDatabaseSchema(
-          this,
-          jsonData,
-        );
+        changes = this.importFromJsonUtil.createDatabaseSchema(this, jsonData);
 
         if (changes != -1) {
           // create the tables data
-          changes += this.importFromJsonUtil.createTablesData(
-            this,
-            jsonData,
-          );
+          changes += this.importFromJsonUtil.createTablesData(this, jsonData);
         }
       }
       if (jsonData.views && jsonData.views.length > 0) {

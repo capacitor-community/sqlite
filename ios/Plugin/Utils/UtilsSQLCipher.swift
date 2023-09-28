@@ -665,9 +665,9 @@ class UtilsSQLCipher {
                         "WHERE Statement"
                     throw UtilsSQLCipherError.deleteSQL(message: msg)
                 }
-/*
-                let curTime =         UtilsDelete.getCurrentTimeAsInteger()
-*/
+                /*
+                 let curTime =         UtilsDelete.getCurrentTimeAsInteger()
+                 */
                 let setStmt = "sql_deleted = 1"
                 // Find REFERENCIES if any and update the sql_deleted
                 // column

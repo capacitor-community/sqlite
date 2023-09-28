@@ -290,7 +290,7 @@ class UtilsDelete {
         var relatedItems: [[String: Any]] = []
         var key: String = ""
         let t1Names = withRefsNames.map { "t1.\($0)" }
-        let t2Names = colNames.map { "t2.\($0)" }
+        let t2Names = colNames.map{ "t2.\($0)" }
 
         do {
             var whereClause = try UtilsSQLStatement
@@ -301,9 +301,8 @@ class UtilsDelete {
                 whereClause = String(whereClause.dropLast())
             }
             let resultString = zip(t1Names, t2Names)
-                .map {"\($0) = \($1)" }
+                .map { "\($0) = \($1)" }
                 .joined(separator: " AND ")
-
             let sql = "SELECT t1.rowid FROM \(updTableName) t1 " +
                 "JOIN \(tableName) t2 ON \(resultString) " +
                 "WHERE \(whereClause) AND t1.sql_deleted = 0;"

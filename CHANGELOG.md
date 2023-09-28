@@ -1,3 +1,9 @@
+# 5.2.4 (2023-09-27)
+
+### Bug Fixes
+
+ - Fix Bug: deleteSQL: Did not find column names in the WHERE Statement issue#470 all platforms
+
 # 5.2.3 (2023-09-03)
 
 ### Chore

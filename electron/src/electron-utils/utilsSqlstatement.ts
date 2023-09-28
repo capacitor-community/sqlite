@@ -89,37 +89,6 @@ export class UtilsSQLStatement {
       throw new Error('extractForeignKeyInfo: No FOREIGN KEY found');
     }
   }
-  /*
-  public extractColumnNames(whereClause: string): string[] {
-    const regex = /\b(\w+)\s*(?=[=<>])|(?<=\()\s*(\w+),\s*(\w+)\s*(?=\))|(?<=\bIN\s*\(VALUES\s*\().*?(?=\))|(?<=\bIN\s*\().*?(?=\))|(?<=\bBETWEEN\s*).*?(?=\bAND\b)|(?<=\bLIKE\s*')\w+|\bAND\b/g;
-    const matches = whereClause.matchAll(regex);
-    const columnNames: string[] = [];
-
-    let andGroup: string[] = [];
-
-    for (const match of matches) {
-        if (match[0] === 'AND') {
-            columnNames.push(...andGroup);
-            andGroup = [];
-        } else if (match[1]) {
-            andGroup.push(match[1]);
-        } else if (match[2] && match[3]) {
-            andGroup.push(match[2]);
-            andGroup.push(match[3]);
-        } else if (match[0]) {
-            const values = match[0]
-              .replace(/[()']/g, '') // Remove parentheses and single quotes
-              .split(',')
-              .map(value => value.trim());
-            andGroup.push(...values);
-        }
-    }
-
-    columnNames.push(...andGroup);
-
-    return columnNames;
-  }
-*/
   public extractColumnNames(whereClause: string): string[] {
     const keywords: Set<string> = new Set([
       'AND',
@@ -130,31 +99,30 @@ export class UtilsSQLStatement {
       'BETWEEN',
       'NOT',
     ]);
-    const tokens: string[] = whereClause.split(/(\s|,|\(|\))/).filter(item => item !== ' ');
-    const columns: string[] = [];
-    let inClause = false;
-    let inValues = false;
 
-    for (const token of tokens) {
-      if (token === 'IN') {
-        inClause = true;
-      } else if (inClause && token === '(') {
-        inValues = true;
-      } else if (inValues && token === ')') {
-        inValues = false;
-      } else if (
-        token.match(/\b[a-zA-Z]\w*\b/) &&
-        !inValues &&
-        !keywords.has(token.toUpperCase())
-      ) {
-        if(token.length > 0) {
-          columns.push(token);
-        } 
+    const regex =
+      /\b[a-zA-Z]\w*\b(?=\s*(?:<=?|>=?|<>?|=|AND|OR|BETWEEN|NOT|IN|LIKE))|\b[a-zA-Z]\w*\b\s+BETWEEN\s+'[^']+'\s+AND\s+'[^']+'|\(([^)]+)\)\s+IN\s+\(?\s*VALUES\s*\(/g;
+    let match;
+    const columns: string[] = [];
+
+    while ((match = regex.exec(whereClause)) !== null) {
+      const columnList = match[1];
+      if (columnList) {
+        const columnNamesArray = columnList.split(',');
+        for (const columnName of columnNamesArray) {
+          columns.push(columnName.trim());
+        }
+      } else {
+        const matchedText = match[0];
+        if (!keywords.has(matchedText.trim().toUpperCase())) {
+          columns.push(matchedText.trim());
+        }
       }
     }
 
-    return Array.from(new Set(columns));
+    return columns;
   }
+
   public flattenMultilineString(input: string): string {
     const lines = input.split(/\r?\n/);
     return lines.join(' ');
@@ -338,4 +306,4 @@ export class UtilsSQLStatement {
     }
     return whereStmt;
   }
-};
+}

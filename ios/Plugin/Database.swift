@@ -107,7 +107,9 @@ class Database {
     // swiftlint:disable function_body_length
     func open () throws {
         var password: String = ""
-        if isEncryption && encrypted && (mode == "secret" || mode == "encryption") {
+        if isEncryption && encrypted && (mode == "secret"
+                                            || mode == "encryption"
+                                            || mode == "decryption") {
             let isPassphrase = try UtilsSecret.isPassphrase(account: account)
             if !isPassphrase {
                 let msg: String = "No Passphrase stored"
@@ -128,6 +130,28 @@ class Database {
                     }
                 } catch UtilsEncryptionError.encryptionFailed(let message) {
                     let msg: String = "Failed in encryption \(message)"
+                    throw DatabaseError.open(message: msg)
+                }
+            } else {
+                let msg: String = "No Encryption set in capacitor.config"
+                throw DatabaseError.open(message: msg)
+            }
+
+        }
+        if mode == "decryption" {
+            if isEncryption {
+                do {
+                    let ret: Bool = try UtilsEncryption
+                        .decryptDatabase(databaseLocation: databaseLocation,
+                                         filePath: path, password: password,
+                                         version: dbVersion)
+                    if !ret {
+                        let msg: String = "Failed in decryption"
+                        throw DatabaseError.open(message: msg)
+                    }
+                    password = ""
+                } catch UtilsEncryptionError.decryptionFailed(let message) {
+                    let msg: String = "Failed in decryption \(message)"
                     throw DatabaseError.open(message: msg)
                 }
             } else {
@@ -236,7 +260,7 @@ class Database {
             throw DatabaseError.isAvailTrans(message: msg)
         }
     }
-    
+
     // MARK: - SetIsTransActive
 
     func setIsTransActive(newValue: Bool ) {
@@ -653,7 +677,7 @@ class Database {
     // MARK: - ExportToJson
 
     func exportToJson(expMode: String, isEncrypted: Bool)
-                                throws -> [String: Any] {
+    throws -> [String: Any] {
         var retObj: [String: Any] = [:]
 
         do {

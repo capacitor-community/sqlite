@@ -180,7 +180,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     if (database.isDBOpen()) {
       try {
         const changes = database.dbBeginTransaction();
-        return {changes:{changes:changes}};
+        return { changes: { changes: changes } };
       } catch (err) {
         throw new Error(`BeginTransaction: ${err}`);
       }
@@ -189,14 +189,16 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       throw new Error(`BeginTransaction: ${msg}`);
     }
   }
-  async commitTransaction(options: capSQLiteOptions): Promise<capSQLiteChanges> {
+  async commitTransaction(
+    options: capSQLiteOptions,
+  ): Promise<capSQLiteChanges> {
     const dbName: string = this.getOptionValue(options, 'database');
     const connName = 'RW_' + dbName;
     const database = this.getDatabaseConnectionOrThrowError(connName);
     if (database.isDBOpen()) {
       try {
         const changes = database.dbCommitTransaction();
-        return {changes:{changes:changes}};
+        return { changes: { changes: changes } };
       } catch (err) {
         throw new Error(`CommitTransaction: ${err}`);
       }
@@ -205,14 +207,16 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       throw new Error(`CommitTransaction: ${msg}`);
     }
   }
-  async rollbackTransaction(options: capSQLiteOptions): Promise<capSQLiteChanges> {
+  async rollbackTransaction(
+    options: capSQLiteOptions,
+  ): Promise<capSQLiteChanges> {
     const dbName: string = this.getOptionValue(options, 'database');
     const connName = 'RW_' + dbName;
     const database = this.getDatabaseConnectionOrThrowError(connName);
     if (database.isDBOpen()) {
       try {
         const changes = database.dbRollbackTransaction();
-        return {changes:{changes:changes}};
+        return { changes: { changes: changes } };
       } catch (err) {
         throw new Error(`RollbackTransaction: ${err}`);
       }
@@ -221,14 +225,16 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       throw new Error(`RollbackTransaction: ${msg}`);
     }
   }
-  async isTransactionActive(options: capSQLiteOptions): Promise<capSQLiteResult> {
+  async isTransactionActive(
+    options: capSQLiteOptions,
+  ): Promise<capSQLiteResult> {
     const dbName: string = this.getOptionValue(options, 'database');
     const connName = 'RW_' + dbName;
     const database = this.getDatabaseConnectionOrThrowError(connName);
     if (database.isDBOpen()) {
       try {
         const ret = database.isTransActive();
-        return {result:ret};
+        return { result: ret };
       } catch (err) {
         throw new Error(`IsTransactionActive: ${err}`);
       }
@@ -291,7 +297,9 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       true,
     );
     const readonly: boolean = options.readonly ? options.readonly : false;
-    const isSQL92: boolean = (Object.keys(options)).includes('isSQL92') ? options.isSQL92 : true;
+    const isSQL92: boolean = Object.keys(options).includes('isSQL92')
+      ? options.isSQL92
+      : true;
 
     const connName = 'RW_' + dbName;
 
@@ -306,7 +314,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
         const executeResult: number = database.executeSQL(
           statements,
           transaction,
-          isSQL92
+          isSQL92,
         );
 
         if (executeResult < 0) {
@@ -334,7 +342,9 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
     const readonly: boolean = options.readonly ? options.readonly : false;
     const returnMode: string = options.returnMode ? options.returnMode : 'no';
-    const isSQL92: boolean = (Object.keys(options)).includes('isSQL92') ? options.isSQL92 : true;
+    const isSQL92: boolean = Object.keys(options).includes('isSQL92')
+      ? options.isSQL92
+      : true;
 
     const connName = 'RW_' + dbName;
 
@@ -358,7 +368,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
           setOfStatements,
           transaction,
           returnMode,
-          isSQL92
+          isSQL92,
         );
         if (execSetResult.lastId < 0) {
           throw new Error(`ExecuteSet failed changes <0`);
@@ -386,7 +396,9 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
     const readonly: boolean = options.readonly ? options.readonly : false;
     const returnMode: string = options.returnMode ? options.returnMode : 'no';
-    const isSQL92: boolean = (Object.keys(options)).includes('isSQL92') ? options.isSQL92 : true;
+    const isSQL92: boolean = Object.keys(options).includes('isSQL92')
+      ? options.isSQL92
+      : true;
 
     const connName = 'RW_' + dbName;
 
@@ -403,7 +415,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
           values,
           transaction,
           returnMode,
-          isSQL92
+          isSQL92,
         );
         return { changes: runResult };
       } catch (err) {
@@ -424,14 +436,20 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       throw new Error('Query: Statement may not be an empty string.');
     }
     const readonly: boolean = options.readonly ? options.readonly : false;
-    const isSQL92: boolean = (Object.keys(options)).includes('isSQL92') ? options.isSQL92 : true;
+    const isSQL92: boolean = Object.keys(options).includes('isSQL92')
+      ? options.isSQL92
+      : true;
 
     const connName = readonly ? 'RO_' + dbName : 'RW_' + dbName;
     const database = this.getDatabaseConnectionOrThrowError(connName);
 
     if (database.isDBOpen()) {
       try {
-        const queryResult: any[] = database.selectSQL(statement, values, isSQL92);
+        const queryResult: any[] = database.selectSQL(
+          statement,
+          values,
+          isSQL92,
+        );
         return { values: queryResult };
       } catch (err) {
         throw new Error(`Query: ${err}`);
@@ -610,13 +628,16 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   async exportToJson(options: capSQLiteExportOptions): Promise<capSQLiteJson> {
     const dbName: string = this.getOptionValue(options, 'database');
     const exportMode: string = this.getOptionValue(options, 'jsonexportmode');
-    const readonly: boolean = this.getOptionValue(options,'readonly',false);
-    const encrypted: boolean = this.getOptionValue(options,'encrypted', false);
+    const readonly: boolean = this.getOptionValue(options, 'readonly', false);
+    const encrypted: boolean = this.getOptionValue(options, 'encrypted', false);
     const connName = readonly ? 'RO_' + dbName : 'RW_' + dbName;
     const database = this.getDatabaseConnectionOrThrowError(connName);
     if (database.isDBOpen()) {
       try {
-        const exportJsonResult: any = database.exportJson(exportMode, encrypted);
+        const exportJsonResult: any = database.exportJson(
+          exportMode,
+          encrypted,
+        );
         const resultKeys = Object.keys(exportJsonResult);
 
         if (resultKeys.includes('message')) {
@@ -900,6 +921,26 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       return { result: isStored };
     } catch (err) {
       throw new Error(`isSecretStored: ${err}`);
+    }
+  }
+  async isPassphraseValid(
+    options: capSetSecretOptions,
+  ): Promise<capSQLiteResult> {
+    if (!this.isEncryption) {
+      throw new Error(
+        `isPassphraseValid: Not available electronIsEncryption = false in capacitor.config.ts`,
+      );
+    }
+    const passphrase = options.passphrase ? options.passphrase : '';
+    if (passphrase.length <= 0) {
+      throw new Error(`isPassphraseValid: You must give a passphrase`);
+    }
+
+    try {
+      const isValid = this.secretUtil.isPassphraseValid(passphrase);
+      return { result: isValid };
+    } catch (err) {
+      throw new Error(`isPassphraseValid: ${err}`);
     }
   }
 
@@ -1190,5 +1231,3 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     throw new Error('Not implemented on web.');
   }
 }
-
-

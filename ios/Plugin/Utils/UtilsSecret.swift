@@ -255,6 +255,7 @@ class UtilsSecret {
             if !getPassphrase(account: account).isEmpty {
                 try setPassphrase(account: account, passphrase: "")
             }
+
         } catch UtilsSecretError.setPassphrase(let message) {
             throw UtilsSecretError.clearEncryptionSecret(message: message)
         }

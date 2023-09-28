@@ -72,7 +72,12 @@ export class UtilsJson {
     if (stmts.length > 0) {
       const schemaStmt: string = stmts.join('\n');
       try {
-        const results = this.sqliteUtil.execute(mDB.database, schemaStmt, true, true);
+        const results = this.sqliteUtil.execute(
+          mDB.database,
+          schemaStmt,
+          true,
+          true,
+        );
         changes = results.changes;
         if (changes < 0) {
           try {

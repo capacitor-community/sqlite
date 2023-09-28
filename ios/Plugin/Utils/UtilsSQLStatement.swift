@@ -7,7 +7,6 @@
 
 import Foundation
 enum UtilsSQLStatementError: Error {
-    case extractColumnNames(message: String)
     case extractForeignKeyInfo(message: String)
     case addPrefixToWhereClause(message: String)
 }
@@ -69,8 +68,8 @@ class UtilsSQLStatement {
     // MARK: - addPrefixToWhereClause
 
     class func addPrefixToWhereClause(_ whereClause: String,
-                                        from: [String],
-                                        to: [String], prefix: String)
+                                      from: [String],
+                                      to: [String], prefix: String)
     throws -> String {
         var columnValuePairs: [String]
         if whereClause.contains("AND") {
@@ -141,6 +140,7 @@ class UtilsSQLStatement {
     }
     // MARK: - extractForeignKeyInfo
 
+    // swiftlint:enable function_body_length
     // swiftlint:enable type_body_length
     class func extractForeignKeyInfo(from sqlStatement: String)
     throws ->
@@ -225,32 +225,95 @@ class UtilsSQLStatement {
         return foreignKeyInfo
     }
     // swiftlint:enable type_body_length
+    // swiftlint:disable function_body_length
 
     // MARK: - extractColumnNames
 
+    // swiftlint:disable function_body_length
     class func extractColumnNames(from whereClause: String) -> [String] {
         let keywords: Set<String> = ["AND", "OR", "IN", "VALUES", "LIKE", "BETWEEN", "NOT"]
-        let tokens = whereClause.components(separatedBy: CharacterSet(charactersIn: " ,()"))
+        let operators: Set<String> = ["=", "<", "<=", ">=", ">", "<>"]
 
         var columns = [String]()
         var inClause = false
         var inValues = false
-
-        for token in tokens {
-            if token == "IN" {
-                inClause = true
-            } else if inClause && token == "(" {
-                inValues = true
-            } else if inValues && token == ")" {
-                inValues = false
-            } else if token.range(of: "\\b[a-zA-Z]\\w*\\b", options: .regularExpression) != nil
-                        && !inValues && !keywords.contains(token.uppercased()) {
-                columns.append(token)
+        var betweenClause = false
+        var andClause = false
+        var inPar = false
+        var inOper = false
+        var inLike = false
+        func extractString(from input: String) -> String {
+            // Check if the input string starts with "(" or ends with ")"
+            if input.hasPrefix("(") {
+                let startIndex = input.index(input.startIndex, offsetBy: 1)
+                let result = input[startIndex..<input.endIndex]
+                return String(result)
+            } else if input.hasSuffix(")") {
+                let endIndex = input.index(input.endIndex, offsetBy: -1)
+                let result = input[input.startIndex..<endIndex]
+                return String(result)
+            } else {
+                return input
+            }
+        }
+        func removeOperatorsAndFollowing(from input: String) -> String {
+            let operatorsPattern = "(=|<=|<|>|>=|<>)"
+            if let range = input.range(of: operatorsPattern, options: .regularExpression) {
+                let result = input.prefix(upTo: range.lowerBound)
+                return String(result)
+            } else {
+                return input // Return the input string unchanged if no operator is found
             }
         }
 
-        return Array(Set(columns))
+        func processToken(_ token: String) {
+            if token.uppercased() == "IN" {
+                inClause = true
+            } else if inClause && (token.prefix(7).uppercased() == "(VALUES" ||
+                                    token.prefix(8).uppercased() == "( VALUES") {
+                inValues = true
+            } else if inValues && (token.suffix(2).uppercased() == "))" ||
+                                    token.suffix(3).uppercased() == ") )") {
+                inValues = false
+            } else if inClause && !inValues && token.prefix(1) == "(" {
+                inPar = true
+            } else if inClause && !inValues && token.suffix(1) == ")" {
+                inPar = false
+                inClause = false
+            } else if token.uppercased() == "BETWEEN" {
+                betweenClause = true
+            } else if betweenClause && token.uppercased() == "AND" {
+                andClause = true
+            } else if operators.contains(token) {
+                inOper = true
+            } else if token.uppercased() == "LIKE" {
+                inLike = true
+            } else if token.range(of: "\\b[a-zA-Z]\\w*\\b", options: .regularExpression) != nil
+                        && !inClause && (!inValues || !inPar)
+                        && !betweenClause && !andClause && !inOper && !inLike
+                        && !keywords.contains(token.uppercased()) {
+                var mToken = extractString(from: token)
+                mToken = removeOperatorsAndFollowing(from: mToken)
+                columns.append(mToken)
+            } else if token.range(of: "\\b[a-zA-Z]\\w*\\b", options: .regularExpression) != nil
+                        && betweenClause && andClause {
+                betweenClause = false
+                andClause = false
+            } else if token.range(of: "\\b[a-zA-Z]\\w*\\b", options: .regularExpression) != nil
+                        && inOper {
+                inOper = false
+            } else if token.range(of: "\\b[a-zA-Z]\\w*\\b", options: .regularExpression) != nil
+                        && inLike {
+                inLike = false
+            }
+        }
+        let tokens = whereClause.components(separatedBy: CharacterSet(charactersIn: " ,"))
+        for token in tokens {
+            processToken(token)
+        }
+        return Array(columns)
     }
+    // swiftlint:enable function_body_length
 
     // MARK: - flattenMultilineString
 
@@ -308,11 +371,12 @@ class UtilsSQLStatement {
 
         for match in matches {
 
-            let keysRange = Range(match.range(at: 1), in: whereClause)!
-            let keysString = String(whereClause[keysRange])
-            let keys = keysString.split(separator: ",").map {
-                String($0.trimmingCharacters(in: .whitespaces)) }
-            primaryKeySets.append(keys)
+            if let keysRange = Range(match.range(at: 1), in: whereClause) {
+                let keysString = String(whereClause[keysRange])
+                let keys = keysString.split(separator: ",").map {
+                    String($0.trimmingCharacters(in: .whitespaces)) }
+                primaryKeySets.append(keys)
+            }
         }
         return primaryKeySets.isEmpty ? nil : primaryKeySets
     }

@@ -6,7 +6,8 @@ import Capacitor
 // swiftlint:disable type_body_length
 public class CapacitorSQLitePlugin: CAPPlugin {
     private var implementation: CapacitorSQLite?
-    private let modeList: [String] = ["no-encryption", "encryption", "secret", "newsecret", "wrongsecret"]
+    private let modeList: [String] = ["no-encryption", "encryption", "secret",
+                                      "decryption", "newsecret", "wrongsecret"]
     private let retHandler: ReturnHandler = ReturnHandler()
     private var versionUpgrades: [String: [Int: [String: Any]]] = [:]
     var importObserver: Any?
@@ -239,7 +240,7 @@ public class CapacitorSQLitePlugin: CAPPlugin {
         if encrypted && !modeList.contains(inMode) {
             var msg: String = "CreateConnection: inMode "
             msg.append("must be in['encryption',")
-            msg.append("'secret','newsecret']")
+            msg.append("'secret','decryption']")
             retHandler.rResult(call: call, message: msg)
             return
         }

@@ -451,6 +451,7 @@ public class CapacitorSQLite {
             throw new Exception(msg);
         }
     }
+
     /**
      * BeginTransaction
      *
@@ -466,7 +467,7 @@ public class CapacitorSQLite {
         if (db != null) {
             if (!db.isNCDB() && db.isOpen()) {
                 try {
-                    Integer res =  db.beginTransaction();
+                    Integer res = db.beginTransaction();
                     retObj.put("changes", res);
                     return retObj;
                 } catch (Exception e) {
@@ -497,7 +498,7 @@ public class CapacitorSQLite {
         if (db != null) {
             if (!db.isNCDB() && db.isOpen()) {
                 try {
-                    Integer res =  db.commitTransaction();
+                    Integer res = db.commitTransaction();
                     retObj.put("changes", res);
                     return retObj;
                 } catch (Exception e) {
@@ -528,7 +529,7 @@ public class CapacitorSQLite {
         if (db != null) {
             if (!db.isNCDB() && db.isOpen()) {
                 try {
-                    Integer res =  db.rollbackTransaction();
+                    Integer res = db.rollbackTransaction();
                     retObj.put("changes", res);
                     return retObj;
                 } catch (Exception e) {
@@ -563,7 +564,6 @@ public class CapacitorSQLite {
                 } catch (Exception e) {
                     throw new Exception(e.getMessage());
                 }
-
             } else {
                 String msg = "database " + dbName + " not opened";
                 throw new Exception(msg);
@@ -1269,8 +1269,7 @@ public class CapacitorSQLite {
         }
     }
 
-    public JSObject exportToJson(String dbName, String expMode,
-                                 Boolean readonly, Boolean encrypted) throws Exception {
+    public JSObject exportToJson(String dbName, String expMode, Boolean readonly, Boolean encrypted) throws Exception {
         dbName = getDatabaseName(dbName);
         String connName = readonly ? "RO_" + dbName : "RW_" + dbName;
         Database db = dbDict.get(connName);

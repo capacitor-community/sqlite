@@ -40,7 +40,8 @@ export class UtilsUpgrade {
           this.sqliteUtil.setVersion(mDB.database, versionKey);
           // set Foreign Keys On
           this.sqliteUtil.setForeignKeyConstraintsEnabled(mDB.database, true);
-          changes = (await this.sqliteUtil.dbChanges(mDB.database)) - initChanges;
+          changes =
+            (await this.sqliteUtil.dbChanges(mDB.database)) - initChanges;
         } catch (err) {
           return Promise.reject(`onUpgrade: ${err}`);
         }

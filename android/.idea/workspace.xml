@@ -8,46 +8,27 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="44fbe1ce-ecee-45f0-9074-7afa8867b86b" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/SQLite/UtilsDelete.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/SQLite/UtilsSQLStatement.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/../CHANGELOG.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/CapacitorSQLite.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/CapacitorSQLite.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.settings/org.eclipse.buildship.core.prefs" beforeDir="false" afterPath="$PROJECT_DIR$/.settings/org.eclipse.buildship.core.prefs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/CapacitorSQLitePlugin.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/CapacitorSQLitePlugin.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/SQLite/Database.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/SQLite/Database.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/SQLite/ImportExportJson/ImportFromJson.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/SQLite/ImportExportJson/ImportFromJson.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/SQLite/UtilsDrop.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/SQLite/UtilsDrop.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/SQLite/UtilsUpgrade.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/SQLite/UtilsUpgrade.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs/API.md" beforeDir="false" afterPath="$PROJECT_DIR$/../docs/API.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs/APIDBConnection.md" beforeDir="false" afterPath="$PROJECT_DIR$/../docs/APIDBConnection.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../electron/src/electron-utils/Database.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../electron/src/electron-utils/Database.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../electron/src/electron-utils/ImportExportJson/exportToJson.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../electron/src/electron-utils/ImportExportJson/exportToJson.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../electron/src/electron-utils/ImportExportJson/importFromJson.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../electron/src/electron-utils/ImportExportJson/importFromJson.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../electron/src/electron-utils/ImportExportJson/utilsJson.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../electron/src/electron-utils/ImportExportJson/utilsJson.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../electron/src/electron-utils/utilsDelete.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../electron/src/electron-utils/utilsDelete.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../electron/src/electron-utils/utilsDrop.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../electron/src/electron-utils/utilsDrop.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../electron/src/electron-utils/utilsEncryption.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../electron/src/electron-utils/utilsEncryption.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../electron/src/electron-utils/utilsSQLite.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../electron/src/electron-utils/utilsSQLite.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/SQLite/UtilsSQLCipher.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/SQLite/UtilsSQLCipher.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/SQLite/UtilsSQLStatement.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/SQLite/UtilsSQLStatement.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../electron/src/electron-utils/utilsSecret.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../electron/src/electron-utils/utilsSecret.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../electron/src/electron-utils/utilsSqlstatement.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../electron/src/electron-utils/utilsSqlstatement.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../electron/src/electron-utils/utilsUpgrade.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../electron/src/electron-utils/utilsUpgrade.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../electron/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../electron/src/index.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../ios/Plugin/CapacitorSQLite.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/CapacitorSQLite.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/CapacitorSQLitePlugin.m" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/CapacitorSQLitePlugin.m" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../ios/Plugin/CapacitorSQLitePlugin.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/CapacitorSQLitePlugin.swift" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../ios/Plugin/Database.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/Database.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/ImportExportJson/ImportFromJson.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/ImportExportJson/ImportFromJson.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsDelete.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsDelete.swift" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsEncryption.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsEncryption.swift" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsSQLCipher.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsSQLCipher.swift" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsSQLStatement.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsSQLStatement.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsUpgrade.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsUpgrade.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/../package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsSecret.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsSecret.swift" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../src/definitions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../src/definitions.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../src/web.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../src/web.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

@@ -134,6 +134,68 @@ public class UtilsSQLCipher {
         }
     }
 
+    public void decrypt(Context ctxt, File originalFile, byte[] passphrase) throws IOException {
+        SQLiteDatabase.loadLibs(ctxt);
+
+        if (originalFile.exists()) {
+            // Create a temporary file for the decrypted database in the cache directory
+            File decryptedFile = File.createTempFile("sqlcipherutils", "tmp", ctxt.getCacheDir());
+
+            // Open the decrypted database
+            SQLiteDatabase decryptedDb = SQLiteDatabase.openDatabase(
+                decryptedFile.getAbsolutePath(),
+                "",
+                null,
+                SQLiteDatabase.OPEN_READWRITE
+            );
+
+            // Open the encrypted database with the provided passphrase
+            SQLiteDatabase encryptedDb = SQLiteDatabase.openDatabase(
+                originalFile.getAbsolutePath(),
+                new String(passphrase),
+                null,
+                SQLiteDatabase.OPEN_READWRITE
+            );
+
+            int version = encryptedDb.getVersion();
+            decryptedDb.setVersion(version);
+
+            decryptedDb.close();
+
+            // Attach the encrypted database to itself using an empty key
+            StringBuilder attachSql = new StringBuilder();
+            attachSql.append("ATTACH DATABASE ? AS plaintext KEY '';");
+            final SQLiteStatement attachStatement = encryptedDb.compileStatement(attachSql.toString());
+
+            attachStatement.bindString(1, decryptedFile.getAbsolutePath());
+            attachStatement.execute();
+
+            // Export data from the encrypted database to the plaintext database
+            StringBuilder exportSql = new StringBuilder();
+            exportSql.append("SELECT sqlcipher_export('plaintext');");
+            encryptedDb.rawExecSQL(exportSql.toString());
+
+            // Detach the plaintext database
+            StringBuilder detachSql = new StringBuilder();
+            detachSql.append("DETACH DATABASE plaintext;");
+            encryptedDb.rawExecSQL(detachSql.toString());
+
+            attachStatement.close();
+            encryptedDb.close();
+
+            boolean delFile = originalFile.delete();
+            if (!delFile) {
+                throw new FileNotFoundException(originalFile.getAbsolutePath() + " not deleted");
+            }
+            boolean renFile = decryptedFile.renameTo(originalFile);
+            if (!renFile) {
+                throw new FileNotFoundException(originalFile.getAbsolutePath() + " not renamed");
+            }
+        } else {
+            throw new FileNotFoundException(originalFile.getAbsolutePath() + " not found");
+        }
+    }
+
     public void changePassword(Context ctxt, File file, String password, String nwpassword) throws IOException {
         SQLiteDatabase.loadLibs(ctxt);
 

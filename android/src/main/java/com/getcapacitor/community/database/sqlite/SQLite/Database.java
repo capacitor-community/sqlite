@@ -144,6 +144,7 @@ public class Database {
     public boolean isAvailTrans() {
         return _db.inTransaction();
     }
+
     /**
      * BeginTransaction method
      *
@@ -152,7 +153,7 @@ public class Database {
     public Integer beginTransaction() throws Exception {
         if (_db.isOpen()) {
             try {
-                if( isAvailTrans()) {
+                if (isAvailTrans()) {
                     throw new Exception("Already in transaction");
                 }
                 _db.beginTransaction();
@@ -165,8 +166,8 @@ public class Database {
         } else {
             throw new Exception("Database not opened");
         }
-
     }
+
     /**
      * CommitTransaction method
      *
@@ -175,7 +176,7 @@ public class Database {
     public Integer commitTransaction() throws Exception {
         if (_db.isOpen()) {
             try {
-                if(!isAvailTrans()) {
+                if (!isAvailTrans()) {
                     throw new Exception("No transaction active");
                 }
                 _db.setTransactionSuccessful();
@@ -188,7 +189,6 @@ public class Database {
         } else {
             throw new Exception("Database not opened");
         }
-
     }
 
     /**
@@ -199,7 +199,7 @@ public class Database {
     public Integer rollbackTransaction() throws Exception {
         if (_db.isOpen()) {
             try {
-                if( isAvailTrans()) {
+                if (isAvailTrans()) {
                     _db.endTransaction();
                 }
                 return 0;
@@ -211,7 +211,6 @@ public class Database {
         } else {
             throw new Exception("Database not opened");
         }
-
     }
 
     /**
@@ -233,7 +232,7 @@ public class Database {
         int curVersion;
 
         String password = "";
-        if (_encrypted && (_mode.equals("secret") || _mode.equals("encryption"))) {
+        if (_encrypted && (_mode.equals("secret") || _mode.equals("encryption") || _mode.equals("decryption"))) {
             if (!_uSecret.isPassphrase()) {
                 throw new Exception("No Passphrase stored");
             }
@@ -245,6 +244,20 @@ public class Database {
                     _uCipher.encrypt(_context, _file, SQLiteDatabase.getBytes(password.toCharArray()));
                 } catch (Exception e) {
                     String msg = "Failed in encryption " + e.getMessage();
+                    Log.v(TAG, msg);
+                    throw new Exception(msg);
+                }
+            } else {
+                throw new Exception("No Encryption set in capacitor.config");
+            }
+        }
+        if (_mode.equals("decryption")) {
+            if (_isEncryption) {
+                try {
+                    _uCipher.decrypt(_context, _file, SQLiteDatabase.getBytes(password.toCharArray()));
+                    password = "";
+                } catch (Exception e) {
+                    String msg = "Failed in decryption " + e.getMessage();
                     Log.v(TAG, msg);
                     throw new Exception(msg);
                 }

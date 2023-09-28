@@ -134,25 +134,31 @@ public class UtilsSQLStatement {
 
     public static List<String> extractColumnNames(String whereClause) {
         Set<String> keywords = new HashSet<>(Arrays.asList("AND", "OR", "IN", "VALUES", "LIKE", "BETWEEN", "NOT"));
-        String[] tokens = whereClause.split("\\s|,|\\(|\\)");
 
+        Pattern pattern = Pattern.compile(
+            "\\b[a-zA-Z]\\w*\\b(?=\\s*(?:<=?|>=?|<>?|=|AND|OR|BETWEEN|NOT|IN|LIKE))|" +
+            "\\b[a-zA-Z]\\w*\\b\\s+BETWEEN\\s+'[^']+'\\s+AND\\s+'[^']+'|" +
+            "\\(([^)]+)\\)\\s+IN\\s+\\(VALUES"
+        );
+        Matcher matcher = pattern.matcher(whereClause);
         List<String> columns = new ArrayList<>();
-        boolean inClause = false;
-        boolean inValues = false;
 
-        for (String token : tokens) {
-            if (token.equals("IN")) {
-                inClause = true;
-            } else if (inClause && token.equals("(")) {
-                inValues = true;
-            } else if (inValues && token.equals(")")) {
-                inValues = false;
-            } else if (token.matches("\\b[a-zA-Z]\\w*\\b") && !inValues && !keywords.contains(token.toUpperCase())) {
-                columns.add(token);
+        while (matcher.find()) {
+            String columnList = matcher.group(1);
+            if (columnList != null) {
+                String[] columnNamesArray = columnList.split(",");
+                for (String columnName : columnNamesArray) {
+                    columns.add(columnName.trim());
+                }
+            } else {
+                String matchedText = matcher.group();
+                if (!keywords.contains(matchedText.trim().toUpperCase())) {
+                    columns.add(matchedText.trim());
+                }
             }
         }
 
-        return new ArrayList<>(new HashSet<>(columns));
+        return columns;
     }
 
     public static List<Integer> indicesOf(String str, String searchStr, int fromIndex) {

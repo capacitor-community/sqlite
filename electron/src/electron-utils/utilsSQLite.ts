@@ -312,7 +312,12 @@ export class UtilsSQLite {
    * @param mDB
    * @param sql
    */
-  public execute(mDB: any, sql: string, fromJson: boolean, isSQL92: boolean): Changes {
+  public execute(
+    mDB: any,
+    sql: string,
+    fromJson: boolean,
+    isSQL92: boolean,
+  ): Changes {
     const result = { changes: 0, lastId: -1 };
     const msg = 'Execute';
     let changes = -1;
@@ -324,7 +329,6 @@ export class UtilsSQLite {
 
       // modify sql to sql92 compatible
       sqlStmt = this.statementsToSQL92(mDB, sql, fromJson, isSQL92);
-
       this.execDB(mDB, sqlStmt);
       changes = this.dbChanges(mDB) - initChanges;
       lastId = this.getLastId(mDB);
@@ -336,8 +340,12 @@ export class UtilsSQLite {
       throw new Error(`${msg} ${errmsg}`);
     }
   }
-  private statementsToSQL92(mDB: any, sql: string, fromJson: boolean,
-                                            isSQL92: boolean): string {
+  private statementsToSQL92(
+    mDB: any,
+    sql: string,
+    fromJson: boolean,
+    isSQL92: boolean,
+  ): string {
     // split the statements in an array of statement
     let sqlStmt = sql.replace(/\n/g, '');
     // deal with trigger
@@ -358,25 +366,31 @@ export class UtilsSQLite {
           }
           break;
         case 'DELETE':
-          if (!fromJson && rStmt.toLowerCase().includes('WHERE'.toLowerCase())) {
+          if (
+            !fromJson &&
+            rStmt.toLowerCase().includes('WHERE'.toLowerCase())
+          ) {
             let whereStmt = rStmt;
-            if(!isSQL92) whereStmt = this.cleanStatement(rStmt);
+            if (!isSQL92) whereStmt = this.cleanStatement(rStmt);
             rStmt = this.deleteSQL(mDB, whereStmt, []);
           }
           break;
         case 'INSERT':
           if (rStmt.toLowerCase().includes('VALUES'.toLowerCase())) {
-            if(!isSQL92) rStmt = this.cleanStatement(rStmt);
+            if (!isSQL92) rStmt = this.cleanStatement(rStmt);
           }
           break;
         case 'UPDATE':
           if (rStmt.toLowerCase().includes('SET'.toLowerCase())) {
-            if(!isSQL92) rStmt = this.cleanStatement(`${stmt.trim()}`);
+            if (!isSQL92) rStmt = this.cleanStatement(`${stmt.trim()}`);
           }
           break;
         case 'SELECT':
-          if (!fromJson && rStmt.toLowerCase().includes('WHERE'.toLowerCase())) {
-            if(!isSQL92) rStmt = this.cleanStatement(rStmt);
+          if (
+            !fromJson &&
+            rStmt.toLowerCase().includes('WHERE'.toLowerCase())
+          ) {
+            if (!isSQL92) rStmt = this.cleanStatement(rStmt);
           }
           break;
         default:
@@ -413,7 +427,7 @@ export class UtilsSQLite {
     set: any[],
     fromJson: boolean,
     returnMode: string,
-    isSQL92: boolean
+    isSQL92: boolean,
   ): Changes {
     const ret: Changes = { changes: 0, lastId: -1, values: [] };
     let result: Changes = { changes: 0, lastId: -1 };
@@ -457,7 +471,7 @@ export class UtilsSQLite {
             );
           } else {
             let nStatement = statement;
-            if(!isSQL92) {
+            if (!isSQL92) {
               nStatement = this.cleanStatement(statement);
             }
             result = this.prepareRun(mDB, nStatement, [], fromJson, returnMode);
@@ -489,8 +503,7 @@ export class UtilsSQLite {
     statement: string,
     values: any[],
     fromJson: boolean,
-    returnMode: string
-  
+    returnMode: string,
   ): Changes {
     const result: Changes = { changes: 0, lastId: -1 };
     const msg = 'PrepareRun';
@@ -536,7 +549,7 @@ export class UtilsSQLite {
     mDB: any,
     stmt: string,
     values: any[] = [],
-    returnMode: string
+    returnMode: string,
   ): RunResults {
     let result: RunResults = { changes: 0, lastInsertRowid: -1, values: [] };
     const msg = 'runExec: ';
@@ -555,7 +568,7 @@ export class UtilsSQLite {
             const res = statement.run(values);
             result.lastInsertRowid = res.lastInsertRowid;
             const sql = `SELECT ${params.names} FROM ${params.tableName} WHERE rowid = ${lowerId};`;
-            const value = this.queryOne(mDB, sql, [],true);
+            const value = this.queryOne(mDB, sql, [], true);
             result.values.push(value);
           }
           result.changes = this.dbChanges(mDB) - iniChanges;
@@ -911,25 +924,28 @@ export class UtilsSQLite {
    * @param sql
    * @param values
    */
-  public queryAll(mDB: any, sql: string, values: any[],
-                  isSQL92: boolean): any[] {
+  public queryAll(
+    mDB: any,
+    sql: string,
+    values: any[],
+    isSQL92: boolean,
+  ): any[] {
     const msg = 'QueryAll';
     try {
       let cSql = sql;
-      if(!isSQL92) {
+      if (!isSQL92) {
         cSql = this.cleanStatement(sql);
       }
       const stmt = mDB.prepare(cSql);
 
-      if(!stmt.reader) {
+      if (!stmt.reader) {
         // statement doesn't returns data
         if (values != null && values.length > 0) {
           stmt.run(values);
-        }
-        else {
+        } else {
           stmt.run();
         }
-        return []
+        return [];
       }
 
       let rows;
@@ -958,7 +974,7 @@ export class UtilsSQLite {
     const msg = 'QueryOne';
     try {
       let cSql = sql;
-      if(!isSQL92) {
+      if (!isSQL92) {
         cSql = this.cleanStatement(sql);
       }
       const stmt = mDB.prepare(cSql);
@@ -1074,7 +1090,6 @@ export class UtilsSQLite {
     const msg = 'getJournalMode';
     try {
       const retMode = mDB.pragma('journal_mode');
-      console.log(`journal_mode: ${retMode[0].journal_mode}`);
       return retMode[0].journal_mode;
     } catch (err: any) {
       const errmsg = err.message ? err.message : err;

@@ -9,6 +9,8 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.community.database.sqlite.SQLite.SqliteConfig;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Dictionary;
 import java.util.Hashtable;
@@ -28,6 +30,9 @@ public class CapacitorSQLitePlugin extends Plugin {
     private String passphrase = null;
     private String oldpassphrase = null;
     private String loadMessage = "";
+    private final ArrayList<String> modeList = new ArrayList<>(
+        Arrays.asList("no-encryption", "encryption", "secret", "decryption", "wrongsecret")
+    );
 
     /**
      * Load Method
@@ -287,12 +292,9 @@ public class CapacitorSQLitePlugin extends Plugin {
         Boolean encrypted = call.getBoolean("encrypted", false);
         if (encrypted) {
             inMode = call.getString("mode", "no-encryption");
-            if (
-                !inMode.equals("no-encryption") && !inMode.equals("encryption") && !inMode.equals("secret") && !inMode.equals("wrongsecret")
-            ) {
+            if (!modeList.contains(inMode)) {
                 String msg = "CreateConnection: inMode must ";
-                msg += "be in ['encryption','secret'] ";
-                msg += "** 'newsecret' has been deprecated";
+                msg += "be in ['encryption','secret', 'decryption'] ";
                 rHandler.retResult(call, null, msg);
                 return;
             }
@@ -369,6 +371,7 @@ public class CapacitorSQLitePlugin extends Plugin {
             rHandler.retResult(call, null, loadMessage);
         }
     }
+
     /**
      * BeginTransaction Method
      * Begin a Database Transaction
@@ -398,6 +401,7 @@ public class CapacitorSQLitePlugin extends Plugin {
             rHandler.retChanges(call, retRes, loadMessage);
         }
     }
+
     /**
      * CommitTransaction Method
      * Commit a Database Transaction
@@ -457,6 +461,7 @@ public class CapacitorSQLitePlugin extends Plugin {
             rHandler.retChanges(call, retRes, loadMessage);
         }
     }
+
     /**
      * IsTransactionActive Method
      * Check if a Database Transaction is Active
@@ -482,6 +487,7 @@ public class CapacitorSQLitePlugin extends Plugin {
             rHandler.retResult(call, null, loadMessage);
         }
     }
+
     /**
      * GetUrl Method
      * Get a database Url
@@ -1452,8 +1458,7 @@ public class CapacitorSQLitePlugin extends Plugin {
 
         if (implementation != null) {
             try {
-                JSObject res = implementation.exportToJson(dbName, expMode,
-                                                           readOnly, encrypted);
+                JSObject res = implementation.exportToJson(dbName, expMode, readOnly, encrypted);
                 rHandler.retJSObject(call, res, null);
             } catch (Exception e) {
                 String msg = "ExportToJson: " + e.getMessage();
