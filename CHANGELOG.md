@@ -1,3 +1,9 @@
+# 5.2.5 (2023-09-28)
+
+### Bug Fixes
+
+ - Fix Android pattern in extractColumnNames
+
 # 5.2.4 (2023-09-28)
 
 ### Bug Fixes

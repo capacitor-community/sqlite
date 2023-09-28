@@ -136,9 +136,9 @@ public class UtilsSQLStatement {
         Set<String> keywords = new HashSet<>(Arrays.asList("AND", "OR", "IN", "VALUES", "LIKE", "BETWEEN", "NOT"));
 
         Pattern pattern = Pattern.compile(
-            "\\b[a-zA-Z]\\w*\\b(?=\\s*(?:<=?|>=?|<>?|=|AND|OR|BETWEEN|NOT|IN|LIKE))|" +
+          "\\b[a-zA-Z]\\w*\\b(?=\\s*(?:<=?|>=?|<>?|=|AND|OR|BETWEEN|NOT|IN|LIKE))|" +
             "\\b[a-zA-Z]\\w*\\b\\s+BETWEEN\\s+'[^']+'\\s+AND\\s+'[^']+'|" +
-            "\\(([^)]+)\\)\\s+IN\\s+\\(VALUES"
+            "\\(([^)]+)\\)\\s+IN\\s+\\(\\s*VALUES\\s*\\("
         );
         Matcher matcher = pattern.matcher(whereClause);
         List<String> columns = new ArrayList<>();
