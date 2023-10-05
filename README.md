@@ -182,10 +182,20 @@ npm install --save crypto-js
 npm install --save-dev @types/better-sqlite3
 npm install --save-dev @types/electron-json-storage
 npm install --save-dev @types/crypto-js
-npm install --save-dev electron-builder@24.6.3
 ```
 - **Important**: `node-fetch` version must be `<=2.6.7`; otherwise [you'll get an error](https://github.com/capacitor-community/sqlite/issues/349 "you'll get an error ERR_REQUIRE_ESM") running the app. 
 
+- **Important**: if you are using `@capacitor-community/electron v5` 
+  - you have to stick to Electron@25.8.4 till further notice so do:
+```bash
+npm install --save-dev electron@25.8.4
+npm uninstall --save-dev electron-rebuild
+npm install --save-dev @electron/rebuild
+npm install --save-dev electron-builder@24.6.4
+```
+  - in electron folder open the `tsconfig.json` file and add `"skipLibCheck": true,`
+
+  
 ## IOS Quirks
 
 - on iOS, no further steps needed.

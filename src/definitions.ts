@@ -1630,7 +1630,6 @@ export class SQLiteConnection implements ISQLiteConnection {
       }
       return Promise.resolve();
     } catch (err) {
-      console.log(`in definition closeAllConnections err: `, err);
       return Promise.reject(err);
     }
   }

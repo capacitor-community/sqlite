@@ -78,6 +78,8 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
         ? 'secret'
         : encrypted && options.mode === 'encryption'
         ? 'encryption'
+        : encrypted && options.mode === 'decryption'
+        ? 'decryption'
         : 'no-encryption';
     if (!this.isEncryption) {
       encrypted = false;

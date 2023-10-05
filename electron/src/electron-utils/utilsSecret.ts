@@ -19,7 +19,6 @@ export class UtilsSecret {
   }
   public isSecretStored(): boolean {
     const secret = this.getPassphrase();
-
     if (secret.length <= 0) return false;
     return true;
   }
@@ -42,6 +41,7 @@ export class UtilsSecret {
               if (error) throw new Error(`setEncryptSecret: ${error.message}`);
             },
           );
+          return;
         });
       }
     } catch (err) {

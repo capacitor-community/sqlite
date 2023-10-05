@@ -88,7 +88,8 @@ export class Database {
     try {
       if (
         this._encrypted &&
-        (this._mode === 'secret' || this._mode === 'encryption')
+        (this._mode === 'secret' || this._mode === 'encryption'
+        || this._mode === 'decryption')
       ) {
         password = this.secretUtil.getPassphrase();
 
@@ -98,6 +99,10 @@ export class Database {
       }
       if (this._mode === 'encryption') {
         await this.encryptionUtil.encryptDatabase(this.pathDB, password);
+      }
+      if (this._mode === 'decryption') {
+        await this.encryptionUtil.decryptDatabase(this.pathDB, password);
+        password = ""
       }
       this.database = this.sqliteUtil.openOrCreateDatabase(
         this.pathDB,

@@ -1,3 +1,19 @@
+# 5.4.0 (2023-10-05)
+
+### Chore
+
+ - Update to @capacitor/core@5.4.0
+ - Update to @capacitor/ios@5.4.0
+ - Update to @capacitor/android@5.4.0
+
+### Added Features
+
+ - Add Electron decryptDatabase method
+
+### Bug Fixes
+
+ - Fix Electron setEncryptSecret
+
 # 5.2.5 (2023-09-28)
 
 ### Bug Fixes
