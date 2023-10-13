@@ -185,6 +185,8 @@ public class Database {
                 String msg = "Failed in commitTransaction" + e.getMessage();
                 Log.v(TAG, msg);
                 throw new Exception(msg);
+            } finally {
+              _db.endTransaction();
             }
         } else {
             throw new Exception("Database not opened");

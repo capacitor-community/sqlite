@@ -1,3 +1,15 @@
+# 5.4.1 (2023-10-13)
+
+### Chore
+
+ - Update to @capacitor/core@5.4.1
+ - Update to @capacitor/ios@5.4.1
+ - Update to @capacitor/android@5.4.1
+
+### Bug Fixes
+
+ - Fix Two consecutive beginTransaction+commitTransaction calls results in an error on Android. issue#478
+
 # 5.4.0 (2023-10-05)
 
 ### Chore

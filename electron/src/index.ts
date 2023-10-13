@@ -782,9 +782,6 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
         this.versionUpgrades[dbName] = upgradeVersionDict;
       }
     }
-    console.log(
-      `this.versionUpgrades: ${JSON.stringify(this.versionUpgrades)}`,
-    );
     return;
   }
 
