@@ -1,3 +1,16 @@
+# 5.4.2-1 (2023-10-17)
+
+### Chore
+
+ - Update to @capacitor/core@5.4.1
+ - Update to @capacitor/ios@5.4.1
+ - Update to @capacitor/android@5.4.1
+
+### Bug Fixes
+
+ - Android: optimize executeSet execution time 
+ - Android: optimize importFromJson execution time
+
 # 5.4.1 (2023-10-13)
 
 ### Chore
