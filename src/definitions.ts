@@ -1348,9 +1348,9 @@ export interface ISQLiteConnection {
 /**
  * SQLiteConnection Class
  */
-export class SQLiteConnection implements ISQLiteConnection {
-  private _connectionDict: Map<string, SQLiteDBConnection> = new Map();
-  constructor(private sqlite: any) {}
+export class SQLiteConnection<T extends SQLiteDBConnection> implements ISQLiteConnection {
+  private _connectionDict: Map<string, T> = new Map();
+  constructor(protected sqlite: any) {}
 
   async initWebStore(): Promise<void> {
     try {
@@ -1464,13 +1464,16 @@ export class SQLiteConnection implements ISQLiteConnection {
       return Promise.reject(err);
     }
   }
+  getSQLiteDBConnection(database: string, readonly: boolean): T {
+    return new SQLiteDBConnection(database, readonly, this.sqlite) as T;
+  }
   async createConnection(
     database: string,
     encrypted: boolean,
     mode: string,
     version: number,
     readonly: boolean,
-  ): Promise<SQLiteDBConnection> {
+  ): Promise<T> {
     try {
       if (database.endsWith('.db')) database = database.slice(0, -3);
       await this.sqlite.createConnection({
@@ -1480,7 +1483,8 @@ export class SQLiteConnection implements ISQLiteConnection {
         version,
         readonly,
       });
-      const conn = new SQLiteDBConnection(database, readonly, this.sqlite);
+
+      const conn = this.getSQLiteDBConnection(database, readonly);
       const connName = readonly ? `RO_${database}` : `RW_${database}`;
       this._connectionDict.set(connName, conn);
       /*
@@ -1523,7 +1527,7 @@ export class SQLiteConnection implements ISQLiteConnection {
   async retrieveConnection(
     database: string,
     readonly: boolean,
-  ): Promise<SQLiteDBConnection> {
+  ): Promise<T> {
     if (database.endsWith('.db')) database = database.slice(0, -3);
     const connName = readonly ? `RO_${database}` : `RW_${database}`;
     if (this._connectionDict.has(connName)) {
@@ -1554,13 +1558,13 @@ export class SQLiteConnection implements ISQLiteConnection {
   async createNCConnection(
     databasePath: string,
     version: number,
-  ): Promise<SQLiteDBConnection> {
+  ): Promise<T> {
     try {
       await this.sqlite.createNCConnection({
         databasePath,
         version,
       });
-      const conn = new SQLiteDBConnection(databasePath, true, this.sqlite);
+      const conn = this.getSQLiteDBConnection(databasePath, true);
       const connName = `RO_${databasePath})`;
       this._connectionDict.set(connName, conn);
       return Promise.resolve(conn);
@@ -1586,7 +1590,7 @@ export class SQLiteConnection implements ISQLiteConnection {
   }
   async retrieveNCConnection(
     databasePath: string,
-  ): Promise<SQLiteDBConnection> {
+  ): Promise<T> {
     if (this._connectionDict.has(databasePath)) {
       const connName = `RO_${databasePath})`;
       const conn = this._connectionDict.get(connName);
@@ -1607,11 +1611,11 @@ export class SQLiteConnection implements ISQLiteConnection {
     }
   }
 
-  async retrieveAllConnections(): Promise<Map<string, SQLiteDBConnection>> {
+  async retrieveAllConnections(): Promise<Map<string, T>> {
     return this._connectionDict;
   }
   async closeAllConnections(): Promise<void> {
-    const delDict: Map<string, SQLiteDBConnection | null> = new Map();
+    const delDict: Map<string, T | null> = new Map();
     try {
       /*      console.log(`*** in closeAllConnections connectionDict: ***`)
       this._connectionDict.forEach((connection, key) => {
