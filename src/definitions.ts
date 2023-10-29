@@ -1348,7 +1348,9 @@ export interface ISQLiteConnection {
 /**
  * SQLiteConnection Class
  */
-export class SQLiteConnection<T extends SQLiteDBConnection> implements ISQLiteConnection {
+export class SQLiteConnection<T extends SQLiteDBConnection>
+  implements ISQLiteConnection
+{
   private _connectionDict: Map<string, T> = new Map();
   constructor(protected sqlite: any) {}
 
@@ -1524,10 +1526,7 @@ export class SQLiteConnection<T extends SQLiteDBConnection> implements ISQLiteCo
     res.result = this._connectionDict.has(connName);
     return Promise.resolve(res);
   }
-  async retrieveConnection(
-    database: string,
-    readonly: boolean,
-  ): Promise<T> {
+  async retrieveConnection(database: string, readonly: boolean): Promise<T> {
     if (database.endsWith('.db')) database = database.slice(0, -3);
     const connName = readonly ? `RO_${database}` : `RW_${database}`;
     if (this._connectionDict.has(connName)) {
@@ -1555,10 +1554,7 @@ export class SQLiteConnection<T extends SQLiteDBConnection> implements ISQLiteCo
       return Promise.reject(err);
     }
   }
-  async createNCConnection(
-    databasePath: string,
-    version: number,
-  ): Promise<T> {
+  async createNCConnection(databasePath: string, version: number): Promise<T> {
     try {
       await this.sqlite.createNCConnection({
         databasePath,
@@ -1588,9 +1584,7 @@ export class SQLiteConnection<T extends SQLiteDBConnection> implements ISQLiteCo
     res.result = this._connectionDict.has(connName);
     return Promise.resolve(res);
   }
-  async retrieveNCConnection(
-    databasePath: string,
-  ): Promise<T> {
+  async retrieveNCConnection(databasePath: string): Promise<T> {
     if (this._connectionDict.has(databasePath)) {
       const connName = `RO_${databasePath})`;
       const conn = this._connectionDict.get(connName);
