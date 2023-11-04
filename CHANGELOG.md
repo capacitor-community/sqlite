@@ -1,3 +1,8 @@
+
+# 5.4.2-2 (2023-11-04)
+
+ - Add nuxt3 kysely example PR#484 from DawidWetzler
+
 # 5.4.2-1 (2023-10-17)
 
 ### Chore
