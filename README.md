@@ -346,6 +346,9 @@ npm install --save-dev electron-builder@24.6.4
 
 - [solidjs-vite-sqlite-app](https://github.com/jepiqueau/capacitor-solid-sqlite)
 
+### Nuxt3 + Kysely
+
+- [nuxt3-capacitor-sqlite-kysely-example](https://github.com/DawidWetzler/nuxt3-capacitor-sqlite-kysely-example)
 
 ## Dependencies
 
