@@ -94,7 +94,7 @@ export default config;
  - [Issues](https://github.com/capacitor-community/sqlite/issues)
  - [Capacitor documentation](https://capacitorjs.com/docs/)
  - [Datatypes In SQLite Version 3](https://www.sqlite.org/datatype3.html)
- - [IncrementalUpgradeDatabaseVersion](https://capacitorjs.com/docs/IncrementalUpgradeDatabaseVersion.md)
+ - [IncrementalUpgradeDatabaseVersion](https://github.com/capacitor-community/sqlite/blob/master/docs/IncrementalUpgradeDatabaseVersion.md)
 
 
 ## Tutorials Blog
@@ -298,57 +298,55 @@ npm install --save-dev electron-builder@24.6.4
 
 ### Ionic/Angular
 
-- [Ionic/Angular Usage Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-Angular-Usage.md)
+- [Web ionic7-angular-sqlite-app](https://github.com/jepiqueau/blog-tutorials-apps/tree/main/SQLite/Part-1/ionic7-angular-sqlite-app) Ionic 7 Angular 16 Capacitor 5 SQLite CRUD operations for Web.
 
-- [ionic7-angular-sqlite-starter](https://github.com/jepiqueau/ionic7-angular-sqlite-starter) Ionic 7 Angular 16 Capacitor 5 SQLite CRUD operations.
+- [Native ionic7-angular-sqlite-app](https://github.com/jepiqueau/blog-tutorials-apps/tree/main/SQLite/Part-2/ionic7-angular-sqlite-app) Ionic 7 Angular 16 Capacitor 5 SQLite CRUD operations for iOS, Android and Electron.
 
-- [angular-sqlite-app-starter](https://github.com/jepiqueau/angular-sqlite-app-starter) This one is now more for testing the issues.
+- [angular-sqlite-synchronize-app](https://github.com/jepiqueau/angular-sqlite-synchronize-app) (Not Updated)
 
-- [angular-sqlite-synchronize-app](https://github.com/jepiqueau/angular-sqlite-synchronize-app)
-
-### Ionic/Angular TypeORM app
+### Ionic/Angular TypeORM app (Not Updated)
 
 - [ionic-sqlite-typeorm-app](https://github.com/jepiqueau/ionic-sqlite-typeorm-app)
 
 ### Ionic/React
 
-- [Ionic/React Usage Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-React-Usage.md)
+- [Web ionic7-react-sqlite-app](https://github.com/jepiqueau/blog-tutorials-apps/tree/main/SQLite/Part-1/ionic7-react-sqlite-app) Ionic7 React18.2.0 Vite4.3.9 Capacitor 5 SQLite CRUD operations for Web.
 
-- [react-sqlite-app-starter](https://github.com/jepiqueau/react-sqlite-app-starter)
+- [Web ionic7-react-sqlite-app](https://github.com/jepiqueau/blog-tutorials-apps/tree/main/SQLite/Part-2/ionic7-react-sqlite-app) Ionic7 React18.2.0 Vite4.3.9 Capacitor 5 SQLite CRUD operations for iOS, Android and Electron.
 
-### React+Vite
-
-- [react-vite-sqlite-app](https://github.com/jepiqueau/react-vite-sqlite-app)
-
-### Ionic/React Capacitor SQLite + TypeORM Example App
+### Ionic/React Capacitor SQLite + TypeORM Example App 
 
 - [capacitor-sqlite-react-typeorm-app](https://github.com/cosentino/capacitor-sqlite-react-typeorm-app)
 
 ### Ionic/Vue
 
-- [Ionic/Vue Usage Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/Ionic-Vue-Usage.md)
+- [Web ionic7-vue-sqlite-app](https://github.com/jepiqueau/blog-tutorials-apps/tree/main/SQLite/Part-1/ionic7-vue-sqlite-app) Ionic7 Vue3.2.45 Vite4.3.9 Capacitor 5 SQLite CRUD operations for Web.
 
-- [vue-sqlite-app-starter](https://github.com/jepiqueau/vue-sqlite-app-starter)
+- [Web ionic7-vue-sqlite-app](https://github.com/jepiqueau/blog-tutorials-apps/tree/main/SQLite/Part-2/ionic7-vue-sqlite-app) Ionic7 Vue3.2.45 Vite4.3.9 Capacitor 5 SQLite CRUD operations for iOS, Android and Electron.
 
-### Vue
+### Vue (Not Updated)
 
 - [vue-sqlite-app](https://github.com/jepiqueau/vue-sqlite-app)
 
-### Vue+Vite
 
-- [vite-vue-sqlite-app](https://github.com/jepiqueau/vite-vue-sqlite-app)
-
-### Vue TypeORM app
+### Vue TypeORM app (Not Updated)
 
 - [vue-typeorm-app](https://github.com/jepiqueau/vue-typeorm-app)
 
-### SolidJS+Vite
+### SolidJS+Vite (Not Updated)
 
 - [solidjs-vite-sqlite-app](https://github.com/jepiqueau/capacitor-solid-sqlite)
 
 ### Nuxt3 + Kysely
 
 - [nuxt3-capacitor-sqlite-kysely-example](https://github.com/DawidWetzler/nuxt3-capacitor-sqlite-kysely-example)
+
+### Quasar
+
+- [Web quasar-sqlite-app](https://github.com/jepiqueau/blog-tutorials-apps/tree/main/SQLite/Part-1/quasar-sqlite-app) Quasar2.6.0 Capacitor 5 SQLite CRUD operations for Web.
+
+- [Web quasar-sqlite-app](https://github.com/jepiqueau/blog-tutorials-apps/tree/main/SQLite/Part-2/quasar-sqlite-app) Quasar2.6.0 Capacitor 5 SQLite CRUD operations for iOS, Android and Electron.
+
 
 ## Dependencies
 

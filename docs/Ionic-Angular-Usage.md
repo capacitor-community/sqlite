@@ -1,9 +1,14 @@
 <p align="center"><br><img src="https://user-images.githubusercontent.com/236501/85893648-1c92e880-b7a8-11ea-926d-95355b8175c7.png" width="128" height="128" /></p>
 <h2 align="center">IONIC/ANGULAR USAGE DOCUMENTATION</h2>
+<h2 align="center" style="color: red;">DEPRECATED</h2>
+<a href="https://jepiqueau.github.io/">
+<p align="center"><strong><code>Visit Tutorials https://jepiqueau.github.io/</code></strong></p>
+</a>
 <p align="center"><strong><code>@capacitor-community/sqlite</code></strong></p>
 <p align="center">
   In Ionic/Angular Applications, the <code>@capacitor-community/sqlite</code> can be accessed through a Singleton Service initialized in the <code>app.component.ts</code></p>
 <br>
+
 
 ## Angular Singleton Service
 

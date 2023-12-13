@@ -458,7 +458,9 @@ public class ImportFromJson {
             String formattedRow = null;
             formattedRow = String.join(", ", rowIndex.stream().map(item -> {
               if (item instanceof String) {
-                return "'" + item + "'";
+                StringBuilder formattedValue = new StringBuilder();
+                formattedValue.append('"').append(item).append('"');
+                return formattedValue.toString();
               } else {
                 return item.toString();
               }
@@ -472,7 +474,7 @@ public class ImportFromJson {
               }
               Object item = rowIndex.get(i);
               if (item instanceof String) {
-                formattedRow.append("'").append(item).append("'");
+                formattedRow.append('"').append(item).append('"');
               } else {
                 formattedRow.append(item);
               }

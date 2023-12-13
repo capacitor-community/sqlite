@@ -1,4 +1,19 @@
+# 5.5.0 (2023-12-13)
 
+### Chore
+
+ - Update to @capacitor/core@5.5.0
+ - Update to @capacitor/ios@5.5.0
+ - Update to @capacitor/android@5.5.0
+
+### Bug Fixes
+
+ - Deprecate Ionic-Angular-Usage.md
+ - Deprecate Ionic-React-Usage.md
+ - Deprecate Ionic-Vue-Usage.md
+ - Update Application's links in Readme.md
+ - importFromJson on android fails to build SQL Statement with ' in values. issue#492
+ 
 # 5.4.2-2 (2023-11-04)
 
  - Add nuxt3 kysely example PR#484 from DawidWetzler

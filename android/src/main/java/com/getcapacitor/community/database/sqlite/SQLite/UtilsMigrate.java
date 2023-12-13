@@ -168,7 +168,7 @@ public class UtilsMigrate {
                     toFile = file.replace(".db", "SQLite.db");
                 }
             }
-            if (toFile.length() > 0) {
+            if (toFile.length() > 0) {            
                 boolean ret = new File(pathFiles, fromFile).renameTo(new File(pathDB, toFile));
                 if (!ret) {
                     String msg = "Failed in move " + fromFile + " to " + file;
