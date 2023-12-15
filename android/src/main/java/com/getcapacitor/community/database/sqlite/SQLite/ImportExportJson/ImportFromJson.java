@@ -458,9 +458,12 @@ public class ImportFromJson {
             String formattedRow = null;
             formattedRow = String.join(", ", rowIndex.stream().map(item -> {
               if (item instanceof String) {
-                StringBuilder formattedValue = new StringBuilder();
-                formattedValue.append('"').append(item).append('"');
-                return formattedValue.toString();
+                String val = (String) item;
+                String rVal = val;
+                if(val.contains("'")) {
+                  rVal = val.replace("'","''");
+                }
+                return "'" + rVal + "'";
               } else {
                 return item.toString();
               }
@@ -474,7 +477,12 @@ public class ImportFromJson {
               }
               Object item = rowIndex.get(i);
               if (item instanceof String) {
-                formattedRow.append('"').append(item).append('"');
+                String val = (String) item;
+                String rVal = val;
+                if(val.contains("'")) {
+                  rVal = val.replace("'","''");
+                }
+                formattedRow.append("'").append(rVal).append("'");
               } else {
                 formattedRow.append(item);
               }

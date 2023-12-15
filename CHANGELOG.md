@@ -1,3 +1,15 @@
+# 5.5.1-1 (2023-12-15)
+
+### Chore
+
+ - Update to @capacitor/core@5.5.1
+ - Update to @capacitor/ios@5.5.1
+ - Update to @capacitor/android@5.5.1
+
+### Bug Fixes
+
+ - Fix importFromJson on android fails to build SQL Statement with ' in values. issue#492
+ 
 # 5.5.0 (2023-12-13)
 
 ### Chore
