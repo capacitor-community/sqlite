@@ -1,5 +1,9 @@
 # 5.5.1-2 (2023-12-21)
 
+### Chore
+
+ - Update to jeep-sqlite@2.5.5
+
 ### Bug Fixes
 
  - Android ImportFromJSON handle id as String in deletion statements issue#495  (PR#496 By mmouterde)
