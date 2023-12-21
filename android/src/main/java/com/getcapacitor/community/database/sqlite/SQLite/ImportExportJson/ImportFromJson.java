@@ -490,7 +490,11 @@ public class ImportFromJson {
             insertValues.append("(").append(formattedRow).append("), ");
           }
         } else if ((int) rowIndex.get(colIndex) == 1) {
-          deletedIds.append(rowIndex.get(0)).append(", ");
+            if (rowIndex.get(0) instanceof String) {
+                deletedIds.append("'").append(rowIndex.get(0)).append("', ");
+            } else {
+                deletedIds.append(rowIndex.get(0)).append(", ");
+            }
         }
       }
 
