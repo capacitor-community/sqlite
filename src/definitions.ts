@@ -1316,7 +1316,7 @@ export interface ISQLiteConnection {
    * @returns Promise<capSQLiteValues>
    * @since 3.0.0-beta.5
    */
-  getMigratableDbList(folderPath: string): Promise<capSQLiteValues>;
+  getMigratableDbList(folderPath?: string): Promise<capSQLiteValues>;
 
   /**
    * Add SQLIte Suffix to existing databases
@@ -1734,13 +1734,11 @@ export class SQLiteConnection implements ISQLiteConnection {
       return Promise.reject(err);
     }
   }
-  async getMigratableDbList(folderPath: string): Promise<capSQLiteValues> {
-    if (!folderPath || folderPath.length === 0) {
-      return Promise.reject('You must provide a folder path');
-    }
+  async getMigratableDbList(folderPath?: string): Promise<capSQLiteValues> {
+    const path: string = folderPath ? folderPath : 'default';
     try {
       const res = await this.sqlite.getMigratableDbList({
-        folderPath: folderPath,
+        folderPath: path,
       });
       return Promise.resolve(res);
     } catch (err) {

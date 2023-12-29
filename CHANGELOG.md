@@ -1,3 +1,9 @@
+# 5.5.1-3 (2023-12-29)
+
+### Bug Fixes
+
+ - Android addSQLiteSuffix or moveDatabasesAndAddSuffix doesn't copy data inside the original database issue#497
+ 
 # 5.5.1-2 (2023-12-21)
 
 ### Chore

@@ -29,7 +29,6 @@ this will copy all the databases from the "default" folder and add to them the S
 
 - on iOS the "default" location is `Documents` under the application
 - on Android the "default" location is `databases` under the application
-- on Electron the "default" location is `Databases/YOUR_APPLICATION_NAME`in the Home directory
 
 If you were using a custom location you have to give the location as parameter, only few custom locations are accessibles depending on the platform.
 

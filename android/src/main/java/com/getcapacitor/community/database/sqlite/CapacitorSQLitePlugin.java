@@ -796,10 +796,9 @@ public class CapacitorSQLitePlugin extends Plugin {
      */
     @PluginMethod
     public void getMigratableDbList(PluginCall call) {
-        String folderPath = null;
+        String folderPath;
         if (!call.getData().has("folderPath")) {
-            String msg = "getMigratableDbList: Must provide a folder path";
-            rHandler.retValues(call, new JSArray(), msg);
+            folderPath = "default";
         } else {
             folderPath = call.getString("folderPath");
         }

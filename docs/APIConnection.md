@@ -637,7 +637,7 @@ Get the database list
 ### getMigratableDbList(...)
 
 ```typescript
-getMigratableDbList(folderPath: string) => Promise<capSQLiteValues>
+getMigratableDbList(folderPath?: string | undefined) => Promise<capSQLiteValues>
 ```
 
 Get the Migratable database list
