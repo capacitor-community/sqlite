@@ -799,8 +799,10 @@ public class CapacitorSQLite {
         String[] listFiles = uFile.getListOfFiles(context);
         JSArray retArray = new JSArray();
         for (String file : listFiles) {
-            retArray.put(file);
-        }
+            if (file.contains("SQLite")) {
+                retArray.put(file);
+              }
+            }
         if (retArray.length() > 0) {
             return retArray;
         } else {
@@ -819,7 +821,9 @@ public class CapacitorSQLite {
         String[] listFiles = uMigrate.getMigratableList(context, folderPath);
         JSArray retArray = new JSArray();
         for (String file : listFiles) {
-            retArray.put(file);
+            if (!file.contains("SQLite")) {
+                retArray.put(file);
+            }
         }
         if (retArray.length() > 0) {
             return retArray;

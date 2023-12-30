@@ -1547,7 +1547,10 @@ enum CapacitorSQLiteError: Error {
             let aPath: String = try (UtilsFile.getFolderURL(folderPath: databaseLocation)).path
             // get the database files
             let dbList: [String] = try UtilsFile.getFileList(path: aPath, ext: ".db")
-            return dbList
+            // filter for db including SQLite
+            let dbWithSQLite = dbList.filter { $0.contains("SQLite") }
+
+            return dbWithSQLite
 
         } catch let error {
             let msg: String = "\(error)"
@@ -1564,7 +1567,10 @@ enum CapacitorSQLiteError: Error {
         do {
             let dbList: [String] = try UtilsMigrate
                 .getMigratableList(folderPath: folderPath)
-            return dbList
+            // filter for db not including SQLite
+            let dbNoSQLite = dbList.filter { !$0.contains("SQLite") }
+
+            return dbNoSQLite
 
         } catch UtilsMigrateError.getMigratableList(let message) {
             var msg: String = "getMigratableList:"

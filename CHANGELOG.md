@@ -1,3 +1,10 @@
+# 5.5.1-4 (2023-12-30)
+
+### Bug Fixes
+
+ - iOS Fix getDatabaseList & getMigratableDbList
+ - Android Fix getDatabaseList & getMigratableDbList
+
 # 5.5.1-3 (2023-12-29)
 
 ### Bug Fixes
