@@ -2207,30 +2207,24 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
     try {
       if (!this.readonly) {
         if (values && values.length > 0) {
-          const mRetMode = statement.toUpperCase().includes('RETURNING')
-            ? returnMode
-            : 'no';
+
           res = await this.sqlite.run({
             database: this.dbName,
             statement: statement,
             values: values,
             transaction: transaction,
             readonly: false,
-            returnMode: mRetMode,
+            returnMode: returnMode,
             isSQL92: true,
           });
-          //        }
         } else {
-          const mRetMode = statement.toUpperCase().includes('RETURNING')
-            ? returnMode
-            : 'no';
           res = await this.sqlite.run({
             database: this.dbName,
             statement: statement,
             values: [],
             transaction: transaction,
             readonly: false,
-            returnMode: mRetMode,
+            returnMode: returnMode,
             isSQL92: isSQL92,
           });
         }

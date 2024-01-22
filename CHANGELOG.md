@@ -1,3 +1,10 @@
+# 5.5.1 (2024-01-22)
+
+### Bug Fixes
+
+ - Fix exportToJson getSchema Exception issue#504
+ - Fix returning is treated as a keyword in a string object discussion#503
+ 
 # 5.5.1-4 (2023-12-30)
 
 ### Bug Fixes

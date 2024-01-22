@@ -447,7 +447,7 @@ class UtilsSQLCipher {
             msg.append("Database not opened")
             throw UtilsSQLCipherError.prepareSQL(message: msg)
         }
-        let systemVersion = UIDevice.current.systemVersion
+//        let systemVersion = UIDevice.current.systemVersion
         var runSQLStatement: OpaquePointer?
         var message: String = ""
         var lastId: Int64 = -1
@@ -463,9 +463,7 @@ class UtilsSQLCipher {
                 retMode = "wA\(retMode)"
             }
         }
-
-        if (retMode == "no" || retMode.prefix(2) == "wA") &&
-            sqlStmt.uppercased().contains("RETURNING") {
+        if (retMode == "no" || retMode.prefix(2) == "wA")/* && isReturning*/ {
             let stmtNames = UtilsSQLStatement
                 .getStmtAndRetColNames(sqlStmt: sqlStmt,
                                        retMode: retMode)
@@ -556,6 +554,7 @@ class UtilsSQLCipher {
             return (lastId, result)
         }
     }
+    
 
     // MARK: - returningWorkAround
 

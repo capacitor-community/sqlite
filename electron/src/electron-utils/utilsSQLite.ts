@@ -445,6 +445,7 @@ export class UtilsSQLite {
         if (Array.isArray(values[0])) {
           for (const val of values) {
             const mVal: any[] = this.replaceUndefinedByNull(val);
+
             result = this.prepareRun(
               mDB,
               statement,
@@ -559,7 +560,7 @@ export class UtilsSQLite {
         case 'one': {
           const iniChanges = this.dbChanges(mDB);
           if (values.length === 0) {
-            const value = mDB.prepare(params.stmt).get();
+            const value = mDB.prepare(stmt).get();
             result.values.push(value);
             result.lastInsertRowid = this.getLastId(mDB);
           } else {
@@ -577,7 +578,7 @@ export class UtilsSQLite {
         case 'all': {
           const iniChanges = this.dbChanges(mDB);
           if (values.length === 0) {
-            result.values = mDB.prepare(params.stmt).all();
+            result.values = mDB.prepare(stmt).all();
             result.lastInsertRowid = this.getLastId(mDB);
           } else {
             const lowerId = this.getLastId(mDB) + 1;
@@ -1221,28 +1222,105 @@ export class UtilsSQLite {
     }
     return retStmt;
   }
-  private getStmtAndNames(stmt: string, returnMode: string): any {
+  private isReturning(sqlStmt: string): { isReturning: boolean; stmt: string; suffix: string } {
+    let stmt = sqlStmt.replace(/\n/g, '').trim();
+
+    if (stmt.endsWith(';')) {
+      stmt = stmt.slice(0, -1).trim();
+    }
+
+    switch (stmt.substring(0, 6).toUpperCase()) {
+      case 'INSERT': {
+        const valuesIndex = stmt.search(/\bVALUES\b/i);
+        let closingParenthesisIndex = -1;
+
+        for (let i = stmt.length - 1; i >= valuesIndex; i--) {
+          if (stmt[i] === ')') {
+            closingParenthesisIndex = i;
+            break;
+          }
+        }
+        if (closingParenthesisIndex !== -1) {
+
+        const stmtString = stmt.substring(0, closingParenthesisIndex + 1).trim() + ';';
+        const suffix = stmt.substring(closingParenthesisIndex + 1).trim();
+
+          if (suffix.toLowerCase().includes('returning')) {
+            return {isReturning:true, stmt: stmtString, suffix: suffix};
+          } else {
+            return { isReturning: false, stmt, suffix: '' };
+          }
+        }
+        return { isReturning: false, stmt, suffix: '' };
+      }
+      case 'DELETE':
+      case 'UPDATE': {
+        const words = stmt.split(/\s+/);
+        const wordsBeforeReturning: string[] = [];
+        const returningString: string[] = [];
+
+        let isReturningOutsideMessage = false;
+
+        for (const word of words) {
+          if (word.toLowerCase() === 'returning') {
+            isReturningOutsideMessage = true;
+            returningString.push(word, ...this.wordsAfter(word, words));
+            break;
+          }
+          wordsBeforeReturning.push(word);
+        }
+
+        if (isReturningOutsideMessage) {
+          const joinedWords = wordsBeforeReturning.join(' ') + ';';
+          let joinedReturningString = returningString.join(' ');
+          if (joinedReturningString.length > 0 && !joinedReturningString.endsWith(';')) {
+            joinedReturningString += ';';
+          }
+          return { isReturning: true, stmt: joinedWords, suffix: joinedReturningString };
+        } else {
+          return { isReturning: false, stmt, suffix: '' };
+        }
+      }
+      default:
+        return { isReturning: false, stmt, suffix: '' };
+      }
+  }
+
+  private wordsAfter(word: string, words: string[]): string[] {
+    const index = words.indexOf(word);
+    if (index === -1) {
+      return [];
+    }
+    return words.slice(index + 1);
+  }
+
+
+  private getStmtAndNames(sqlStmt: string, returnMode: string): any {
     const retObj: any = {};
-    const mStmt = stmt;
-    if (
-      mStmt.toUpperCase().includes('RETURNING') &&
-      (returnMode === 'all' || returnMode === 'one')
-    ) {
+    const mStmt = sqlStmt;
+ 
+    const { isReturning, stmt, suffix } = this.isReturning(mStmt);
+    retObj.mMode = 'no';
+    retObj.stmt = stmt;
+    retObj.names = '';
+    if (isReturning && (returnMode === 'all' || returnMode === 'one')) {
       retObj.tableName = this.getTableName(mStmt);
       retObj.mMode = returnMode;
-      const idx = mStmt.toUpperCase().indexOf('RETURNING') + 9;
-      const names = mStmt.substring(idx).trim();
-      retObj.names = names.slice(-1) === ';' ? names.slice(0, -1) : names;
-      retObj.stmt = mStmt;
-    } else {
-      retObj.mMode = 'no';
-      if (mStmt.toUpperCase().includes('RETURNING')) {
-        const idx = mStmt.toUpperCase().indexOf('RETURNING');
-        retObj.stmt = mStmt.slice(0, idx).trim() + ';';
-      } else {
-        retObj.stmt = mStmt;
+      const lowercaseSuffix = suffix.toLowerCase();
+      const returningIndex = lowercaseSuffix.indexOf('returning');
+
+      if (returningIndex !== -1) {
+        const substring = suffix.slice(returningIndex + 9); // 9 is the length of "returning"
+
+        const names = substring.trim();
+        if (names.endsWith(';')) {
+          retObj.names = names.slice(0, -1);
+        } else {
+          retObj.names = names;
+        }
       }
     }
+
     return retObj;
   }
   private getTableName(sqlStatement: string): string | null {

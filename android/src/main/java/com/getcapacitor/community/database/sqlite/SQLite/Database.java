@@ -27,6 +27,7 @@ import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.UtilsJ
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Dictionary;
 import java.util.List;
@@ -641,71 +642,86 @@ public class Database {
         String stmtType = statement.replaceAll("\n", "").trim().substring(0, 6).toUpperCase();
         SupportSQLiteStatement stmt = null;
         String sqlStmt = statement;
-        String retMode = returnMode;
+        String retMode;
         JSArray retValues = new JSArray();
         JSObject retObject = new JSObject();
         String colNames = "";
         long initLastId = (long) -1;
-        boolean isReturning = sqlStmt.toUpperCase().contains("RETURNING");
+/*        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
+          retMode = returnMode;
+          throw new Exception(retMode +"Not implemented for above TIRAMISU");
+        } else {
+
+ */
+          retMode = returnMode;
+          if (!retMode.equals("no")) {
+            retMode = "wA" + retMode;
+          }
+ //       }
+        if (retMode.equals("no") || retMode.substring(0, Math.min(retMode.length(), 2)).equals("wA")) {
+          // get the statement and the returning column names
+          try {
+            JSObject stmtObj = getStmtAndRetColNames(sqlStmt, retMode);
+            sqlStmt = stmtObj.getString("stmt", sqlStmt);
+            colNames = stmtObj.getString("names","");
+          } catch (JSONException e) {
+            throw new Exception(e.getMessage());
+          }
+        }
         try {
-            if (!fromJson && stmtType.equals("DELETE")) {
-                sqlStmt = deleteSQL(this, statement, values);
-            }
-            if (isReturning && Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
-                throw new Exception("Not implemented for above TIRAMISU");
-            }
-            if (isReturning) {
-                // get the lastID
-                initLastId = _uSqlite.dbLastId(_db);
-                // get the statement and the returning column names
-                JSObject stmtObj = getStmtAndRetColNames(sqlStmt);
-                sqlStmt = stmtObj.getString("stmt");
-                colNames = stmtObj.getString("names");
-            }
-            if (sqlStmt != null) {
+          if (!fromJson && stmtType.equals("DELETE")) {
+              sqlStmt = deleteSQL(this, sqlStmt, values);
+          }
+          if (sqlStmt != null) {
                 stmt = _db.compileStatement(sqlStmt);
-            } else {
-                throw new Exception("sqlStmt is null");
+          } else {
+              throw new Exception("sqlStmt is null");
+          }
+          if (values != null && values.size() > 0) {
+              //               retMode = "no";
+              Object[] valObj = new Object[values.size()];
+              for (int i = 0; i < values.size(); i++) {
+                  if (values.get(i) == null) {
+                      valObj[i] = null;
+                  } else if (JSONObject.NULL == values.get(i)) {
+                      valObj[i] = null;
+                  } else {
+                      valObj[i] = values.get(i);
+                  }
+              }
+              SimpleSQLiteQuery.bind(stmt, valObj);
+          }
+          initLastId = _uSqlite.dbLastId(_db);
+          if (stmtType.equals("INSERT")) {
+            stmt.executeInsert();
+          } else {
+            if (retMode.startsWith("wA") && colNames.length() > 0 && stmtType.equals("DELETE")) {
+              retValues = getUpdDelReturnedValues(this, sqlStmt, colNames);
             }
-            if (values != null && values.size() > 0) {
-                //               retMode = "no";
-                Object[] valObj = new Object[values.size()];
-                for (int i = 0; i < values.size(); i++) {
-                    if (values.get(i) == null) {
-                        valObj[i] = null;
-                    } else if (JSONObject.NULL == values.get(i)) {
-                        valObj[i] = null;
-                    } else {
-                        valObj[i] = values.get(i);
-                    }
-                }
-                SimpleSQLiteQuery.bind(stmt, valObj);
-            }
+            stmt.executeUpdateDelete();
+          }
+          Long lastId = _uSqlite.dbLastId(_db);
+          if (retMode.startsWith("wA") && colNames.length() > 0) {
             if (stmtType.equals("INSERT")) {
-                stmt.executeInsert();
-            } else {
-                if (isReturning && stmtType.equals("DELETE")) {
-                    isReturning = false;
-                    retValues = getUpdDelReturnedValues(this, sqlStmt, colNames);
+                String tableName = extractTableName(sqlStmt);
+                if (tableName != null) {
+                  retValues = getInsertReturnedValues(this, colNames, tableName, initLastId, lastId, retMode);
                 }
-                stmt.executeUpdateDelete();
+            } else if (stmtType.equals("UPDATE")) {
+                retValues = getUpdDelReturnedValues(this, sqlStmt, colNames);
             }
-            Long lastId = _uSqlite.dbLastId(_db);
-            if (isReturning) {
-                if (stmtType.equals("INSERT")) {
-                    String tableName = extractTableName(sqlStmt);
-                    if (tableName != null) {
-                        if (retMode.equals("one") || retMode.equals("all")) {
-                            retValues = getInsertReturnedValues(this, colNames, tableName, initLastId, lastId, retMode);
-                        }
-                    }
-                } else if (stmtType.equals("UPDATE")) {
-                    retValues = getUpdDelReturnedValues(this, sqlStmt, colNames);
-                }
+          }
+          /*
+          if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
+
+            if (retMode.startsWith("one") || retMode.startsWith("all")) {
+              throw new Exception("returnMode : " + retMode + "Not implemented for above TIRAMISU");
             }
-            retObject.put("lastId", lastId);
-            retObject.put("values", retValues);
-            return retObject;
+          }
+           */
+          retObject.put("lastId", lastId);
+          retObject.put("values", retValues);
+          return retObject;
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         } finally {
@@ -715,18 +731,113 @@ public class Database {
         }
     }
 
-    private JSObject getStmtAndRetColNames(String sqlStmt) {
+    private JSObject getStmtAndRetColNames(String sqlStmt, String retMode) throws JSONException {
         JSObject retObj = new JSObject();
-        int idx = sqlStmt.toUpperCase().indexOf("RETURNING");
-        String retStmt = sqlStmt.substring(0, idx - 1) + ";";
-        String names = sqlStmt.substring(idx + 9);
-        String retNames = names;
-        if (names.contains(";")) retNames = names.substring(0, names.length() - 1).trim();
-        retObj.put("stmt", retStmt);
-        retObj.put("names", retNames);
+        JSObject retIsReturning = isReturning(sqlStmt);
+        Boolean isReturning = retIsReturning.getBoolean("isReturning");
+        String stmt = retIsReturning.getString("stmt");
+        String suffix = retIsReturning.getString("names");
+        retObj.put("stmt",stmt);
+        retObj.put("names","");
+
+        if (isReturning && retMode.startsWith("wA")) {
+
+          String lowercaseSuffix = suffix != null ? suffix.toLowerCase() : "";
+          int returningIndex = lowercaseSuffix.indexOf("returning");
+          if (returningIndex != -1) {
+            String substring = suffix.substring(returningIndex + "returning".length());
+            String names = substring.trim();
+           if (names.endsWith(";")) {
+              retObj.put("names", names.substring(0, names.length() - 1));
+            }
+          }
+        }
         return retObj;
     }
 
+    private JSObject isReturning(String sqlStmt) {
+      JSObject retObj = new JSObject();
+
+      String stmt = sqlStmt.replace("\n", "").trim();
+      if (stmt.endsWith(";")) {
+        // Remove the suffix
+        stmt = stmt.substring(0, stmt.length() - 1).trim();
+      }
+      retObj.put("isReturning",false);
+      retObj.put("stmt",stmt);
+      retObj.put("names","");
+
+      switch (stmt.substring(0, Math.min(stmt.length(), 6)).toUpperCase()) {
+        case "INSERT":
+          int valuesIndex = stmt.toUpperCase().indexOf("VALUES");
+          if (valuesIndex != -1) {
+
+            int closingParenthesisIndex = -1;
+
+            for (int i = stmt.length() - 1; i >= valuesIndex; i--) {
+              if (stmt.charAt(i) == ')') {
+                closingParenthesisIndex = i;
+                break;
+              }
+            }
+            if (closingParenthesisIndex != -1) {
+              String stmtString = stmt.substring(0, closingParenthesisIndex + 1).trim() + ";";
+              String resultString = stmt.substring(closingParenthesisIndex + 1).trim();
+              if (resultString.length() > 0 && !resultString.endsWith(";")) {
+                resultString += ";";
+              }
+              if (resultString.toLowerCase().contains("returning")) {
+                retObj.put("isReturning", true);
+                retObj.put("stmt", stmtString);
+                retObj.put("names", resultString);
+              }
+            }
+          }
+          return retObj;
+        case "DELETE":
+        case "UPDATE":
+          String[] words = stmt.split("\\s+");
+          List<String> wordsBeforeReturning = new ArrayList<>();
+          List<String> returningString = new ArrayList<>();
+
+          boolean isReturningOutsideMessage = false;
+          for (String word : words) {
+            if (word.toLowerCase().equals("returning")) {
+              isReturningOutsideMessage = true;
+              // Include "RETURNING" and the words after it in returningString
+              returningString.add(word);
+              returningString.addAll(wordsAfter(word, words));
+              break;
+            }
+            wordsBeforeReturning.add(word);
+          }
+
+          if (isReturningOutsideMessage) {
+            String joinedWords = String.join(" ", wordsBeforeReturning) + ";";
+            String joinedReturningString = String.join(" ", returningString);
+            if (joinedReturningString.length() > 0 && !joinedReturningString.endsWith(";")) {
+              joinedReturningString += ";";
+            }
+            retObj.put("isReturning",true);
+            retObj.put("stmt",joinedWords);
+            retObj.put("names",joinedReturningString);
+            return retObj;
+          } else {
+            return retObj;
+          }
+        default:
+          return retObj;
+      }
+    }
+    private List<String> wordsAfter(String word, String[] words) {
+      List<String> mWords = Arrays.asList(words);
+      int index = mWords.indexOf(word);
+      if (index == -1) {
+        return new ArrayList<>();
+      }
+      List<String> retWords = new ArrayList<>(mWords.subList(index + 1, mWords.size()));
+      return retWords;
+    }
     private JSArray getInsertReturnedValues(Database mDB, String colNames, String tableName, Long iLastId, Long lastId, String rMode)
         throws Exception {
         JSArray retVals = new JSArray();
@@ -735,10 +846,10 @@ public class Database {
         StringBuilder sbQuery = new StringBuilder("SELECT ").append(colNames).append(" FROM ");
 
         sbQuery.append(tableName).append(" WHERE ").append("rowid ");
-        if (rMode.equals("one")) {
+        if (rMode.equals("wAone")) {
             sbQuery.append("= ").append(sLastId);
         }
-        if (rMode.equals("all")) {
+        if (rMode.equals("wAall")) {
             sbQuery.append("BETWEEN ").append(sLastId).append(" AND ").append(lastId);
         }
         sbQuery.append(";");
@@ -1069,6 +1180,8 @@ public class Database {
                 Date date = new Date();
                 long syncTime = date.getTime() / 1000L;
                 toJson.setLastExportDate(this, syncTime);
+            } else {
+                throw new Exception("No sync_table available");
             }
             // launch the export process
             JsonSQLite retJson = toJson.createExportObject(this, inJson);

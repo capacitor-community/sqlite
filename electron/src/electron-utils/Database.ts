@@ -508,8 +508,10 @@ export class Database {
   /**
    * runSQL
    * execute a raw sql statement with/without binding values
-   * @param sql: string
+   * @param statement: string
    * @param values: string[]
+   * @param transaction: boolean
+   * @param returnMode: string
    * @param isSQL92: boolean,
    * @returns Promise<{changes:number, lastId:number}>
    */
@@ -688,6 +690,8 @@ export class Database {
           this.database,
           new Date().toISOString(),
         );
+      } else {
+        throw new Error(`No sync_table available`);
       }
       let jsonResult: any = this.exportToJsonUtil.createExportObject(
         this.database,
