@@ -1,3 +1,16 @@
+# 5.5.2 (2024-01-25)
+
+### Chore
+
+ - Update to jeep-sqlite@2.5.8
+
+
+### Bug Fixes
+
+ - Fix exportToJson getSchema PRIMARY
+ - Fix allow exportToJson when mode equals "full" and no "sync_table"
+ - Fix out of memory since 1.9.0 issue#509 by upgrading sql.js to release 1.10.2
+
 # 5.5.1 (2024-01-22)
 
 ### Bug Fixes

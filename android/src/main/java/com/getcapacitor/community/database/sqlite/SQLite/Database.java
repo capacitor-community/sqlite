@@ -1181,8 +1181,10 @@ public class Database {
                 long syncTime = date.getTime() / 1000L;
                 toJson.setLastExportDate(this, syncTime);
             } else {
-                throw new Exception("No sync_table available");
-            }
+                if(inJson.getMode().equals("partial")) {
+                    throw new Exception("No sync_table available");
+                }
+             }
             // launch the export process
             JsonSQLite retJson = toJson.createExportObject(this, inJson);
             //        retJson.print();

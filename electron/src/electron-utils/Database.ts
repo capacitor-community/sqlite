@@ -691,7 +691,9 @@ export class Database {
           new Date().toISOString(),
         );
       } else {
-        throw new Error(`No sync_table available`);
+        if (inJson.mode === 'partial') {
+          throw new Error(`No sync_table available`);
+        }
       }
       let jsonResult: any = this.exportToJsonUtil.createExportObject(
         this.database,

@@ -689,7 +689,9 @@ class Database {
                 // Set the last exported date
                 try ExportToJson.setLastExportDate(mDB: self, sTime: syncTime)
             } else {
-                throw DatabaseError.exportToJson(message: "No sync_table available")
+                if expMode == "partial" {
+                    throw DatabaseError.exportToJson(message: "No sync_table available")
+                }
             }
             // Launch the export process
             let data: [String: Any] = [
