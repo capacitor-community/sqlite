@@ -1,3 +1,32 @@
+# 5.6.0 (2024-02-17)
+
+### Chore
+
+ - Update to @capacitor/core@5.6.0
+ - Update to @capacitor/ios@5.6.0
+ - Update to @capacitor/android@5.6.0
+ - Update to @capacitor/cli@5.6.0
+ - Update to jeep-sqlite@2.5.9
+
+### Added Features
+
+ - Add the ability to run `migrations:generate` with the TypeOrm Cli
+   outside the DOM Element to create the migrations files. Then the migrations are run inside the DOM Element to create and store the database in the DOM Element.
+   For this add a script to the package.json file
+   ```json
+    "scripts": {
+      ...
+
+      "typeorm:migration:generate": "npx typeorm-ts-node-esm migration:generate src/PATH_TO_MIGRATIONS/YOUR_MIGRATION_NAME -d src/PATH_TO_YOUR_DATASOURCE"
+
+   ```
+
+ - Add TypeORM-Usage-From-5.6.0.md documentation
+ 
+### Bug Fixes
+
+ - Fix The jeep-sqlite element is not present in the DOM when trying to generate migration files via TypeOrm CLI issue#508
+
 # 5.5.2 (2024-01-25)
 
 ### Chore

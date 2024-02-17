@@ -388,45 +388,39 @@ public class ImportFromJson {
                 throw new Exception("GetValues: Table " + tableName + " no names");
             }
             // New process flow
-            JSONObject retObjStrs = generateInsertAndDeletedStrings(tColNames,values);
+            JSONObject retObjStrs = generateInsertAndDeletedStrings(tColNames, values);
             // Create the statement for INSERT
             String namesString = _uJson.convertToString(tColNames, ',');
-            if(retObjStrs.has("insert")) {
-              String stmtInsert =
-                new StringBuilder("INSERT OR REPLACE INTO ")
-                  .append(tableName)
-                  .append("(")
-                  .append(namesString)
-                  .append(") ")
-                  .append(retObjStrs.get("insert"))
-                  .append(";")
-                  .toString();
-              JSObject retObj = mDb.prepareSQL(stmtInsert, new ArrayList<>(), true,
-                "no");
-              long lastId = retObj.getLong("lastId");
-              if (lastId < 0) {
-                throw new Exception("CreateTableData: INSERT lastId < 0");
-              }
+            if (retObjStrs.has("insert")) {
+                String stmtInsert = new StringBuilder("INSERT OR REPLACE INTO ")
+                    .append(tableName)
+                    .append("(")
+                    .append(namesString)
+                    .append(") ")
+                    .append(retObjStrs.get("insert"))
+                    .append(";")
+                    .toString();
+                JSObject retObj = mDb.prepareSQL(stmtInsert, new ArrayList<>(), true, "no");
+                long lastId = retObj.getLong("lastId");
+                if (lastId < 0) {
+                    throw new Exception("CreateTableData: INSERT lastId < 0");
+                }
             }
-            if(retObjStrs.has("delete")) {
-              String stmtDelete =
-                new StringBuilder("DELETE FROM ")
-                  .append(tableName)
-                  .append(" WHERE ")
-                  .append(tColNames.get(0))
-                  .append(" ")
-                  .append(retObjStrs.get("delete"))
-                  .append(";")
-                  .toString();
-              JSObject retObj = mDb.prepareSQL(stmtDelete, new ArrayList<>(), true,
-                "no");
-              long lastId = retObj.getLong("lastId");
-              if (lastId < 0) {
-                throw new Exception("CreateTableData: INSERT lastId < 0");
-              }
+            if (retObjStrs.has("delete")) {
+                String stmtDelete = new StringBuilder("DELETE FROM ")
+                    .append(tableName)
+                    .append(" WHERE ")
+                    .append(tColNames.get(0))
+                    .append(" ")
+                    .append(retObjStrs.get("delete"))
+                    .append(";")
+                    .toString();
+                JSObject retObj = mDb.prepareSQL(stmtDelete, new ArrayList<>(), true, "no");
+                long lastId = retObj.getLong("lastId");
+                if (lastId < 0) {
+                    throw new Exception("CreateTableData: INSERT lastId < 0");
+                }
             }
-
-
         } catch (JSONException e) {
             throw new Exception("CreateTableData: " + e.getMessage());
         } catch (Exception e) {
@@ -441,80 +435,87 @@ public class ImportFromJson {
      * @return
      * @throws JSONException
      */
-    private JSONObject generateInsertAndDeletedStrings(ArrayList<String> tColNames,
-                                              ArrayList<ArrayList<Object>> values)
-                                                            throws JSONException {
-      JSONObject retObj = new JSONObject();
-      StringBuilder insertValues = new StringBuilder();
-      StringBuilder deletedIds = new StringBuilder();
+    private JSONObject generateInsertAndDeletedStrings(ArrayList<String> tColNames, ArrayList<ArrayList<Object>> values)
+        throws JSONException {
+        JSONObject retObj = new JSONObject();
+        StringBuilder insertValues = new StringBuilder();
+        StringBuilder deletedIds = new StringBuilder();
 
-      for (ArrayList<Object> rowIndex : values) {
-        int colIndex = tColNames.indexOf("sql_deleted");
+        for (ArrayList<Object> rowIndex : values) {
+            int colIndex = tColNames.indexOf("sql_deleted");
 
-        // Check if the column "sql_deleted" is 0
-        if (colIndex == -1 || (int) rowIndex.get(colIndex) == 0) {
-
-          if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-            String formattedRow = null;
-            formattedRow = String.join(", ", rowIndex.stream().map(item -> {
-              if (item instanceof String) {
-                String val = (String) item;
-                String rVal = val;
-                if(val.contains("'")) {
-                  rVal = val.replace("'","''");
+            // Check if the column "sql_deleted" is 0
+            if (colIndex == -1 || (int) rowIndex.get(colIndex) == 0) {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                    String formattedRow = null;
+                    formattedRow =
+                        String.join(
+                            ", ",
+                            rowIndex
+                                .stream()
+                                .map(
+                                    item -> {
+                                        if (item instanceof String) {
+                                            String val = (String) item;
+                                            String rVal = val;
+                                            if (val.contains("'")) {
+                                                rVal = val.replace("'", "''");
+                                            }
+                                            return "'" + rVal + "'";
+                                        } else {
+                                            return item.toString();
+                                        }
+                                    }
+                                )
+                                .toArray(String[]::new)
+                        );
+                    insertValues.append("(").append(formattedRow).append("), ");
+                } else {
+                    StringBuilder formattedRow = new StringBuilder();
+                    for (int i = 0; i < rowIndex.size(); i++) {
+                        if (i > 0) {
+                            formattedRow.append(", ");
+                        }
+                        Object item = rowIndex.get(i);
+                        if (item instanceof String) {
+                            String val = (String) item;
+                            String rVal = val;
+                            if (val.contains("'")) {
+                                rVal = val.replace("'", "''");
+                            }
+                            formattedRow.append("'").append(rVal).append("'");
+                        } else {
+                            formattedRow.append(item);
+                        }
+                    }
+                    insertValues.append("(").append(formattedRow).append("), ");
                 }
-                return "'" + rVal + "'";
-              } else {
-                return item.toString();
-              }
-            }).toArray(String[]::new));
-            insertValues.append("(").append(formattedRow).append("), ");
-          } else {
-            StringBuilder formattedRow = new StringBuilder();
-            for (int i = 0; i < rowIndex.size(); i++) {
-              if (i > 0) {
-                formattedRow.append(", ");
-              }
-              Object item = rowIndex.get(i);
-              if (item instanceof String) {
-                String val = (String) item;
-                String rVal = val;
-                if(val.contains("'")) {
-                  rVal = val.replace("'","''");
+            } else if ((int) rowIndex.get(colIndex) == 1) {
+                if (rowIndex.get(0) instanceof String) {
+                    deletedIds.append("'").append(rowIndex.get(0)).append("', ");
+                } else {
+                    deletedIds.append(rowIndex.get(0)).append(", ");
                 }
-                formattedRow.append("'").append(rVal).append("'");
-              } else {
-                formattedRow.append(item);
-              }
-            }
-            insertValues.append("(").append(formattedRow).append("), ");
-          }
-        } else if ((int) rowIndex.get(colIndex) == 1) {
-            if (rowIndex.get(0) instanceof String) {
-                deletedIds.append("'").append(rowIndex.get(0)).append("', ");
-            } else {
-                deletedIds.append(rowIndex.get(0)).append(", ");
             }
         }
-      }
 
-      // Remove the trailing comma and space from insertValues and deletedIds
-      if (insertValues.length() > 0) {
-        insertValues.setLength(insertValues.length() - 2); // Remove trailing comma and space
-        insertValues.insert(0, "VALUES ");
-      }
-      if (deletedIds.length() > 0) {
-        deletedIds.setLength(deletedIds.length() - 2); // Remove trailing comma and space
-        deletedIds.insert(0, "IN (");
-        deletedIds.append(")");
-      }
-      if (insertValues.length() > 0) {
-        retObj.put("insert", insertValues.toString());
-      }
-      if (deletedIds.length() > 0) {
-        retObj.put("delete", deletedIds.toString());
-      }
-      return retObj;
+        // Remove the trailing comma and space from insertValues and deletedIds
+        if (insertValues.length() > 0) {
+            insertValues.setLength(insertValues.length() - 2); // Remove trailing comma and space
+            insertValues.insert(0, "VALUES ");
+        }
+        if (deletedIds.length() > 0) {
+            deletedIds.setLength(deletedIds.length() - 2); // Remove trailing comma and space
+            deletedIds.insert(0, "IN (");
+            deletedIds.append(")");
+        }
+        if (insertValues.length() > 0) {
+            retObj.put("insert", insertValues.toString());
+        }
+        if (deletedIds.length() > 0) {
+            retObj.put("delete", deletedIds.toString());
+        }
+        return retObj;
     }
 
     /**

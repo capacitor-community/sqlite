@@ -1,4 +1,10 @@
+
 # Using capacitor-sqlite with TypeORM
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!! This documentation is obsolete if you are using Ionic7 and Vite !!!!
+!!!! Go To TypeORM-Usage-From-5.6.0
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 ```typescript
 import { CapacitorSQLite, SQLiteConnection } from '@capacitor-community/sqlite';

@@ -1012,7 +1012,6 @@ enum CapacitorSQLiteError: Error {
 
     // MARK: - deleteDatabase
 
-    // swiftlint:disable function_body_length
     // swiftlint:disable cyclomatic_complexity
     @objc func deleteDatabase(_ dbName: String, readonly: Bool) throws {
         guard isInit else {
@@ -1032,8 +1031,9 @@ enum CapacitorSQLiteError: Error {
             if !mDb.isDBOpen() {
                 // check the state of the DB
                 let state: State = UtilsSQLCipher.getDatabaseState(databaseLocation: databaseLocation, databaseName: "\(mDbName)SQLite.db", account: account)
-                if !isEncryption &&  (state.rawValue == "ENCRYPTEDGLOBALSECRET" ||
-                                        state.rawValue == "ENCRYPTEDSECRET") {
+                if !isEncryption && 
+                        (state.rawValue == "ENCRYPTEDGLOBALSECRET" ||
+                         state.rawValue == "ENCRYPTEDSECRET") {
                     var msg = "Cannot delete an Encrypted database with "
                     msg += "No Encryption set in capacitor.config"
                     throw CapacitorSQLiteError.failed(message: msg)
@@ -1067,7 +1067,6 @@ enum CapacitorSQLiteError: Error {
         }
     }
     // swiftlint:enable cyclomatic_complexity
-    // swiftlint:enable function_body_length
 
     // MARK: - isJsonValid
 

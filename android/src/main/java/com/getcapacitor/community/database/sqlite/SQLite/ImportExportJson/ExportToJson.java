@@ -362,7 +362,7 @@ public class ExportToJson {
                         String pk = sc.substring(oPar + 1, cPar);
                         row[0] = "CPK_" + pk.replaceAll("§", "_");
                         row[0] = row[0].replaceAll("_ ", "_");
-                        row[1] = sc.substring(0,cPar + 1);
+                        row[1] = sc.substring(0, cPar + 1);
                         jsonRow.setConstraint(row[0]);
                     }
                     case "CONSTRAINT" -> {

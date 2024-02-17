@@ -343,8 +343,8 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     );
     const readonly: boolean = options.readonly ? options.readonly : false;
     const returnMode: string = Object.keys(options).includes('returnMode')
-    ? options.returnMode 
-    : 'no';
+      ? options.returnMode
+      : 'no';
     const isSQL92: boolean = Object.keys(options).includes('isSQL92')
       ? options.isSQL92
       : true;
@@ -403,7 +403,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       ? options.isSQL92
       : true;
 
-      const connName = 'RW_' + dbName;
+    const connName = 'RW_' + dbName;
 
     const database = this.getDatabaseConnectionOrThrowError(connName);
 

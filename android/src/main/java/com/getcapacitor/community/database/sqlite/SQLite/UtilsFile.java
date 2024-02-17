@@ -236,7 +236,7 @@ public class UtilsFile {
 
     public Boolean copyFromNames(Context context, String fromPath, String fromName, String toPath, String toName) {
         File fromFile = new File(fromPath, fromName);
-/*
+        /*
          boolean fFile = fromFile.setReadable(true, false);
         if (!fFile) {
             Log.e(TAG, "Error: in fromFile " + fromName);

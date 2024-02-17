@@ -281,6 +281,8 @@ npm install --save-dev electron-builder@24.6.4
 
 - [Type ORM](https://github.com/capacitor-community/sqlite/blob/master/docs/TypeORM-Usage.md)
 
+- [TypeORM-From-5.6.0](https://github.com/capacitor-community/sqlite/blob/master/docs/TypeORM-Usage-From-5.6.0.md)
+
 - [Web Usage](https://github.com/capacitor-community/sqlite/blob/master/docs/Web-Usage.md)
 
 - [Non Conformed Databases](https://github.com/capacitor-community/sqlite/blob/master/docs/NonConformedDatabases.md)

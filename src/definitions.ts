@@ -2207,7 +2207,6 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
     try {
       if (!this.readonly) {
         if (values && values.length > 0) {
-
           res = await this.sqlite.run({
             database: this.dbName,
             statement: statement,

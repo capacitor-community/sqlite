@@ -1222,7 +1222,11 @@ export class UtilsSQLite {
     }
     return retStmt;
   }
-  private isReturning(sqlStmt: string): { isReturning: boolean; stmt: string; suffix: string } {
+  private isReturning(sqlStmt: string): {
+    isReturning: boolean;
+    stmt: string;
+    suffix: string;
+  } {
     let stmt = sqlStmt.replace(/\n/g, '').trim();
 
     if (stmt.endsWith(';')) {
@@ -1241,12 +1245,12 @@ export class UtilsSQLite {
           }
         }
         if (closingParenthesisIndex !== -1) {
-
-        const stmtString = stmt.substring(0, closingParenthesisIndex + 1).trim() + ';';
-        const suffix = stmt.substring(closingParenthesisIndex + 1).trim();
+          const stmtString =
+            stmt.substring(0, closingParenthesisIndex + 1).trim() + ';';
+          const suffix = stmt.substring(closingParenthesisIndex + 1).trim();
 
           if (suffix.toLowerCase().includes('returning')) {
-            return {isReturning:true, stmt: stmtString, suffix: suffix};
+            return { isReturning: true, stmt: stmtString, suffix: suffix };
           } else {
             return { isReturning: false, stmt, suffix: '' };
           }
@@ -1273,17 +1277,24 @@ export class UtilsSQLite {
         if (isReturningOutsideMessage) {
           const joinedWords = wordsBeforeReturning.join(' ') + ';';
           let joinedReturningString = returningString.join(' ');
-          if (joinedReturningString.length > 0 && !joinedReturningString.endsWith(';')) {
+          if (
+            joinedReturningString.length > 0 &&
+            !joinedReturningString.endsWith(';')
+          ) {
             joinedReturningString += ';';
           }
-          return { isReturning: true, stmt: joinedWords, suffix: joinedReturningString };
+          return {
+            isReturning: true,
+            stmt: joinedWords,
+            suffix: joinedReturningString,
+          };
         } else {
           return { isReturning: false, stmt, suffix: '' };
         }
       }
       default:
         return { isReturning: false, stmt, suffix: '' };
-      }
+    }
   }
 
   private wordsAfter(word: string, words: string[]): string[] {
@@ -1294,11 +1305,10 @@ export class UtilsSQLite {
     return words.slice(index + 1);
   }
 
-
   private getStmtAndNames(sqlStmt: string, returnMode: string): any {
     const retObj: any = {};
     const mStmt = sqlStmt;
- 
+
     const { isReturning, stmt, suffix } = this.isReturning(mStmt);
     retObj.mMode = 'no';
     retObj.stmt = stmt;

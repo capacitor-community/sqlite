@@ -327,50 +327,48 @@ class UtilsSQLStatement {
 
     class func isReturning(sqlStmt: String) -> (Bool, String, String) {
         var stmt = sqlStmt.replacingOccurrences(of: "\n", with: "")
-                          .trimmingCharacters(in: .whitespacesAndNewlines)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
         if stmt.hasSuffix(";") {
             // Remove the suffix
             stmt = String(stmt.dropLast())
-                        .trimmingCharacters(in: .whitespacesAndNewlines)
+                .trimmingCharacters(in: .whitespacesAndNewlines)
         }
 
-        switch (stmt.prefix(6).uppercased())  {
-            
-          case "INSERT":
+        switch stmt.prefix(6).uppercased() {
+
+        case "INSERT":
             if let valuesIndex = stmt.range(of: "VALUES", options: .caseInsensitive)?.lowerBound,
                let closingParenthesisIndex = stmt.range(of: ")", options: .backwards, range: valuesIndex..<stmt.endIndex)?.upperBound {
-                    guard closingParenthesisIndex < stmt.endIndex else {
-                        stmt += ";"
-                        return (false, stmt, "")
-                    }
-
-                    let intParenthesisValue = stmt.distance(from: stmt.startIndex, to: closingParenthesisIndex)
-                    let substringAfterValues = stmt[closingParenthesisIndex...]
-                    var resultString = String(substringAfterValues)
-                                .trimmingCharacters(in: .whitespacesAndNewlines)
-                    if resultString.count > 0 && !resultString.hasSuffix(";") {
-                        resultString += ";"
-                    }
-
-                    let substringStartToEndParenthesis = stmt[...closingParenthesisIndex]
-                    let stmtString = String(substringStartToEndParenthesis)
-                                .trimmingCharacters(in: .whitespacesAndNewlines)
-                                .appending(";")
-
-                    if substringAfterValues.lowercased().contains("returning") {
-                        return (true,stmtString,resultString)
-                    } else {
-                        return (false, stmt, "")
-                    }
+                guard closingParenthesisIndex < stmt.endIndex else {
+                    stmt += ";"
+                    return (false, stmt, "")
                 }
-                return (false, stmt, "")
-            
-            
-          case "DELETE", "UPDATE":
+
+                let intParenthesisValue = stmt.distance(from: stmt.startIndex, to: closingParenthesisIndex)
+                let substringAfterValues = stmt[closingParenthesisIndex...]
+                var resultString = String(substringAfterValues)
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                if resultString.count > 0 && !resultString.hasSuffix(";") {
+                    resultString += ";"
+                }
+
+                let substringStartToEndParenthesis = stmt[...closingParenthesisIndex]
+                let stmtString = String(substringStartToEndParenthesis)
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                    .appending(";")
+
+                if substringAfterValues.lowercased().contains("returning") {
+                    return (true, stmtString, resultString)
+                } else {
+                    return (false, stmt, "")
+                }
+            }
+            return (false, stmt, "")
+
+        case "DELETE", "UPDATE":
             let words = stmt.components(separatedBy: .whitespacesAndNewlines)
             var wordsBeforeReturning: [String] = []
             var returningString: [String] = []
-
 
             var isReturningOutsideMessage = false
             for word in words {
@@ -387,7 +385,7 @@ class UtilsSQLStatement {
                 let joinedWords = wordsBeforeReturning.joined(separator: " ") + ";"
                 var joinedReturningString = returningString.joined(separator: " ")
                 if joinedReturningString.count > 0 &&
-                            !joinedReturningString.hasSuffix(";") {
+                    !joinedReturningString.hasSuffix(";") {
                     joinedReturningString += ";"
                 }
 
@@ -395,11 +393,11 @@ class UtilsSQLStatement {
             } else {
                 return (false, stmt, "")
             }
-            
-          default:
+
+        default:
             return (false, stmt, "")
         }
-        
+
     }
 
     // MARK: - wordsAfter
@@ -410,13 +408,13 @@ class UtilsSQLStatement {
         }
         return Array(words.suffix(from: index + 1))
     }
-    
+
     // MARK: - getStmtAndRetColNames
 
     class func getStmtAndRetColNames(sqlStmt: String, retMode: String)
     -> [String: String] {
         var retStmtNames: [String: String] = [:]
-        
+
         let (isReturning, stmt, suffix) = isReturning(sqlStmt: sqlStmt)
         retStmtNames["stmt"] = stmt
         retStmtNames["names"] = ""
@@ -426,7 +424,7 @@ class UtilsSQLStatement {
                 let substring = suffix[returningIndex.upperBound...]
 
                 let names =
-                "\(substring)".trimmingLeadingAndTrailingSpaces()
+                    "\(substring)".trimmingLeadingAndTrailingSpaces()
                 if names.suffix(1) == ";" {
                     retStmtNames["names"] = String(names.dropLast())
                 }

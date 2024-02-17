@@ -9,6 +9,8 @@ export default {
         '@capacitor/core': 'capacitorExports',
         'localforage': 'localForage',
         'sql.js': 'initSqlJs',
+        'fs': 'FS',
+        'path': 'Path',
       },
       sourcemap: true,
       inlineDynamicImports: true,
@@ -20,5 +22,5 @@ export default {
       inlineDynamicImports: true,
     },
   ],
-  external: ['@capacitor/core', 'localforage', 'sql.js'],
+  external: ['@capacitor/core', 'localforage', 'sql.js', 'fs', 'path'],
 };

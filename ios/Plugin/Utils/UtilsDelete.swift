@@ -290,7 +290,7 @@ class UtilsDelete {
         var relatedItems: [[String: Any]] = []
         var key: String = ""
         let t1Names = withRefsNames.map { "t1.\($0)" }
-        let t2Names = colNames.map{ "t2.\($0)" }
+        let t2Names = colNames.map { "t2.\($0)" }
 
         do {
             var whereClause = try UtilsSQLStatement

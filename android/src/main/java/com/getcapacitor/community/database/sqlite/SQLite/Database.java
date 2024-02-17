@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import net.sqlcipher.Cursor;
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteException;
@@ -190,7 +189,7 @@ public class Database {
                 Log.v(TAG, msg);
                 throw new Exception(msg);
             } finally {
-              _db.endTransaction();
+                _db.endTransaction();
             }
         } else {
             throw new Exception("Database not opened");
@@ -465,24 +464,23 @@ public class Database {
                     // optimize executeSet
                     Boolean isArray = valuesJson.length() > 0 ? _uSqlite.parse(valuesJson.get(0)) : false;
                     if (isArray) {
-                      respSet = multipleRowsStatement( statement, valuesJson, returnMode);
+                        respSet = multipleRowsStatement(statement, valuesJson, returnMode);
                     } else {
-                      respSet = oneRowStatement( statement, valuesJson, returnMode);
+                        respSet = oneRowStatement(statement, valuesJson, returnMode);
                     }
                     lastId = respSet.getLong("lastId");
                     if (lastId.equals(-1L)) break;
                     response = addToResponse(response, respSet);
-
                 }
                 if (lastId.equals(-1L)) {
-                  throw new Exception("lastId equals -1");
+                    throw new Exception("lastId equals -1");
                 } else {
-                  if (transaction) commitTransaction();
-                  changes = _uSqlite.dbChanges(_db) - initChanges;
-                  retObj.put("changes", changes);
-                  retObj.put("lastId", lastId);
-                  retObj.put("values", response.getJSONArray("values"));
-                  return retObj;
+                    if (transaction) commitTransaction();
+                    changes = _uSqlite.dbChanges(_db) - initChanges;
+                    retObj.put("changes", changes);
+                    retObj.put("lastId", lastId);
+                    retObj.put("values", response.getJSONArray("values"));
+                    return retObj;
                 }
             } else {
                 throw new Exception("Database not opened");
@@ -493,77 +491,76 @@ public class Database {
             if (_db != null && transaction && _db.inTransaction()) rollbackTransaction();
         }
     }
-    public JSObject multipleRowsStatement( String statement, JSONArray valuesJson,
-                                           String returnMode) throws Exception {
-      StringBuilder sqlBuilder = new StringBuilder();
-      try {
-        for (int j = 0; j < valuesJson.length(); j++) {
-          JSONArray innerArray = valuesJson.getJSONArray(j);
-          StringBuilder innerSqlBuilder = new StringBuilder();
-          for (int k = 0; k < innerArray.length(); k++) {
-            Object innerElement = innerArray.get(k);
-            String elementValue = "";
 
-            if (innerElement instanceof String) {
-              elementValue = "'" + innerElement + "'";
+    public JSObject multipleRowsStatement(String statement, JSONArray valuesJson, String returnMode) throws Exception {
+        StringBuilder sqlBuilder = new StringBuilder();
+        try {
+            for (int j = 0; j < valuesJson.length(); j++) {
+                JSONArray innerArray = valuesJson.getJSONArray(j);
+                StringBuilder innerSqlBuilder = new StringBuilder();
+                for (int k = 0; k < innerArray.length(); k++) {
+                    Object innerElement = innerArray.get(k);
+                    String elementValue = "";
+
+                    if (innerElement instanceof String) {
+                        elementValue = "'" + innerElement + "'";
+                    } else {
+                        elementValue = String.valueOf(innerElement);
+                    }
+                    innerSqlBuilder.append(elementValue);
+
+                    if (k < innerArray.length() - 1) {
+                        innerSqlBuilder.append(",");
+                    }
+                }
+
+                sqlBuilder.append("(").append(innerSqlBuilder.toString()).append(")");
+
+                if (j < valuesJson.length() - 1) {
+                    sqlBuilder.append(",");
+                }
+            }
+            sqlBuilder.append(";");
+            String questionMark = extractQuestionMarkValues(statement);
+            String finalSql = "";
+            if (questionMark != null) {
+                finalSql = statement.replace(questionMark, sqlBuilder.toString());
             } else {
-              elementValue = String.valueOf(innerElement);
+                finalSql = statement;
             }
-            innerSqlBuilder.append(elementValue);
 
-            if (k < innerArray.length() - 1) {
-              innerSqlBuilder.append(",");
-            }
-          }
-
-          sqlBuilder.append("(")
-            .append(innerSqlBuilder.toString())
-            .append(")");
-
-          if (j < valuesJson.length() - 1) {
-            sqlBuilder.append(",");
-          }
+            JSObject respSet = prepareSQL(finalSql, new ArrayList<>(), false, returnMode);
+            return respSet;
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
         }
-        sqlBuilder.append(";");
-        String questionMark = extractQuestionMarkValues(statement);
-        String finalSql = "";
-        if(questionMark != null) {
-          finalSql = statement.replace(questionMark, sqlBuilder.toString());
-        } else {
-          finalSql = statement;
-        }
-
-        JSObject respSet = prepareSQL(finalSql, new ArrayList<>(),
-          false, returnMode);
-        return respSet;
-      } catch (Exception e) {
-        throw new Exception(e.getMessage());
-      }
     }
+
     public String extractQuestionMarkValues(String input) {
-      Pattern pattern = Pattern.compile("VALUES \\((\\?(?:,\\s*\\?\\s*)*)\\)");
-      Matcher matcher = pattern.matcher(input);
+        Pattern pattern = Pattern.compile("VALUES \\((\\?(?:,\\s*\\?\\s*)*)\\)");
+        Matcher matcher = pattern.matcher(input);
 
-      if (matcher.find()) {
-        String extractedSubstring = matcher.group(1);
-        return "(" + extractedSubstring.replaceAll("\\s*,\\s*", ",") + ")";
-      } else {
-        return null;
-      }
+        if (matcher.find()) {
+            String extractedSubstring = matcher.group(1);
+            return "(" + extractedSubstring.replaceAll("\\s*,\\s*", ",") + ")";
+        } else {
+            return null;
+        }
     }
-    public JSObject oneRowStatement( String statement, JSONArray valuesJson,
-                                     String returnMode) throws Exception {
-      ArrayList<Object> values = new ArrayList<>();
-      for (int j = 0; j < valuesJson.length(); j++) {
-        values.add(valuesJson.get(j));
-      }
-      try {
-        JSObject respSet = prepareSQL(statement, values, false, returnMode);
-        return respSet;
-      } catch (Exception e) {
-        throw new Exception(e.getMessage());
-      }
+
+    public JSObject oneRowStatement(String statement, JSONArray valuesJson, String returnMode) throws Exception {
+        ArrayList<Object> values = new ArrayList<>();
+        for (int j = 0; j < valuesJson.length(); j++) {
+            values.add(valuesJson.get(j));
+        }
+        try {
+            JSObject respSet = prepareSQL(statement, values, false, returnMode);
+            return respSet;
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
+        }
     }
+
     public JSObject addToResponse(JSObject response, JSObject respSet) throws JSONException {
         JSObject retResp = response;
         long lastId = respSet.getLong("lastId");
@@ -647,71 +644,71 @@ public class Database {
         JSObject retObject = new JSObject();
         String colNames = "";
         long initLastId = (long) -1;
-/*        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
+        /*        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
           retMode = returnMode;
           throw new Exception(retMode +"Not implemented for above TIRAMISU");
         } else {
 
  */
-          retMode = returnMode;
-          if (!retMode.equals("no")) {
+        retMode = returnMode;
+        if (!retMode.equals("no")) {
             retMode = "wA" + retMode;
-          }
- //       }
+        }
+        //       }
         if (retMode.equals("no") || retMode.substring(0, Math.min(retMode.length(), 2)).equals("wA")) {
-          // get the statement and the returning column names
-          try {
-            JSObject stmtObj = getStmtAndRetColNames(sqlStmt, retMode);
-            sqlStmt = stmtObj.getString("stmt", sqlStmt);
-            colNames = stmtObj.getString("names","");
-          } catch (JSONException e) {
-            throw new Exception(e.getMessage());
-          }
+            // get the statement and the returning column names
+            try {
+                JSObject stmtObj = getStmtAndRetColNames(sqlStmt, retMode);
+                sqlStmt = stmtObj.getString("stmt", sqlStmt);
+                colNames = stmtObj.getString("names", "");
+            } catch (JSONException e) {
+                throw new Exception(e.getMessage());
+            }
         }
         try {
-          if (!fromJson && stmtType.equals("DELETE")) {
-              sqlStmt = deleteSQL(this, sqlStmt, values);
-          }
-          if (sqlStmt != null) {
+            if (!fromJson && stmtType.equals("DELETE")) {
+                sqlStmt = deleteSQL(this, sqlStmt, values);
+            }
+            if (sqlStmt != null) {
                 stmt = _db.compileStatement(sqlStmt);
-          } else {
-              throw new Exception("sqlStmt is null");
-          }
-          if (values != null && values.size() > 0) {
-              //               retMode = "no";
-              Object[] valObj = new Object[values.size()];
-              for (int i = 0; i < values.size(); i++) {
-                  if (values.get(i) == null) {
-                      valObj[i] = null;
-                  } else if (JSONObject.NULL == values.get(i)) {
-                      valObj[i] = null;
-                  } else {
-                      valObj[i] = values.get(i);
-                  }
-              }
-              SimpleSQLiteQuery.bind(stmt, valObj);
-          }
-          initLastId = _uSqlite.dbLastId(_db);
-          if (stmtType.equals("INSERT")) {
-            stmt.executeInsert();
-          } else {
-            if (retMode.startsWith("wA") && colNames.length() > 0 && stmtType.equals("DELETE")) {
-              retValues = getUpdDelReturnedValues(this, sqlStmt, colNames);
+            } else {
+                throw new Exception("sqlStmt is null");
             }
-            stmt.executeUpdateDelete();
-          }
-          Long lastId = _uSqlite.dbLastId(_db);
-          if (retMode.startsWith("wA") && colNames.length() > 0) {
-            if (stmtType.equals("INSERT")) {
-                String tableName = extractTableName(sqlStmt);
-                if (tableName != null) {
-                  retValues = getInsertReturnedValues(this, colNames, tableName, initLastId, lastId, retMode);
+            if (values != null && values.size() > 0) {
+                //               retMode = "no";
+                Object[] valObj = new Object[values.size()];
+                for (int i = 0; i < values.size(); i++) {
+                    if (values.get(i) == null) {
+                        valObj[i] = null;
+                    } else if (JSONObject.NULL == values.get(i)) {
+                        valObj[i] = null;
+                    } else {
+                        valObj[i] = values.get(i);
+                    }
                 }
-            } else if (stmtType.equals("UPDATE")) {
-                retValues = getUpdDelReturnedValues(this, sqlStmt, colNames);
+                SimpleSQLiteQuery.bind(stmt, valObj);
             }
-          }
-          /*
+            initLastId = _uSqlite.dbLastId(_db);
+            if (stmtType.equals("INSERT")) {
+                stmt.executeInsert();
+            } else {
+                if (retMode.startsWith("wA") && colNames.length() > 0 && stmtType.equals("DELETE")) {
+                    retValues = getUpdDelReturnedValues(this, sqlStmt, colNames);
+                }
+                stmt.executeUpdateDelete();
+            }
+            Long lastId = _uSqlite.dbLastId(_db);
+            if (retMode.startsWith("wA") && colNames.length() > 0) {
+                if (stmtType.equals("INSERT")) {
+                    String tableName = extractTableName(sqlStmt);
+                    if (tableName != null) {
+                        retValues = getInsertReturnedValues(this, colNames, tableName, initLastId, lastId, retMode);
+                    }
+                } else if (stmtType.equals("UPDATE")) {
+                    retValues = getUpdDelReturnedValues(this, sqlStmt, colNames);
+                }
+            }
+            /*
           if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
 
             if (retMode.startsWith("one") || retMode.startsWith("all")) {
@@ -719,9 +716,9 @@ public class Database {
             }
           }
            */
-          retObject.put("lastId", lastId);
-          retObject.put("values", retValues);
-          return retObject;
+            retObject.put("lastId", lastId);
+            retObject.put("values", retValues);
+            return retObject;
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         } finally {
@@ -737,107 +734,107 @@ public class Database {
         Boolean isReturning = retIsReturning.getBoolean("isReturning");
         String stmt = retIsReturning.getString("stmt");
         String suffix = retIsReturning.getString("names");
-        retObj.put("stmt",stmt);
-        retObj.put("names","");
+        retObj.put("stmt", stmt);
+        retObj.put("names", "");
 
         if (isReturning && retMode.startsWith("wA")) {
-
-          String lowercaseSuffix = suffix != null ? suffix.toLowerCase() : "";
-          int returningIndex = lowercaseSuffix.indexOf("returning");
-          if (returningIndex != -1) {
-            String substring = suffix.substring(returningIndex + "returning".length());
-            String names = substring.trim();
-           if (names.endsWith(";")) {
-              retObj.put("names", names.substring(0, names.length() - 1));
+            String lowercaseSuffix = suffix != null ? suffix.toLowerCase() : "";
+            int returningIndex = lowercaseSuffix.indexOf("returning");
+            if (returningIndex != -1) {
+                String substring = suffix.substring(returningIndex + "returning".length());
+                String names = substring.trim();
+                if (names.endsWith(";")) {
+                    retObj.put("names", names.substring(0, names.length() - 1));
+                }
             }
-          }
         }
         return retObj;
     }
 
     private JSObject isReturning(String sqlStmt) {
-      JSObject retObj = new JSObject();
+        JSObject retObj = new JSObject();
 
-      String stmt = sqlStmt.replace("\n", "").trim();
-      if (stmt.endsWith(";")) {
-        // Remove the suffix
-        stmt = stmt.substring(0, stmt.length() - 1).trim();
-      }
-      retObj.put("isReturning",false);
-      retObj.put("stmt",stmt);
-      retObj.put("names","");
+        String stmt = sqlStmt.replace("\n", "").trim();
+        if (stmt.endsWith(";")) {
+            // Remove the suffix
+            stmt = stmt.substring(0, stmt.length() - 1).trim();
+        }
+        retObj.put("isReturning", false);
+        retObj.put("stmt", stmt);
+        retObj.put("names", "");
 
-      switch (stmt.substring(0, Math.min(stmt.length(), 6)).toUpperCase()) {
-        case "INSERT":
-          int valuesIndex = stmt.toUpperCase().indexOf("VALUES");
-          if (valuesIndex != -1) {
+        switch (stmt.substring(0, Math.min(stmt.length(), 6)).toUpperCase()) {
+            case "INSERT":
+                int valuesIndex = stmt.toUpperCase().indexOf("VALUES");
+                if (valuesIndex != -1) {
+                    int closingParenthesisIndex = -1;
 
-            int closingParenthesisIndex = -1;
+                    for (int i = stmt.length() - 1; i >= valuesIndex; i--) {
+                        if (stmt.charAt(i) == ')') {
+                            closingParenthesisIndex = i;
+                            break;
+                        }
+                    }
+                    if (closingParenthesisIndex != -1) {
+                        String stmtString = stmt.substring(0, closingParenthesisIndex + 1).trim() + ";";
+                        String resultString = stmt.substring(closingParenthesisIndex + 1).trim();
+                        if (resultString.length() > 0 && !resultString.endsWith(";")) {
+                            resultString += ";";
+                        }
+                        if (resultString.toLowerCase().contains("returning")) {
+                            retObj.put("isReturning", true);
+                            retObj.put("stmt", stmtString);
+                            retObj.put("names", resultString);
+                        }
+                    }
+                }
+                return retObj;
+            case "DELETE":
+            case "UPDATE":
+                String[] words = stmt.split("\\s+");
+                List<String> wordsBeforeReturning = new ArrayList<>();
+                List<String> returningString = new ArrayList<>();
 
-            for (int i = stmt.length() - 1; i >= valuesIndex; i--) {
-              if (stmt.charAt(i) == ')') {
-                closingParenthesisIndex = i;
-                break;
-              }
-            }
-            if (closingParenthesisIndex != -1) {
-              String stmtString = stmt.substring(0, closingParenthesisIndex + 1).trim() + ";";
-              String resultString = stmt.substring(closingParenthesisIndex + 1).trim();
-              if (resultString.length() > 0 && !resultString.endsWith(";")) {
-                resultString += ";";
-              }
-              if (resultString.toLowerCase().contains("returning")) {
-                retObj.put("isReturning", true);
-                retObj.put("stmt", stmtString);
-                retObj.put("names", resultString);
-              }
-            }
-          }
-          return retObj;
-        case "DELETE":
-        case "UPDATE":
-          String[] words = stmt.split("\\s+");
-          List<String> wordsBeforeReturning = new ArrayList<>();
-          List<String> returningString = new ArrayList<>();
+                boolean isReturningOutsideMessage = false;
+                for (String word : words) {
+                    if (word.toLowerCase().equals("returning")) {
+                        isReturningOutsideMessage = true;
+                        // Include "RETURNING" and the words after it in returningString
+                        returningString.add(word);
+                        returningString.addAll(wordsAfter(word, words));
+                        break;
+                    }
+                    wordsBeforeReturning.add(word);
+                }
 
-          boolean isReturningOutsideMessage = false;
-          for (String word : words) {
-            if (word.toLowerCase().equals("returning")) {
-              isReturningOutsideMessage = true;
-              // Include "RETURNING" and the words after it in returningString
-              returningString.add(word);
-              returningString.addAll(wordsAfter(word, words));
-              break;
-            }
-            wordsBeforeReturning.add(word);
-          }
-
-          if (isReturningOutsideMessage) {
-            String joinedWords = String.join(" ", wordsBeforeReturning) + ";";
-            String joinedReturningString = String.join(" ", returningString);
-            if (joinedReturningString.length() > 0 && !joinedReturningString.endsWith(";")) {
-              joinedReturningString += ";";
-            }
-            retObj.put("isReturning",true);
-            retObj.put("stmt",joinedWords);
-            retObj.put("names",joinedReturningString);
-            return retObj;
-          } else {
-            return retObj;
-          }
-        default:
-          return retObj;
-      }
+                if (isReturningOutsideMessage) {
+                    String joinedWords = String.join(" ", wordsBeforeReturning) + ";";
+                    String joinedReturningString = String.join(" ", returningString);
+                    if (joinedReturningString.length() > 0 && !joinedReturningString.endsWith(";")) {
+                        joinedReturningString += ";";
+                    }
+                    retObj.put("isReturning", true);
+                    retObj.put("stmt", joinedWords);
+                    retObj.put("names", joinedReturningString);
+                    return retObj;
+                } else {
+                    return retObj;
+                }
+            default:
+                return retObj;
+        }
     }
+
     private List<String> wordsAfter(String word, String[] words) {
-      List<String> mWords = Arrays.asList(words);
-      int index = mWords.indexOf(word);
-      if (index == -1) {
-        return new ArrayList<>();
-      }
-      List<String> retWords = new ArrayList<>(mWords.subList(index + 1, mWords.size()));
-      return retWords;
+        List<String> mWords = Arrays.asList(words);
+        int index = mWords.indexOf(word);
+        if (index == -1) {
+            return new ArrayList<>();
+        }
+        List<String> retWords = new ArrayList<>(mWords.subList(index + 1, mWords.size()));
+        return retWords;
     }
+
     private JSArray getInsertReturnedValues(Database mDB, String colNames, String tableName, Long iLastId, Long lastId, String rMode)
         throws Exception {
         JSArray retVals = new JSArray();
@@ -1181,10 +1178,10 @@ public class Database {
                 long syncTime = date.getTime() / 1000L;
                 toJson.setLastExportDate(this, syncTime);
             } else {
-                if(inJson.getMode().equals("partial")) {
+                if (inJson.getMode().equals("partial")) {
                     throw new Exception("No sync_table available");
                 }
-             }
+            }
             // launch the export process
             JsonSQLite retJson = toJson.createExportObject(this, inJson);
             //        retJson.print();

@@ -801,8 +801,8 @@ public class CapacitorSQLite {
         for (String file : listFiles) {
             if (file.contains("SQLite")) {
                 retArray.put(file);
-              }
             }
+        }
         if (retArray.length() > 0) {
             return retArray;
         } else {

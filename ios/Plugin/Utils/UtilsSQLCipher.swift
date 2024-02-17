@@ -447,7 +447,7 @@ class UtilsSQLCipher {
             msg.append("Database not opened")
             throw UtilsSQLCipherError.prepareSQL(message: msg)
         }
-//        let systemVersion = UIDevice.current.systemVersion
+        //        let systemVersion = UIDevice.current.systemVersion
         var runSQLStatement: OpaquePointer?
         var message: String = ""
         var lastId: Int64 = -1
@@ -554,7 +554,6 @@ class UtilsSQLCipher {
             return (lastId, result)
         }
     }
-    
 
     // MARK: - returningWorkAround
 

@@ -88,8 +88,9 @@ export class Database {
     try {
       if (
         this._encrypted &&
-        (this._mode === 'secret' || this._mode === 'encryption'
-        || this._mode === 'decryption')
+        (this._mode === 'secret' ||
+          this._mode === 'encryption' ||
+          this._mode === 'decryption')
       ) {
         password = this.secretUtil.getPassphrase();
 
@@ -102,7 +103,7 @@ export class Database {
       }
       if (this._mode === 'decryption') {
         await this.encryptionUtil.decryptDatabase(this.pathDB, password);
-        password = ""
+        password = '';
       }
       this.database = this.sqliteUtil.openOrCreateDatabase(
         this.pathDB,
@@ -523,7 +524,6 @@ export class Database {
     isSQL92: boolean,
   ): Changes {
     this.ensureDatabaseIsOpen();
-
     try {
       // start a transaction
       if (transaction) {
