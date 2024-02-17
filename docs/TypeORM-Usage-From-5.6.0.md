@@ -39,7 +39,8 @@ In the context of an Author DataSource with three entities
 
 the TypeOrm directory structure could be organized as follows, irrespective of the framework used:
 
-![alt text](<Capture d’écran 2024-02-17 à 18.54.03.png>)
+
+
 
 
 ## Putting Some Code Into Those Files
