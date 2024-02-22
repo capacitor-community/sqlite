@@ -4,6 +4,10 @@
 
  - Remove the ability to run `migrations:generate` with the TypeOrm Cli as the way it has been implemented works from some Frameworks but not with Angular were developers could not anymore build there apps. see issue#516 Update 5.6.0.
 
+### Bug Fixes
+
+ - Fix Electron Platform SQL92 false generates invalid SQL query issue#518
+
 
 # 5.6.0 (2024-02-17)
 

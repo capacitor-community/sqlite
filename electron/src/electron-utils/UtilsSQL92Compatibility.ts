@@ -60,7 +60,7 @@ export class UtilsSQL92Compatibility {
     for (let i = 1; i < setWhereSplit.length; i++) {
       const wherePart = setWhereSplit[1].trim();
       const modifiedWherePart = this.modWherePart(wherePart);
-      modifiedStatement += `WHERE ${modifiedWherePart}`;
+      modifiedStatement += ` WHERE ${modifiedWherePart}`;
     }
     return modifiedStatement;
   }
