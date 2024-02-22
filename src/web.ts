@@ -36,7 +36,6 @@ import type {
   capSQLiteExtensionPath,
   capSQLiteExtensionEnable,
 } from './definitions';
-import { Database } from './web-typeorm-utils/database';
 
 export class CapacitorSQLiteWeb
   extends WebPlugin
@@ -44,7 +43,6 @@ export class CapacitorSQLiteWeb
 {
   private jeepSqliteElement: any = null;
   private isWebStoreOpen = false;
-  private databases: { [databasename: string]: Database } = {};
 
   async initWebStore(): Promise<void> {
     await customElements.whenDefined('jeep-sqlite');
@@ -135,87 +133,38 @@ export class CapacitorSQLiteWeb
   }
 
   async createConnection(options: capConnectionOptions): Promise<void> {
-    if (typeof window !== 'undefined' && window.document) {
-      this.ensureJeepSqliteIsAvailable();
-      this.ensureWebstoreIsOpen();
+    this.ensureJeepSqliteIsAvailable();
+    this.ensureWebstoreIsOpen();
 
-      try {
-        await this.jeepSqliteElement.createConnection(options);
-        return;
-      } catch (err) {
-        throw new Error(`${err}`);
-      }
-    } else {
-      // Only for typeOrm to run migration:generate
-      const optionKeys = Object.keys(options);
-      let dbName: string | undefined;
-      if (!optionKeys.includes('database')) {
-        throw new Error('Must provide a database name');
-      } else {
-        dbName = options.database;
-      }
-      const connName: string = 'RW_' + dbName;
-      const databaseConnection: Database = new Database();
-      this.databases[connName] = databaseConnection;
+    try {
+      await this.jeepSqliteElement.createConnection(options);
+      return;
+    } catch (err) {
+      throw new Error(`${err}`);
     }
   }
 
   async open(options: capSQLiteOptions): Promise<void> {
-    if (typeof window !== 'undefined' && window.document) {
-      this.ensureJeepSqliteIsAvailable();
-      this.ensureWebstoreIsOpen();
+    this.ensureJeepSqliteIsAvailable();
+    this.ensureWebstoreIsOpen();
 
-      try {
-        await this.jeepSqliteElement.open(options);
-        return;
-      } catch (err) {
-        throw new Error(`${err}`);
-      }
-    } else {
-      // Only for typeOrm to run migration:generate
-
-      const dbName = options.database ? options.database : '';
-      if (dbName.length === 0) {
-        throw new Error('Must provide a database name');
-      }
-      const readonly = false;
-      const connName = readonly ? 'RO_' + dbName : 'RW_' + dbName;
-      const database = this.getDatabaseConnectionOrThrowError(connName);
-      try {
-        await database.open(dbName);
-      } catch (err) {
-        throw new Error(`### open ${err}`);
-      }
+    try {
+      await this.jeepSqliteElement.open(options);
+      return;
+    } catch (err) {
+      throw new Error(`${err}`);
     }
   }
 
   async closeConnection(options: capSQLiteOptions): Promise<void> {
-    if (typeof window !== 'undefined' && window.document) {
-      this.ensureJeepSqliteIsAvailable();
-      this.ensureWebstoreIsOpen();
+    this.ensureJeepSqliteIsAvailable();
+    this.ensureWebstoreIsOpen();
 
-      try {
-        await this.jeepSqliteElement.closeConnection(options);
-        return;
-      } catch (err) {
-        throw new Error(`${err}`);
-      }
-    } else {
-      // Only for typeOrm to run migration:generate
-      const dbName = options.database ? options.database : '';
-      if (dbName.length === 0) {
-        throw new Error('Must provide a database name');
-      }
-      const readonly = false;
-      const connName = readonly ? 'RO_' + dbName : 'RW_' + dbName;
-      const database = this.getDatabaseConnectionOrThrowError(connName);
-      try {
-        await database.close();
-        // remove the connection from dictionary
-        delete this.databases[connName];
-      } catch (err) {
-        throw new Error(`### closeConnection ${err}`);
-      }
+    try {
+      await this.jeepSqliteElement.closeConnection(options);
+      return;
+    } catch (err) {
+      throw new Error(`${err}`);
     }
   }
 
@@ -247,32 +196,16 @@ export class CapacitorSQLiteWeb
   }
 
   async close(options: capSQLiteOptions): Promise<void> {
-    if (typeof window !== 'undefined' && window.document) {
-      this.ensureJeepSqliteIsAvailable();
-      this.ensureWebstoreIsOpen();
+    this.ensureJeepSqliteIsAvailable();
+    this.ensureWebstoreIsOpen();
 
-      try {
-        await this.jeepSqliteElement.close(options);
-        return;
-      } catch (err) {
-        throw new Error(`${err}`);
-      }
-    } else {
-      // Only for typeOrm to run migration:generate
-
-      const dbName = options.database ? options.database : '';
-      if (dbName.length === 0) {
-        throw new Error('Must provide a database name');
-      }
-      const readonly = false;
-      const connName = readonly ? 'RO_' + dbName : 'RW_' + dbName;
-      const database = this.getDatabaseConnectionOrThrowError(connName);
-      try {
-        await database.close();
-      } catch (err) {
-        throw new Error(`### close ${err}`);
-      }
+    try {
+      await this.jeepSqliteElement.close(options);
+      return;
+    } catch (err) {
+      throw new Error(`${err}`);
     }
+
   }
   async beginTransaction(options: capSQLiteOptions): Promise<capSQLiteChanges> {
     this.ensureJeepSqliteIsAvailable();
@@ -343,39 +276,17 @@ export class CapacitorSQLiteWeb
   }
 
   async execute(options: capSQLiteExecuteOptions): Promise<capSQLiteChanges> {
-    if (typeof window !== 'undefined' && window.document) {
-      this.ensureJeepSqliteIsAvailable();
-      this.ensureWebstoreIsOpen();
+    this.ensureJeepSqliteIsAvailable();
+    this.ensureWebstoreIsOpen();
 
-      try {
-        const executeResult: capSQLiteChanges =
-          await this.jeepSqliteElement.execute(options);
-        return executeResult;
-      } catch (err) {
-        throw new Error(`${err}`);
-      }
-    } else {
-      // Only for typeOrm to run migration:generate
-
-      const dbName = options.database ? options.database : '';
-      if (dbName.length === 0) {
-        throw new Error('Must provide a database name');
-      }
-      const statements = options.statements ? options.statements : '';
-      if (statements.length === 0) {
-        return Promise.reject('Must provide raw SQL statements');
-      }
-      const readonly = false;
-      const connName = readonly ? 'RO_' + dbName : 'RW_' + dbName;
-      const database = this.getDatabaseConnectionOrThrowError(connName);
-      try {
-        const ret = await database.executeSQL(statements);
-        const executeResult: capSQLiteChanges = { changes: { changes: ret } };
-        return executeResult;
-      } catch (err) {
-        throw new Error(`${err}`);
-      }
+    try {
+      const executeResult: capSQLiteChanges =
+        await this.jeepSqliteElement.execute(options);
+      return executeResult;
+    } catch (err) {
+      throw new Error(`${err}`);
     }
+
   }
 
   async executeSet(options: capSQLiteSetOptions): Promise<capSQLiteChanges> {
@@ -392,79 +303,29 @@ export class CapacitorSQLiteWeb
   }
 
   async run(options: capSQLiteRunOptions): Promise<capSQLiteChanges> {
-    if (typeof window !== 'undefined' && window.document) {
-      this.ensureJeepSqliteIsAvailable();
-      this.ensureWebstoreIsOpen();
+    this.ensureJeepSqliteIsAvailable();
+    this.ensureWebstoreIsOpen();
 
-      try {
-        const runResult: capSQLiteChanges = await this.jeepSqliteElement.run(
-          options,
-        );
-        return runResult;
-      } catch (err) {
-        throw new Error(`${err}`);
-      }
-    } else {
-      // Only for typeOrm to run migration:generate
-
-      const dbName = options.database ? options.database : '';
-      if (dbName.length === 0) {
-        throw new Error('Must provide a database name');
-      }
-      const statement = options.statement ? options.statement : '';
-      if (statement.length === 0) {
-        return Promise.reject('Must provide raw SQL statement');
-      }
-      const values = options.values ? options.values : [];
-      const readonly = false;
-      const returnMode = options.returnMode ? options.returnMode : 'no';
-
-      const connName = readonly ? 'RO_' + dbName : 'RW_' + dbName;
-      const database = this.getDatabaseConnectionOrThrowError(connName);
-      try {
-        const runResult = await database.run(statement, values, returnMode);
-        return runResult;
-      } catch (err) {
-        throw new Error(`${err}`);
-      }
+    try {
+      const runResult: capSQLiteChanges = await this.jeepSqliteElement.run(
+        options,
+      );
+      return runResult;
+    } catch (err) {
+      throw new Error(`${err}`);
     }
   }
   async query(options: capSQLiteQueryOptions): Promise<capSQLiteValues> {
-    if (typeof window !== 'undefined' && window.document) {
-      this.ensureJeepSqliteIsAvailable();
-      this.ensureWebstoreIsOpen();
+    this.ensureJeepSqliteIsAvailable();
+    this.ensureWebstoreIsOpen();
 
-      try {
-        const queryResult: capSQLiteValues = await this.jeepSqliteElement.query(
-          options,
-        );
-        return queryResult;
-      } catch (err) {
-        throw new Error(`${err}`);
-      }
-    } else {
-      // Only for typeOrm to run migration:generate
-      const dbName = options.database ? options.database : '';
-      if (dbName.length === 0) {
-        throw new Error('Must provide a database name');
-      }
-      const statement = options.statement ? options.statement : '';
-      if (statement.length === 0) {
-        return Promise.reject('Must provide raw SQL statement');
-      }
-      const values = options.values ? options.values : [];
-      const readonly = false;
-      const connName = readonly ? 'RO_' + dbName : 'RW_' + dbName;
-      const database = this.getDatabaseConnectionOrThrowError(connName);
-      try {
-        const queryResult: capSQLiteValues = await database.selectSQL(
-          statement,
-          values,
-        );
-        return queryResult;
-      } catch (err) {
-        throw new Error(`${err}`);
-      }
+    try {
+      const queryResult: capSQLiteValues = await this.jeepSqliteElement.query(
+        options,
+      );
+      return queryResult;
+    } catch (err) {
+      throw new Error(`${err}`);
     }
   }
   async isDBExists(options: capSQLiteOptions): Promise<capSQLiteResult> {
@@ -694,14 +555,7 @@ export class CapacitorSQLiteWeb
       );
     }
   }
-  private getDatabaseConnectionOrThrowError(dbName: string): Database {
-    const databaseNames = Object.keys(this.databases);
-    if (!databaseNames.includes(dbName)) {
-      throw new Error(`No connection available for database "${dbName}"`);
-    }
 
-    return this.databases[dbName];
-  }
 
   ////////////////////////////////////
   ////// UNIMPLEMENTED METHODS

@@ -13,15 +13,12 @@
 
  - The `typeOrm` package now has a `capacitor` driver type that must be used with the `@capacitor-community/sqlite` capacitor plugin.
 
- - Apps using the `@capacitor-community/sqlite` capacitor plugin cannot use the `CLI` of the `typeOrm` package. Developers were receiving a message stating that the "jeep-sqlite element is not present in the DOM" when trying to access it. This is a result of the database being created and stored in the DOM.
+ - Apps using the `@capacitor-community/sqlite` capacitor plugin cannot use the `CLI` of the `typeOrm` package. Developers trying to do so, will receive a message stating that the "jeep-sqlite element is not present in the DOM". The Web part of the plugin needs the DOM to create and store the database. 
 
-## New from release 5.6.0 of @capacitor-community/sqlite
+ - In release 5.6.0, I attempted to propose a workaround by utilizing certain Node.js packages like 'fs', 'os', and 'path' to facilitate the generation of initial and subsequent migration files. While this workaround worked smoothly on some frameworks using Vite (such as React and Svelte), unfortunately, I encountered difficulties with Angular due to the inability to find a suitable method for building the app.
 
- - By incorporating Node.js code into few methods of the `@capacitor-community/sqlite` Web Interface, the `migration:generate` TypeORM CLI becomes accessible even when the DOM is not available, enabling the generation of initial migration files.
+ - In release 5.6.1.1, I decided to retract the proposal for the workaround and refrain from implementing it. As a consequence, migration files will need to be created manually.
 
- - Before generating subsequent migration files following modifications to the entities, it's necessary to save the DOM database to the local disk.
-
- - Because of the limitation imposed by the WellKnownDirectory in the `browser-fs-access` package utilized by `jeep-sqlite` for saving the database on the local disk, the `documents` directory has been designated. Therefore, when the file picker form is displayed, you need to navigate to the Documents/CapacitorSQLite/YOUR_APPLICATION_NAME directory to save the database.
 
 ## Applications/Tutorials
 
@@ -247,26 +244,62 @@ export const getCountOfElements =  (async (connection: DataSource, entity:any): 
     });
  ```
 
-## Modify the Scripts in Package.json File
 
-```json
-  "scripts": {
-    ...
-    "typeorm:migration:generate:initialAuthor": "npx typeorm-ts-node-esm migration:generate src/databases/migrations/author/InitialAuthorPost -d src/databases/datasources/AuthorDataSource.ts",
-    "postinstall": "node ./scripts/modify-typeorm.cjs"
 
-  }
+## Create the initial migration file
 
+ - Under the `migrations/author` directory create a file `1708168009284-InitialAuthorPost.ts` where `1708168009284`is a timestamp and copy the following code 
+
+ ```ts
+import { MigrationInterface, QueryRunner } from "typeorm";
+
+export class InitialAuthorPost1708269296396 implements MigrationInterface {
+    name = 'InitialAuthorPost1708269296396'
+
+    public async up(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`CREATE TABLE "category" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "name" varchar NOT NULL, CONSTRAINT "UQ_23c05c292c439d77b0de816b500" UNIQUE ("name"))`);
+        await queryRunner.query(`CREATE TABLE "post" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "title" varchar NOT NULL, "text" text NOT NULL, "authorId" integer)`);
+        await queryRunner.query(`CREATE TABLE "author" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "name" varchar NOT NULL, "birthday" varchar, "email" varchar NOT NULL, CONSTRAINT "UQ_384deada87eb62ab31c5d5afae5" UNIQUE ("email"))`);
+        await queryRunner.query(`CREATE TABLE "post_categories_category" ("postId" integer NOT NULL, "categoryId" integer NOT NULL, PRIMARY KEY ("postId", "categoryId"))`);
+        await queryRunner.query(`CREATE INDEX "IDX_93b566d522b73cb8bc46f7405b" ON "post_categories_category" ("postId") `);
+        await queryRunner.query(`CREATE INDEX "IDX_a5e63f80ca58e7296d5864bd2d" ON "post_categories_category" ("categoryId") `);
+        await queryRunner.query(`CREATE TABLE "temporary_post" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "title" varchar NOT NULL, "text" text NOT NULL, "authorId" integer, CONSTRAINT "FK_c6fb082a3114f35d0cc27c518e0" FOREIGN KEY ("authorId") REFERENCES "author" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION)`);
+        await queryRunner.query(`INSERT INTO "temporary_post"("id", "title", "text", "authorId") SELECT "id", "title", "text", "authorId" FROM "post"`);
+        await queryRunner.query(`DROP TABLE "post"`);
+        await queryRunner.query(`ALTER TABLE "temporary_post" RENAME TO "post"`);
+        await queryRunner.query(`DROP INDEX "IDX_93b566d522b73cb8bc46f7405b"`);
+        await queryRunner.query(`DROP INDEX "IDX_a5e63f80ca58e7296d5864bd2d"`);
+        await queryRunner.query(`CREATE TABLE "temporary_post_categories_category" ("postId" integer NOT NULL, "categoryId" integer NOT NULL, CONSTRAINT "FK_93b566d522b73cb8bc46f7405bd" FOREIGN KEY ("postId") REFERENCES "post" ("id") ON DELETE CASCADE ON UPDATE CASCADE, CONSTRAINT "FK_a5e63f80ca58e7296d5864bd2d3" FOREIGN KEY ("categoryId") REFERENCES "category" ("id") ON DELETE CASCADE ON UPDATE CASCADE, PRIMARY KEY ("postId", "categoryId"))`);
+        await queryRunner.query(`INSERT INTO "temporary_post_categories_category"("postId", "categoryId") SELECT "postId", "categoryId" FROM "post_categories_category"`);
+        await queryRunner.query(`DROP TABLE "post_categories_category"`);
+        await queryRunner.query(`ALTER TABLE "temporary_post_categories_category" RENAME TO "post_categories_category"`);
+        await queryRunner.query(`CREATE INDEX "IDX_93b566d522b73cb8bc46f7405b" ON "post_categories_category" ("postId") `);
+        await queryRunner.query(`CREATE INDEX "IDX_a5e63f80ca58e7296d5864bd2d" ON "post_categories_category" ("categoryId") `);
+    }
+
+    public async down(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`DROP INDEX "IDX_a5e63f80ca58e7296d5864bd2d"`);
+        await queryRunner.query(`DROP INDEX "IDX_93b566d522b73cb8bc46f7405b"`);
+        await queryRunner.query(`ALTER TABLE "post_categories_category" RENAME TO "temporary_post_categories_category"`);
+        await queryRunner.query(`CREATE TABLE "post_categories_category" ("postId" integer NOT NULL, "categoryId" integer NOT NULL, PRIMARY KEY ("postId", "categoryId"))`);
+        await queryRunner.query(`INSERT INTO "post_categories_category"("postId", "categoryId") SELECT "postId", "categoryId" FROM "temporary_post_categories_category"`);
+        await queryRunner.query(`DROP TABLE "temporary_post_categories_category"`);
+        await queryRunner.query(`CREATE INDEX "IDX_a5e63f80ca58e7296d5864bd2d" ON "post_categories_category" ("categoryId") `);
+        await queryRunner.query(`CREATE INDEX "IDX_93b566d522b73cb8bc46f7405b" ON "post_categories_category" ("postId") `);
+        await queryRunner.query(`ALTER TABLE "post" RENAME TO "temporary_post"`);
+        await queryRunner.query(`CREATE TABLE "post" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "title" varchar NOT NULL, "text" text NOT NULL, "authorId" integer)`);
+        await queryRunner.query(`INSERT INTO "post"("id", "title", "text", "authorId") SELECT "id", "title", "text", "authorId" FROM "temporary_post"`);
+        await queryRunner.query(`DROP TABLE "temporary_post"`);
+        await queryRunner.query(`DROP INDEX "IDX_a5e63f80ca58e7296d5864bd2d"`);
+        await queryRunner.query(`DROP INDEX "IDX_93b566d522b73cb8bc46f7405b"`);
+        await queryRunner.query(`DROP TABLE "post_categories_category"`);
+        await queryRunner.query(`DROP TABLE "author"`);
+        await queryRunner.query(`DROP TABLE "post"`);
+        await queryRunner.query(`DROP TABLE "category"`);
+    }
+
+}
 ```
-
-## Generate the initial migration file
-
-```bash
-npm run postinstall
-npm run typeorm:migration:generate:initialAuthor
-```
-
- - Now you must have a file like `1708168009284-InitialAuthorPost.ts`under the `migrations/author` directory
 
  - Open the `index.ts`file under `migrations/author` directory and edit it with
 
