@@ -1,3 +1,9 @@
+# 5.6.1-2 (2024-02-25)
+
+### Bug Fixes
+
+ - BLOB binding issue in iOS #514
+
 # 5.6.1-1 (2024-02-22)
 
 ### Remove Features

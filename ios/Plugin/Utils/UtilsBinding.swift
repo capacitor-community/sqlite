@@ -69,10 +69,35 @@ class UtilsBinding {
             let data: Data = Data(value)
             sqlite3_bind_blob(handle, Int32(idx), data.bytes,
                               Int32(data.bytes.count), SQLITETRANSIENT)
+        } else if let value = value {
+            let isDict = checkTypeDict(from: value)
+            if isDict {
+                
+                let sortedValues = extractSortedValues(from: value as! [String : Int])
+                let data: Data = Data(sortedValues)
+                sqlite3_bind_blob(handle, Int32(idx), data.bytes,
+                                  Int32(data.bytes.count), SQLITETRANSIENT)
+            }
+
         } else {
             throw UtilsSQLCipherError.bindFailed
         }
 
     }
     // swiftlint:enable cyclomatic_complexity
+    class func extractSortedValues(from queryValues: [String: Int]) -> [UInt8] {
+        // Extract keys and sort them
+        let sortedKeys = queryValues.keys.sorted { $0.localizedStandardCompare($1) == .orderedAscending }
+
+        // Extract corresponding values and sort them based on keys
+        let sortedValues = sortedKeys.compactMap { UInt8(queryValues[$0] ?? 0) }
+
+        return sortedValues
+    }
+    class func checkTypeDict(from value: Any) -> Bool {
+        guard value is [String: Int] else {
+            return false
+        }
+        return true
+   }
 }
