@@ -1,14 +1,14 @@
-# 5.6.1-2 (2024-02-26)
+# 5.6.1-3 (2024-02-26)
 
 ### Bug Fixes
 
- - exportToJson not working (iOS) issue#513
+ - Fix exportToJson not working (iOS) issue#513
 
 # 5.6.1-2 (2024-02-25)
 
 ### Bug Fixes
 
- - BLOB binding issue in iOS #514
+ - Fix BLOB binding issue in iOS #514
 
 # 5.6.1-1 (2024-02-22)
 
