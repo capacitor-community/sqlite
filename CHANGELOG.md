@@ -1,3 +1,9 @@
+# 5.6.1-2 (2024-02-26)
+
+### Bug Fixes
+
+ - exportToJson not working (iOS) issue#513
+
 # 5.6.1-2 (2024-02-25)
 
 ### Bug Fixes

@@ -70,15 +70,12 @@ class UtilsBinding {
             sqlite3_bind_blob(handle, Int32(idx), data.bytes,
                               Int32(data.bytes.count), SQLITETRANSIENT)
         } else if let value = value {
-            let isDict = checkTypeDict(from: value)
-            if isDict {
-                
-                let sortedValues = extractSortedValues(from: value as! [String : Int])
+            if let dict = value as? [String: Int] {
+                let sortedValues = extractSortedValues(from: dict)
                 let data: Data = Data(sortedValues)
                 sqlite3_bind_blob(handle, Int32(idx), data.bytes,
-                                  Int32(data.bytes.count), SQLITETRANSIENT)
+                            Int32(data.bytes.count), SQLITETRANSIENT)
             }
-
         } else {
             throw UtilsSQLCipherError.bindFailed
         }

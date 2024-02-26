@@ -374,7 +374,6 @@ class UtilsDelete {
 
     class func getCurrentTimeAsInteger() -> Int {
         let currentTime = Date().timeIntervalSince1970
-        print(">>>> in  getCurrentTimeAsInteger currentTime: \(currentTime)")
         return Int(currentTime)
     }
 
