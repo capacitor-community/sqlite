@@ -1,3 +1,9 @@
+# 5.6.1-4 (2024-02-27)
+
+### Bug Fixes
+
+ - Fix importFromJson of binary blob not working (iOS, Android, Electron)
+
 # 5.6.1-3 (2024-02-26)
 
 ### Bug Fixes

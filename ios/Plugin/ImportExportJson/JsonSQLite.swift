@@ -51,7 +51,7 @@ public struct JsonTable: Codable {
     var schema: [JsonColumn]?
     var indexes: [JsonIndex]?
     var triggers: [JsonTrigger]?
-    var values: [[UncertainValue<String, Int, Double>]]?
+    var values: [[UncertainValue<String, Int, Double, [UInt8]>]]?
 
     public func show() {
         print("name: \(name) ")
@@ -141,12 +141,13 @@ public struct JsonTrigger: Codable {
         print("logic: \(logic) ")
     }
 }
-public struct UncertainValue<T: Codable, U: Codable, V: Codable>: Codable {
+public struct UncertainValue<T: Codable, U: Codable, V: Codable, W: Codable>: Codable {
     public var tValue: T?
     public var uValue: U?
     public var vValue: V?
+    public var wValue: W?
     public var value: Any? {
-        return tValue ?? uValue ?? vValue
+        return tValue ?? uValue ?? vValue ?? wValue
     }
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
@@ -154,6 +155,9 @@ public struct UncertainValue<T: Codable, U: Codable, V: Codable>: Codable {
         uValue = try? container.decode(U.self)
         if uValue == nil {
             vValue = try? container.decode(V.self)
+        }
+        if vValue == nil {
+            wValue = try? container.decode(W.self)
         }
     }
 }

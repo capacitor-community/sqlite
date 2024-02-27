@@ -245,6 +245,7 @@ export class UtilsJson {
       // Loop on Table Values
       for (let j = 0; j < table.values.length; j++) {
         let row = table.values[j];
+        row = this.createRowData(row);
         let isRun = true;
         const stmt: string = this.createRowStatement(
           mDB,
@@ -273,6 +274,17 @@ export class UtilsJson {
     } catch (err) {
       throw new Error(`${msg} ${err}`);
     }
+  }
+  public createRowData(row: any): any {
+    // Iterate over the row array
+    for (let i = 0; i < row.length; i++) {
+      // Check if the current element is an array of numbers
+      if (Array.isArray(row[i]) && row[i].every((item: any) => typeof item === 'number')) {
+          const byteArray = Uint8Array.from(row[i] as number[]);
+          row[i] = byteArray;
+      }
+    }
+    return row;
   }
   /**
    * CreateRowStatement

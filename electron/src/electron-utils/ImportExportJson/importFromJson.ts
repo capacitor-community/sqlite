@@ -36,7 +36,12 @@ export class ImportFromJson {
     let results: Changes;
     let isValue = false;
     let message = '';
+    let initChanges = -1;
+    let changes = -1;
+
     try {
+      initChanges = this.sqliteUtil.dbChanges(mDB.database);
+
       // start a transaction
       this.sqliteUtil.beginTransaction(mDB.database, true);
       mDB.setIsTransActive(true);
@@ -65,7 +70,9 @@ export class ImportFromJson {
       try {
         this.sqliteUtil.commitTransaction(mDB.database, true);
         mDB.setIsTransActive(false);
-        return results.changes;
+        changes = this.sqliteUtil.dbChanges(mDB.database) - initChanges;
+
+        return changes;
       } catch (err) {
         throw new Error(`${msg} ${err}`);
       }
