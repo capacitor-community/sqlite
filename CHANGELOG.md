@@ -1,3 +1,9 @@
+# 5.6.1 (2024-02-29)
+
+### Bug Fixes
+
+ - Fix SQL query is converted to be compatible with SQL92 regardless of argument value of isSQL92 in query method when values argument is an empty array issue#519
+
 # 5.6.1-4 (2024-02-27)
 
 ### Bug Fixes

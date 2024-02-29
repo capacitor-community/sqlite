@@ -2177,7 +2177,7 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
           statement: statement,
           values: values,
           readonly: this.readonly,
-          isSql92: true,
+          isSQL92: true,
         });
       } else {
         res = await this.sqlite.query({
