@@ -48,7 +48,7 @@ pnpm install --save sql.js
 npx cap sync
 ```
 
-then add plugin to main `capacitor.config.json` file:
+then add plugin to main `capacitor.config.ts` file:
 
 ```ts
 import { CapacitorConfig } from '@capacitor/cli';

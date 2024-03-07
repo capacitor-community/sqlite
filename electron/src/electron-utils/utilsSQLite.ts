@@ -347,7 +347,7 @@ export class UtilsSQLite {
     isSQL92: boolean,
   ): string {
     // split the statements in an array of statement
-    let sqlStmt = sql.replace(/\n/g, '');
+    let sqlStmt = sql /*.replace(/\n/g, '')*/;
     // deal with trigger
     sqlStmt = sqlStmt.replace(/end;/g, 'END;');
     sqlStmt = sqlStmt.replace(/;END;/g, '&END;');
@@ -398,7 +398,7 @@ export class UtilsSQLite {
       }
       resArr.push(rStmt);
     }
-    sqlStmt = resArr.join(';');
+    sqlStmt = resArr.join(';\n');
     return sqlStmt;
   }
   /**
@@ -510,7 +510,7 @@ export class UtilsSQLite {
     const msg = 'PrepareRun';
 
     const stmtType: string = statement
-      .replace(/\n/g, '')
+//      .replace(/\n/g, '')
       .trim()
       .substring(0, 6)
       .toUpperCase();
@@ -1227,7 +1227,7 @@ export class UtilsSQLite {
     stmt: string;
     suffix: string;
   } {
-    let stmt = sqlStmt.replace(/\n/g, '').trim();
+    let stmt = sqlStmt.trim();
 
     if (stmt.endsWith(';')) {
       stmt = stmt.slice(0, -1).trim();
@@ -1323,16 +1323,35 @@ export class UtilsSQLite {
         const substring = suffix.slice(returningIndex + 9); // 9 is the length of "returning"
 
         const names = substring.trim();
-        if (names.endsWith(';')) {
-          retObj.names = names.slice(0, -1);
-        } else {
-          retObj.names = names;
-        }
+        retObj.names = this.getNames(names);
       }
     }
 
     return retObj;
   }
+  private getNames(input: string): string {
+    // Find the index of the first occurrence of ";", "--", or "/*"
+    const indexSemicolon = input.indexOf(';');
+    const indexDoubleDash = input.indexOf('--');
+    const indexCommentStart = input.indexOf('/*');
+    
+    // Find the minimum index among them
+    let minIndex = input.length;
+    if (indexSemicolon !== -1) {
+        minIndex = Math.min(minIndex, indexSemicolon);
+    }
+    if (indexDoubleDash !== -1) {
+        minIndex = Math.min(minIndex, indexDoubleDash);
+    }
+    if (indexCommentStart !== -1) {
+        minIndex = Math.min(minIndex, indexCommentStart);
+    }
+    
+    // Extract substring up to the minimum index
+    const colnames = input.substring(0, minIndex).trim();
+    return colnames;    
+  }
+
   private getTableName(sqlStatement: string): string | null {
     const patterns: { [key: string]: RegExp } = {
       insert: /INSERT\s+INTO\s+(\w+)/i,

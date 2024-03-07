@@ -128,35 +128,6 @@ export class UtilsSQLStatement {
     return lines.join(' ');
   }
 
-  public getStmtAndRetColNames(
-    sqlStmt: string,
-    retMode: string,
-  ): { stmt: string; names: string } {
-    const retWord = 'RETURNING';
-    const retStmtNames: { stmt: string; names: string } = {
-      stmt: sqlStmt,
-      names: '',
-    };
-
-    const retWordIndex = sqlStmt.toUpperCase().indexOf(retWord);
-    if (retWordIndex !== -1) {
-      const prefix = sqlStmt.substring(0, retWordIndex);
-      retStmtNames.stmt = `${prefix};`;
-
-      if (retMode.substring(0, 2) === 'wA') {
-        const suffix = sqlStmt.substring(retWordIndex + retWord.length);
-        const names = suffix.trim();
-        if (names.endsWith(';')) {
-          retStmtNames.names = names.substring(0, names.length - 1);
-        } else {
-          retStmtNames.names = names;
-        }
-      }
-    }
-
-    return retStmtNames;
-  }
-
   public extractCombinedPrimaryKey(whereClause: string): string[][] | null {
     const pattern = /WHERE\s*\((.+?)\)\s*(?:=|IN)\s*\((.+?)\)/g;
     const regex = new RegExp(pattern);

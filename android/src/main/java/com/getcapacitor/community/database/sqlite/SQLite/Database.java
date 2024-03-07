@@ -743,24 +743,40 @@ public class Database {
             if (returningIndex != -1) {
                 String substring = suffix.substring(returningIndex + "returning".length());
                 String names = substring.trim();
-                if (names.endsWith(";")) {
-                    retObj.put("names", names.substring(0, names.length() - 1));
-                }
-            }
+                retObj.put("names", getNames(names));
+             }
         }
         return retObj;
     }
 
+    private String getNames(String input) {
+        int indexSemicolon = input.indexOf(";");
+        int indexDoubleDash = input.indexOf("--");
+        int indexCommentStart = input.indexOf("/*");
+
+        // Find the minimum index among them
+        int minIndex = input.length();
+        if (indexSemicolon != -1) {
+            minIndex = Math.min(minIndex, indexSemicolon);
+        }
+        if (indexDoubleDash != -1) {
+            minIndex = Math.min(minIndex, indexDoubleDash);
+        }
+        if (indexCommentStart != -1) {
+            minIndex = Math.min(minIndex, indexCommentStart);
+        }
+        return input.substring(0, minIndex).trim();
+    }
     private JSObject isReturning(String sqlStmt) {
         JSObject retObj = new JSObject();
 
-        String stmt = sqlStmt.replace("\n", "").trim();
+        String stmt = sqlStmt.trim();
         if (stmt.endsWith(";")) {
             // Remove the suffix
             stmt = stmt.substring(0, stmt.length() - 1).trim();
         }
         retObj.put("isReturning", false);
-        retObj.put("stmt", stmt);
+        retObj.put("stmt", sqlStmt);
         retObj.put("names", "");
 
         switch (stmt.substring(0, Math.min(stmt.length(), 6)).toUpperCase()) {

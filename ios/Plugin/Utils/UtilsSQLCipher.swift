@@ -463,7 +463,7 @@ class UtilsSQLCipher {
                 retMode = "wA\(retMode)"
             }
         }
-        if (retMode == "no" || retMode.prefix(2) == "wA")/* && isReturning*/ {
+        if (retMode == "no" || retMode.prefix(2) == "wA") {
             let stmtNames = UtilsSQLStatement
                 .getStmtAndRetColNames(sqlStmt: sqlStmt,
                                        retMode: retMode)
@@ -834,6 +834,12 @@ class UtilsSQLCipher {
         return Int(sqlite3_total_changes(mDB))
     }
 
+    // MARK: - dbLastId
+    
+    class func dbLastId(mDB: OpaquePointer?) -> Int64 {
+        return Int64(sqlite3_last_insert_rowid(mDB))
+    }
+
     // MARK: - Execute
 
     // swiftlint:disable function_body_length
@@ -970,17 +976,17 @@ class UtilsSQLCipher {
                         }
                     }
                 } else {
-                    let resp = try UtilsSQLCipher
-                        .prepareSQL(mDB: mDB, sql: sql, values: values,
-                                    fromJson: false, returnMode: returnMode)
-                    lastId = resp.0
-                    respSet = resp.1
-                    if  lastId == -1 {
-                        let message: String = "lastId < 0"
-                        throw UtilsSQLCipherError.executeSet(
-                            message: message)
-                    }
-                    response = addToResponse(response: response, respSet: respSet)
+                        let resp = try UtilsSQLCipher
+                            .prepareSQL(mDB: mDB, sql: sql, values: values,
+                                        fromJson: false, returnMode: returnMode)
+                        lastId = resp.0
+                        respSet = resp.1
+                        if  lastId == -1 {
+                            let message: String = "lastId < 0"
+                            throw UtilsSQLCipherError.executeSet(
+                                message: message)
+                        }
+                        response = addToResponse(response: response, respSet: respSet)
                 }
             }
 

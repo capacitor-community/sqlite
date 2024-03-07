@@ -326,8 +326,7 @@ class UtilsSQLStatement {
     // MARK: - isReturning
 
     class func isReturning(sqlStmt: String) -> (Bool, String, String) {
-        var stmt = sqlStmt.replacingOccurrences(of: "\n", with: "")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+        var stmt = sqlStmt.trimmingCharacters(in: .whitespacesAndNewlines)
         if stmt.hasSuffix(";") {
             // Remove the suffix
             stmt = String(stmt.dropLast())
@@ -360,10 +359,10 @@ class UtilsSQLStatement {
                 if substringAfterValues.lowercased().contains("returning") {
                     return (true, stmtString, resultString)
                 } else {
-                    return (false, stmt, "")
+                    return (false, sqlStmt, "")
                 }
             }
-            return (false, stmt, "")
+            return (false, sqlStmt, "")
 
         case "DELETE", "UPDATE":
             let words = stmt.components(separatedBy: .whitespacesAndNewlines)
@@ -391,11 +390,11 @@ class UtilsSQLStatement {
 
                 return (true, joinedWords, joinedReturningString)
             } else {
-                return (false, stmt, "")
+                return (false, sqlStmt, "")
             }
 
         default:
-            return (false, stmt, "")
+            return (false, sqlStmt, "")
         }
 
     }
@@ -425,14 +424,37 @@ class UtilsSQLStatement {
 
                 let names =
                     "\(substring)".trimmingLeadingAndTrailingSpaces()
-                if names.suffix(1) == ";" {
-                    retStmtNames["names"] = String(names.dropLast())
-                }
+                retStmtNames["names"] = getNames(from: names)
             }
         }
         return retStmtNames
     }
 
+    // MARK: - getNames
+    
+    class func getNames(from input: String) -> String {
+        // Find the index of the first occurrence of ";", "--", or "/*"
+        let indexSemicolon = input.firstIndex(of: ";")
+        let indexDoubleDash = input.range(of: "--")
+        let indexCommentStart = input.range(of: "/*")
+        
+        // Find the minimum index among them
+        var minIndex = input.endIndex
+        if let index = indexSemicolon {
+            minIndex = min(minIndex, index)
+        }
+        if let index = indexDoubleDash?.lowerBound {
+            minIndex = min(minIndex, index)
+        }
+        if let index = indexCommentStart?.lowerBound {
+            minIndex = min(minIndex, index)
+        }
+        
+        // Extract substring up to the minimum index
+        let colnames = String(input[..<minIndex]).trimmingCharacters(in: .whitespacesAndNewlines)
+        return colnames
+    }
+    
     // MARK: - extractCombinedPrimaryKey
 
     class func extractCombinedPrimaryKey(from whereClause: String)

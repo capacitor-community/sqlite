@@ -1,3 +1,14 @@
+# 5.6.2 (2024-03-07)
+
+### Added Features
+
+ - Include examples of SQLite comments in the API.md documentation
+
+### Bug Fixes
+
+ - Fix Error in README.md with install instructions issue#520
+ - Fix Unable to run executeSet on SQL with -- comments issue#521
+
 # 5.6.1 (2024-02-29)
 
 ### Bug Fixes
