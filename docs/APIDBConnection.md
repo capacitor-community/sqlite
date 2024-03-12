@@ -473,13 +473,13 @@ Remove rows with sql_deleted = 1 after an export
 ### executeTransaction(...)
 
 ```typescript
-executeTransaction(txn: { statement: string; values?: any[]; }[], isSQL92: boolean) => Promise<capSQLiteChanges>
+executeTransaction(txn: capTask[], isSQL92: boolean) => Promise<capSQLiteChanges>
 ```
 
-| Param         | Type                                                  |
-| ------------- | ----------------------------------------------------- |
-| **`txn`**     | <code>{ statement: string; values?: any[]; }[]</code> |
-| **`isSQL92`** | <code>boolean</code>                                  |
+| Param         | Type                   |
+| ------------- | ---------------------- |
+| **`txn`**     | <code>capTask[]</code> |
+| **`isSQL92`** | <code>boolean</code>   |
 
 **Returns:** <code>Promise&lt;<a href="#capsqlitechanges">capSQLiteChanges</a>&gt;</code>
 
@@ -609,5 +609,13 @@ executeTransaction(txn: { statement: string; values?: any[]; }[], isSQL92: boole
 | ----------- | ------------------- | ------------------------- |
 | **`name`**  | <code>string</code> | The view name             |
 | **`value`** | <code>string</code> | The view create statement |
+
+
+#### capTask
+
+| Prop            | Type                | Description                                         |
+| --------------- | ------------------- | --------------------------------------------------- |
+| **`statement`** | <code>string</code> | A SQLite statement                                  |
+| **`values`**    | <code>any[]</code>  | A set of values to bind to the statement (optional) |
 
 </docgen-api>

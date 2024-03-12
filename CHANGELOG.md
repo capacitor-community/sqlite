@@ -1,3 +1,13 @@
+# 5.6.3 (2024-03-12)
+
+### Added Features
+
+ - Add SQLite Transactions Documentation SQLiteTransaction.md
+
+### Bug Fixes
+
+ - Fix Error in executeTransaction
+
 # 5.6.2 (2024-03-07)
 
 ### Added Features

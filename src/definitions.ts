@@ -675,6 +675,20 @@ export interface capSQLiteQueryOptions {
    */
   isSQL92?: boolean;
 }
+export interface capTask {
+  /**
+   * define task for executeTransaction
+   * @since 5.6.3
+   */
+  /**
+   * A SQLite statement
+   */
+  statement: string;
+  /**
+   * A set of values to bind to the statement (optional)
+   */
+  values?: any[];
+}
 export interface capSQLiteImportOptions {
   /**
    * Set the JSON object to import
@@ -2000,7 +2014,7 @@ export interface ISQLiteDBConnection {
    * @since 3.4.0
    */
   executeTransaction(
-    txn: { statement: string; values?: any[] }[],
+    txn: capTask[],
     isSQL92: boolean,
   ): Promise<capSQLiteChanges>;
 }
@@ -2389,7 +2403,7 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
   }
 
   async executeTransaction(
-    txn: { statement: string; values?: any[] }[],
+    txn: capTask[],
     isSQL92 = true,
   ): Promise<capSQLiteChanges> {
     let changes = 0;
@@ -2412,7 +2426,10 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
       }
       try {
         for (const task of txn) {
-          if (task.values && task.values.length > 0) {
+          if(typeof task !== 'object' || !('statement' in task)) {
+            throw new Error('Error a task.statement must be provided');
+          }
+          if ('values' in task && task.values && task.values.length > 0) {
             const retMode = task.statement.toUpperCase().includes('RETURNING')
               ? 'all'
               : 'no';
