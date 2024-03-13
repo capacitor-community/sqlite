@@ -636,7 +636,7 @@ public class Database {
      * @throws Exception message
      */
     public JSObject prepareSQL(String statement, ArrayList<Object> values, Boolean fromJson, String returnMode) throws Exception {
-        String stmtType = statement.replaceAll("\n", "").trim().substring(0, 6).toUpperCase();
+        String stmtType = statement.replaceAll("\n", "\s").trim().split("\s")[0].toUpperCase();
         SupportSQLiteStatement stmt = null;
         String sqlStmt = statement;
         String retMode;
