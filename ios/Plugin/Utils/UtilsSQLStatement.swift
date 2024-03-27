@@ -326,6 +326,10 @@ class UtilsSQLStatement {
     // MARK: - isReturning
 
     class func isReturning(sqlStmt: String) -> (Bool, String, String) {
+        let stmtType = sqlStmt
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .components(separatedBy: " ")
+                .first?.capitalized ?? ""
         var stmt = sqlStmt.trimmingCharacters(in: .whitespacesAndNewlines)
         if stmt.hasSuffix(";") {
             // Remove the suffix
@@ -333,11 +337,13 @@ class UtilsSQLStatement {
                 .trimmingCharacters(in: .whitespacesAndNewlines)
         }
 
-        switch stmt.prefix(6).uppercased() {
+        switch stmtType {
 
         case "INSERT":
             if let valuesIndex = stmt.range(of: "VALUES", options: .caseInsensitive)?.lowerBound,
-               let closingParenthesisIndex = stmt.range(of: ")", options: .backwards, range: valuesIndex..<stmt.endIndex)?.upperBound {
+               let closingParenthesisIndex = stmt
+               .range(of: ")", options: .backwards, range: valuesIndex..<stmt.endIndex)?
+               .upperBound {
                 guard closingParenthesisIndex < stmt.endIndex else {
                     stmt += ";"
                     return (false, stmt, "")

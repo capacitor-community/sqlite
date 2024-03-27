@@ -1137,16 +1137,13 @@ export interface ISQLiteConnection {
   /**
    * Add the upgrade Statement for database version upgrading
    * @param database
-   * @param toVersion
-   * @param statement
-   * @param set
+   * @param upgrade @since 5.6.4 
    * @returns Promise<void>
    * @since 2.9.0 refactor
    */
   addUpgradeStatement(
     database: string,
-    toVersion: number,
-    statements: string[],
+    upgrade: capSQLiteVersionUpgrade[]
   ): Promise<void>;
   /**
    * Create a connection to a database
@@ -1460,18 +1457,13 @@ export class SQLiteConnection implements ISQLiteConnection {
   }
   async addUpgradeStatement(
     database: string,
-    toVersion: number,
-    statements: string[],
+    upgrade: capSQLiteVersionUpgrade[]
   ): Promise<void> {
-    const upgrade: capSQLiteVersionUpgrade = {
-      toVersion,
-      statements,
-    };
     try {
       if (database.endsWith('.db')) database = database.slice(0, -3);
       await this.sqlite.addUpgradeStatement({
         database,
-        upgrade: [upgrade],
+        upgrade,
       });
       return Promise.resolve();
     } catch (err) {
@@ -2409,20 +2401,16 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
     let changes = 0;
     let isActive = false;
     if (!this.readonly) {
-      try {
-        await this.sqlite.beginTransaction({
-          database: this.dbName,
-        });
-        isActive = await this.sqlite.isTransactionActive({
-          database: this.dbName,
-        });
-        if (!isActive) {
-          return Promise.reject(
-            'After Begin Transaction, no transaction active',
-          );
-        }
-      } catch (err) {
-        return Promise.reject(err);
+      await this.sqlite.beginTransaction({
+        database: this.dbName,
+      });
+      isActive = await this.sqlite.isTransactionActive({
+        database: this.dbName,
+      });
+      if (!isActive) {
+        return Promise.reject(
+          'After Begin Transaction, no transaction active',
+        );
       }
       try {
         for (const task of txn) {
@@ -2453,36 +2441,25 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
               transaction: false,
               readonly: false,
             });
-            isActive = await this.sqlite.isTransactionActive({
-              database: this.dbName,
-            });
             if (ret.changes.changes < 0) {
               throw new Error('Error in transaction method execute ');
             }
             changes += ret.changes.changes;
           }
         }
-        isActive = await this.sqlite.isTransactionActive({
+        // commit
+        const retC = await this.sqlite.commitTransaction({
           database: this.dbName,
         });
-        if (isActive) {
-          const retC = await this.sqlite.commitTransaction({
-            database: this.dbName,
-          });
-          changes += retC.changes.changes;
-        }
+        changes += retC.changes.changes;
         const retChanges = { changes: { changes: changes } };
         return Promise.resolve(retChanges);
       } catch (err: any) {
+        // rollback
         const msg = err.message ? err.message : err;
-        isActive = await this.sqlite.isTransactionActive({
+        await this.sqlite.rollbackTransaction({
           database: this.dbName,
         });
-        if (isActive) {
-          await this.sqlite.rollbackTransaction({
-            database: this.dbName,
-          });
-        }
         return Promise.reject(msg);
       }
     } else {

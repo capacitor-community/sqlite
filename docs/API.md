@@ -12,6 +12,18 @@ To easy the way to use the `@capacitor-community/sqlite` plugin and its ability 
 
 - [API_DB_Connection_Wrapper_Documentation](https://github.com/capacitor-community/sqlite/blob/master/docs/APIDBConnection.md)
 
+## SQLite Commands Within the Plugin
+
+ - SQLite Data Definition Language commands (such as CREATE, ALTER, DROP) should be executed using the `execute` plugin method.
+
+ - SQLite Transaction Control commands (including BEGIN TRANSACTION, COMMIT, ROLLBACK) should also be executed using the `execute` plugin method.
+
+ - SQLite Data Manipulation Language commands (like INSERT, UPDATE, DELETE, REPLACE) should use the `run` plugin method if they involve bind values. They can utilize either the `execute` or `run` plugin methods if no bind values are involved.
+
+ - SQLite Data Query Language commands (SELECT) should be executed using the `query` plugin method.
+
+ - SQLite Special commands (PRAGMA) should be executed using the `execute` plugin method.
+ 
 ## Databases Location
 
 The plugin add a suffix "SQLite" and an extension ".db" to the database name given as options in the `capConnectionOptions` or `capSQLiteOptions` ie (fooDB -> fooDBSQLite.db). If the name given contains the extension `.db` it will be removed ie (foo.db) will become internally (fooSQLite.db) after adding the suffix. 
@@ -71,21 +83,7 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
     You can replace "Databases" by your "YOUR_DATABASES_LOCATION", but it MUST not have any "/" or "\\" characters.
 
   For existing databases, YOU MUST COPY old databases to the new location
-  You MUST remove the Electron folder and add it again with: 
-
-  ``` 
-  npx cap add @capacitor-community/electron
-  npm run build 
-  cd electron
-  npm i --save sqlite3
-  npm i --save @types:sqlite3
-  npm run rebuild
-  cd ..
-  npx cap sync @capacitor-community/electron
-  npm run build
-  npx cap copy @capacitor-community/electron
-  npx cap open @capacitor-community/electron
-  ``` 
+  You MUST remove the Electron folder and add it again. 
 
 ### Web
 

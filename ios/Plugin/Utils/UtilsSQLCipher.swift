@@ -455,6 +455,11 @@ class UtilsSQLCipher {
         var names: String = ""
         var result: [[String: Any]] = []
         var retMode: String
+        let stmtType = sqlStmt
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .components(separatedBy: " ")
+                .first?.capitalized ?? ""
+
         if #available(iOS 15, *) {
             retMode = returnMode
         } else {
@@ -471,7 +476,7 @@ class UtilsSQLCipher {
             names = stmtNames["names"] ?? ""
         }
         // Check for DELETE statement
-        if !fromJson && sqlStmt.prefix(6).uppercased() == "DELETE" {
+        if !fromJson && stmtType == "DELETE" {
             do {
                 sqlStmt = try deleteSQL(mDB: mDB, sql: sqlStmt,
                                         values: values)
@@ -564,7 +569,12 @@ class UtilsSQLCipher {
     throws -> [[String: Any]] {
         var result: [[String: Any]] = []
         let initLastId = Int64(sqlite3_last_insert_rowid(mDB.mDb))
-        if sqlStmt.prefix(6).uppercased() == "DELETE" &&
+        let stmtType = sqlStmt
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .components(separatedBy: " ")
+                .first?.capitalized ?? ""
+
+        if stmtType == "DELETE" &&
             names.count > 0 {
             do {
                 result = try UtilsDelete
@@ -587,7 +597,7 @@ class UtilsSQLCipher {
             .returningWorkAround(message: message)
 
         }
-        if sqlStmt.prefix(6).uppercased() == "INSERT" {
+        if stmtType == "INSERT" {
             let lastId = Int64(sqlite3_last_insert_rowid(mDB.mDb))
             let tableName = UtilsSQLStatement
                 .extractTableName(from: sqlStmt)
@@ -609,7 +619,7 @@ class UtilsSQLCipher {
 
             }
 
-        } else if sqlStmt.prefix(6).uppercased() == "UPDATE" {
+        } else if stmtType == "UPDATE" {
             do {
                 result = try UtilsDelete
                     .getUpdDelReturnedValues(mDB: mDB,

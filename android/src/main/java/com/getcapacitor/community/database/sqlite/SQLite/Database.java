@@ -636,7 +636,7 @@ public class Database {
      * @throws Exception message
      */
     public JSObject prepareSQL(String statement, ArrayList<Object> values, Boolean fromJson, String returnMode) throws Exception {
-        String stmtType = statement.replaceAll("\n", "").trim().substring(0, 6).toUpperCase();
+        String stmtType = statement.trim().split("\\s+")[0].toUpperCase();
         SupportSQLiteStatement stmt = null;
         String sqlStmt = statement;
         String retMode;
@@ -778,8 +778,9 @@ public class Database {
         retObj.put("isReturning", false);
         retObj.put("stmt", sqlStmt);
         retObj.put("names", "");
+        String stmtType = sqlStmt.trim().split("\\s+")[0].toUpperCase();
 
-        switch (stmt.substring(0, Math.min(stmt.length(), 6)).toUpperCase()) {
+        switch (stmtType) {
             case "INSERT":
                 int valuesIndex = stmt.toUpperCase().indexOf("VALUES");
                 if (valuesIndex != -1) {

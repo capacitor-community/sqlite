@@ -356,10 +356,11 @@ export class UtilsSQLite {
     // loop through the statement
     for (const stmt of sqlStmts) {
       let rStmt = stmt.trim();
-      const method = rStmt
-        .substring(0, Math.min(stmt.trim().length, 6))
-        .toUpperCase();
-      switch (method) {
+      const stmtType: string = rStmt
+      .split(" ")[0]
+      .toUpperCase();
+
+      switch (stmtType) {
         case 'CREATE':
           if (rStmt.includes('&END')) {
             rStmt = rStmt.replace(/&END/g, ';END');
@@ -510,9 +511,8 @@ export class UtilsSQLite {
     const msg = 'PrepareRun';
 
     const stmtType: string = statement
-//      .replace(/\n/g, '')
       .trim()
-      .substring(0, 6)
+      .split(" ")[0]
       .toUpperCase();
     let sqlStmt: string = statement;
     try {
@@ -1228,12 +1228,12 @@ export class UtilsSQLite {
     suffix: string;
   } {
     let stmt = sqlStmt.trim();
-
+    const stmtType = stmt.split(' ')[0].toUpperCase();
     if (stmt.endsWith(';')) {
       stmt = stmt.slice(0, -1).trim();
     }
-
-    switch (stmt.substring(0, 6).toUpperCase()) {
+    
+    switch (stmtType) {
       case 'INSERT': {
         const valuesIndex = stmt.search(/\bVALUES\b/i);
         let closingParenthesisIndex = -1;

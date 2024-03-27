@@ -1,7 +1,7 @@
 export class UtilsSQL92Compatibility {
   public compatibleSQL92(statement: string): string {
     let newStatement = '';
-    const action = statement.trim().substring(0, 6).toUpperCase();
+    const action = statement.trim().split(' ')[0].toUpperCase();
     switch (action) {
       case 'INSERT':
         newStatement = this.insertSQL92(statement);

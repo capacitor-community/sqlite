@@ -1,3 +1,15 @@
+# 5.6.4 (2024-03-27)
+
+### Added Features
+
+ - Add SQLite Commands Within the Plugin chapter in API.md doc.
+ - Modify TypeORM-Usage-From-5.6.0.md
+ - Modify addUpgradeStatement parameters of the ISQLiteConnection
+
+### Bug Fixes
+
+ - Fix Calling run method with BEGIN statement throws StringOutOfBoundIndexException #526 (iOS, Android, Electron)
+
 # 5.6.3 (2024-03-12)
 
 ### Added Features
