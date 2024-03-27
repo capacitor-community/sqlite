@@ -1,3 +1,19 @@
+
+# 5.7.0 (2024-03-27)
+
+### Chore
+
+ - Update to @capacitor/core@5.7.0
+ - Update to @capacitor/ios@5.7.0
+ - Update to @capacitor/android@5.7.0
+ - Update to @capacitor/cli@5.7.0
+ - Update to jeep-sqlite@2.6.2
+
+### Added Features
+
+ - Add link to Web/Native vite-sveltekit-capacitor-sqlite in the README.md.
+
+
 # 5.6.4 (2024-03-27)
 
 ### Added Features
