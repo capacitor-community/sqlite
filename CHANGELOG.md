@@ -1,4 +1,16 @@
+# 5.7.1 (2024-04-03)
 
+### Chore
+
+ - Update to @capacitor/core@5.7.1
+ - Update to @capacitor/ios@5.7.1
+ - Update to @capacitor/android@5.7.1
+ - Update to @capacitor/cli@5.7.1
+
+### Bug Fixes
+
+ - Fix Is this plugin still maintained in 2024? issue#529 
+ 
 # 5.7.0 (2024-03-27)
 
 ### Chore
