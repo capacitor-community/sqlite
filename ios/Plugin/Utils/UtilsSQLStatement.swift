@@ -225,7 +225,6 @@ class UtilsSQLStatement {
         return foreignKeyInfo
     }
     // swiftlint:enable type_body_length
-    // swiftlint:disable function_body_length
 
     // MARK: - extractColumnNames
 
@@ -443,7 +442,7 @@ class UtilsSQLStatement {
         let indexSemicolon = input.firstIndex(of: ";")
         let indexDoubleDash = input.range(of: "--")
         let indexCommentStart = input.range(of: "/*")
-        
+
         // Find the minimum index among them
         var minIndex = input.endIndex
         if let index = indexSemicolon {

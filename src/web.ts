@@ -45,7 +45,7 @@ export class CapacitorSQLiteWeb
   private isWebStoreOpen = false;
 
   async initWebStore(): Promise<void> {
-    customElements.whenDefined('jeep-sqlite').then(async () => {
+     await customElements.whenDefined('jeep-sqlite')
 
       this.jeepSqliteElement = document.querySelector('jeep-sqlite');
       this.ensureJeepSqliteIsAvailable();
@@ -86,7 +86,6 @@ export class CapacitorSQLiteWeb
       }
 
       return;
-    });
   }
 
   async saveToStore(options: capSQLiteOptions): Promise<void> {

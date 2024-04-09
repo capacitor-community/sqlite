@@ -1,3 +1,16 @@
+# 5.7.2 (2024-04-09)
+
+### Chore
+
+ - Update to @capacitor/core@5.7.2
+ - Update to @capacitor/ios@5.7.2
+ - Update to @capacitor/android@5.7.2
+ - Update to @capacitor/cli@5.7.2
+
+### Bug Fixes
+
+ - Fix ionic7-angular-sqlite-app tutorial fails on v5.7.1 issue#533
+ 
 # 5.7.1 (2024-04-03)
 
 ### Chore
