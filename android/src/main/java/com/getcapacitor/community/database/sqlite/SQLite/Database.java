@@ -520,7 +520,6 @@ public class Database {
                     sqlBuilder.append(",");
                 }
             }
-            sqlBuilder.append(";");
             String questionMark = extractQuestionMarkValues(statement);
             String finalSql = "";
             if (questionMark != null) {
