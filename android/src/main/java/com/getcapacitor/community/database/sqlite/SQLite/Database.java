@@ -12,6 +12,7 @@ import static com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLStatemen
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.DatabaseUtils;
 import android.os.Build;
 import android.util.Log;
 import androidx.sqlite.db.SimpleSQLiteQuery;
@@ -503,7 +504,7 @@ public class Database {
                     String elementValue = "";
 
                     if (innerElement instanceof String) {
-                        elementValue = "'" + innerElement + "'";
+                        elementValue = DatabaseUtils.sqlEscapeString((String) innerElement);
                     } else {
                         elementValue = String.valueOf(innerElement);
                     }
