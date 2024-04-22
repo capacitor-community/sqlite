@@ -836,6 +836,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
         `getFromHTTPRequest: cannot move file from cache overwrite: ${overwrite}`,
       );
     }
+    return;
   }
 
   async getDatabaseList(): Promise<capSQLiteValues> {

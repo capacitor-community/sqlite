@@ -90,10 +90,17 @@ export class UtilsFile {
    * @returns
    */
   public getExtName(filePath: string): string {
-    return this.Path.extname(filePath);
+
+    const matches = filePath.match(/\.([a-zA-Z0-9]+)(?:[\\?#]|$)/);
+    return matches ?`.${matches[1].toLowerCase()}` : ''; // returns the matched extension in lowercase
+
+//    return this.Path.extname(filePath);
   }
   public getBaseName(filePath: string): string {
-    return this.Path.basename(filePath, this.Path.extname(filePath));
+    const decodedUrl = decodeURIComponent(filePath); // Decode the URL component
+    const baseName = this.Path.basename(decodedUrl, this.Path.extname(filePath));
+    return baseName;
+
   }
   /**
    * IsPathExists
@@ -236,34 +243,47 @@ export class UtilsFile {
     overwrite: boolean,
   ): Promise<void> {
     const pZip: string = this.Path.join(fPath, db);
-    // Read the Zip file
-    this.NodeFs.readFile(pZip, (err: any, data: any) => {
-      if (err) {
-        console.log(err);
-        return Promise.reject(`unzipDatabase ${JSON.stringify(err)}`);
-      }
+
+    try {
+      // Read the Zip file
+      const data = await this.NodeFs.promises.readFile(pZip);
+  
       const zip = new this.JSZip();
-      zip.loadAsync(data).then((contents: any) => {
-        Object.keys(contents.files).forEach(filename => {
+      const contents = await zip.loadAsync(data);
+  
+      // Create an array to store promises for writing files
+      const writePromises: Promise<void>[] = [];
+  
+      Object.keys(contents.files).forEach(filename => {
+        writePromises.push(
           zip
             .file(filename)
             .async('nodebuffer')
             .then(async (content: any) => {
               const toDb: string = this.setPathSuffix(filename);
               const pDb: string = this.Path.join(this.getDatabasesPath(), toDb);
+  
               // check filePath exists
               const isPath = this.isPathExists(pDb);
+  
               if (!isPath || overwrite) {
                 if (overwrite && isPath) {
                   await this.deleteFilePath(pDb);
                 }
-                this.NodeFs.writeFileSync(pDb, content);
+                await this.NodeFs.promises.writeFile(pDb, content);
               }
-              return Promise.resolve();
-            });
-        });
+            })
+        );
       });
-    });
+  
+      // Wait for all write promises to resolve
+      await Promise.all(writePromises);
+  
+      return Promise.resolve();
+    } catch (err) {
+      console.log(err);
+      return Promise.reject(`unzipDatabase ${JSON.stringify(err)}`);
+    }   
   }
   /**
    * CopyFileName
@@ -541,6 +561,8 @@ export class UtilsFile {
         }
       }
     }
+    
+    return Promise.resolve();
   }
   /**
    * RestoreFileName
@@ -594,6 +616,7 @@ export class UtilsFile {
       res.body.on('error', reject);
       fileStream.on('finish', resolve);
     });
+    
   }
   public readFileAsPromise(
     path: string,

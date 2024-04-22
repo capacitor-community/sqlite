@@ -468,7 +468,7 @@ class UtilsSQLCipher {
                 retMode = "wA\(retMode)"
             }
         }
-        if (retMode == "no" || retMode.prefix(2) == "wA") {
+        if retMode == "no" || retMode.prefix(2) == "wA" {
             let stmtNames = UtilsSQLStatement
                 .getStmtAndRetColNames(sqlStmt: sqlStmt,
                                        retMode: retMode)
@@ -845,7 +845,7 @@ class UtilsSQLCipher {
     }
 
     // MARK: - dbLastId
-    
+
     class func dbLastId(mDB: OpaquePointer?) -> Int64 {
         return Int64(sqlite3_last_insert_rowid(mDB))
     }
@@ -1015,12 +1015,12 @@ class UtilsSQLCipher {
         var mRespSet = respSet
         if !retResponse.isEmpty {
             let keysInArray1 = ["ios_columns"]
-            mRespSet = mRespSet.filter { dict2 in
+            mRespSet = mRespSet.filter({ dict2 in
                 guard let dict2Key = dict2.keys.first else {
                     return true // Keep dictionaries without any keys
                 }
                 return !keysInArray1.contains(dict2Key)
-            }
+            })
         }
         retResponse.append(contentsOf: mRespSet)
 

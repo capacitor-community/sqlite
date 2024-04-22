@@ -84,10 +84,9 @@ class UtilsBinding {
     // swiftlint:enable cyclomatic_complexity
     class func extractSortedValues(from queryValues: [String: Int]) -> [UInt8] {
         // Extract keys and sort them
-        let sortedKeys = queryValues.keys.sorted { $0.localizedStandardCompare($1) == .orderedAscending }
-
+        let sortedKeys = queryValues.keys.sorted { $0.localizedStandardCompare($1) == .orderedAscending}
         // Extract corresponding values and sort them based on keys
-        let sortedValues = sortedKeys.compactMap { UInt8(queryValues[$0] ?? 0) }
+        let sortedValues = sortedKeys.compactMap({ UInt8(queryValues[$0] ?? 0) })
 
         return sortedValues
     }

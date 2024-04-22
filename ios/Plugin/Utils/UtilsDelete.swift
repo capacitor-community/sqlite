@@ -289,19 +289,19 @@ class UtilsDelete {
     throws -> (String, [[String: Any]]) {
         var relatedItems: [[String: Any]] = []
         var key: String = ""
-        let t1Names = withRefsNames.map { "t1.\($0)" }
-        let t2Names = colNames.map { "t2.\($0)" }
+        let t1Names = withRefsNames.map({ "t1.\($0)" })
+        let t2Names = colNames.map({ "t2.\($0)"})
 
         do {
             var whereClause = try UtilsSQLStatement
                 .addPrefixToWhereClause(whStmt, from: colNames,
-                                        to: withRefsNames,
+                                        destination: withRefsNames,
                                         prefix: "t2.")
             if whereClause.hasSuffix(";") {
                 whereClause = String(whereClause.dropLast())
             }
             let resultString = zip(t1Names, t2Names)
-                .map { "\($0) = \($1)" }
+                .map({ "\($0) = \($1)"})
                 .joined(separator: " AND ")
             let sql = "SELECT t1.rowid FROM \(updTableName) t1 " +
                 "JOIN \(tableName) t2 ON \(resultString) " +
@@ -312,9 +312,12 @@ class UtilsDelete {
                 if let mVals = vals[0]["ios_columns"] as? [String] {
                     key = mVals[0]
                     let keyToRemove = "ios_columns"
-                    vals.removeAll { dict in
+
+                    // Remove dictionaries where the keys contain "ios_columns"
+                    vals.removeAll { (dict: [String: Any]) in
                         return dict.keys.contains(keyToRemove)
                     }
+                    // Append the remaining dictionaries to relatedItems
                     for val in vals {
                         relatedItems.append(val)
                     }
@@ -440,9 +443,15 @@ class UtilsDelete {
                 .firstMatch(in: statement, options: [],
                             range: NSRange(location: 0,
                                            length: statement.utf16.count)) {
-                let tableNameRange = Range(tableNameMatch.range(
-                                            at: 1), in: statement)!
-                tableName = String(statement[tableNameRange])
+                if let tableNameRange = Range(tableNameMatch.range(at: 1), in: statement) {
+                    tableName = String(statement[tableNameRange])
+                } else {
+                    let msg = "getRefs: Error creating tableNameRange "
+                    throw UtilsDeleteError.getRefs(message: msg)
+                }
+            } else {
+                    let msg = "getRefs: Error creating tableNameMatch "
+                    throw UtilsDeleteError.getRefs(message: msg)
             }
 
             // Regular expression pattern to match the FOREIGN KEY
@@ -458,10 +467,14 @@ class UtilsDelete {
                          range: NSRange(location: 0,
                                         length: statement.utf16.count))
             for foreignKeyMatch in foreignKeyMatches {
-                let foreignKeyRange = Range(
-                    foreignKeyMatch.range(at: 0), in: statement)!
-                let foreignKey = String(statement[foreignKeyRange])
-                foreignKeys.append(foreignKey)
+                if let foreignKeyRange = Range(
+                    foreignKeyMatch.range(at: 0), in: statement) {
+                    let foreignKey = String(statement[foreignKeyRange])
+                    foreignKeys.append(foreignKey)
+                } else {
+                    let msg = "getRefs: Error creating foreignKeyRange "
+                    throw UtilsDeleteError.getRefs(message: msg)
+                }
             }
         } catch {
             let msg = "getRefs: Error creating regular expression: " +

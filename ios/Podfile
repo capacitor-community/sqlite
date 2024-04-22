@@ -10,12 +10,12 @@ end
 target 'Plugin' do
   capacitor_pods
   pod 'SQLCipher', '~>4.5.6'
-  pod 'ZIPFoundation', '~> 0.9.16'
+  pod 'ZIPFoundation', '~> 0.9.18'
 end
 
 target 'PluginTests' do
   capacitor_pods
   pod 'SQLCipher', '~>4.5.6'
-  pod 'ZIPFoundation', '~> 0.9.16'
+  pod 'ZIPFoundation', '~> 0.9.18'
 end
 

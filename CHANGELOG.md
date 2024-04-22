@@ -1,3 +1,18 @@
+# 5.7.3-1 (2024-04-22)
+
+### Chore
+
+ - Update to @capacitor/core@5.7.3
+ - Update to @capacitor/ios@5.7.3
+ - Update to @capacitor/android@5.7.3
+ - Update to @capacitor/cli@5.7.3
+ - Update to jeep-sqlite@2.7.0
+
+### Bug Fixes
+
+ - Fix GetFromHTTPRequest not working issue#534 (Android,iOS, Electron)
+
+
 # 5.7.2 (2024-04-09)
 
 ### Chore

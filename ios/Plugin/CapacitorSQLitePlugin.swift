@@ -1369,14 +1369,13 @@ public class CapacitorSQLitePlugin: CAPPlugin {
                 implementation?.addUpgradeStatement(dbName,
                                                     upgrade: upgrade) {
                 if
-                    versionUpgrades[dbName] != nil {
+                    self.versionUpgrades["\(dbName)"] != nil {
                     for (versionKey, upgObj) in upgVersionDict {
-                        versionUpgrades[dbName]?[versionKey] = upgObj
+                        self.versionUpgrades["\(dbName)"]?[versionKey] = upgObj
                     }
                 } else {
-                    versionUpgrades = ["\(dbName)": upgVersionDict]
+                    self.versionUpgrades["\(dbName)"] = upgVersionDict
                 }
-
                 retHandler.rResult(call: call)
                 return
             } else {
@@ -1542,29 +1541,25 @@ public class CapacitorSQLitePlugin: CAPPlugin {
                 message: "GetFromHTTPRequest: Must provide a database url")
             return
         }
-        DispatchQueue.global(qos: .background).async {
+        DispatchQueue.global(qos: .background).async(execute: {
             do {
                 try self.implementation?.getFromHTTPRequest(call, url: url)
-                DispatchQueue.main.async {
-                    self.retHandler.rResult(call: call)
-                    return
-                }
             } catch CapacitorSQLiteError.failed(let message) {
 
-                DispatchQueue.main.async {
+                DispatchQueue.main.async(execute: {
                     let msg = "GetFromHTTPRequest: \(message)"
                     self.retHandler.rResult(call: call, message: msg)
                     return
-                }
+                })
             } catch let error {
-                DispatchQueue.main.async {
+                DispatchQueue.main.async(execute: {
                     let msg = "GetFromHTTPRequest: " +
                         "\(error.localizedDescription)"
                     self.retHandler.rResult(call: call, message: msg)
                     return
-                }
+                })
             }
-        }
+        })
 
     }
 

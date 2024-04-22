@@ -569,9 +569,9 @@ class UtilsJson {
         let iterations: UInt32 = 10000
         var derivedKeyData = Data(count: keyLength)
         let derivedCount = derivedKeyData.count
-        let derivationStatus = derivedKeyData.withUnsafeMutableBytes { derivedKeyUnsafeMutableRawBufferPointer in
-            passphraseData.withUnsafeBytes { passphraseUnsafeRawBufferPointer in
-                salt.withUnsafeBytes { saltUnsafeRawBufferPointer in
+        let derivationStatus = derivedKeyData.withUnsafeMutableBytes({ derivedKeyUnsafeMutableRawBufferPointer in
+            passphraseData.withUnsafeBytes({ passphraseUnsafeRawBufferPointer in
+                salt.withUnsafeBytes({ saltUnsafeRawBufferPointer in
                     CCKeyDerivationPBKDF(
                         CCPBKDFAlgorithm(kCCPBKDF2),
                         passphraseUnsafeRawBufferPointer.baseAddress,
@@ -583,9 +583,9 @@ class UtilsJson {
                         derivedKeyUnsafeMutableRawBufferPointer.baseAddress,
                         derivedCount
                     )
-                }
-            }
-        }
+                })
+            })
+        })
         return derivationStatus == kCCSuccess ? derivedKeyData : nil
     }
 }
