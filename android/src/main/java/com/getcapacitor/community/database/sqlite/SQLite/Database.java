@@ -537,7 +537,7 @@ public class Database {
     }
 
     public String extractQuestionMarkValues(String input) {
-        Pattern pattern = Pattern.compile("VALUES \\((\\?(?:,\\s*\\?\\s*)*)\\)");
+        Pattern pattern = Pattern.compile("(?i)VALUES \\((\\?(?:,\\s*\\?\\s*)*)\\)");
         Matcher matcher = pattern.matcher(input);
 
         if (matcher.find()) {

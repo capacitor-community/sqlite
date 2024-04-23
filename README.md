@@ -18,7 +18,7 @@
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/dw/@capacitor-community/sqlite?style=flat-square" /></a>
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/v/@capacitor-community/sqlite?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-<a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-41-orange?style=flat-square" /></a>
+<a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-43-orange?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 </p>
 
@@ -410,6 +410,10 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <a href="https://github.com/msfstef" title="msfstef"><img src="https://avatars.githubusercontent.com/u/12274098?v=4" width="50" height="50" /></a>
   <a href="https://github.com/ChrisHSandN" title="
 ChrisHSandN"><img src="https://avatars.githubusercontent.com/u/13466620?v=4" width="50" height="50" /></a>
+  <a href="https://github.com/lasher23" title="
+lasher23"><img src="https://avatars.githubusercontent.com/u/24244618?v=4" width="50" height="50" /></a>
+  <a href="https://github.com/mirsella" title="
+mirsella"><img src="https://avatars.githubusercontent.com/u/45905567?v=4" width="50" height="50" /></a>
   </p>
 
 

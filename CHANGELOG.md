@@ -1,3 +1,12 @@
+# 5.7.3-2 (2024-04-23)
+
+### Bug Fixes
+
+ - Fix escape string in multi row statements values via DatabaseUtils issue#537 (PR from lasher23)
+ - Fix(readme): missing closing code symbol issue#542 (PR from mirsella)
+ - Fix Multiple Row Statement Values case insensitive issue#536
+ - Fix delete useless semicolon issue#538 (PR#539 from lasher23)
+
 # 5.7.3-1 (2024-04-22)
 
 ### Chore
