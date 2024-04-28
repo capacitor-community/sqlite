@@ -1,3 +1,11 @@
+# 5.7.3-3 (2024-04-28)
+
+### Bug Fixes
+
+ - Fix ExecuteTransaction with values throws exception for statements performing no actual changes issue#544
+
+ - Fix executeSet not inserting rows issue#547
+ 
 # 5.7.3-2 (2024-04-23)
 
 ### Bug Fixes

@@ -521,19 +521,26 @@ public class Database {
                     sqlBuilder.append(",");
                 }
             }
-            String questionMark = extractQuestionMarkValues(statement);
-            String finalSql = "";
-            if (questionMark != null) {
-                finalSql = statement.replace(questionMark, sqlBuilder.toString());
-            } else {
-                finalSql = statement;
-            }
+            String finalSql = replacePlaceholders(statement, sqlBuilder.toString());
 
             JSObject respSet = prepareSQL(finalSql, new ArrayList<>(), false, returnMode);
             return respSet;
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         }
+    }
+
+    public String replacePlaceholders(String stmt, String sqlBuilder) {
+        // Extract question mark placeholders from the input statement
+        String extractedValues = extractQuestionMarkValues(stmt);
+
+        // Check if any placeholders were found
+        if (extractedValues == null) {
+            return stmt; // Return the original statement if no placeholders are found
+        }
+
+        // Replace placeholders in the stmt with values from sqlBuilder
+        return stmt.replaceFirst("(?i)VALUES \\((\\?(?:,\\s*\\?\\s*)*)\\)", "VALUES " + sqlBuilder);
     }
 
     public String extractQuestionMarkValues(String input) {

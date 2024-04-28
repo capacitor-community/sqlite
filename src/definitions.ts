@@ -2430,7 +2430,7 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
               returnMode: retMode,
               isSQL92: isSQL92,
             });
-            if (ret.changes.changes <= 0) {
+            if (ret.changes.changes < 0) {
               throw new Error('Error in transaction method run ');
             }
             changes += ret.changes.changes;
