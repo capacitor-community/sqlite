@@ -5,6 +5,8 @@
  - Fix ExecuteTransaction with values throws exception for statements performing no actual changes issue#544
 
  - Fix executeSet not inserting rows issue#547
+
+ - Update TypeORM-Usage-From-5.6.0.md (PR#549 from SaintPepsi)
  
 # 5.7.3-2 (2024-04-23)
 
