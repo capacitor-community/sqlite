@@ -2,8 +2,15 @@
 <h3 align="center">SQLITE DATABASE</h3>
 <p align="center"><strong><code>@capacitor-community/sqlite</code></strong></p>
 <br>
-<p align="center" style="font-size:50px;color:red"><strong>CAPACITOR 5</strong></p><br>
+<p align="center" style="font-size:50px;color:red"><strong>CAPACITOR 6 ALPHA</strong></p><br>
 
+<br>
+<p align="center" style="font-size:50px;color:red"><strong>WARNING</strong></p><br>
+<p align="center">
+This plugin has been migrated using the <strong>@capacitor/plugin-migration-v5-to-v6</strong> provided by the Ionic/Capacitor team.
+Unfortunately, as Capacitor 6 requires Xcode 15.0+, the iOS part of the plugin cannot be build with my current hardware. If one, can build the iOS part and test it, he or she is welcome.
+</p>
+<br>
 <p align="center">
   Capacitor community plugin for Native and Electron SQLite Databases.
    - In Native, databases could be encrypted with `SQLCipher`

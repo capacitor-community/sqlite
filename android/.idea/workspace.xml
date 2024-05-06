@@ -8,37 +8,49 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="44fbe1ce-ecee-45f0-9074-7afa8867b86b" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/../CHANGELOG.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/cache.properties" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/cache.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_customview_customview_1_0_0_aar.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_customview_customview_1_0_0_aar.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.settings/org.eclipse.buildship.core.prefs" beforeDir="false" afterPath="$PROJECT_DIR$/.settings/org.eclipse.buildship.core.prefs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/CapacitorSQLitePlugin.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/CapacitorSQLitePlugin.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/SQLite/Database.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/SQLite/Database.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/SQLite/UtilsSQLCipher.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/SQLite/UtilsSQLCipher.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/SQLite/UtilsSQLStatement.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/getcapacitor/community/database/sqlite/SQLite/UtilsSQLStatement.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../electron/src/electron-utils/utilsSecret.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../electron/src/electron-utils/utilsSecret.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../electron/src/electron-utils/utilsSqlstatement.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../electron/src/electron-utils/utilsSqlstatement.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../electron/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../electron/src/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/CapacitorSQLite.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/CapacitorSQLite.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/CapacitorSQLitePlugin.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/CapacitorSQLitePlugin.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/Database.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/Database.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsEncryption.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsEncryption.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsSQLCipher.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsSQLCipher.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsSQLStatement.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsSQLStatement.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsSecret.swift" beforeDir="false" afterPath="$PROJECT_DIR$/../ios/Plugin/Utils/UtilsSecret.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../src/definitions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../src/definitions.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.jar" beforeDir="false" afterPath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" afterPath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradlew" beforeDir="false" afterPath="$PROJECT_DIR$/gradlew" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/../package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../package.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$">
       <ProjectState />
     </projectState>
+  </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <projects_view>
+          <tree_state>
+            <expand>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="android" type="f1a62948:ProjectNode" />
+              </path>
+            </expand>
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -62,17 +74,18 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Volumes/Development_Lacie/Development/latest/sqlite/android&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.17&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.project.gradle&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "last_opened_file_path": "/Volumes/Development_Lacie/Development/Capacitor6/plugins/sqlite/android",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.17",
+    "project.structure.side.proportion": "0.0",
+    "settings.editor.selected.configurable": "reference.settingsdialog.project.gradle"
   }
-}</component>
+}]]></component>
   <component name="PsdUISettings">
     <option name="LAST_EDITED_BUILD_TYPE" value="release" />
   </component>

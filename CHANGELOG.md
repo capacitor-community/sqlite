@@ -1,3 +1,13 @@
+# 6.0.0-alpha.1
+
+### Chore
+
+ - Update to @capacitor/core@6.0.0
+ - Update to @capacitor/ios@6.0.0
+ - Update to @capacitor/android@6.0.0
+ - Update to @capacitor/cli@6.0.0
+
+
 # 5.7.3-3 (2024-04-28)
 
 ### Bug Fixes

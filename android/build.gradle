@@ -11,7 +11,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.0.0'
+        classpath 'com.android.tools.build:gradle:8.2.1'
     }
 }
 
@@ -19,13 +19,13 @@ apply plugin: 'com.android.library'
 
 android {
     namespace "com.getcapacitor.community.database.sqlite"
-    compileSdkVersion project.hasProperty('compileSdkVersion') ? rootProject.ext.compileSdkVersion : 33
+    compileSdk project.hasProperty('compileSdkVersion') ? rootProject.ext.compileSdkVersion : 34
     packagingOptions {
         exclude 'build-data.properties'
     }
     defaultConfig {
         minSdkVersion project.hasProperty('minSdkVersion') ? rootProject.ext.minSdkVersion : 22
-        targetSdkVersion project.hasProperty('targetSdkVersion') ? rootProject.ext.targetSdkVersion : 33
+        targetSdkVersion project.hasProperty('targetSdkVersion') ? rootProject.ext.targetSdkVersion : 34
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -56,13 +56,13 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':capacitor-android')
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
-    implementation 'androidx.room:room-runtime:2.5.1'
+    implementation 'androidx.room:room-runtime:2.6.1'
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation "androidx.coordinatorlayout:coordinatorlayout:1.2.0"
     implementation 'net.zetetic:android-database-sqlcipher:4.5.3'
-    implementation "androidx.sqlite:sqlite:2.3.1"
+    implementation "androidx.sqlite:sqlite:2.4.0"
     //security library
     implementation "androidx.security:security-crypto:1.1.0-alpha06"
     implementation "androidx.biometric:biometric:1.1.0"
