@@ -523,7 +523,7 @@ export class UtilsSQLite {
       let mVal: any[] = [];
       if (mValues.length > 0) {
         mVal = this.replaceUndefinedByNull(mValues);
-      } else {
+      } else if(stmtType === 'SELECT') {
         const findVals = sqlStmt.match(/\?/gi);
         const nbValues = findVals ? findVals.length : 0;
         for (let i = 0; i < nbValues; i++) {
