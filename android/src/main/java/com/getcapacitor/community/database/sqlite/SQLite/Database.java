@@ -539,8 +539,9 @@ public class Database {
             return stmt; // Return the original statement if no placeholders are found
         }
 
-        // Replace placeholders in the stmt with values from sqlBuilder
-        return stmt.replaceFirst("(?i)VALUES \\((\\?(?:,\\s*\\?\\s*)*)\\)", "VALUES " + sqlBuilder);
+        // Suppresses control characters from sqlBuilder and replaces placeholders in the stmt with escaped values from sqlBuilder
+        String replacement = Matcher.quoteReplacement("VALUES " + sqlBuilder);
+        return stmt.replaceFirst("(?i)VALUES \\((\\?(?:,\\s*\\?\\s*)*)\\)", replacement);
     }
 
     public String extractQuestionMarkValues(String input) {
