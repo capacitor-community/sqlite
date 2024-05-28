@@ -539,7 +539,7 @@ public class Database {
             return stmt; // Return the original statement if no placeholders are found
         }
 
-        // Suppresses control characters from sqlBuilder and replaces placeholders in the stmt with escaped values from sqlBuilder
+        // Suppress control characters from sqlBuilder and replace placeholders in the stmt with escaped values from sqlBuilder
         String replacement = Matcher.quoteReplacement("VALUES " + sqlBuilder);
         return stmt.replaceFirst("(?i)VALUES \\((\\?(?:,\\s*\\?\\s*)*)\\)", replacement);
     }
