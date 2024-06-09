@@ -329,35 +329,47 @@ export class ExportToJson {
         row[1] = scht.substring(scht.indexOf(' ') + 1);
 
         const jsonRow: JsonColumn = {} as JsonColumn;
-        if (row[0].toUpperCase() === 'FOREIGN') {
-          const oPar: number = scht.indexOf('(');
-          const cPar: number = scht.indexOf(')');
-          const fk = scht.substring(oPar + 1, cPar);
-          const fknames: string[] = fk.split('§');
-          row[0] = fknames.join(',');
-          row[0] = row[0].replace(/, /g, ',');
-          row[1] = scht.substring(cPar + 2);
-          jsonRow['foreignkey'] = row[0];
-        } else if (row[0].toUpperCase() === 'PRIMARY') {
-          const oPar: number = scht.indexOf('(');
-          const cPar: number = scht.indexOf(')');
-          const pk: string = scht.substring(oPar + 1, cPar);
-          const pknames: string[] = pk.split('§');
-          row[0] = 'CPK_' + pknames.join('_');
-          row[0] = row[0].replace(/_ /g, '_');
-          row[1] = scht;
-          jsonRow['constraint'] = row[0];
-        } else if (row[0].toUpperCase() === 'CONSTRAINT') {
-          const tRow: string[] = [];
-          const row1t: string = row[1].trim();
-          tRow[0] = row1t.substring(0, row1t.indexOf(' '));
-          tRow[1] = row1t.substring(row1t.indexOf(' ') + 1);
-          row[0] = tRow[0];
-          jsonRow['constraint'] = row[0];
-          row[1] = tRow[1];
-        } else {
-          jsonRow['column'] = row[0];
+        switch (row[0].toUpperCase()) {
+          case 'FOREIGN': {
+            const oPar: number = scht.indexOf('(');
+            const cPar: number = scht.indexOf(')');
+            const fk = scht.substring(oPar + 1, cPar);
+            const fknames: string[] = fk.split('§');
+            row[0] = fknames.join(',');
+            row[0] = row[0].replace(/, /g, ',');
+            row[1] = scht.substring(cPar + 2);
+            jsonRow['foreignkey'] = row[0];
+            break;
+          }
+          case 'PRIMARY':
+          case 'UNIQUE': {
+            const prefix = row[0].toUpperCase() === 'PRIMARY' ? 'CPK_' : 'CUN_';
+            const oPar: number = scht.indexOf('(');
+            const cPar: number = scht.indexOf(')');
+            const pk: string = scht.substring(oPar + 1, cPar);
+            const pknames: string[] = pk.split('§');
+            row[0] = prefix + pknames.join('_');
+            row[0] = row[0].replace(/_ /g, '_');
+            row[1] = scht;
+            jsonRow['constraint'] = row[0];
+            break;
+          }
+          case 'CONSTRAINT': {
+            const tRow: string[] = [];
+            const row1t: string = row[1].trim();
+            tRow[0] = row1t.substring(0, row1t.indexOf(' '));
+            tRow[1] = row1t.substring(row1t.indexOf(' ') + 1);
+            row[0] = tRow[0];
+            jsonRow['constraint'] = row[0];
+            row[1] = tRow[1];
+            break;
+          }
+          default: {
+            jsonRow['column'] = row[0];
+            break;
+          }
         }
+      
         jsonRow['value'] = row[1].replace(/§/g, ',');
         schema.push(jsonRow);
       }

@@ -158,17 +158,14 @@ class UtilsDownloadFromHTTP {
     }
 
     class func extractDBFiles(from zipFile: URL, completion: @escaping ([URL], Error?) -> Void) {
-        DispatchQueue.global().async(execute: {
+        DispatchQueue.global().async {
             var dbFiles: [URL] = []
 
             do {
                 let destinationURL = zipFile.deletingLastPathComponent()
 
-                guard let archive = Archive(url: zipFile, accessMode: .read) else {
-                    let msg = "Failed in reading Archive"
-                    completion([], UtilsDownloadError.invalidArchive(message: msg))
-                    return
-                }
+                // Use the throwing initializer
+                let archive = try Archive(url: zipFile, accessMode: .read)
 
                 for entry in archive where entry.type == .file {
                     let fileURL = destinationURL.appendingPathComponent(entry.path)
@@ -179,14 +176,15 @@ class UtilsDownloadFromHTTP {
                         dbFiles.append(fileURL)
                     }
                 }
+
                 // Delete the zip file
                 try FileManager.default.removeItem(at: zipFile)
 
                 completion(dbFiles, nil)
             } catch {
-                completion([], error)
+                let msg = "Failed in reading Archive: \(error.localizedDescription)"
+                completion([], UtilsDownloadError.invalidArchive(message: msg))
             }
-        })
-
+        }
     }
 }

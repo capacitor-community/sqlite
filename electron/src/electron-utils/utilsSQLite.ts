@@ -326,9 +326,10 @@ export class UtilsSQLite {
     try {
       initChanges = this.dbChanges(mDB);
       let sqlStmt = sql;
-
+     
       // modify sql to sql92 compatible
       sqlStmt = this.statementsToSQL92(mDB, sql, fromJson, isSQL92);
+
       this.execDB(mDB, sqlStmt);
       changes = this.dbChanges(mDB) - initChanges;
       lastId = this.getLastId(mDB);
@@ -523,13 +524,14 @@ export class UtilsSQLite {
       let mVal: any[] = [];
       if (mValues.length > 0) {
         mVal = this.replaceUndefinedByNull(mValues);
-      } else {
+      
+      }/* else {
         const findVals = sqlStmt.match(/\?/gi);
         const nbValues = findVals ? findVals.length : 0;
         for (let i = 0; i < nbValues; i++) {
           mVal.push(null);
         }
-      }
+      }*/
       const ret: RunResults = this.runExec(mDB, sqlStmt, mVal, returnMode);
       if (ret.values != null) {
         result.values = ret.values;

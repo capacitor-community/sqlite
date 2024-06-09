@@ -345,6 +345,7 @@ public class ExportToJson {
                 String sc = s.replaceAll("\n", "").trim();
                 String[] row = sc.trim().split(" ", 2);
                 JsonColumn jsonRow = new JsonColumn();
+                String uppercasedValue = row[0].toUpperCase(); // Define uppercasedValue
                 int oPar;
                 int cPar;
                 switch (row[0].toUpperCase()) {
@@ -356,11 +357,12 @@ public class ExportToJson {
                         row[1] = sc.substring(cPar + 2);
                         jsonRow.setForeignkey(row[0]);
                     }
-                    case "PRIMARY" -> {
+                    case "PRIMARY", "UNIQUE" -> {
+                        String prefix = uppercasedValue.equals("PRIMARY") ? "CPK_" : "CUN_";
                         oPar = sc.indexOf("(");
                         cPar = sc.indexOf(")");
                         String pk = sc.substring(oPar + 1, cPar);
-                        row[0] = "CPK_" + pk.replaceAll("§", "_");
+                        row[0] = prefix + pk.replaceAll("§", "_");
                         row[0] = row[0].replaceAll("_ ", "_");
                         row[1] = sc.substring(0, cPar + 1);
                         jsonRow.setConstraint(row[0]);

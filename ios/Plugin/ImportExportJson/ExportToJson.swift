@@ -867,18 +867,20 @@ class ExportToJson {
                                                           with: ",")
                                     .replacingOccurrences(of: ", ",
                                                           with: ",")
-                            case "PRIMARY":
+                            case "PRIMARY", "UNIQUE":
+                                let prefix = (String(row[0]).uppercased() == "PRIMARY") ? "CPK_" : "CUN_"
+
                                 guard let oPar = rstr.firstIndex(of: "(")
                                 else {
                                     var msg: String = "Create Schema "
-                                    msg.append("PRIMARY KEY no '('")
+                                    msg.append("PRIMARY/UNIQUE KEY no '('")
                                     throw ExportToJsonError
                                     .createSchema(message: msg)
                                 }
                                 guard let cPar = rstr.firstIndex(of: ")")
                                 else {
                                     var msg: String = "Create Schema "
-                                    msg.append("PRIMARY KEY no ')'")
+                                    msg.append("PRIMARY/UNIQUE KEY no ')'")
                                     throw ExportToJsonError
                                     .createSchema(message: msg)
                                 }
@@ -886,7 +888,7 @@ class ExportToJson {
                                                 after: oPar)..<cPar]
                                 row[1] = rstr[rstr.index(rstr.startIndex,
                                                          offsetBy: 0)..<rstr.endIndex]
-                                columns["constraint"] = "CPK_" + String(row[0])
+                                columns["constraint"] = prefix + String(row[0])
                                     .replacingOccurrences(of: "§",
                                                           with: "_")
                                     .replacingOccurrences(of: "_ ",
