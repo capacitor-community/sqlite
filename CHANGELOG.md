@@ -1,3 +1,9 @@
+# 6.0.0-beta.2 (2024-06-12)
+
+### Bug Fixes
+
+ - Fix Android Multi Row Statement does not suppress control characters ($) issue#562 
+
 # 6.0.0-beta.1 (2024-06-12)
 
 ### Chore

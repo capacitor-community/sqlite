@@ -538,9 +538,21 @@ public class Database {
         if (extractedValues == null) {
             return stmt; // Return the original statement if no placeholders are found
         }
+        // Regex to match the VALUES clause with varying number of placeholders
+        String regex = "(?i)VALUES\\s*\\((\\s*\\?\\s*(?:,\\s*\\?\\s*)*)\\)";
 
-        // Replace placeholders in the stmt with values from sqlBuilder
-        return stmt.replaceFirst("(?i)VALUES \\((\\?(?:,\\s*\\?\\s*)*)\\)", "VALUES " + sqlBuilder);
+        // Create a pattern and matcher
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(stmt);
+
+        // Check if the pattern matches and perform the replacement
+        if (matcher.find()) {
+            // Perform the replacement without causing an IndexOutOfBoundsException
+            String formattedStmt = matcher.replaceAll("VALUES " + Matcher.quoteReplacement(sqlBuilder));
+            return formattedStmt;
+        } else {
+            throw new IllegalArgumentException("The statement does not contain a valid VALUES clause with placeholders.");
+        }
     }
 
     public String extractQuestionMarkValues(String input) {
