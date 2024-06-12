@@ -2,7 +2,7 @@
 <h3 align="center">SQLITE DATABASE</h3>
 <p align="center"><strong><code>@capacitor-community/sqlite</code></strong></p>
 <br>
-<p align="center" style="font-size:50px;color:red"><strong>CAPACITOR 5</strong></p><br>
+<p align="center" style="font-size:50px;color:red"><strong>CAPACITOR 6</strong></p><br>
 <br>
 <!-- Note from the Owner - Start -->
 <p align="center" style="font-size:50px;color:red"><strong>Note from the Owner</strong></p>

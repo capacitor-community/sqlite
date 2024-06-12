@@ -1,3 +1,35 @@
+# 6.0.0-beta.1 (2024-06-12)
+
+### Chore
+
+ - Update to @capacitor/core@6.1.0
+ - Update to @capacitor/ios@6.1.0
+ - Update to @capacitor/android@6.1.0
+ - Update to @capacitor/cli@6.1.0
+ - Update to jeep-sqlite@2.7.2
+
+### Bug Fixes
+ 
+ - Add the fixes of 5.7.3
+
+
+# 5.7.3 (2024-06-09)
+
+### Bug Fixes
+
+ - Fix TypeError: Cannot read properties of undefined (reading 'lastId') issue#558
+ - Fix exportToJson generate unusable export for table created with separate UNIQUE syntax. issue#561
+ - Fix Multi Row Statement does not suppress control characters ($) issue#562
+
+# 6.0.0-alpha.1 (2024-05-06)
+
+### Chore
+
+ - Update to @capacitor/core@6.0.0
+ - Update to @capacitor/ios@6.0.0
+ - Update to @capacitor/android@6.0.0
+ - Update to @capacitor/cli@6.0.0
+
 # 5.7.3-3 (2024-04-28)
 
 ### Bug Fixes
