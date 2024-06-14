@@ -1,3 +1,17 @@
+# 5.7.4 (2024-06-14)
+
+### Bug Fixes
+
+ - Fix For-in loop requires 'Archive?' to conform to 'Sequence'; did you mean to unwrap optional? issue565
+
+# 5.7.3 (2024-06-09)
+
+### Bug Fixes
+
+ - Fix TypeError: Cannot read properties of undefined (reading 'lastId') issue#558
+ - Fix exportToJson generate unusable export for table created with separate UNIQUE syntax. issue#561
+ - Fix Multi Row Statement does not suppress control characters ($) issue#562
+
 # 5.7.3-3 (2024-04-28)
 
 ### Bug Fixes
