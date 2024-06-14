@@ -1,5 +1,10 @@
-# 6.0.0 (2024-06-12)
+# 6.0.1 (2024-06-14)
 
+### Bug Fixes
+
+ - Fix For-in loop requires 'Archive?' to conform to 'Sequence'; did you mean to unwrap optional? issue565
+
+# 6.0.0 (2024-06-12)
 
 
 # 6.0.0-beta.2 (2024-06-12)
@@ -22,6 +27,12 @@
  
  - Add the fixes of 5.7.3
 
+
+# 5.7.4 (2024-06-14)
+
+### Bug Fixes
+
+ - Fix For-in loop requires 'Archive?' to conform to 'Sequence'; did you mean to unwrap optional? issue565
 
 # 5.7.3 (2024-06-09)
 

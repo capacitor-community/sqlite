@@ -421,13 +421,15 @@ class UtilsFile {
 
     }
 
-    class func unzipToDatabase(fromURL: URL, databaseLocation: String, zip: String, overwrite: Bool) throws {
+    class func unzipToDatabase(fromURL: URL, databaseLocation: String, zip: String,
+                               overwrite: Bool) throws {
         do {
             let zipAsset: URL = fromURL.appendingPathComponent(zip)
-            
-            // Use the throwing initializer
-            let archive = try Archive(url: zipAsset, accessMode: .read)
-            
+            guard let archive = Archive(url: zipAsset, accessMode: .read) else {
+                let msg = "Error: Read Archive: \(zipAsset) failed"
+                print("\(msg)")
+                throw UtilsFileError.unzipToDatabaseFailed(message: msg)
+            }
             let uDb: URL = try getFolderURL(folderPath: databaseLocation)
             for entry in archive {
                 let dbEntry = setPathSuffix(sDb: entry.path)
@@ -440,6 +442,7 @@ class UtilsFile {
                         }
                         _ = try archive.extract(entry, to: zipCopy)
                     }
+
                 } catch {
                     let msg = "Error: Extracting \(entry.path) from archive failed \(error.localizedDescription)"
                     print("\(msg)")
