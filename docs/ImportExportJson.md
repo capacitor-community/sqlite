@@ -65,6 +65,8 @@ An example of using this new feature is given in [solidjs-vite-sqlite-app](https
 This method allow to create a database from a JSON Object.
 The created database can be encrypted or not based on the value of the name **_encrypted_**" of the JSON Object.
 
+Prior to ececute this method, the connection to the database must be closed.
+
 The import mode can be selected either **full** or **partial**
 
 To use the **partial** mode, it is mandatory to add a column **last_modified** to the schema of all tables in your database.
