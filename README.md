@@ -66,7 +66,7 @@ npx cap sync
 
 ```
 pnpm install --save @capacitor-community/sqlite
-pnpm install --save @jeep-sqlite
+pnpm install --save jeep-sqlite
 pnpm install --save sql.js
 npx cap sync
 ```
