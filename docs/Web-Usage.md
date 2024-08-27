@@ -33,7 +33,7 @@ npm i --save jeep-sqlite@latest
 ## Ionic/Angular App
 
 - **sql-wasm.wasm** 
-   - Either copy manually the file `sql-wasm.wasm` from `nodes_modules/sql.js/dist/sql-wasm.wasm` to the `src/assets` folder of YOUR_APP 
+   - Either copy manually the file `sql-wasm.wasm` from `node_modules/sql.js/dist/sql-wasm.wasm` to the `src/assets` folder of YOUR_APP 
    - or `npm i --save-dev copyfiles` and modify the scripts in the `package.json` file as follows:
 
      ```
@@ -707,7 +707,7 @@ that is it.
 
 ## Ionic/Vue App
 
-- copy manually the file `sql-wasm.wasm` from `nodes_modules/sql.js/dist/sql-wasm.wasm` to the `public/assets` folder of YOUR_APP 
+- copy manually the file `sql-wasm.wasm` from `node_modules/sql.js/dist/sql-wasm.wasm` to the `public/assets` folder of YOUR_APP 
 
 - For databases in the `public/assets/databases` folder if any, you have to create a `databases.json` file which includes only the non-encrypted database's names
 
@@ -1112,7 +1112,7 @@ that is it.
 
 ## Ionic/React App
 
-- copy manually the file `sql-wasm.wasm` from `nodes_modules/sql.js/dist/sql-wasm.wasm` to the `public/assets` folder of YOUR_APP 
+- copy manually the file `sql-wasm.wasm` from `node_modules/sql.js/dist/sql-wasm.wasm` to the `public/assets` folder of YOUR_APP 
 
 - For databases in the `public/assets/databases` folder if any, you have to create a `databases.json` file which includes only the non-encrypted database's names
 
