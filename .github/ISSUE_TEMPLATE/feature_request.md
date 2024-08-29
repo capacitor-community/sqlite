@@ -2,8 +2,7 @@
 name: Feature request
 about: Suggest an idea for this project
 title: "feat: "
-labels: ""
-assignees: ""
+labels: ["bug/fix", "needs: triage"]
 ---
 
 **Is your feature request related to a problem? Please describe:**

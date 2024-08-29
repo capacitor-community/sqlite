@@ -2,8 +2,7 @@
 name: Bug report
 about: Create a report to help us improve
 title: "bug: "
-labels: ""
-assignees: ""
+labels: ["feature", "needs: triage"]
 ---
 
 **Plugin version:**
