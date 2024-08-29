@@ -35,6 +35,8 @@ jobs:
         run: npm run verify:android
       - name: Build Web
         run: npm run verify:web
+      - name: Build Electron
+        run: npm run verify:electron
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
