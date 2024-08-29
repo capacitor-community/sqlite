@@ -326,7 +326,7 @@ export class UtilsSQLite {
     try {
       initChanges = this.dbChanges(mDB);
       let sqlStmt = sql;
-     
+
       // modify sql to sql92 compatible
       sqlStmt = this.statementsToSQL92(mDB, sql, fromJson, isSQL92);
 
@@ -348,7 +348,7 @@ export class UtilsSQLite {
     isSQL92: boolean,
   ): string {
     // split the statements in an array of statement
-    let sqlStmt = sql /*.replace(/\n/g, '')*/;
+    let sqlStmt = sql; /*.replace(/\n/g, '')*/
     // deal with trigger
     sqlStmt = sqlStmt.replace(/end;/g, 'END;');
     sqlStmt = sqlStmt.replace(/;END;/g, '&END;');
@@ -357,9 +357,7 @@ export class UtilsSQLite {
     // loop through the statement
     for (const stmt of sqlStmts) {
       let rStmt = stmt.trim();
-      const stmtType: string = rStmt
-      .split(" ")[0]
-      .toUpperCase();
+      const stmtType: string = rStmt.split(' ')[0].toUpperCase();
 
       switch (stmtType) {
         case 'CREATE':
@@ -511,10 +509,7 @@ export class UtilsSQLite {
     const result: Changes = { changes: 0, lastId: -1 };
     const msg = 'PrepareRun';
 
-    const stmtType: string = statement
-      .trim()
-      .split(" ")[0]
-      .toUpperCase();
+    const stmtType: string = statement.trim().split(' ')[0].toUpperCase();
     let sqlStmt: string = statement;
     try {
       if (!fromJson && stmtType === 'DELETE') {
@@ -524,8 +519,7 @@ export class UtilsSQLite {
       let mVal: any[] = [];
       if (mValues.length > 0) {
         mVal = this.replaceUndefinedByNull(mValues);
-      
-      }/* else {
+      } /* else {
         const findVals = sqlStmt.match(/\?/gi);
         const nbValues = findVals ? findVals.length : 0;
         for (let i = 0; i < nbValues; i++) {
@@ -1234,7 +1228,7 @@ export class UtilsSQLite {
     if (stmt.endsWith(';')) {
       stmt = stmt.slice(0, -1).trim();
     }
-    
+
     switch (stmtType) {
       case 'INSERT': {
         const valuesIndex = stmt.search(/\bVALUES\b/i);
@@ -1336,22 +1330,22 @@ export class UtilsSQLite {
     const indexSemicolon = input.indexOf(';');
     const indexDoubleDash = input.indexOf('--');
     const indexCommentStart = input.indexOf('/*');
-    
+
     // Find the minimum index among them
     let minIndex = input.length;
     if (indexSemicolon !== -1) {
-        minIndex = Math.min(minIndex, indexSemicolon);
+      minIndex = Math.min(minIndex, indexSemicolon);
     }
     if (indexDoubleDash !== -1) {
-        minIndex = Math.min(minIndex, indexDoubleDash);
+      minIndex = Math.min(minIndex, indexDoubleDash);
     }
     if (indexCommentStart !== -1) {
-        minIndex = Math.min(minIndex, indexCommentStart);
+      minIndex = Math.min(minIndex, indexCommentStart);
     }
-    
+
     // Extract substring up to the minimum index
     const colnames = input.substring(0, minIndex).trim();
-    return colnames;    
+    return colnames;
   }
 
   private getTableName(sqlStatement: string): string | null {
