@@ -1,40 +1,51 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: ''
-labels: ''
-assignees: ''
+title: "bug: "
+labels: ""
+assignees: ""
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+**Plugin version:**
+<!-- List the plugin version that this bug affects. -->
 
-**To Reproduce**
-Steps to reproduce the behavior:
 
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+**Platform(s):**
+<!-- List the platforms that this bug affects. -->
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
 
-**Desktop (please complete the following information):**
 
-- OS: [e.g. iOS]
-- Browser [e.g. chrome, safari]
-- Version [e.g. 22]
+**Current behavior:**
+<!-- Describe how the bug manifests. -->
 
-**Smartphone (please complete the following information):**
 
-- Device: [e.g. iPhone6]
-- OS: [e.g. iOS8.1]
-- Browser [e.g. stock browser, safari]
-- Version [e.g. 22]
 
-**Additional context**
-Add any other context about the problem here.
+**Expected behavior:**
+<!-- Describe what the behavior would be without the bug. -->
+
+
+
+**Steps to reproduce:**
+<!-- Please explain the steps required to reproduce the issue. -->
+
+
+
+**Related code:**
+<!-- Code which helps to reproduce or better understand the issue. -->
+
+```
+insert short code snippets here
+```
+
+**Other information:**
+<!-- List any other information that is relevant to your issue. Device information, stack traces, screenshots, related issues, etc. -->
+
+
+
+**Capacitor doctor:**
+<!-- Run `npx cap doctor` in a terminal and paste the output below. -->
+
+```
+insert the output from `npx cap doctor` here
+```
