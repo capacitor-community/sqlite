@@ -2,30 +2,6 @@
 <h3 align="center">SQLITE DATABASE</h3>
 <p align="center"><strong><code>@capacitor-community/sqlite</code></strong></p>
 <br>
-<p align="center" style="font-size:50px;color:red"><strong>CAPACITOR 6</strong></p><br>
-<br>
-<!-- Note from the Owner - Start -->
-<p align="center" style="font-size:50px;color:red"><strong>Note from the Owner</strong></p>
-<!-- Note from the Owner - End -->
-<br>
-<!-- Message below Note from the Owner - Start -->
-<p align="left" style="font-size:47px">Start --></p>
-<br>
-<p align="left">
-I have been dedicated to developing and maintaining this plugin for many years since the inception of Ionic Capacitor. Now, at 73+ years old, and with my MacBook Pro becoming obsolete for running Capacitor 6 for iOS, I have made the decision to cease maintenance of the plugin. If anyone wishes to take ownership of this plugin, they are welcome to do so.
-</p>
-<br>
-<p align="left">
-It has been a great honor to be part of this development journey alongside the developer community. I am grateful to see many of you following me on this path and incorporating the plugin into your applications. Your comments and suggestions have motivated me to continuously improve it.
-</p>
-<br>
-<p align="left">
-I have made this decision due to several family-related troubles that require my full attention and time. Therefore, I will not be stepping back. Thank you to all of you for your support.
-</p>
-<br>
-<p align="left" style="font-size:47px">End <--</p>
-<!-- Message below Note from the Owner - End -->
-<br>
 
 <p align="center">
   Capacitor community plugin for Native and Electron SQLite Databases.
@@ -35,8 +11,8 @@ I have made this decision due to several family-related troubles that require my
 <br>
 <p align="center">
   <img src="https://img.shields.io/maintenance/yes/2024?style=flat-square" />
-  <a href="https://github.com/capacitor-community/sqlite/actions?query=workflow%3A%22CI%22"><img src="https://img.shields.io/github/workflow/status/capacitor-community/sqlite/CI?style=flat-square" /></a>
-  <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/l/@capacitor-community/sqlite?style=flat-square" /></a>
+  <a href="https://github.com/capacitor-community/sqlite/actions?query=workflow%3A%22CI%22"><img src="https://img.shields.io/github/actions/workflow/status/capacitor-community/sqlite/ci.yml?style=flat-square" /></a>
+  <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/l/@capacitor-community/sqlite?branch=master&style=flat-square" /></a>
 <br>
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/dw/@capacitor-community/sqlite?style=flat-square" /></a>
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/v/@capacitor-community/sqlite?style=flat-square" /></a>
@@ -48,9 +24,9 @@ I have made this decision due to several family-related troubles that require my
 
 ## Maintainers
 
-| Maintainer        | GitHub                                    | Social |
-| ----------------- | ----------------------------------------- | ------ |
-| Quéau Jean Pierre | [jepiqueau](https://github.com/jepiqueau) |        |
+| Maintainer | GitHub                                    | Social                                        |
+| ---------- | ----------------------------------------- | --------------------------------------------- |
+| Robin Genz | [robingenz](https://github.com/robingenz) | [@robin_genz](https://twitter.com/robin_genz) |
 
 To install:
 
@@ -112,7 +88,7 @@ export default config;
 ## More Reading:
 
  - [Updating to Capacitor 5](https://capacitorjs.com/docs/updating/5-0)
- - [Releases](https://github.com/capacitor-community/sqlite/blob/master/info_releases.md)
+ - [Releases](https://github.com/capacitor-community/sqlite/blob/master/docs/info_releases.md)
  - [Changelog](https://github.com/capacitor-community/sqlite/blob/master/CHANGELOG.md)
  - [Issues](https://github.com/capacitor-community/sqlite/issues)
  - [Capacitor documentation](https://capacitorjs.com/docs/)
@@ -226,66 +202,66 @@ npm install --save-dev electron-builder@24.6.4
 
 ## Supported Methods by Platform
 
-| Name                        | Android | iOS | Electron | Web |
-| :-------------------------- | :------ | :-- | :------- | :-- |
-| createConnection (ReadWrite)| ✅      | ✅  | ✅        | ✅  |
-| createConnection (ReadOnly) | ✅      | ✅  | ✅        | ❌  | since 4.1.0-7
-| closeConnection (ReadWrite) | ✅      | ✅  | ✅        | ✅  |
-| closeConnection (ReadOnly)  | ✅      | ✅  | ✅        | ❌  | since 4.1.0-7
-| isConnection (ReadWrite)    | ✅      | ✅  | ✅        | ✅  |
-| isConnection (ReadOnly)     | ✅      | ✅  | ✅        | ❌  | since 4.1.0-7
-| open (non-encrypted DB)     | ✅      | ✅  | ✅        | ✅  |
-| open (encrypted DB)         | ✅      | ✅  | ✅        | ❌  |
-| close                       | ✅      | ✅  | ✅        | ✅  |
-| getUrl                      | ✅      | ✅  | ❌        | ❌  |
-| getVersion                  | ✅      | ✅  | ✅        | ✅  |
-| execute                     | ✅      | ✅  | ✅        | ✅  |
-| executeSet                  | ✅      | ✅  | ✅        | ✅  |
-| run                         | ✅      | ✅  | ✅        | ✅  |
-| query                       | ✅      | ✅  | ✅        | ✅  |
-| deleteDatabase              | ✅      | ✅  | ✅        | ✅  |
-| importFromJson              | ✅      | ✅  | ✅        | ✅  |
-| exportToJson                | ✅      | ✅  | ✅        | ✅  |
-| deleteExportedRows          | ✅      | ✅  | ✅        | ✅  |
-| createSyncTable             | ✅      | ✅  | ✅        | ✅  |
-| setSyncDate                 | ✅      | ✅  | ✅        | ✅  |
-| getSyncDate                 | ✅      | ✅  | ✅        | ✅  |
-| isJsonValid                 | ✅      | ✅  | ✅        | ✅  |
-| isDBExists                  | ✅      | ✅  | ✅        | ✅  |
-| addUpgradeStatement         | ✅      | ✅  | ✅        | ✅  | Modified 4.1.0-6
-| copyFromAssets              | ✅      | ✅  | ✅        | ✅  |
-| isDBOpen                    | ✅      | ✅  | ✅        | ✅  |
-| isDatabase                  | ✅      | ✅  | ✅        | ✅  |
-| isTableExists               | ✅      | ✅  | ✅        | ✅  |
-| getTableList                | ✅      | ✅  | ✅        | ✅  |
-| getDatabaseList             | ✅      | ✅  | ✅        | ✅  |
-| getMigratableDbList         | ✅      | ✅  | ❌        | ❌  |
-| addSQLiteSuffix             | ✅      | ✅  | ❌        | ❌  |
-| deleteOldDatabases          | ✅      | ✅  | ❌        | ❌  |
-| moveDatabasesAndAddSuffix   | ✅      | ✅  | ❌        | ❌  |
-| checkConnectionsConsistency | ✅      | ✅  | ✅        | ✅  |
-| isSecretStored              | ✅      | ✅  | ✅        | ❌  |
-| setEncryptionSecret         | ✅      | ✅  | ✅        | ❌  |
-| changeEncryptionSecret      | ✅      | ✅  | ✅        | ❌  |
-| clearEncryptionSecret       | ✅      | ✅  | ✅        | ❌  |
-| checkEncryptionSecret       | ✅      | ✅  | ✅        | ❌  |
-| initWebStore                | ❌      | ❌  | ❌        | ✅  |
-| saveToStore                 | ❌      | ❌  | ❌        | ✅  |
-| getNCDatabasePath           | ✅      | ✅  | ❌        | ❌  |
-| createNCConnection          | ✅      | ✅  | ❌        | ❌  |
-| closeNCConnection           | ✅      | ✅  | ❌        | ❌  |
-| isNCDatabase                | ✅      | ✅  | ❌        | ❌  |
-| transaction                 | ✅      | ✅  | ✅        | ✅  |
-| getFromHTTPRequest          | ✅      | ✅  | ✅        | ✅  | since 4.2.0
-| isDatabaseEncrypted         | ✅      | ✅  | ✅        | ❌  | since 4.6.2-2
-| isInConfigEncryption        | ✅      | ✅  | ✅        | ❌  | since 4.6.2-2
-| isInConfigBiometricAuth     | ✅      | ✅  | ❌        | ❌  | since 4.6.2-2
-| getFromLocalDiskToStore     | ❌      | ❌  | ❌        | ✅  | since 4.6.3
-| saveToLocalDisk             | ❌      | ❌  | ❌        | ✅  | since 4.6.3
-| beginTransaction            | ✅      | ✅  | ✅        | ✅  | since 5.0.7
-| commitTransaction           | ✅      | ✅  | ✅        | ✅  | since 5.0.7
-| rollbackTransaction         | ✅      | ✅  | ✅        | ✅  | since 5.0.7
-| isTransactionActive         | ✅      | ✅  | ✅        | ✅  | since 5.0.7
+| Name                         | Android | iOS  | Electron | Web  |
+| :--------------------------- | :------ | :--- | :------- | :--- |
+| createConnection (ReadWrite) | ✅       | ✅    | ✅        | ✅    |
+| createConnection (ReadOnly)  | ✅       | ✅    | ✅        | ❌    | since 4.1.0-7    |
+| closeConnection (ReadWrite)  | ✅       | ✅    | ✅        | ✅    |
+| closeConnection (ReadOnly)   | ✅       | ✅    | ✅        | ❌    | since 4.1.0-7    |
+| isConnection (ReadWrite)     | ✅       | ✅    | ✅        | ✅    |
+| isConnection (ReadOnly)      | ✅       | ✅    | ✅        | ❌    | since 4.1.0-7    |
+| open (non-encrypted DB)      | ✅       | ✅    | ✅        | ✅    |
+| open (encrypted DB)          | ✅       | ✅    | ✅        | ❌    |
+| close                        | ✅       | ✅    | ✅        | ✅    |
+| getUrl                       | ✅       | ✅    | ❌        | ❌    |
+| getVersion                   | ✅       | ✅    | ✅        | ✅    |
+| execute                      | ✅       | ✅    | ✅        | ✅    |
+| executeSet                   | ✅       | ✅    | ✅        | ✅    |
+| run                          | ✅       | ✅    | ✅        | ✅    |
+| query                        | ✅       | ✅    | ✅        | ✅    |
+| deleteDatabase               | ✅       | ✅    | ✅        | ✅    |
+| importFromJson               | ✅       | ✅    | ✅        | ✅    |
+| exportToJson                 | ✅       | ✅    | ✅        | ✅    |
+| deleteExportedRows           | ✅       | ✅    | ✅        | ✅    |
+| createSyncTable              | ✅       | ✅    | ✅        | ✅    |
+| setSyncDate                  | ✅       | ✅    | ✅        | ✅    |
+| getSyncDate                  | ✅       | ✅    | ✅        | ✅    |
+| isJsonValid                  | ✅       | ✅    | ✅        | ✅    |
+| isDBExists                   | ✅       | ✅    | ✅        | ✅    |
+| addUpgradeStatement          | ✅       | ✅    | ✅        | ✅    | Modified 4.1.0-6 |
+| copyFromAssets               | ✅       | ✅    | ✅        | ✅    |
+| isDBOpen                     | ✅       | ✅    | ✅        | ✅    |
+| isDatabase                   | ✅       | ✅    | ✅        | ✅    |
+| isTableExists                | ✅       | ✅    | ✅        | ✅    |
+| getTableList                 | ✅       | ✅    | ✅        | ✅    |
+| getDatabaseList              | ✅       | ✅    | ✅        | ✅    |
+| getMigratableDbList          | ✅       | ✅    | ❌        | ❌    |
+| addSQLiteSuffix              | ✅       | ✅    | ❌        | ❌    |
+| deleteOldDatabases           | ✅       | ✅    | ❌        | ❌    |
+| moveDatabasesAndAddSuffix    | ✅       | ✅    | ❌        | ❌    |
+| checkConnectionsConsistency  | ✅       | ✅    | ✅        | ✅    |
+| isSecretStored               | ✅       | ✅    | ✅        | ❌    |
+| setEncryptionSecret          | ✅       | ✅    | ✅        | ❌    |
+| changeEncryptionSecret       | ✅       | ✅    | ✅        | ❌    |
+| clearEncryptionSecret        | ✅       | ✅    | ✅        | ❌    |
+| checkEncryptionSecret        | ✅       | ✅    | ✅        | ❌    |
+| initWebStore                 | ❌       | ❌    | ❌        | ✅    |
+| saveToStore                  | ❌       | ❌    | ❌        | ✅    |
+| getNCDatabasePath            | ✅       | ✅    | ❌        | ❌    |
+| createNCConnection           | ✅       | ✅    | ❌        | ❌    |
+| closeNCConnection            | ✅       | ✅    | ❌        | ❌    |
+| isNCDatabase                 | ✅       | ✅    | ❌        | ❌    |
+| transaction                  | ✅       | ✅    | ✅        | ✅    |
+| getFromHTTPRequest           | ✅       | ✅    | ✅        | ✅    | since 4.2.0      |
+| isDatabaseEncrypted          | ✅       | ✅    | ✅        | ❌    | since 4.6.2-2    |
+| isInConfigEncryption         | ✅       | ✅    | ✅        | ❌    | since 4.6.2-2    |
+| isInConfigBiometricAuth      | ✅       | ✅    | ❌        | ❌    | since 4.6.2-2    |
+| getFromLocalDiskToStore      | ❌       | ❌    | ❌        | ✅    | since 4.6.3      |
+| saveToLocalDisk              | ❌       | ❌    | ❌        | ✅    | since 4.6.3      |
+| beginTransaction             | ✅       | ✅    | ✅        | ✅    | since 5.0.7      |
+| commitTransaction            | ✅       | ✅    | ✅        | ✅    | since 5.0.7      |
+| rollbackTransaction          | ✅       | ✅    | ✅        | ✅    | since 5.0.7      |
+| isTransactionActive          | ✅       | ✅    | ✅        | ✅    | since 5.0.7      |
 
 
 ## Documentation & APIs
