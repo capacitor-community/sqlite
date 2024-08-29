@@ -114,7 +114,7 @@ class KeychainWrapper {
             throw KeychainWrapperError(type: .unableToConvertToString)
         }
 
-        //5
+        // 5
         return value
     }
 

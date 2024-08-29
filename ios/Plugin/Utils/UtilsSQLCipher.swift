@@ -456,9 +456,9 @@ class UtilsSQLCipher {
         var result: [[String: Any]] = []
         var retMode: String
         let stmtType = sqlStmt
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-                .components(separatedBy: " ")
-                .first?.capitalized ?? ""
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .components(separatedBy: " ")
+            .first?.capitalized ?? ""
 
         if #available(iOS 15, *) {
             retMode = returnMode
@@ -570,9 +570,9 @@ class UtilsSQLCipher {
         var result: [[String: Any]] = []
         let initLastId = Int64(sqlite3_last_insert_rowid(mDB.mDb))
         let stmtType = sqlStmt
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-                .components(separatedBy: " ")
-                .first?.capitalized ?? ""
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .components(separatedBy: " ")
+            .first?.capitalized ?? ""
 
         if stmtType == "DELETE" &&
             names.count > 0 {
@@ -986,17 +986,17 @@ class UtilsSQLCipher {
                         }
                     }
                 } else {
-                        let resp = try UtilsSQLCipher
-                            .prepareSQL(mDB: mDB, sql: sql, values: values,
-                                        fromJson: false, returnMode: returnMode)
-                        lastId = resp.0
-                        respSet = resp.1
-                        if  lastId == -1 {
-                            let message: String = "lastId < 0"
-                            throw UtilsSQLCipherError.executeSet(
-                                message: message)
-                        }
-                        response = addToResponse(response: response, respSet: respSet)
+                    let resp = try UtilsSQLCipher
+                        .prepareSQL(mDB: mDB, sql: sql, values: values,
+                                    fromJson: false, returnMode: returnMode)
+                    lastId = resp.0
+                    respSet = resp.1
+                    if  lastId == -1 {
+                        let message: String = "lastId < 0"
+                        throw UtilsSQLCipherError.executeSet(
+                            message: message)
+                    }
+                    response = addToResponse(response: response, respSet: respSet)
                 }
             }
 

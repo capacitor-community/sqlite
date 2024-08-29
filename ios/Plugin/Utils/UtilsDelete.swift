@@ -125,7 +125,7 @@ class UtilsDelete {
                             // update all related element
                             // set sql_deleted = 1 and last_modified
                             // tableName
-                            //update all by sending return true
+                            // update all by sending return true
                             results = try upDateWhereForCascade(
                                 results: result)
 
@@ -342,7 +342,7 @@ class UtilsDelete {
                                       colNames: [String], values: [Any])
     throws {
         var lastId: Int64 = -1
-        //update sql_deleted for this references
+        // update sql_deleted for this references
         let stmt = "UPDATE \(tableName) SET \(setStmt) \(whereStmt)"
         var selValues: [Any] = []
         if !values.isEmpty {
@@ -450,8 +450,8 @@ class UtilsDelete {
                     throw UtilsDeleteError.getRefs(message: msg)
                 }
             } else {
-                    let msg = "getRefs: Error creating tableNameMatch "
-                    throw UtilsDeleteError.getRefs(message: msg)
+                let msg = "getRefs: Error creating tableNameMatch "
+                throw UtilsDeleteError.getRefs(message: msg)
             }
 
             // Regular expression pattern to match the FOREIGN KEY

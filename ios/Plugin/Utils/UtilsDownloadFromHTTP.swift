@@ -21,8 +21,8 @@ class UtilsDownloadFromHTTP {
     class func download(databaseLocation: String, url: String,
                         completion: @escaping (Result<Bool, UtilsDownloadError>) -> Void) {
         guard let fileDetails = getFileDetails(url: url),
-            let fileExtension = fileDetails.extension ,
-            fileExtension == "db" || fileExtension == "zip" else {
+              let fileExtension = fileDetails.extension,
+              fileExtension == "db" || fileExtension == "zip" else {
             let msg = "download: Not a .zip or .db url"
             print("\(msg)")
             completion(.failure(UtilsDownloadError.downloadFromHTTPFailed(message: msg)))
