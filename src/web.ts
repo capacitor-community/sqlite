@@ -45,47 +45,47 @@ export class CapacitorSQLiteWeb
   private isWebStoreOpen = false;
 
   async initWebStore(): Promise<void> {
-     await customElements.whenDefined('jeep-sqlite')
+    await customElements.whenDefined('jeep-sqlite');
 
-      this.jeepSqliteElement = document.querySelector('jeep-sqlite');
-      this.ensureJeepSqliteIsAvailable();
+    this.jeepSqliteElement = document.querySelector('jeep-sqlite');
+    this.ensureJeepSqliteIsAvailable();
 
-      this.jeepSqliteElement.addEventListener(
-        'jeepSqliteImportProgress',
-        (event: CustomEvent) => {
-          this.notifyListeners('sqliteImportProgressEvent', event.detail);
-        },
-      );
-      this.jeepSqliteElement.addEventListener(
-        'jeepSqliteExportProgress',
-        (event: CustomEvent) => {
-          this.notifyListeners('sqliteExportProgressEvent', event.detail);
-        },
-      );
-      this.jeepSqliteElement.addEventListener(
-        'jeepSqliteHTTPRequestEnded',
-        (event: CustomEvent) => {
-          this.notifyListeners('sqliteHTTPRequestEndedEvent', event.detail);
-        },
-      );
-      this.jeepSqliteElement.addEventListener(
-        'jeepSqlitePickDatabaseEnded',
-        (event: CustomEvent) => {
-          this.notifyListeners('sqlitePickDatabaseEndedEvent', event.detail);
-        },
-      );
-      this.jeepSqliteElement.addEventListener(
-        'jeepSqliteSaveDatabaseToDisk',
-        (event: CustomEvent) => {
-          this.notifyListeners('sqliteSaveDatabaseToDiskEvent', event.detail);
-        },
-      );
+    this.jeepSqliteElement.addEventListener(
+      'jeepSqliteImportProgress',
+      (event: CustomEvent) => {
+        this.notifyListeners('sqliteImportProgressEvent', event.detail);
+      },
+    );
+    this.jeepSqliteElement.addEventListener(
+      'jeepSqliteExportProgress',
+      (event: CustomEvent) => {
+        this.notifyListeners('sqliteExportProgressEvent', event.detail);
+      },
+    );
+    this.jeepSqliteElement.addEventListener(
+      'jeepSqliteHTTPRequestEnded',
+      (event: CustomEvent) => {
+        this.notifyListeners('sqliteHTTPRequestEndedEvent', event.detail);
+      },
+    );
+    this.jeepSqliteElement.addEventListener(
+      'jeepSqlitePickDatabaseEnded',
+      (event: CustomEvent) => {
+        this.notifyListeners('sqlitePickDatabaseEndedEvent', event.detail);
+      },
+    );
+    this.jeepSqliteElement.addEventListener(
+      'jeepSqliteSaveDatabaseToDisk',
+      (event: CustomEvent) => {
+        this.notifyListeners('sqliteSaveDatabaseToDiskEvent', event.detail);
+      },
+    );
 
-      if (!this.isWebStoreOpen) {
-        this.isWebStoreOpen = await this.jeepSqliteElement.isStoreOpen();
-      }
+    if (!this.isWebStoreOpen) {
+      this.isWebStoreOpen = await this.jeepSqliteElement.isStoreOpen();
+    }
 
-      return;
+    return;
   }
 
   async saveToStore(options: capSQLiteOptions): Promise<void> {
@@ -204,7 +204,6 @@ export class CapacitorSQLiteWeb
     } catch (err) {
       throw new Error(`${err}`);
     }
-
   }
   async beginTransaction(options: capSQLiteOptions): Promise<capSQLiteChanges> {
     this.ensureJeepSqliteIsAvailable();
@@ -285,7 +284,6 @@ export class CapacitorSQLiteWeb
     } catch (err) {
       throw new Error(`${err}`);
     }
-
   }
 
   async executeSet(options: capSQLiteSetOptions): Promise<capSQLiteChanges> {
@@ -554,7 +552,6 @@ export class CapacitorSQLiteWeb
       );
     }
   }
-
 
   ////////////////////////////////////
   ////// UNIMPLEMENTED METHODS

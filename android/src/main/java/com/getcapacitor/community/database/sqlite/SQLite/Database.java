@@ -763,7 +763,7 @@ public class Database {
                 String substring = suffix.substring(returningIndex + "returning".length());
                 String names = substring.trim();
                 retObj.put("names", getNames(names));
-             }
+            }
         }
         return retObj;
     }
@@ -786,6 +786,7 @@ public class Database {
         }
         return input.substring(0, minIndex).trim();
     }
+
     private JSObject isReturning(String sqlStmt) {
         JSObject retObj = new JSObject();
 

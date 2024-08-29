@@ -279,9 +279,12 @@ export class UtilsJson {
     // Iterate over the row array
     for (let i = 0; i < row.length; i++) {
       // Check if the current element is an array of numbers
-      if (Array.isArray(row[i]) && row[i].every((item: any) => typeof item === 'number')) {
-          const byteArray = Uint8Array.from(row[i] as number[]);
-          row[i] = byteArray;
+      if (
+        Array.isArray(row[i]) &&
+        row[i].every((item: any) => typeof item === 'number')
+      ) {
+        const byteArray = Uint8Array.from(row[i] as number[]);
+        row[i] = byteArray;
       }
     }
     return row;

@@ -1137,13 +1137,13 @@ export interface ISQLiteConnection {
   /**
    * Add the upgrade Statement for database version upgrading
    * @param database
-   * @param upgrade @since 5.6.4 
+   * @param upgrade @since 5.6.4
    * @returns Promise<void>
    * @since 2.9.0 refactor
    */
   addUpgradeStatement(
     database: string,
-    upgrade: capSQLiteVersionUpgrade[]
+    upgrade: capSQLiteVersionUpgrade[],
   ): Promise<void>;
   /**
    * Create a connection to a database
@@ -1457,7 +1457,7 @@ export class SQLiteConnection implements ISQLiteConnection {
   }
   async addUpgradeStatement(
     database: string,
-    upgrade: capSQLiteVersionUpgrade[]
+    upgrade: capSQLiteVersionUpgrade[],
   ): Promise<void> {
     try {
       if (database.endsWith('.db')) database = database.slice(0, -3);
@@ -2408,13 +2408,11 @@ export class SQLiteDBConnection implements ISQLiteDBConnection {
         database: this.dbName,
       });
       if (!isActive) {
-        return Promise.reject(
-          'After Begin Transaction, no transaction active',
-        );
+        return Promise.reject('After Begin Transaction, no transaction active');
       }
       try {
         for (const task of txn) {
-          if(typeof task !== 'object' || !('statement' in task)) {
+          if (typeof task !== 'object' || !('statement' in task)) {
             throw new Error('Error a task.statement must be provided');
           }
           if ('values' in task && task.values && task.values.length > 0) {

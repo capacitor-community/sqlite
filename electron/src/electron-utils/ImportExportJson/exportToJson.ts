@@ -369,7 +369,7 @@ export class ExportToJson {
             break;
           }
         }
-      
+
         jsonRow['value'] = row[1].replace(/§/g, ',');
         schema.push(jsonRow);
       }
