@@ -231,7 +231,7 @@ class ExportToJson {
                 }
 
                 switch expMode {
-                case "partial" :
+                case "partial":
                     tables = try ExportToJson
                         .getTablesPartial(mDB: mDB,
                                           resTables: resTables)
@@ -1199,9 +1199,9 @@ class ExportToJson {
                 row.append(val)
             } else if values[pos][names[jpos]] is Int64 && (
                         INTEGERAFFINITY.contains(types[jpos].uppercased()) ||
-                        INTEGERAFFINITY.contains(types[jpos]
-                            .components(separatedBy: "(")[0].uppercased()) ||
-                        NUMERICAFFINITY.contains(types[jpos].uppercased())) {
+                            INTEGERAFFINITY.contains(types[jpos]
+                                                        .components(separatedBy: "(")[0].uppercased()) ||
+                            NUMERICAFFINITY.contains(types[jpos].uppercased())) {
                 guard let val = values[pos][names[jpos]] as? Int64
                 else {
                     throw ExportToJsonError.createValues(
@@ -1210,8 +1210,8 @@ class ExportToJson {
                 row.append(val)
             } else if values[pos][names[jpos]] is Int64 && (
                         REALAFFINITY.contains(types[jpos].uppercased())  ||
-                        NUMERICAFFINITY.contains(types[jpos]
-                            .components(separatedBy: "(")[0].uppercased())) {
+                            NUMERICAFFINITY.contains(types[jpos]
+                                                        .components(separatedBy: "(")[0].uppercased())) {
                 guard let val = values[pos][names[jpos]] as? Int64
                 else {
                     throw ExportToJsonError.createValues(
@@ -1221,7 +1221,7 @@ class ExportToJson {
             } else if values[pos][names[jpos]] is Double && (
                         REALAFFINITY.contains(types[jpos].uppercased()) ||
                             NUMERICAFFINITY.contains(types[jpos]
-                                .components(separatedBy: "(")[0].uppercased())) {
+                                                        .components(separatedBy: "(")[0].uppercased())) {
                 guard let val = values[pos][names[jpos]] as? Double
                 else {
                     throw ExportToJsonError.createValues(

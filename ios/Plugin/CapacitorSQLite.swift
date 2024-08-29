@@ -247,7 +247,7 @@ enum CapacitorSQLiteError: Error {
 
     // MARK: - CheckEncryptionSecret
 
-    @objc public func checkEncryptionSecret(passphrase: String) throws ->  NSNumber {
+    @objc public func checkEncryptionSecret(passphrase: String) throws -> NSNumber {
         guard isInit else {
             throw CapacitorSQLiteError.failed(message: initMessage)
         }
@@ -557,7 +557,7 @@ enum CapacitorSQLiteError: Error {
     // MARK: - GetVersion
 
     @objc public func getVersion(_ dbName: String, readonly: Bool)
-    throws ->  NSNumber {
+    throws -> NSNumber {
         guard isInit else {
             throw CapacitorSQLiteError.failed(message: initMessage)
         }
@@ -585,7 +585,7 @@ enum CapacitorSQLiteError: Error {
         UtilsDownloadFromHTTP.download(databaseLocation: databaseLocation,
                                        url: url) { ( result) in
             switch result {
-            case .success(_):
+            case .success:
                 self.retHandler.rResult(call: call)
                 return
             case .failure(let error):
@@ -624,7 +624,7 @@ enum CapacitorSQLiteError: Error {
 
     @objc public func checkConnectionsConsistency(_ dbNames: [String],
                                                   openModes: [String])
-    throws ->  NSNumber {
+    throws -> NSNumber {
         guard isInit else {
             throw CapacitorSQLiteError.failed(message: initMessage)
         }
@@ -1033,7 +1033,7 @@ enum CapacitorSQLiteError: Error {
                                                                    account: account)
                 if !isEncryption &&
                     (state.rawValue == "ENCRYPTEDGLOBALSECRET" ||
-                    state.rawValue == "ENCRYPTEDSECRET") {
+                        state.rawValue == "ENCRYPTEDSECRET") {
                     var msg = "Cannot delete an Encrypted database with "
                     msg += "No Encryption set in capacitor.config"
                     throw CapacitorSQLiteError.failed(message: msg)

@@ -192,7 +192,7 @@ class UtilsDrop {
             .getTriggersNamesFailed(message: message)
         }
     }
-    //1234567890123456789012345678901234567890123456789012345678901234567890
+    // 1234567890123456789012345678901234567890123456789012345678901234567890
     // MARK: - dropTriggers
 
     class func dropTriggers(mDB: Database) throws -> Int {

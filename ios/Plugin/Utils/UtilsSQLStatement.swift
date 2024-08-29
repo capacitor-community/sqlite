@@ -104,8 +104,8 @@ class UtilsSQLStatement {
         }
     }
     class func modifyPair(_ pair: String, from: [String],
-                          destination: [String],prefix: String) throws -> String {
-        
+                          destination: [String], prefix: String) throws -> String {
+
         let pattern = #"(\w+)\s*(=|IN|BETWEEN|LIKE)\s*(.+)"#
 
         guard let range = pair.range(of: pattern, options: .regularExpression) else {
@@ -159,79 +159,79 @@ class UtilsSQLStatement {
         let modifiedColumn = "\(prefix)\(newColumn)"
         return "\(modifiedColumn) \(mOperator) \(value)"
     }
-/*
-    class func addPrefixToWhereClause(_ whereClause: String,
-                                      from: [String],
-                                      destination: [String], prefix: String)
-    throws -> String {
-        var columnValuePairs: [String]
-        if whereClause.contains("AND") {
-            if #available(iOS 16.0, *) {
-                let subSequenceArray = whereClause.split(separator: "AND")
-                columnValuePairs = subSequenceArray.map({ String($0) })
-            } else {
-                columnValuePairs = whereClause
-                    .components(separatedBy: "AND")
-            }
-        } else {
-            columnValuePairs = [whereClause]
-        }
-        let modifiedPairs = try columnValuePairs.map({ pair -> String in
-            let pattern = #"(\w+)\s*(=|IN|BETWEEN|LIKE)\s*(.+)"#
+    /*
+     class func addPrefixToWhereClause(_ whereClause: String,
+     from: [String],
+     destination: [String], prefix: String)
+     throws -> String {
+     var columnValuePairs: [String]
+     if whereClause.contains("AND") {
+     if #available(iOS 16.0, *) {
+     let subSequenceArray = whereClause.split(separator: "AND")
+     columnValuePairs = subSequenceArray.map({ String($0) })
+     } else {
+     columnValuePairs = whereClause
+     .components(separatedBy: "AND")
+     }
+     } else {
+     columnValuePairs = [whereClause]
+     }
+     let modifiedPairs = try columnValuePairs.map({ pair -> String in
+     let pattern = #"(\w+)\s*(=|IN|BETWEEN|LIKE)\s*(.+)"#
 
-            if let range = pair.range(of: pattern, options: .regularExpression) {
-                let match = String(pair[range])
-                let regex = try NSRegularExpression(pattern: pattern)
-                let matchRange = NSRange(match.startIndex..., in: match)
+     if let range = pair.range(of: pattern, options: .regularExpression) {
+     let match = String(pair[range])
+     let regex = try NSRegularExpression(pattern: pattern)
+     let matchRange = NSRange(match.startIndex..., in: match)
 
-                if let matchResult = regex.firstMatch(in: match, range: matchRange) {
+     if let matchResult = regex.firstMatch(in: match, range: matchRange) {
 
-                    guard let columnRange = Range(matchResult.range(at: 1), in: match) else {
-                        let msg = "addPrefixToWhereClause:  " +
-                            "columnRange failed "
-                        throw UtilsSQLStatementError
-                        .addPrefixToWhereClause(message: msg)
-                    }
-                    guard let operatorRange = Range(matchResult.range(at: 2), in: match) else {
-                        let msg = "addPrefixToWhereClause:  " +
-                            "operatorRange failed "
-                        throw UtilsSQLStatementError
-                        .addPrefixToWhereClause(message: msg)
-                    }
-                    guard let valueRange = Range(matchResult.range(at: 3), in: match) else {
-                        let msg = "addPrefixToWhereClause:  " +
-                            "valueRange failed "
-                        throw UtilsSQLStatementError
-                        .addPrefixToWhereClause(message: msg)
-                    }
+     guard let columnRange = Range(matchResult.range(at: 1), in: match) else {
+     let msg = "addPrefixToWhereClause:  " +
+     "columnRange failed "
+     throw UtilsSQLStatementError
+     .addPrefixToWhereClause(message: msg)
+     }
+     guard let operatorRange = Range(matchResult.range(at: 2), in: match) else {
+     let msg = "addPrefixToWhereClause:  " +
+     "operatorRange failed "
+     throw UtilsSQLStatementError
+     .addPrefixToWhereClause(message: msg)
+     }
+     guard let valueRange = Range(matchResult.range(at: 3), in: match) else {
+     let msg = "addPrefixToWhereClause:  " +
+     "valueRange failed "
+     throw UtilsSQLStatementError
+     .addPrefixToWhereClause(message: msg)
+     }
 
-                    let column = String(match[columnRange]).trimmingCharacters(in: .whitespacesAndNewlines)
-                    let mOperator = String(match[operatorRange]).trimmingCharacters(in: .whitespacesAndNewlines)
-                    let value = String(match[valueRange]).trimmingCharacters(in: .whitespacesAndNewlines)
+     let column = String(match[columnRange]).trimmingCharacters(in: .whitespacesAndNewlines)
+     let mOperator = String(match[operatorRange]).trimmingCharacters(in: .whitespacesAndNewlines)
+     let value = String(match[valueRange]).trimmingCharacters(in: .whitespacesAndNewlines)
 
-                    var newColumn = column
-                    if let index = UtilsSQLStatement
-                        .findIndexOfStringInArray(column, destination), index != -1 {
-                        guard let mNewColumn = UtilsSQLStatement
-                                .getStringAtIndex(from, index) else {
-                            let msg = "addPrefixToWhereClause: index " +
-                                "mistmatch "
-                            throw UtilsSQLStatementError
-                            .addPrefixToWhereClause(message: msg)
-                        }
-                        newColumn = mNewColumn
-                    }
+     var newColumn = column
+     if let index = UtilsSQLStatement
+     .findIndexOfStringInArray(column, destination), index != -1 {
+     guard let mNewColumn = UtilsSQLStatement
+     .getStringAtIndex(from, index) else {
+     let msg = "addPrefixToWhereClause: index " +
+     "mistmatch "
+     throw UtilsSQLStatementError
+     .addPrefixToWhereClause(message: msg)
+     }
+     newColumn = mNewColumn
+     }
 
-                    let modifiedColumn = "\(prefix)\(newColumn)"
-                    return "\(modifiedColumn) \(mOperator) \(value)"
-                }
-            }
-            return pair
-        })
-        return modifiedPairs.joined(separator: " AND ")
+     let modifiedColumn = "\(prefix)\(newColumn)"
+     return "\(modifiedColumn) \(mOperator) \(value)"
+     }
+     }
+     return pair
+     })
+     return modifiedPairs.joined(separator: " AND ")
 
-    }
-*/
+     }
+     */
     // MARK: - findIndexOfStringInArray
 
     class func findIndexOfStringInArray(_ target: String, _ array: [String]) -> Int? {
@@ -376,48 +376,48 @@ class UtilsSQLStatement {
             }
         }
 
-/*        func processToken(_ token: String) {
-            if token.uppercased() == "IN" {
-                inClause = true
-            } else if inClause && (token.prefix(7).uppercased() == "(VALUES" ||
-                                    token.prefix(8).uppercased() == "( VALUES") {
-                inValues = true
-            } else if inValues && (token.suffix(2).uppercased() == "))" ||
-                                    token.suffix(3).uppercased() == ") )") {
-                inValues = false
-            } else if inClause && !inValues && token.prefix(1) == "(" {
-                inPar = true
-            } else if inClause && !inValues && token.suffix(1) == ")" {
-                inPar = false
-                inClause = false
-            } else if token.uppercased() == "BETWEEN" {
-                betweenClause = true
-            } else if betweenClause && token.uppercased() == "AND" {
-                andClause = true
-            } else if operators.contains(token) {
-                inOper = true
-            } else if token.uppercased() == "LIKE" {
-                inLike = true
-            } else if token.range(of: "\\b[a-zA-Z]\\w*\\b", options: .regularExpression) != nil
-                        && !inClause && (!inValues || !inPar)
-                        && !betweenClause && !andClause && !inOper && !inLike
-                        && !keywords.contains(token.uppercased()) {
-                var mToken = extractString(from: token)
-                mToken = removeOperatorsAndFollowing(from: mToken)
-                columns.append(mToken)
-            } else if token.range(of: "\\b[a-zA-Z]\\w*\\b", options: .regularExpression) != nil
-                        && betweenClause && andClause {
-                betweenClause = false
-                andClause = false
-            } else if token.range(of: "\\b[a-zA-Z]\\w*\\b", options: .regularExpression) != nil
-                        && inOper {
-                inOper = false
-            } else if token.range(of: "\\b[a-zA-Z]\\w*\\b", options: .regularExpression) != nil
-                        && inLike {
-                inLike = false
-            }
-        }
-        */
+        /*        func processToken(_ token: String) {
+         if token.uppercased() == "IN" {
+         inClause = true
+         } else if inClause && (token.prefix(7).uppercased() == "(VALUES" ||
+         token.prefix(8).uppercased() == "( VALUES") {
+         inValues = true
+         } else if inValues && (token.suffix(2).uppercased() == "))" ||
+         token.suffix(3).uppercased() == ") )") {
+         inValues = false
+         } else if inClause && !inValues && token.prefix(1) == "(" {
+         inPar = true
+         } else if inClause && !inValues && token.suffix(1) == ")" {
+         inPar = false
+         inClause = false
+         } else if token.uppercased() == "BETWEEN" {
+         betweenClause = true
+         } else if betweenClause && token.uppercased() == "AND" {
+         andClause = true
+         } else if operators.contains(token) {
+         inOper = true
+         } else if token.uppercased() == "LIKE" {
+         inLike = true
+         } else if token.range(of: "\\b[a-zA-Z]\\w*\\b", options: .regularExpression) != nil
+         && !inClause && (!inValues || !inPar)
+         && !betweenClause && !andClause && !inOper && !inLike
+         && !keywords.contains(token.uppercased()) {
+         var mToken = extractString(from: token)
+         mToken = removeOperatorsAndFollowing(from: mToken)
+         columns.append(mToken)
+         } else if token.range(of: "\\b[a-zA-Z]\\w*\\b", options: .regularExpression) != nil
+         && betweenClause && andClause {
+         betweenClause = false
+         andClause = false
+         } else if token.range(of: "\\b[a-zA-Z]\\w*\\b", options: .regularExpression) != nil
+         && inOper {
+         inOper = false
+         } else if token.range(of: "\\b[a-zA-Z]\\w*\\b", options: .regularExpression) != nil
+         && inLike {
+         inLike = false
+         }
+         }
+         */
         // swiftlint:disable cyclomatic_complexity
         func processToken(_ token: String) {
             if token.uppercased() == "IN" {
@@ -538,7 +538,7 @@ class UtilsSQLStatement {
     }
     class func processInsertStatement(_ sqlStmt: String, stmt: String) -> SQLStatementInfo {
         if let valuesIndex = stmt.range(of: "VALUES", options: .caseInsensitive)?.lowerBound,
-            let closingParenthesisIndex = stmt
+           let closingParenthesisIndex = stmt
             .range(of: ")", options: .backwards, range: valuesIndex..<stmt.endIndex)?
             .upperBound {
             var mStmt = stmt
@@ -679,7 +679,7 @@ class UtilsSQLStatement {
             if let keysRange = Range(match.range(at: 1), in: whereClause) {
                 let keysString = String(whereClause[keysRange])
                 let keys = keysString.split(separator: ",").map({
-                    String($0.trimmingCharacters(in: .whitespaces)) })
+                                                                    String($0.trimmingCharacters(in: .whitespaces)) })
                 primaryKeySets.append(keys)
             }
         }

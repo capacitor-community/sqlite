@@ -74,7 +74,7 @@ class UtilsBinding {
                 let sortedValues = extractSortedValues(from: dict)
                 let data: Data = Data(sortedValues)
                 sqlite3_bind_blob(handle, Int32(idx), data.bytes,
-                            Int32(data.bytes.count), SQLITETRANSIENT)
+                                  Int32(data.bytes.count), SQLITETRANSIENT)
             }
         } else {
             throw UtilsSQLCipherError.bindFailed
@@ -95,5 +95,5 @@ class UtilsBinding {
             return false
         }
         return true
-   }
+    }
 }
