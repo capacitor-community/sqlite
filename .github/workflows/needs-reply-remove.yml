@@ -1,0 +1,16 @@
+name: Remove needs-reply label
+
+on:
+  issue_comment:
+    types:
+      - created
+
+jobs:
+  needs-reply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove needs-reply label
+        run: |
+          curl --request DELETE \
+          --url 'https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/labels/needs%3A%20reply' \
+          --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}'
