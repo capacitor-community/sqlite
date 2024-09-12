@@ -18,12 +18,10 @@ export class UtilsUpgrade {
     mDB: Database,
     vUpgDict: Record<number, capSQLiteVersionUpgrade>,
     curVersion: number,
-    targetVersion: number,
+    targetVersion: number
   ): Promise<number> {
     let changes;
-    const sortedKeys: Int32Array = new Int32Array(
-      Object.keys(vUpgDict).map(item => parseInt(item)),
-    ).sort();
+    const sortedKeys: Int32Array = new Int32Array(Object.keys(vUpgDict).map((item) => parseInt(item))).sort();
     for (const versionKey of sortedKeys) {
       if (versionKey > curVersion && versionKey <= targetVersion) {
         const statements = vUpgDict[versionKey].statements;
@@ -40,8 +38,7 @@ export class UtilsUpgrade {
           this.sqliteUtil.setVersion(mDB.database, versionKey);
           // set Foreign Keys On
           this.sqliteUtil.setForeignKeyConstraintsEnabled(mDB.database, true);
-          changes =
-            (await this.sqliteUtil.dbChanges(mDB.database)) - initChanges;
+          changes = (await this.sqliteUtil.dbChanges(mDB.database)) - initChanges;
         } catch (err) {
           return Promise.reject(`onUpgrade: ${err}`);
         }
@@ -55,10 +52,7 @@ export class UtilsUpgrade {
    * @param mDB
    * @param statements
    */
-  private async executeStatementsProcess(
-    mDB: Database,
-    statements: string[],
-  ): Promise<void> {
+  private async executeStatementsProcess(mDB: Database, statements: string[]): Promise<void> {
     try {
       this.sqliteUtil.beginTransaction(mDB.database, true);
       mDB.setIsTransActive(true);

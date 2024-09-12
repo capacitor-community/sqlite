@@ -45,10 +45,7 @@ import { UtilsSQLite } from './electron-utils/utilsSQLite';
 import { UtilsSecret } from './electron-utils/utilsSecret';
 
 export class CapacitorSQLite implements CapacitorSQLitePlugin {
-  private versionUpgrades: Record<
-    string,
-    Record<number, capSQLiteVersionUpgrade>
-  > = {};
+  private versionUpgrades: Record<string, Record<number, capSQLiteVersionUpgrade>> = {};
   private databases: { [databasename: string]: Database } = {};
   private fileUtil: UtilsFile = new UtilsFile();
   private sqliteUtil: UtilsSQLite = new UtilsSQLite();
@@ -69,9 +66,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
     let encrypted = options.encrypted ? options.encrypted : false;
     if (!this.isEncryption && encrypted) {
-      throw new Error(
-        'Must set electronIsEncryption = true in capacitor.config.ts',
-      );
+      throw new Error('Must set electronIsEncryption = true in capacitor.config.ts');
     }
     let inMode: string =
       encrypted && options.mode === 'secret'
@@ -90,10 +85,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     let upgrades: Record<number, capSQLiteVersionUpgrade> = {};
     const versionUpgradeKeys: string[] = Object.keys(this.versionUpgrades);
 
-    if (
-      versionUpgradeKeys.length !== 0 &&
-      versionUpgradeKeys.includes(dbName)
-    ) {
+    if (versionUpgradeKeys.length !== 0 && versionUpgradeKeys.includes(dbName)) {
       upgrades = this.versionUpgrades[dbName];
     }
     const connName = readonly ? 'RO_' + dbName : 'RW_' + dbName;
@@ -106,7 +98,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       this.isEncryption,
       readonly,
       upgrades,
-      this.globalUtil,
+      this.globalUtil
     );
 
     this.databases[connName] = databaseConnection;
@@ -125,9 +117,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
         database.dbClose();
       }
     } catch (err) {
-      throw new Error(
-        `CloseConnection command failed:  close ${dbName} failed ${err.message}`,
-      );
+      throw new Error(`CloseConnection command failed:  close ${dbName} failed ${err.message}`);
     } finally {
       // remove the connection from dictionary
       delete this.databases[connName];
@@ -191,9 +181,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       throw new Error(`BeginTransaction: ${msg}`);
     }
   }
-  async commitTransaction(
-    options: capSQLiteOptions,
-  ): Promise<capSQLiteChanges> {
+  async commitTransaction(options: capSQLiteOptions): Promise<capSQLiteChanges> {
     const dbName: string = this.getOptionValue(options, 'database');
     const connName = 'RW_' + dbName;
     const database = this.getDatabaseConnectionOrThrowError(connName);
@@ -209,9 +197,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       throw new Error(`CommitTransaction: ${msg}`);
     }
   }
-  async rollbackTransaction(
-    options: capSQLiteOptions,
-  ): Promise<capSQLiteChanges> {
+  async rollbackTransaction(options: capSQLiteOptions): Promise<capSQLiteChanges> {
     const dbName: string = this.getOptionValue(options, 'database');
     const connName = 'RW_' + dbName;
     const database = this.getDatabaseConnectionOrThrowError(connName);
@@ -227,9 +213,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       throw new Error(`RollbackTransaction: ${msg}`);
     }
   }
-  async isTransactionActive(
-    options: capSQLiteOptions,
-  ): Promise<capSQLiteResult> {
+  async isTransactionActive(options: capSQLiteOptions): Promise<capSQLiteResult> {
     const dbName: string = this.getOptionValue(options, 'database');
     const connName = 'RW_' + dbName;
     const database = this.getDatabaseConnectionOrThrowError(connName);
@@ -293,15 +277,9 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   async execute(options: capSQLiteExecuteOptions): Promise<capSQLiteChanges> {
     const dbName: string = this.getOptionValue(options, 'database');
     const statements: string = this.getOptionValue(options, 'statements');
-    const transaction: boolean = this.getOptionValue(
-      options,
-      'transaction',
-      true,
-    );
+    const transaction: boolean = this.getOptionValue(options, 'transaction', true);
     const readonly: boolean = options.readonly ? options.readonly : false;
-    const isSQL92: boolean = Object.keys(options).includes('isSQL92')
-      ? options.isSQL92
-      : true;
+    const isSQL92: boolean = Object.keys(options).includes('isSQL92') ? options.isSQL92 : true;
 
     const connName = 'RW_' + dbName;
 
@@ -313,11 +291,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
         throw new Error(`Execute: ${msg}`);
       }
       try {
-        const executeResult: number = database.executeSQL(
-          statements,
-          transaction,
-          isSQL92,
-        );
+        const executeResult: number = database.executeSQL(statements, transaction, isSQL92);
 
         if (executeResult < 0) {
           throw new Error('Execute changes < 0');
@@ -336,27 +310,17 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   async executeSet(options: capSQLiteSetOptions): Promise<capSQLiteChanges> {
     const dbName: string = this.getOptionValue(options, 'database');
     const setOfStatements: any = this.getOptionValue(options, 'set');
-    const transaction: boolean = this.getOptionValue(
-      options,
-      'transaction',
-      true,
-    );
+    const transaction: boolean = this.getOptionValue(options, 'transaction', true);
     const readonly: boolean = options.readonly ? options.readonly : false;
-    const returnMode: string = Object.keys(options).includes('returnMode')
-      ? options.returnMode
-      : 'no';
-    const isSQL92: boolean = Object.keys(options).includes('isSQL92')
-      ? options.isSQL92
-      : true;
+    const returnMode: string = Object.keys(options).includes('returnMode') ? options.returnMode : 'no';
+    const isSQL92: boolean = Object.keys(options).includes('isSQL92') ? options.isSQL92 : true;
 
     const connName = 'RW_' + dbName;
 
     const database = this.getDatabaseConnectionOrThrowError(connName);
     for (const sStmt of setOfStatements) {
       if (!('statement' in sStmt) || !('values' in sStmt)) {
-        throw new Error(
-          'ExecuteSet: Must provide a set as ' + 'Array of {statement,values}',
-        );
+        throw new Error('ExecuteSet: Must provide a set as ' + 'Array of {statement,values}');
       }
     }
 
@@ -367,12 +331,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       }
 
       try {
-        const execSetResult: Changes = database.execSet(
-          setOfStatements,
-          transaction,
-          returnMode,
-          isSQL92,
-        );
+        const execSetResult: Changes = database.execSet(setOfStatements, transaction, returnMode, isSQL92);
         if (execSetResult.lastId < 0) {
           throw new Error(`ExecuteSet failed changes <0`);
         } else {
@@ -391,17 +350,11 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     const dbName: string = this.getOptionValue(options, 'database');
     const statement: string = this.getOptionValue(options, 'statement');
     const values: any[] = this.getOptionValue(options, 'values', []);
-    const transaction: boolean = this.getOptionValue(
-      options,
-      'transaction',
-      true,
-    );
+    const transaction: boolean = this.getOptionValue(options, 'transaction', true);
 
     const readonly: boolean = options.readonly ? options.readonly : false;
     const returnMode: string = options.returnMode ? options.returnMode : 'no';
-    const isSQL92: boolean = Object.keys(options).includes('isSQL92')
-      ? options.isSQL92
-      : true;
+    const isSQL92: boolean = Object.keys(options).includes('isSQL92') ? options.isSQL92 : true;
 
     const connName = 'RW_' + dbName;
 
@@ -413,13 +366,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
         throw new Error(`Run failed: ${msg}`);
       }
       try {
-        const runResult = database.runSQL(
-          statement,
-          values,
-          transaction,
-          returnMode,
-          isSQL92,
-        );
+        const runResult = database.runSQL(statement, values, transaction, returnMode, isSQL92);
         return { changes: runResult };
       } catch (err) {
         throw new Error(`RUN failed: ${err} `);
@@ -439,20 +386,14 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       throw new Error('Query: Statement may not be an empty string.');
     }
     const readonly: boolean = options.readonly ? options.readonly : false;
-    const isSQL92: boolean = Object.keys(options).includes('isSQL92')
-      ? options.isSQL92
-      : true;
+    const isSQL92: boolean = Object.keys(options).includes('isSQL92') ? options.isSQL92 : true;
 
     const connName = readonly ? 'RO_' + dbName : 'RW_' + dbName;
     const database = this.getDatabaseConnectionOrThrowError(connName);
 
     if (database.isDBOpen()) {
       try {
-        const queryResult: any[] = database.selectSQL(
-          statement,
-          values,
-          isSQL92,
-        );
+        const queryResult: any[] = database.selectSQL(statement, values, isSQL92);
         return { values: queryResult };
       } catch (err) {
         throw new Error(`Query: ${err}`);
@@ -496,9 +437,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     return { result: isExists };
   }
 
-  async isTableExists(
-    options: capSQLiteTableOptions,
-  ): Promise<capSQLiteResult> {
+  async isTableExists(options: capSQLiteTableOptions): Promise<capSQLiteResult> {
     const dbName: string = this.getOptionValue(options, 'database');
     const tableName: string = this.getOptionValue(options, 'table');
 
@@ -508,9 +447,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
     if (database.isDBOpen()) {
       try {
-        const isTableExistsResult: boolean = await database.isTableExists(
-          tableName,
-        );
+        const isTableExistsResult: boolean = await database.isTableExists(tableName);
         return { result: isTableExistsResult };
       } catch (err) {
         throw new Error(`isTableExists: ${err}`);
@@ -554,9 +491,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     }
   }
 
-  async importFromJson(
-    options: capSQLiteImportOptions,
-  ): Promise<capSQLiteChanges> {
+  async importFromJson(options: capSQLiteImportOptions): Promise<capSQLiteChanges> {
     const jsonString: string = this.getOptionValue(options, 'jsonstring');
 
     let jsonObj = JSON.parse(jsonString);
@@ -580,9 +515,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     const encrypted: boolean = vJsonObj.encrypted ?? false;
     const mode: string = vJsonObj.mode ?? 'full';
     if (!this.isEncryption && encrypted) {
-      throw new Error(
-        'Must set electronIsEncryption = true in capacitor.config.ts',
-      );
+      throw new Error('Must set electronIsEncryption = true in capacitor.config.ts');
     }
     // Create the database
     const database: Database = new Database(
@@ -593,7 +526,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       this.isEncryption,
       false,
       {},
-      this.globalUtil,
+      this.globalUtil
     );
 
     try {
@@ -609,9 +542,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       if (mode === 'full' && tableList.length > 0) {
         const currentVersion = await database.getVersion();
         if (targetDbVersion < currentVersion) {
-          throw new Error(
-            `ImportFromJson: Cannot import a version lower than ${currentVersion}`,
-          );
+          throw new Error(`ImportFromJson: Cannot import a version lower than ${currentVersion}`);
         }
         if (currentVersion === targetDbVersion) {
           return { changes: { changes: 0 } };
@@ -637,10 +568,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     const database = this.getDatabaseConnectionOrThrowError(connName);
     if (database.isDBOpen()) {
       try {
-        const exportJsonResult: any = database.exportJson(
-          exportMode,
-          encrypted,
-        );
+        const exportJsonResult: any = database.exportJson(exportMode, encrypted);
         const resultKeys = Object.keys(exportJsonResult);
 
         if (resultKeys.includes('message')) {
@@ -757,20 +685,12 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
   async addUpgradeStatement(options: capSQLiteUpgradeOptions): Promise<void> {
     const dbName: string = this.getOptionValue(options, 'database');
-    const upgrades: capSQLiteVersionUpgrade[] = this.getOptionValue(
-      options,
-      'upgrade',
-    );
+    const upgrades: capSQLiteVersionUpgrade[] = this.getOptionValue(options, 'upgrade');
 
     for (const upgrade of upgrades) {
       const versionUpgradeKeys = Object.keys(upgrade);
-      if (
-        !versionUpgradeKeys.includes('toVersion') ||
-        !versionUpgradeKeys.includes('statements')
-      ) {
-        throw new Error(
-          'Must provide an upgrade capSQLiteVersionUpgrade Object',
-        );
+      if (!versionUpgradeKeys.includes('toVersion') || !versionUpgradeKeys.includes('statements')) {
+        throw new Error('Must provide an upgrade capSQLiteVersionUpgrade Object');
       }
       if (typeof upgrade.toVersion != 'number') {
         throw new Error('upgrade.toVersion must be a number');
@@ -811,9 +731,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
 
       return;
     } else {
-      throw new Error(
-        `CopyFromAssets: assets/databases folder does not exist:[${assetsDbPath}]`,
-      );
+      throw new Error(`CopyFromAssets: assets/databases folder does not exist:[${assetsDbPath}]`);
     }
   }
 
@@ -832,9 +750,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     if (overwrite) {
       await this.fileUtil.moveDatabaseFromCache();
     } else {
-      throw new Error(
-        `getFromHTTPRequest: cannot move file from cache overwrite: ${overwrite}`,
-      );
+      throw new Error(`getFromHTTPRequest: cannot move file from cache overwrite: ${overwrite}`);
     }
     return;
   }
@@ -852,9 +768,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     }
   }
 
-  async checkConnectionsConsistency(
-    options: capAllConnectionsOptions,
-  ): Promise<capSQLiteResult> {
+  async checkConnectionsConsistency(options: capAllConnectionsOptions): Promise<capSQLiteResult> {
     const dbNames: string[] = this.getOptionValue(options, 'dbNames');
     const openModes: string[] = this.getOptionValue(options, 'openModes');
     const checkConsistencyResult: capSQLiteResult = {} as capSQLiteResult;
@@ -891,10 +805,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       }
       inConnectionsSet = new Set(Object.keys(this.databases));
       if (inConnectionsSet.size === outConnectionSet.size) {
-        const symmetricDifferenceSet = await this.symmetricDifference(
-          inConnectionsSet,
-          outConnectionSet,
-        );
+        const symmetricDifferenceSet = await this.symmetricDifference(inConnectionsSet, outConnectionSet);
         if (symmetricDifferenceSet.size === 0) {
           checkConsistencyResult.result = true;
           return checkConsistencyResult;
@@ -912,9 +823,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   }
   async isSecretStored(): Promise<capSQLiteResult> {
     if (!this.isEncryption) {
-      throw new Error(
-        `isSecretStored: Not available electronIsEncryption = false in capacitor.config.ts`,
-      );
+      throw new Error(`isSecretStored: Not available electronIsEncryption = false in capacitor.config.ts`);
     }
 
     try {
@@ -924,13 +833,9 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
       throw new Error(`isSecretStored: ${err}`);
     }
   }
-  async isPassphraseValid(
-    options: capSetSecretOptions,
-  ): Promise<capSQLiteResult> {
+  async isPassphraseValid(options: capSetSecretOptions): Promise<capSQLiteResult> {
     if (!this.isEncryption) {
-      throw new Error(
-        `isPassphraseValid: Not available electronIsEncryption = false in capacitor.config.ts`,
-      );
+      throw new Error(`isPassphraseValid: Not available electronIsEncryption = false in capacitor.config.ts`);
     }
     const passphrase = options.passphrase ? options.passphrase : '';
     if (passphrase.length <= 0) {
@@ -948,9 +853,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   async setEncryptionSecret(options: capSetSecretOptions): Promise<void> {
     const isEncrypt = this.fileUtil.getIsEncryption();
     if (!isEncrypt) {
-      throw new Error(
-        `setEncryptionSecret: Not available electronIsEncryption = false in capacitor.config.ts`,
-      );
+      throw new Error(`setEncryptionSecret: Not available electronIsEncryption = false in capacitor.config.ts`);
     }
     const passphrase = options.passphrase ? options.passphrase : '';
     if (passphrase.length <= 0) {
@@ -973,21 +876,15 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   async changeEncryptionSecret(options: capChangeSecretOptions): Promise<void> {
     const isEncrypt = this.fileUtil.getIsEncryption();
     if (!isEncrypt) {
-      throw new Error(
-        `changeEncryptionSecret: Not available electronIsEncryption = false in capacitor.config.ts`,
-      );
+      throw new Error(`changeEncryptionSecret: Not available electronIsEncryption = false in capacitor.config.ts`);
     }
     const oldsecret = this.secretUtil.getPassphrase();
     const oldpassphrase = options.oldpassphrase ? options.oldpassphrase : '';
     if (oldpassphrase.length <= 0) {
-      throw new Error(
-        `changeEncryptionSecret: You must give the oldpassphrase`,
-      );
+      throw new Error(`changeEncryptionSecret: You must give the oldpassphrase`);
     }
     if (oldpassphrase !== oldsecret) {
-      throw new Error(
-        `changeEncryptionSecret: the given oldpassphrase is wrong`,
-      );
+      throw new Error(`changeEncryptionSecret: the given oldpassphrase is wrong`);
     }
     const passphrase = options.passphrase ? options.passphrase : '';
     if (passphrase.length <= 0) {
@@ -1005,9 +902,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   async clearEncryptionSecret(): Promise<void> {
     const isEncrypt = this.fileUtil.getIsEncryption();
     if (!isEncrypt) {
-      throw new Error(
-        `clearEncryptionSecret: Not available electronIsEncryption = false in capacitor.config.ts`,
-      );
+      throw new Error(`clearEncryptionSecret: Not available electronIsEncryption = false in capacitor.config.ts`);
     }
     if (this.globalUtil == null) {
       throw new Error(`clearEncryptionSecret: No available globalUtil`);
@@ -1025,27 +920,19 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     return Promise.resolve({ result: this.isEncryption });
   }
 
-  async isDatabaseEncrypted(
-    options: capSQLiteOptions,
-  ): Promise<capSQLiteResult> {
+  async isDatabaseEncrypted(options: capSQLiteOptions): Promise<capSQLiteResult> {
     const dbName: string = this.getOptionValue(options, 'database');
     try {
-      const isEncrypt: boolean = await this.sqliteUtil.isDatabaseEncrypted(
-        dbName + 'SQLite.db',
-      );
+      const isEncrypt: boolean = await this.sqliteUtil.isDatabaseEncrypted(dbName + 'SQLite.db');
       return { result: isEncrypt };
     } catch (err) {
       throw new Error(`isDatabaseEncrypted: ${err}`);
     }
   }
-  async checkEncryptionSecret(
-    options: capSetSecretOptions,
-  ): Promise<capSQLiteResult> {
+  async checkEncryptionSecret(options: capSetSecretOptions): Promise<capSQLiteResult> {
     const isEncrypt = this.fileUtil.getIsEncryption();
     if (!isEncrypt) {
-      throw new Error(
-        `checkEncryptionSecret: Not available electronIsEncryption = false in capacitor.config.ts`,
-      );
+      throw new Error(`checkEncryptionSecret: Not available electronIsEncryption = false in capacitor.config.ts`);
     }
     const passphrase = options.passphrase ? options.passphrase : '';
     if (passphrase.length <= 0) {
@@ -1081,10 +968,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     }
   }
 
-  private async symmetricDifference(
-    setA: Set<string>,
-    setB: Set<string>,
-  ): Promise<Set<string>> {
+  private async symmetricDifference(setA: Set<string>, setB: Set<string>): Promise<Set<string>> {
     const difference: Set<string> = new Set(setA);
     for (const elem of setB) {
       if (difference.has(elem)) {
@@ -1122,11 +1006,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
    * @param defaultValue
    * @returns
    */
-  private getOptionValue(
-    options: { [optionKey: string]: any },
-    optionKey: string,
-    defaultValue: any = undefined,
-  ): any {
+  private getOptionValue(options: { [optionKey: string]: any }, optionKey: string, defaultValue: any = undefined): any {
     const optionKeys = Object.keys(options);
 
     if (!optionKeys.includes(optionKey)) {
@@ -1159,9 +1039,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
   //// UNIMPLEMENTED METHODS
   ////////////////////////////////
 
-  async getMigratableDbList(
-    options: capSQLitePathOptions,
-  ): Promise<capSQLiteValues> {
+  async getMigratableDbList(options: capSQLitePathOptions): Promise<capSQLiteValues> {
     console.log('getCordovaDbList', options);
     throw new Error('Method not implemented.');
   }
@@ -1174,9 +1052,7 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     console.log(`${JSON.stringify(options)}`);
     throw new Error('Method not implemented.');
   }
-  async moveDatabasesAndAddSuffix(
-    options: capSQLitePathOptions,
-  ): Promise<void> {
+  async moveDatabasesAndAddSuffix(options: capSQLitePathOptions): Promise<void> {
     console.log(`${JSON.stringify(options)}`);
     throw new Error('Method not implemented.');
   }
@@ -1199,16 +1075,12 @@ export class CapacitorSQLite implements CapacitorSQLitePlugin {
     throw new Error('Method not implemented.');
   }
 
-  async getFromLocalDiskToStore(
-    options: capSQLiteLocalDiskOptions,
-  ): Promise<void> {
+  async getFromLocalDiskToStore(options: capSQLiteLocalDiskOptions): Promise<void> {
     console.log(`${JSON.stringify(options)}`);
     throw new Error('Method not implemented.');
   }
 
-  async getNCDatabasePath(
-    options: capNCDatabasePathOptions,
-  ): Promise<capNCDatabasePathResult> {
+  async getNCDatabasePath(options: capNCDatabasePathOptions): Promise<capNCDatabasePathResult> {
     console.log('getNCDatabasePath', options);
     throw new Error('Method not implemented.');
   }

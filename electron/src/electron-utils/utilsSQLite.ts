@@ -37,11 +37,7 @@ export class UtilsSQLite {
    * @param pathDB
    * @param password
    */
-  public openOrCreateDatabase(
-    pathDB: string,
-    password: string,
-    readonly: boolean,
-  ): any {
+  public openOrCreateDatabase(pathDB: string, password: string, readonly: boolean): any {
     const msg = 'OpenOrCreateDatabase';
     // open sqlite3 database
     let mDB: any;
@@ -167,11 +163,7 @@ export class UtilsSQLite {
    * @param password
    * @param newpassword
    */
-  public changePassword(
-    pathDB: string,
-    password: string,
-    newpassword: string,
-  ): void {
+  public changePassword(pathDB: string, password: string, newpassword: string): void {
     let mDB: any;
     const msg = 'ChangePassword';
     try {
@@ -191,11 +183,7 @@ export class UtilsSQLite {
    * @param passphrase
    * @param newpassphrase
    */
-  public pragmaReKey(
-    mDB: any,
-    passphrase: string,
-    newpassphrase: string,
-  ): void {
+  public pragmaReKey(mDB: any, passphrase: string, newpassphrase: string): void {
     const msg = 'PragmaReKey: ';
     try {
       mDB.pragma(`cipher='sqlcipher'`);
@@ -312,12 +300,7 @@ export class UtilsSQLite {
    * @param mDB
    * @param sql
    */
-  public execute(
-    mDB: any,
-    sql: string,
-    fromJson: boolean,
-    isSQL92: boolean,
-  ): Changes {
+  public execute(mDB: any, sql: string, fromJson: boolean, isSQL92: boolean): Changes {
     const result = { changes: 0, lastId: -1 };
     const msg = 'Execute';
     let changes = -1;
@@ -341,12 +324,7 @@ export class UtilsSQLite {
       throw new Error(`${msg} ${errmsg}`);
     }
   }
-  private statementsToSQL92(
-    mDB: any,
-    sql: string,
-    fromJson: boolean,
-    isSQL92: boolean,
-  ): string {
+  private statementsToSQL92(mDB: any, sql: string, fromJson: boolean, isSQL92: boolean): string {
     // split the statements in an array of statement
     let sqlStmt = sql; /*.replace(/\n/g, '')*/
     // deal with trigger
@@ -366,10 +344,7 @@ export class UtilsSQLite {
           }
           break;
         case 'DELETE':
-          if (
-            !fromJson &&
-            rStmt.toLowerCase().includes('WHERE'.toLowerCase())
-          ) {
+          if (!fromJson && rStmt.toLowerCase().includes('WHERE'.toLowerCase())) {
             let whereStmt = rStmt;
             if (!isSQL92) whereStmt = this.cleanStatement(rStmt);
             rStmt = this.deleteSQL(mDB, whereStmt, []);
@@ -386,10 +361,7 @@ export class UtilsSQLite {
           }
           break;
         case 'SELECT':
-          if (
-            !fromJson &&
-            rStmt.toLowerCase().includes('WHERE'.toLowerCase())
-          ) {
+          if (!fromJson && rStmt.toLowerCase().includes('WHERE'.toLowerCase())) {
             if (!isSQL92) rStmt = this.cleanStatement(rStmt);
           }
           break;
@@ -422,20 +394,13 @@ export class UtilsSQLite {
    * @param set
    * @param fromJson
    */
-  public executeSet(
-    mDB: any,
-    set: any[],
-    fromJson: boolean,
-    returnMode: string,
-    isSQL92: boolean,
-  ): Changes {
+  public executeSet(mDB: any, set: any[], fromJson: boolean, returnMode: string, isSQL92: boolean): Changes {
     const ret: Changes = { changes: 0, lastId: -1, values: [] };
     let result: Changes = { changes: 0, lastId: -1 };
     const msg = 'ExecuteSet';
     for (let i = 0; i < set.length; i++) {
       const statement = 'statement' in set[i] ? set[i].statement : null;
-      const values =
-        'values' in set[i] && set[i].values.length > 0 ? set[i].values : [];
+      const values = 'values' in set[i] && set[i].values.length > 0 ? set[i].values : [];
       if (statement == null) {
         let msg = 'ExecuteSet: Error Nostatement';
         msg += ` for index ${i}`;
@@ -446,13 +411,7 @@ export class UtilsSQLite {
           for (const val of values) {
             const mVal: any[] = this.replaceUndefinedByNull(val);
 
-            result = this.prepareRun(
-              mDB,
-              statement,
-              mVal,
-              fromJson,
-              returnMode,
-            );
+            result = this.prepareRun(mDB, statement, mVal, fromJson, returnMode);
             ret.changes += result.changes;
             ret.lastId = result.lastId;
             const keys = Object.keys(result);
@@ -463,13 +422,7 @@ export class UtilsSQLite {
         } else {
           if (values.length > 0) {
             const mVal: any[] = this.replaceUndefinedByNull(values);
-            result = this.prepareRun(
-              mDB,
-              statement,
-              mVal,
-              fromJson,
-              returnMode,
-            );
+            result = this.prepareRun(mDB, statement, mVal, fromJson, returnMode);
           } else {
             let nStatement = statement;
             if (!isSQL92) {
@@ -499,13 +452,7 @@ export class UtilsSQLite {
    * @param fromJson
    * @param returnMode
    */
-  public prepareRun(
-    mDB: any,
-    statement: string,
-    values: any[],
-    fromJson: boolean,
-    returnMode: string,
-  ): Changes {
+  public prepareRun(mDB: any, statement: string, values: any[], fromJson: boolean, returnMode: string): Changes {
     const result: Changes = { changes: 0, lastId: -1 };
     const msg = 'PrepareRun';
 
@@ -542,12 +489,7 @@ export class UtilsSQLite {
     }
   }
 
-  private runExec(
-    mDB: any,
-    stmt: string,
-    values: any[] = [],
-    returnMode: string,
-  ): RunResults {
+  private runExec(mDB: any, stmt: string, values: any[] = [], returnMode: string): RunResults {
     let result: RunResults = { changes: 0, lastInsertRowid: -1, values: [] };
     const msg = 'runExec: ';
     try {
@@ -653,24 +595,15 @@ export class UtilsSQLite {
       }
       const colNames = this.statUtil.extractColumnNames(whereClause);
       if (colNames.length === 0) {
-        const msg =
-          'deleteSQL: Did not find column names in the WHERE Statement';
+        const msg = 'deleteSQL: Did not find column names in the WHERE Statement';
         throw new Error(`${msg}`);
       }
       const setStmt = 'sql_deleted = 1';
       // Find REFERENCES if any and update the sql_deleted
       // column
-      const hasToUpdate = this.findReferencesAndUpdate(
-        mDB,
-        tableName,
-        whereClause,
-        colNames,
-        values,
-      );
+      const hasToUpdate = this.findReferencesAndUpdate(mDB, tableName, whereClause, colNames, values);
       if (hasToUpdate) {
-        const whereStmt = whereClause.endsWith(';')
-          ? whereClause.slice(0, -1)
-          : whereClause;
+        const whereStmt = whereClause.endsWith(';') ? whereClause.slice(0, -1) : whereClause;
         sqlStmt = `UPDATE ${tableName} SET ${setStmt} WHERE ${whereStmt} AND sql_deleted = 0;`;
       } else {
         sqlStmt = '';
@@ -695,7 +628,7 @@ export class UtilsSQLite {
     tableName: string,
     whereStmt: string,
     initColNames: string[],
-    values: any[],
+    values: any[]
   ): boolean {
     try {
       const retBool = true;
@@ -748,7 +681,7 @@ export class UtilsSQLite {
             whereStmt,
             withRefsNames,
             colNames,
-            values,
+            values
           );
           if (result.relatedItems.length === 0 && result.key.length <= 0) {
             continue;
@@ -763,28 +696,16 @@ export class UtilsSQLite {
                 results = this.delUtil.upDateWhereForCascade(result);
                 break;
               default:
-                results = this.delUtil.upDateWhereForDefault(
-                  withRefsNames,
-                  result,
-                );
+                results = this.delUtil.upDateWhereForDefault(withRefsNames, result);
                 break;
             }
           }
         } else {
-          throw new Error(
-            'Not implemented. Please transfer your example to the maintener',
-          );
+          throw new Error('Not implemented. Please transfer your example to the maintener');
         }
 
         if (results.setStmt.length > 0 && results.uWhereStmt.length > 0) {
-          this.executeUpdateForDelete(
-            mDB,
-            updTableName,
-            results.uWhereStmt,
-            results.setStmt,
-            updColNames,
-            values,
-          );
+          this.executeUpdateForDelete(mDB, updTableName, results.uWhereStmt, results.setStmt, updColNames, values);
         }
       }
       return retBool;
@@ -799,10 +720,7 @@ export class UtilsSQLite {
    * @param tableName
    * @returns
    */
-  public getReferences(
-    db: Database,
-    tableName: string,
-  ): { tableWithRefs: string; retRefs: string[] } {
+  public getReferences(db: Database, tableName: string): { tableWithRefs: string; retRefs: string[] } {
     const sqlStmt: string =
       'SELECT sql FROM sqlite_master ' +
       "WHERE sql LIKE('%FOREIGN KEY%') AND sql LIKE('%REFERENCES%') AND " +
@@ -877,7 +795,7 @@ export class UtilsSQLite {
     whereStmt: string,
     setStmt: string,
     colNames: string[],
-    values: any[],
+    values: any[]
   ): void {
     try {
       let lastId = -1;
@@ -893,10 +811,7 @@ export class UtilsSQLite {
 
         for (let jdx = 0; jdx < arrVal.length; jdx++) {
           for (const updVal of colNames) {
-            const indices: number[] = this.statUtil.indicesOf(
-              arrVal[jdx],
-              updVal,
-            );
+            const indices: number[] = this.statUtil.indicesOf(arrVal[jdx], updVal);
             if (indices.length > 0) {
               selValues.push(values[jdx]);
             }
@@ -921,12 +836,7 @@ export class UtilsSQLite {
    * @param sql
    * @param values
    */
-  public queryAll(
-    mDB: any,
-    sql: string,
-    values: any[],
-    isSQL92: boolean,
-  ): any[] {
+  public queryAll(mDB: any, sql: string, values: any[], isSQL92: boolean): any[] {
     const msg = 'QueryAll';
     try {
       let cSql = sql;
@@ -1148,27 +1058,20 @@ export class UtilsSQLite {
     whStmt: string,
     withRefsNames: string[],
     colNames: string[],
-    values: any[],
+    values: any[]
   ): { key: string; relatedItems: any[] } {
     const relatedItems: any[] = [];
     let key = '';
-    const t1Names = withRefsNames.map(name => `t1.${name}`);
-    const t2Names = colNames.map(name => `t2.${name}`);
+    const t1Names = withRefsNames.map((name) => `t1.${name}`);
+    const t2Names = colNames.map((name) => `t2.${name}`);
     try {
       // addPrefix to the whereClause and swap colNames with  withRefsNames
-      let whereClause = this.statUtil.addPrefixToWhereClause(
-        whStmt,
-        colNames,
-        withRefsNames,
-        't2.',
-      );
+      let whereClause = this.statUtil.addPrefixToWhereClause(whStmt, colNames, withRefsNames, 't2.');
       // look at the whereclause and change colNames with  withRefsNames
       if (whereClause.endsWith(';')) {
         whereClause = whereClause.slice(0, -1);
       }
-      const resultString = t1Names
-        .map((t1, index) => `${t1} = ${t2Names[index]}`)
-        .join(' AND ');
+      const resultString = t1Names.map((t1, index) => `${t1} = ${t2Names[index]}`).join(' AND ');
 
       const sql =
         `SELECT t1.rowid FROM ${updTableName} t1 ` +
@@ -1241,8 +1144,7 @@ export class UtilsSQLite {
           }
         }
         if (closingParenthesisIndex !== -1) {
-          const stmtString =
-            stmt.substring(0, closingParenthesisIndex + 1).trim() + ';';
+          const stmtString = stmt.substring(0, closingParenthesisIndex + 1).trim() + ';';
           const suffix = stmt.substring(closingParenthesisIndex + 1).trim();
 
           if (suffix.toLowerCase().includes('returning')) {
@@ -1273,10 +1175,7 @@ export class UtilsSQLite {
         if (isReturningOutsideMessage) {
           const joinedWords = wordsBeforeReturning.join(' ') + ';';
           let joinedReturningString = returningString.join(' ');
-          if (
-            joinedReturningString.length > 0 &&
-            !joinedReturningString.endsWith(';')
-          ) {
+          if (joinedReturningString.length > 0 && !joinedReturningString.endsWith(';')) {
             joinedReturningString += ';';
           }
           return {

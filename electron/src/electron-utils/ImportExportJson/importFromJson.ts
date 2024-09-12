@@ -52,11 +52,7 @@ export class ImportFromJson {
       if (jTable.values != null && jTable.values.length >= 1) {
         // Create the table's data
         try {
-          results = this.jsonUtil.createDataTable(
-            mDB.database,
-            jTable,
-            jsonData.mode,
-          );
+          results = this.jsonUtil.createDataTable(mDB.database, jTable, jsonData.mode);
           if (results.lastId < 0) break;
           isValue = true;
         } catch (err) {

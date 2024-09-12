@@ -29,9 +29,7 @@ export default {
     nodeResolve(),
     commonjs({
       ignoreDynamicRequires: true,
-      dynamicRequireTargets: [
-        'node_modules/@capacitor-community/sqlite/electron/dist/plugin.js',
-      ],
+      dynamicRequireTargets: ['node_modules/@capacitor-community/sqlite/electron/dist/plugin.js'],
     }),
   ],
 };

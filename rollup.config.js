@@ -7,7 +7,7 @@ export default {
       name: 'capacitorCapacitorSQLite',
       globals: {
         '@capacitor/core': 'capacitorExports',
-        'localforage': 'localForage',
+        localforage: 'localForage',
         'sql.js': 'initSqlJs',
       },
       sourcemap: true,

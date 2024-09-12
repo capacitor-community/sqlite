@@ -97,8 +97,8 @@ export class UtilsSQL92Compatibility {
     const newTokens: string[] = [];
     const tokens = whereStatement
       .split(/(\s|,|\(|\))/)
-      .filter(item => item !== ' ')
-      .filter(item => item !== '');
+      .filter((item) => item !== ' ')
+      .filter((item) => item !== '');
     let inClause = false;
     let inValues = false;
     let modValue = false;
@@ -124,11 +124,7 @@ export class UtilsSQL92Compatibility {
         newTokens.push(token);
         opsClause = false;
         modValue = true;
-      } else if (
-        token.toUpperCase() === 'AND' ||
-        token.toUpperCase() === 'OR' ||
-        token.toUpperCase() === 'NOT'
-      ) {
+      } else if (token.toUpperCase() === 'AND' || token.toUpperCase() === 'OR' || token.toUpperCase() === 'NOT') {
         newTokens.push(token);
         opsClause = true;
       } else if (token.toUpperCase() === 'IN') {

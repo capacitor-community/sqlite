@@ -90,12 +90,7 @@ export class UtilsDrop {
       statements.push(stmt);
     }
     try {
-      const results = this.sqliteUtil.execute(
-        db,
-        statements.join('\n'),
-        false,
-        true,
-      );
+      const results = this.sqliteUtil.execute(db, statements.join('\n'), false, true);
       if (results.changes < 0) {
         throw new Error('DropTempTables: changes < 0');
       }

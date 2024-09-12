@@ -19,22 +19,17 @@ export class UtilsSQLStatement {
     return null;
   }
 
-  public addPrefixToWhereClause(
-    whereClause: string,
-    colNames: string[],
-    refNames: string[],
-    prefix: string,
-  ): string {
+  public addPrefixToWhereClause(whereClause: string, colNames: string[], refNames: string[], prefix: string): string {
     let columnValuePairs: string[];
     if (whereClause.includes('AND')) {
       // Split the WHERE clause based on the "AND" keyword
       const subSequenceArray = whereClause.split('AND');
-      columnValuePairs = subSequenceArray.map(pair => pair.trim());
+      columnValuePairs = subSequenceArray.map((pair) => pair.trim());
     } else {
       columnValuePairs = [whereClause];
     }
 
-    const modifiedPairs = columnValuePairs.map(pair => {
+    const modifiedPairs = columnValuePairs.map((pair) => {
       const match = pair.match(/(\w+)\s*(=|IN|BETWEEN|LIKE)\s*(.+)/);
       if (!match) {
         return pair;
@@ -79,9 +74,9 @@ export class UtilsSQLStatement {
 
     if (matches) {
       const foreignKeyInfo = {
-        forKeys: matches[1].split(',').map(key => key.trim()),
+        forKeys: matches[1].split(',').map((key) => key.trim()),
         tableName: matches[2],
-        refKeys: matches[3].split(',').map(key => key.trim()),
+        refKeys: matches[3].split(',').map((key) => key.trim()),
         action: matches[5] ? matches[5] : 'NO ACTION',
       };
       return foreignKeyInfo;
@@ -90,15 +85,7 @@ export class UtilsSQLStatement {
     }
   }
   public extractColumnNames(whereClause: string): string[] {
-    const keywords: Set<string> = new Set([
-      'AND',
-      'OR',
-      'IN',
-      'VALUES',
-      'LIKE',
-      'BETWEEN',
-      'NOT',
-    ]);
+    const keywords: Set<string> = new Set(['AND', 'OR', 'IN', 'VALUES', 'LIKE', 'BETWEEN', 'NOT']);
 
     const regex =
       /\b[a-zA-Z]\w*\b(?=\s*(?:<=?|>=?|<>?|=|AND|OR|BETWEEN|NOT|IN|LIKE))|\b[a-zA-Z]\w*\b\s+BETWEEN\s+'[^']+'\s+AND\s+'[^']+'|\(([^)]+)\)\s+IN\s+\(?\s*VALUES\s*\(/g;
@@ -136,24 +123,18 @@ export class UtilsSQLStatement {
     const primaryKeySets: string[][] = [];
     for (const match of matches) {
       const keysString = match[1].trim();
-      const keys = keysString.split(',').map(key => key.trim());
+      const keys = keysString.split(',').map((key) => key.trim());
       primaryKeySets.push(keys);
     }
 
     return primaryKeySets.length === 0 ? null : primaryKeySets;
   }
 
-  public getWhereStmtForCombinedPK(
-    whStmt: string,
-    withRefs: string[],
-    colNames: string[],
-    keys: string[][],
-  ): string {
+  public getWhereStmtForCombinedPK(whStmt: string, withRefs: string[], colNames: string[], keys: string[][]): string {
     let retWhere: string = whStmt;
 
     for (const grpKeys of keys) {
-      const repKeys: string[] =
-        grpKeys.join(',') === withRefs.join(',') ? colNames : withRefs;
+      const repKeys: string[] = grpKeys.join(',') === withRefs.join(',') ? colNames : withRefs;
       for (const [index, key] of grpKeys.entries()) {
         retWhere = this.replaceAllString(retWhere, key, repKeys[index]);
       }
@@ -162,25 +143,15 @@ export class UtilsSQLStatement {
     return retWhere;
   }
 
-  public replaceAllString(
-    originalStr: string,
-    searchStr: string,
-    replaceStr: string,
-  ): string {
+  public replaceAllString(originalStr: string, searchStr: string, replaceStr: string): string {
     return originalStr.split(searchStr).join(replaceStr);
   }
 
-  public replaceString = (
-    originalStr: string,
-    searchStr: string,
-    replaceStr: string,
-  ): string => {
+  public replaceString = (originalStr: string, searchStr: string, replaceStr: string): string => {
     const range = originalStr.indexOf(searchStr);
     if (range !== -1) {
       const modifiedStr =
-        originalStr.substring(0, range) +
-        replaceStr +
-        originalStr.substring(range + searchStr.length);
+        originalStr.substring(0, range) + replaceStr + originalStr.substring(range + searchStr.length);
       return modifiedStr;
     }
     return originalStr;
@@ -197,11 +168,7 @@ export class UtilsSQLStatement {
     return indices;
   }
 
-  public getWhereStmtForNonCombinedPK(
-    whStmt: string,
-    withRefs: string[],
-    colNames: string[],
-  ): string {
+  public getWhereStmtForNonCombinedPK(whStmt: string, withRefs: string[], colNames: string[]): string {
     let whereStmt = '';
     let stmt: string = whStmt.substring(6);
 
@@ -243,11 +210,7 @@ export class UtilsSQLStatement {
     return whereStmt;
   }
 
-  public updateWhere(
-    whStmt: string,
-    withRefs: string[],
-    colNames: string[],
-  ): string {
+  public updateWhere(whStmt: string, withRefs: string[], colNames: string[]): string {
     let whereStmt = '';
     if (whStmt.length <= 0) {
       return whereStmt;
@@ -260,19 +223,10 @@ export class UtilsSQLStatement {
       // get whereStmt for primary combined key
       const keys = this.extractCombinedPrimaryKey(whStmt);
       if (keys) {
-        whereStmt = this.getWhereStmtForCombinedPK(
-          whStmt,
-          withRefs,
-          colNames,
-          keys,
-        );
+        whereStmt = this.getWhereStmtForCombinedPK(whStmt, withRefs, colNames, keys);
       } else {
         // get for non primary combined key
-        whereStmt = this.getWhereStmtForNonCombinedPK(
-          whStmt,
-          withRefs,
-          colNames,
-        );
+        whereStmt = this.getWhereStmtForNonCombinedPK(whStmt, withRefs, colNames);
       }
     }
     return whereStmt;

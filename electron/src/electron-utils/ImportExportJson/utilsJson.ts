@@ -1,10 +1,4 @@
-import type {
-  JsonColumn,
-  JsonIndex,
-  JsonTrigger,
-  JsonView,
-  Changes,
-} from '../../../../src/definitions';
+import type { JsonColumn, JsonIndex, JsonTrigger, JsonView, Changes } from '../../../../src/definitions';
 import type { Database } from '../Database';
 import { UtilsSQLite } from '../utilsSQLite';
 
@@ -72,12 +66,7 @@ export class UtilsJson {
     if (stmts.length > 0) {
       const schemaStmt: string = stmts.join('\n');
       try {
-        const results = this.sqliteUtil.execute(
-          mDB.database,
-          schemaStmt,
-          true,
-          true,
-        );
+        const results = this.sqliteUtil.execute(mDB.database, schemaStmt, true, true);
         changes = results.changes;
         if (changes < 0) {
           try {
@@ -125,9 +114,7 @@ export class UtilsJson {
           for (let j = 0; j < jTable.schema.length; j++) {
             if (j === jTable.schema.length - 1) {
               if (jTable.schema[j].column) {
-                statements.push(
-                  `${jTable.schema[j].column} ${jTable.schema[j].value}`,
-                );
+                statements.push(`${jTable.schema[j].column} ${jTable.schema[j].value}`);
                 if (jTable.schema[j].column === 'last_modified') {
                   isLastModified = true;
                 }
@@ -135,19 +122,13 @@ export class UtilsJson {
                   isSqlDeleted = true;
                 }
               } else if (jTable.schema[j].foreignkey) {
-                statements.push(
-                  `FOREIGN KEY (${jTable.schema[j].foreignkey}) ${jTable.schema[j].value}`,
-                );
+                statements.push(`FOREIGN KEY (${jTable.schema[j].foreignkey}) ${jTable.schema[j].value}`);
               } else if (jTable.schema[j].constraint) {
-                statements.push(
-                  `CONSTRAINT ${jTable.schema[j].constraint} ${jTable.schema[j].value}`,
-                );
+                statements.push(`CONSTRAINT ${jTable.schema[j].constraint} ${jTable.schema[j].value}`);
               }
             } else {
               if (jTable.schema[j].column) {
-                statements.push(
-                  `${jTable.schema[j].column} ${jTable.schema[j].value},`,
-                );
+                statements.push(`${jTable.schema[j].column} ${jTable.schema[j].value},`);
                 if (jTable.schema[j].column === 'last_modified') {
                   isLastModified = true;
                 }
@@ -155,13 +136,9 @@ export class UtilsJson {
                   isSqlDeleted = true;
                 }
               } else if (jTable.schema[j].foreignkey) {
-                statements.push(
-                  `FOREIGN KEY (${jTable.schema[j].foreignkey}) ${jTable.schema[j].value},`,
-                );
+                statements.push(`FOREIGN KEY (${jTable.schema[j].foreignkey}) ${jTable.schema[j].value},`);
               } else if (jTable.schema[j].constraint) {
-                statements.push(
-                  `CONSTRAINT ${jTable.schema[j].constraint} ${jTable.schema[j].value},`,
-                );
+                statements.push(`CONSTRAINT ${jTable.schema[j].constraint} ${jTable.schema[j].value},`);
               }
             }
           }
@@ -184,9 +161,7 @@ export class UtilsJson {
         if (jTable.indexes != null && jTable.indexes.length >= 1) {
           for (const jIndex of jTable.indexes) {
             const tableName = jTable.name;
-            let stmt = `CREATE ${
-              Object.keys(jIndex).includes('mode') ? jIndex.mode + ' ' : ''
-            } INDEX IF NOT EXISTS `;
+            let stmt = `CREATE ${Object.keys(jIndex).includes('mode') ? jIndex.mode + ' ' : ''} INDEX IF NOT EXISTS `;
             stmt += `${jIndex.name} ON ${tableName} (${jIndex.value});`;
             statements.push(stmt);
           }
@@ -195,10 +170,7 @@ export class UtilsJson {
           for (const jTrg of jTable.triggers) {
             const tableName = jTable.name;
             if (jTrg.timeevent.toUpperCase().endsWith(' ON')) {
-              jTrg.timeevent = jTrg.timeevent.substring(
-                0,
-                jTrg.timeevent.length - 3,
-              );
+              jTrg.timeevent = jTrg.timeevent.substring(0, jTrg.timeevent.length - 3);
             }
 
             let stmt = `CREATE TRIGGER IF NOT EXISTS `;
@@ -233,10 +205,7 @@ export class UtilsJson {
       }
 
       // Get the column names and types
-      const tableNamesTypes: any = this.sqliteUtil.getTableColumnNamesTypes(
-        mDB,
-        table.name,
-      );
+      const tableNamesTypes: any = this.sqliteUtil.getTableColumnNamesTypes(mDB, table.name);
       const tableColumnTypes: string[] = tableNamesTypes.types;
       const tableColumnNames: string[] = tableNamesTypes.names;
       if (tableColumnTypes.length === 0) {
@@ -247,14 +216,7 @@ export class UtilsJson {
         let row = table.values[j];
         row = this.createRowData(row);
         let isRun = true;
-        const stmt: string = this.createRowStatement(
-          mDB,
-          tableColumnNames,
-          row,
-          j,
-          table.name,
-          mode,
-        );
+        const stmt: string = this.createRowStatement(mDB, tableColumnNames, row, j, table.name, mode);
 
         isRun = this.checkUpdate(mDB, stmt, row, table.name, tableColumnNames);
         if (isRun) {
@@ -279,10 +241,7 @@ export class UtilsJson {
     // Iterate over the row array
     for (let i = 0; i < row.length; i++) {
       // Check if the current element is an array of numbers
-      if (
-        Array.isArray(row[i]) &&
-        row[i].every((item: any) => typeof item === 'number')
-      ) {
+      if (Array.isArray(row[i]) && row[i].every((item: any) => typeof item === 'number')) {
         const byteArray = Uint8Array.from(row[i] as number[]);
         row[i] = byteArray;
       }
@@ -305,33 +264,20 @@ export class UtilsJson {
     row: any[],
     j: number,
     tableName: string,
-    mode: string,
+    mode: string
   ): string {
     // Check the row number of columns
     const msg = 'CreateRowStatement';
-    if (
-      row.length != tColNames.length ||
-      row.length === 0 ||
-      tColNames.length === 0
-    ) {
-      throw new Error(
-        `${msg} Table ${tableName} ` + `values row ${j} not correct length`,
-      );
+    if (row.length != tColNames.length || row.length === 0 || tColNames.length === 0) {
+      throw new Error(`${msg} Table ${tableName} ` + `values row ${j} not correct length`);
     }
     try {
-      const retisIdExists: boolean = this.isIdExists(
-        mDB,
-        tableName,
-        tColNames[0],
-        row[0],
-      );
+      const retisIdExists: boolean = this.isIdExists(mDB, tableName, tColNames[0], row[0]);
       let stmt: string;
       if (mode === 'full' || (mode === 'partial' && !retisIdExists)) {
         // Insert
         const nameString: string = tColNames.join();
-        const questionMarkString = this.createQuestionMarkString(
-          tColNames.length,
-        );
+        const questionMarkString = this.createQuestionMarkString(tColNames.length);
         stmt = `INSERT INTO ${tableName} (${nameString}) VALUES (`;
         stmt += `${questionMarkString});`;
       } else {
@@ -355,10 +301,7 @@ export class UtilsJson {
           // Update
           const setString: string = this.setNameForUpdate(tColNames);
           if (setString.length === 0) {
-            throw new Error(
-              `${msg} Table ${tableName} ` +
-                `values row ${j} not set to String`,
-            );
+            throw new Error(`${msg} Table ${tableName} ` + `values row ${j} not set to String`);
           }
           stmt = `UPDATE ${tableName} SET ${setString} WHERE `;
           if (typeof row[0] == 'string') {
@@ -381,13 +324,7 @@ export class UtilsJson {
    * @param tColNames
    * @returns
    */
-  public checkUpdate(
-    mDB: any,
-    stmt: string,
-    values: any[],
-    tbName: string,
-    tColNames: string[],
-  ): boolean {
+  public checkUpdate(mDB: any, stmt: string, values: any[], tbName: string, tColNames: string[]): boolean {
     const msg = 'CheckUpdate';
     const isRun = true;
     if (stmt.substring(0, 6) === 'UPDATE') {
@@ -404,11 +341,7 @@ export class UtilsJson {
         if (resQuery.length > 0) {
           resValues = resQuery[0];
         }
-        if (
-          values.length > 0 &&
-          resValues.length > 0 &&
-          values.length === resValues.length
-        ) {
+        if (values.length > 0 && resValues.length > 0 && values.length === resValues.length) {
           for (let i = 0; i < values.length; i++) {
             if (values[i] !== resValues[i]) {
               return true;
@@ -437,10 +370,7 @@ export class UtilsJson {
     const values: any[] = [];
     try {
       // get table column names and types
-      const tableNamesTypes = this.sqliteUtil.getTableColumnNamesTypes(
-        mDb,
-        tableName,
-      );
+      const tableNamesTypes = this.sqliteUtil.getTableColumnNamesTypes(mDb, tableName);
       let rowNames: string[] = [];
       if (Object.keys(tableNamesTypes).includes('names')) {
         rowNames = tableNamesTypes.names;
@@ -514,17 +444,10 @@ export class UtilsJson {
    * @param firstColumnName
    * @param key
    */
-  private isIdExists(
-    mDB: any,
-    dbName: string,
-    firstColumnName: string,
-    key: any,
-  ): boolean {
+  private isIdExists(mDB: any, dbName: string, firstColumnName: string, key: any): boolean {
     const msg = 'IsIdExists';
     let ret = false;
-    let query: string =
-      `SELECT ${firstColumnName} FROM ` +
-      `${dbName} WHERE ${firstColumnName} = `;
+    let query: string = `SELECT ${firstColumnName} FROM ` + `${dbName} WHERE ${firstColumnName} = `;
     if (typeof key === 'number') query += `${key};`;
     if (typeof key === 'string') query += `'${key}';`;
 
@@ -578,20 +501,8 @@ export class UtilsJson {
    * @param obj
    */
   public isJsonSQLite(obj: any): boolean {
-    const keyFirstLevel: string[] = [
-      'database',
-      'version',
-      'overwrite',
-      'encrypted',
-      'mode',
-      'tables',
-      'views',
-    ];
-    if (
-      obj == null ||
-      (Object.keys(obj).length === 0 && obj.constructor === Object)
-    )
-      return false;
+    const keyFirstLevel: string[] = ['database', 'version', 'overwrite', 'encrypted', 'mode', 'tables', 'views'];
+    if (obj == null || (Object.keys(obj).length === 0 && obj.constructor === Object)) return false;
     for (const key of Object.keys(obj)) {
       if (keyFirstLevel.indexOf(key) === -1) return false;
       if (key === 'database' && typeof obj[key] != 'string') return false;
@@ -622,19 +533,9 @@ export class UtilsJson {
    * @param obj
    */
   private isTable(obj: any): boolean {
-    const keyTableLevel: string[] = [
-      'name',
-      'schema',
-      'indexes',
-      'triggers',
-      'values',
-    ];
+    const keyTableLevel: string[] = ['name', 'schema', 'indexes', 'triggers', 'values'];
     let nbColumn = 0;
-    if (
-      obj == null ||
-      (Object.keys(obj).length === 0 && obj.constructor === Object)
-    )
-      return false;
+    if (obj == null || (Object.keys(obj).length === 0 && obj.constructor === Object)) return false;
     for (const key of Object.keys(obj)) {
       if (keyTableLevel.indexOf(key) === -1) return false;
       if (key === 'name' && typeof obj[key] != 'string') return false;
@@ -643,17 +544,11 @@ export class UtilsJson {
       if (key === 'triggers' && typeof obj[key] != 'object') return false;
       if (key === 'values' && typeof obj[key] != 'object') return false;
       if (key === 'schema') {
-        obj['schema'].forEach(
-          (element: {
-            column?: string;
-            value: string;
-            foreignkey?: string;
-          }) => {
-            if (element.column) {
-              nbColumn++;
-            }
-          },
-        );
+        obj['schema'].forEach((element: { column?: string; value: string; foreignkey?: string }) => {
+          if (element.column) {
+            nbColumn++;
+          }
+        });
         for (let i = 0; i < nbColumn; i++) {
           const retSchema: boolean = this.isSchema(obj[key][i]);
           if (!retSchema) return false;
@@ -674,8 +569,7 @@ export class UtilsJson {
       if (key === 'values') {
         if (nbColumn > 0) {
           for (const oKey of obj[key]) {
-            if (typeof oKey != 'object' || oKey.length != nbColumn)
-              return false;
+            if (typeof oKey != 'object' || oKey.length != nbColumn) return false;
           }
         }
       }
@@ -688,18 +582,8 @@ export class UtilsJson {
    * @param obj
    */
   private isSchema(obj: any): boolean {
-    const keySchemaLevel: string[] = [
-      'column',
-      'value',
-      'foreignkey',
-      'primarykey',
-      'constraint',
-    ];
-    if (
-      obj == null ||
-      (Object.keys(obj).length === 0 && obj.constructor === Object)
-    )
-      return false;
+    const keySchemaLevel: string[] = ['column', 'value', 'foreignkey', 'primarykey', 'constraint'];
+    if (obj == null || (Object.keys(obj).length === 0 && obj.constructor === Object)) return false;
     for (const key of Object.keys(obj)) {
       if (keySchemaLevel.indexOf(key) === -1) return false;
       if (key === 'column' && typeof obj[key] != 'string') return false;
@@ -716,20 +600,12 @@ export class UtilsJson {
    */
   private isIndexes(obj: any): boolean {
     const keyIndexesLevel: string[] = ['name', 'value', 'mode'];
-    if (
-      obj == null ||
-      (Object.keys(obj).length === 0 && obj.constructor === Object)
-    )
-      return false;
+    if (obj == null || (Object.keys(obj).length === 0 && obj.constructor === Object)) return false;
     for (const key of Object.keys(obj)) {
       if (keyIndexesLevel.indexOf(key) === -1) return false;
       if (key === 'name' && typeof obj[key] != 'string') return false;
       if (key === 'value' && typeof obj[key] != 'string') return false;
-      if (
-        key === 'mode' &&
-        (typeof obj[key] != 'string' || obj[key].toUpperCase() != 'UNIQUE')
-      )
-        return false;
+      if (key === 'mode' && (typeof obj[key] != 'string' || obj[key].toUpperCase() != 'UNIQUE')) return false;
     }
     return true;
   }
@@ -739,17 +615,8 @@ export class UtilsJson {
    * @param obj
    */
   private isTriggers(obj: any): boolean {
-    const keyTriggersLevel: string[] = [
-      'name',
-      'timeevent',
-      'condition',
-      'logic',
-    ];
-    if (
-      obj == null ||
-      (Object.keys(obj).length === 0 && obj.constructor === Object)
-    )
-      return false;
+    const keyTriggersLevel: string[] = ['name', 'timeevent', 'condition', 'logic'];
+    if (obj == null || (Object.keys(obj).length === 0 && obj.constructor === Object)) return false;
     for (const key of Object.keys(obj)) {
       if (keyTriggersLevel.indexOf(key) === -1) return false;
       if (key === 'name' && typeof obj[key] != 'string') return false;
@@ -765,11 +632,7 @@ export class UtilsJson {
    */
   private isView(obj: any): boolean {
     const keyViewLevel: string[] = ['name', 'value'];
-    if (
-      obj == null ||
-      (Object.keys(obj).length === 0 && obj.constructor === Object)
-    )
-      return false;
+    if (obj == null || (Object.keys(obj).length === 0 && obj.constructor === Object)) return false;
     for (const key of Object.keys(obj)) {
       if (keyViewLevel.indexOf(key) === -1) return false;
       if (key === 'name' && typeof obj[key] != 'string') return false;

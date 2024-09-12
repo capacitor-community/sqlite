@@ -1,9 +1,4 @@
-import type {
-  capSQLiteVersionUpgrade,
-  JsonSQLite,
-  EncryptJson,
-  Changes,
-} from '../../../src/definitions';
+import type { capSQLiteVersionUpgrade, JsonSQLite, EncryptJson, Changes } from '../../../src/definitions';
 import { GlobalSQLite } from '../GlobalSQLite';
 
 import { ExportToJson } from './ImportExportJson/exportToJson';
@@ -49,7 +44,7 @@ export class Database {
     isEncryption: boolean,
     readonly: boolean,
     upgDict: Record<number, capSQLiteVersionUpgrade>,
-    globalUtil?: GlobalSQLite,
+    globalUtil?: GlobalSQLite
   ) {
     this.dbName = dbName;
     this._encrypted = encrypted;
@@ -63,8 +58,7 @@ export class Database {
     this.isTransactionActive = false;
     this.globalUtil = globalUtil ? globalUtil : new GlobalSQLite();
 
-    if (this.pathDB.length === 0)
-      throw new Error('Could not generate a path to ' + dbName);
+    if (this.pathDB.length === 0) throw new Error('Could not generate a path to ' + dbName);
     console.log(`&&& Databases path: ${this.pathDB}`);
   }
   /**
@@ -86,12 +80,7 @@ export class Database {
     this._isDbOpen = false;
     let password = '';
     try {
-      if (
-        this._encrypted &&
-        (this._mode === 'secret' ||
-          this._mode === 'encryption' ||
-          this._mode === 'decryption')
-      ) {
+      if (this._encrypted && (this._mode === 'secret' || this._mode === 'encryption' || this._mode === 'decryption')) {
         password = this.secretUtil.getPassphrase();
 
         if (password.length <= 0) {
@@ -105,31 +94,16 @@ export class Database {
         await this.encryptionUtil.decryptDatabase(this.pathDB, password);
         password = '';
       }
-      this.database = this.sqliteUtil.openOrCreateDatabase(
-        this.pathDB,
-        password,
-        this.readonly,
-      );
+      this.database = this.sqliteUtil.openOrCreateDatabase(this.pathDB, password, this.readonly);
       this._isDbOpen = true;
       if (!this.readonly) {
         const curVersion: number = this.sqliteUtil.getVersion(this.database);
-        if (
-          this.version > curVersion &&
-          Object.keys(this.upgradeVersionDict).length > 0
-        ) {
+        if (this.version > curVersion && Object.keys(this.upgradeVersionDict).length > 0) {
           try {
-            await this.fileUtil.copyFileName(
-              this.dbName,
-              `backup-${this.dbName}`,
-            );
+            await this.fileUtil.copyFileName(this.dbName, `backup-${this.dbName}`);
 
             // execute the upgrade flow process
-            await this.upgradeUtil.onUpgrade(
-              this,
-              this.upgradeVersionDict,
-              curVersion,
-              this.version,
-            );
+            await this.upgradeUtil.onUpgrade(this, this.upgradeVersionDict, curVersion, this.version);
             // delete the backup database
             await this.fileUtil.deleteFileName(`backup-${this.dbName}`);
           } catch (err) {
@@ -309,11 +283,7 @@ export class Database {
     const isOpen: boolean = this._isDbOpen;
 
     try {
-      const tableExistsResult = this.jsonUtil.isTableExists(
-        this.database,
-        isOpen,
-        tableName,
-      );
+      const tableExistsResult = this.jsonUtil.isTableExists(this.database, isOpen, tableName);
       return tableExistsResult;
     } catch (err) {
       throw new Error(`IsTableExists: ${err}`);
@@ -331,20 +301,10 @@ export class Database {
     const isOpen = this._isDbOpen;
     // check if the table has already being created
     try {
-      const retB = this.jsonUtil.isTableExists(
-        this.database,
-        isOpen,
-        'sync_table',
-      );
+      const retB = this.jsonUtil.isTableExists(this.database, isOpen, 'sync_table');
       if (!retB) {
-        const isLastModified = this.sqliteUtil.isLastModified(
-          this.database,
-          isOpen,
-        );
-        const isSqlDeleted = this.sqliteUtil.isSqlDeleted(
-          this.database,
-          isOpen,
-        );
+        const isLastModified = this.sqliteUtil.isLastModified(this.database, isOpen);
+        const isSqlDeleted = this.sqliteUtil.isSqlDeleted(this.database, isOpen);
         if (isLastModified && isSqlDeleted) {
           const date: number = Math.round(new Date().getTime() / 1000);
           let stmts = `
@@ -354,12 +314,7 @@ export class Database {
                               );`;
           stmts += `INSERT INTO sync_table (sync_date) VALUES (
                               ${date});`;
-          const results = this.sqliteUtil.execute(
-            this.database,
-            stmts,
-            false,
-            true,
-          );
+          const results = this.sqliteUtil.execute(this.database, stmts, false, true);
           changes = results.changes;
           if (results.changes < 0) {
             throw new Error(`CreateSyncTable: failed changes < 0`);
@@ -385,17 +340,11 @@ export class Database {
     this.ensureDatabaseIsOpen();
 
     try {
-      const isTable = this.jsonUtil.isTableExists(
-        this.database,
-        this._isDbOpen,
-        'sync_table',
-      );
+      const isTable = this.jsonUtil.isTableExists(this.database, this._isDbOpen, 'sync_table');
       if (!isTable) {
         throw new Error('No sync_table available');
       }
-      const syncDateUnixTimestamp: number = Math.round(
-        new Date(syncDate).getTime() / 1000,
-      );
+      const syncDateUnixTimestamp: number = Math.round(new Date(syncDate).getTime() / 1000);
       let stmt = `UPDATE sync_table SET sync_date = `;
       stmt += `${syncDateUnixTimestamp} WHERE id = 1;`;
 
@@ -419,11 +368,7 @@ export class Database {
     this.ensureDatabaseIsOpen();
 
     try {
-      const isTable = this.jsonUtil.isTableExists(
-        this.database,
-        this._isDbOpen,
-        'sync_table',
-      );
+      const isTable = this.jsonUtil.isTableExists(this.database, this._isDbOpen, 'sync_table');
       if (!isTable) {
         throw new Error('No sync_table available');
       }
@@ -455,12 +400,7 @@ export class Database {
         console.log(`$$$ in executeSQL journal_mode: ${mode} $$$`);
         this.sqliteUtil.beginTransaction(this.database, this._isDbOpen);
       }
-      const results = this.sqliteUtil.execute(
-        this.database,
-        sql,
-        false,
-        isSQL92,
-      );
+      const results = this.sqliteUtil.execute(this.database, sql, false, isSQL92);
 
       if (results.changes < 0) {
         throw new Error('ExecuteSQL: changes < 0');
@@ -495,12 +435,7 @@ export class Database {
     this.ensureDatabaseIsOpen();
 
     try {
-      const selectResult = this.sqliteUtil.queryAll(
-        this.database,
-        sql,
-        values,
-        isSQL92,
-      );
+      const selectResult = this.sqliteUtil.queryAll(this.database, sql, values, isSQL92);
       return selectResult;
     } catch (err) {
       throw new Error(`SelectSQL: ${err}`);
@@ -516,13 +451,7 @@ export class Database {
    * @param isSQL92: boolean,
    * @returns Promise<{changes:number, lastId:number}>
    */
-  runSQL(
-    statement: string,
-    values: any[],
-    transaction: boolean,
-    returnMode: string,
-    isSQL92: boolean,
-  ): Changes {
+  runSQL(statement: string, values: any[], transaction: boolean, returnMode: string, isSQL92: boolean): Changes {
     this.ensureDatabaseIsOpen();
     try {
       // start a transaction
@@ -539,13 +468,7 @@ export class Database {
       if (!isSQL92 && values.length === 0) {
         nStmt = this.sql92Utils.compatibleSQL92(statement);
       }
-      const results = this.sqliteUtil.prepareRun(
-        this.database,
-        nStmt,
-        values,
-        false,
-        returnMode,
-      );
+      const results = this.sqliteUtil.prepareRun(this.database, nStmt, values, false, returnMode);
       if (results.lastId < 0) {
         if (transaction) {
           this.sqliteUtil.rollbackTransaction(this.database, this._isDbOpen);
@@ -574,12 +497,7 @@ export class Database {
    * @param isSQL92: boolean,
    * @returns Promise<{changes:number, lastId:number}>
    */
-  execSet(
-    set: any[],
-    transaction: boolean,
-    returnMode: string,
-    isSQL92: boolean,
-  ): Changes {
+  execSet(set: any[], transaction: boolean, returnMode: string, isSQL92: boolean): Changes {
     this.ensureDatabaseIsOpen();
 
     let results: Changes = { changes: 0, lastId: -1 };
@@ -594,13 +512,7 @@ export class Database {
       throw new Error(`ExecSet: ${err}`);
     }
     try {
-      results = this.sqliteUtil.executeSet(
-        this.database,
-        set,
-        false,
-        returnMode,
-        isSQL92,
-      );
+      results = this.sqliteUtil.executeSet(this.database, set, false, returnMode, isSQL92);
       if (transaction) {
         this.sqliteUtil.commitTransaction(this.database, this._isDbOpen);
       }
@@ -680,29 +592,18 @@ export class Database {
     this.ensureDatabaseIsOpen();
 
     try {
-      const isTable = this.jsonUtil.isTableExists(
-        this.database,
-        this._isDbOpen,
-        'sync_table',
-      );
+      const isTable = this.jsonUtil.isTableExists(this.database, this._isDbOpen, 'sync_table');
       if (isTable) {
-        this.exportToJsonUtil.setLastExportDate(
-          this.database,
-          new Date().toISOString(),
-        );
+        this.exportToJsonUtil.setLastExportDate(this.database, new Date().toISOString());
       } else {
         if (inJson.mode === 'partial') {
           throw new Error(`No sync_table available`);
         }
       }
-      let jsonResult: any = this.exportToJsonUtil.createExportObject(
-        this.database,
-        inJson,
-      );
+      let jsonResult: any = this.exportToJsonUtil.createExportObject(this.database, inJson);
       const keys = Object.keys(jsonResult);
       if (keys.length === 0) {
-        const msg =
-          `ExportJson: return Object is empty ` + `No data to synchronize`;
+        const msg = `ExportJson: return Object is empty ` + `No data to synchronize`;
         throw new Error(msg);
       }
       let isValid = this.jsonUtil.isJsonSQLite(jsonResult);
@@ -710,8 +611,7 @@ export class Database {
       if (this._encrypted && this._isEncryption && encrypted) {
         jsonResult.overwrite = true;
         jsonResult.encrypted = true;
-        const base64Str: string =
-          this.jsonEncryptUtil.encryptJSONObject(jsonResult);
+        const base64Str: string = this.jsonEncryptUtil.encryptJSONObject(jsonResult);
         jsonResult = {} as EncryptJson;
         jsonResult.expData = base64Str;
         isValid = true;
@@ -732,9 +632,7 @@ export class Database {
    */
   private ensureDatabaseIsOpen() {
     if (!this._isDbOpen || !this.database) {
-      throw new Error(
-        `getVersion: Database ${this.dbName} is not open yet. You should open it first.`,
-      );
+      throw new Error(`getVersion: Database ${this.dbName} is not open yet. You should open it first.`);
     }
   }
 }

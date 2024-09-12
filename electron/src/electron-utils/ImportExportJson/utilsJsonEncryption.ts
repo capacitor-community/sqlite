@@ -22,13 +22,7 @@ export class UtilsJsonEncryption {
   public deriveKeyFromPassphrase(passphrase: string, salt: string): string {
     const iterations = 10000; // Recommended number of iterations for PBKDF2
     const keyLength = 32;
-    const key = this.Crypto.pbkdf2Sync(
-      passphrase,
-      salt,
-      iterations,
-      keyLength,
-      'sha256',
-    );
+    const key = this.Crypto.pbkdf2Sync(passphrase, salt, iterations, keyLength, 'sha256');
     const keyHex = Buffer.from(key).toString('hex');
     return keyHex;
   }

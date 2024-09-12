@@ -10,19 +10,12 @@ export class UtilsEncryption {
    * @param pathDB
    * @param password
    */
-  public async encryptDatabase(
-    pathDB: string,
-    password: string,
-  ): Promise<void> {
+  public async encryptDatabase(pathDB: string, password: string): Promise<void> {
     const msg = 'EncryptDatabase: ';
     const retB: boolean = this.fileUtil.isPathExists(pathDB);
     if (retB) {
       try {
-        const mDB = await this.sqliteUtil.openOrCreateDatabase(
-          pathDB,
-          '',
-          false,
-        );
+        const mDB = await this.sqliteUtil.openOrCreateDatabase(pathDB, '', false);
         this.sqliteUtil.pragmaReKey(mDB, '', password);
         this.sqliteUtil.closeDB(mDB);
         return Promise.resolve();
@@ -30,24 +23,15 @@ export class UtilsEncryption {
         return Promise.reject(new Error(`${msg} ${err.message} `));
       }
     } else {
-      return Promise.reject(
-        new Error(`${msg}file path ${pathDB} ` + 'does not exist'),
-      );
+      return Promise.reject(new Error(`${msg}file path ${pathDB} ` + 'does not exist'));
     }
   }
-  public async decryptDatabase(
-    pathDB: string,
-    password: string,
-  ): Promise<void> {
+  public async decryptDatabase(pathDB: string, password: string): Promise<void> {
     const msg = 'DecryptDatabase: ';
     const retB: boolean = this.fileUtil.isPathExists(pathDB);
     if (retB) {
       try {
-        const mDB = await this.sqliteUtil.openOrCreateDatabase(
-          pathDB,
-          password,
-          false,
-        );
+        const mDB = await this.sqliteUtil.openOrCreateDatabase(pathDB, password, false);
         this.sqliteUtil.pragmaReKey(mDB, password, '');
         this.sqliteUtil.closeDB(mDB);
         return Promise.resolve();
@@ -55,9 +39,7 @@ export class UtilsEncryption {
         return Promise.reject(new Error(`${msg} ${err.message} `));
       }
     } else {
-      return Promise.reject(
-        new Error(`${msg}file path ${pathDB} ` + 'does not exist'),
-      );
+      return Promise.reject(new Error(`${msg}file path ${pathDB} ` + 'does not exist'));
     }
   }
 }

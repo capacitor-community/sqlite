@@ -34,13 +34,9 @@ export class UtilsSecret {
         }
         // check if some databases were encrypted with the initial secret 'sqlite secret'
         this.changeDatabaseSecret(oldpassphrase, passphrase).then(() => {
-          this.storage.set(
-            'userData',
-            { passphrase: passphrase },
-            function (error: any) {
-              if (error) throw new Error(`setEncryptSecret: ${error.message}`);
-            },
-          );
+          this.storage.set('userData', { passphrase: passphrase }, function (error: any) {
+            if (error) throw new Error(`setEncryptSecret: ${error.message}`);
+          });
           return;
         });
       }
@@ -83,26 +79,17 @@ export class UtilsSecret {
       return false;
     }
   }
-  private async changeDatabaseSecret(
-    oldpassphrase: string,
-    newpassphrase: string,
-  ): Promise<void> {
+  private async changeDatabaseSecret(oldpassphrase: string, newpassphrase: string): Promise<void> {
     try {
       // get the database folder
       const pathDatabase = this.fileUtil.getDatabasesPath();
       // get the list of databases
       const files: string[] = await this.fileUtil.getFileList(pathDatabase);
-      files.forEach(async dbName => {
+      files.forEach(async (dbName) => {
         const filePath = this.fileUtil.getFilePath(dbName);
-        const isEncrypt: boolean = await this.sqliteUtil.isDBEncrypted(
-          filePath,
-        );
+        const isEncrypt: boolean = await this.sqliteUtil.isDBEncrypted(filePath);
         if (isEncrypt) {
-          this.sqliteUtil.changePassword(
-            filePath,
-            oldpassphrase,
-            newpassphrase,
-          );
+          this.sqliteUtil.changePassword(filePath, oldpassphrase, newpassphrase);
         }
       });
       return;

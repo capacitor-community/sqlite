@@ -31,7 +31,7 @@ export class UtilsDelete {
 
   public upDateWhereForDefault(
     withRefsNames: string[],
-    results: { key: string; relatedItems: any[] },
+    results: { key: string; relatedItems: any[] }
   ): { setStmt: string; uWhereStmt: string } {
     let setStmt = '';
     let uWhereStmt = '';
@@ -67,16 +67,15 @@ export class UtilsDelete {
     return { setStmt, uWhereStmt };
   }
 
-  public upDateWhereForRestrict(results: {
-    key: string;
-    relatedItems: any[];
-  }): { setStmt: string; uWhereStmt: string } {
+  public upDateWhereForRestrict(results: { key: string; relatedItems: any[] }): {
+    setStmt: string;
+    uWhereStmt: string;
+  } {
     try {
       const setStmt = '';
       const uWhereStmt = '';
       if (results.relatedItems.length > 0) {
-        const msg =
-          'Restrict mode related items exist, please delete them first';
+        const msg = 'Restrict mode related items exist, please delete them first';
         throw UtilsDeleteError.upDateWhereForRestrict(msg);
       }
       return { setStmt, uWhereStmt };
