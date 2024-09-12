@@ -292,8 +292,7 @@ class UtilsSQLStatement {
                     let referencedTableRangeInString =
                         Range(referencedTableRange, in: sqlStatement),
                     let referencedColumnsRangeInString =
-                        Range(referencedColumnsRange, in: sqlStatement)
-                {
+                        Range(referencedColumnsRange, in: sqlStatement) {
                     let referencedTable = String(
                         sqlStatement[referencedTableRangeInString])
                     let referencedColumns = String(
