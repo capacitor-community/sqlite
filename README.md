@@ -426,3 +426,7 @@ l1ndch"><img src="https://avatars.githubusercontent.com/u/170952278?v=4" width="
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
+
+## Credits
+
+A big thank you to [Jean Pierre Quéau](https://github.com/jepiqueau), who maintained this plugin until version 6.0.0. 

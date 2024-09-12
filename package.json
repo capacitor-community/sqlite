@@ -15,7 +15,7 @@
     "electron/",
     "CapacitorCommunitySqlite.podspec"
   ],
-  "author": "Jean Pierre Quéau",
+  "author": "Robin Genz <mail@robingenz.dev>",
   "license": "MIT",
   "engines": {
     "node": ">=16.0.0"
