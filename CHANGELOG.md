@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.0.2](https://github.com/capacitor-community/sqlite/compare/v6.0.1...v6.0.2) (2024-09-15)
+
+
+### Bug Fixes
+
+* **android:** update `androidx.room:room-compiler` to `2.6.1` ([#588](https://github.com/capacitor-community/sqlite/issues/588)) ([21c435a](https://github.com/capacitor-community/sqlite/commit/21c435aaa71582cfdcc0bf258fc4f8237f3df661))
+
 ## 6.0.1 (2024-06-14)
 
 #### Bug Fixes
