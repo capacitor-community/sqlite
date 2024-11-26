@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.HashMap;
+import java.util.Map;
 import net.sqlcipher.Cursor;
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteException;
@@ -979,45 +981,57 @@ public class Database {
         }
         try {
             c = (Cursor) _db.query(statement, values.toArray(new Object[0]));
-            while (c.moveToNext()) {
-                JSObject row = new JSObject();
-                for (int i = 0; i < c.getColumnCount(); i++) {
-                    String colName = c.getColumnName(i);
-                    int index = c.getColumnIndex(colName);
-                    int type = c.getType(i);
-                    switch (type) {
-                        case FIELD_TYPE_STRING:
-                            row.put(colName, c.getString(index));
-                            break;
-                        case FIELD_TYPE_INTEGER:
-                            row.put(colName, c.getLong(index));
-                            break;
-                        case FIELD_TYPE_FLOAT:
-                            row.put(colName, c.getDouble(index));
-                            break;
-                        case FIELD_TYPE_BLOB:
-                            byte[] blobVal = c.getBlob(index);
-                            JSArray arr = this._uSqlite.ByteArrayToJSArray(blobVal);
-                            row.put(colName, arr);
-                            /*                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                row.put(colName, Base64.getEncoder().encodeToString(c.getBlob(index)));
-                            } else {
-                                row.put(colName, JSONObject.NULL);
-                            }
-*/
-                            break;
-                        case FIELD_TYPE_NULL:
-                            row.put(colName, JSONObject.NULL);
-                            break;
-                        default:
-                            break;
-                    }
+
+            if (c != null && c.moveToFirst()) { // Use moveToFirst() and do-while for potential performance gain
+
+                // Cache column information
+                int columnCount = c.getColumnCount();
+                String[] colNames = new String[columnCount];
+                int[] colIndices = new int[columnCount];
+                int[] colTypes = new int[columnCount];
+
+                for (int i = 0; i < columnCount; i++) {
+                    colNames[i] = c.getColumnName(i);
+                    colIndices[i] = c.getColumnIndex(colNames[i]);
+                    colTypes[i] = c.getType(i);
                 }
-                retArray.put(row);
+
+                do {
+                    JSObject row = new JSObject();
+                    for (int i = 0; i < columnCount; i++) {
+                        String colName = colNames[i];
+                        int index = colIndices[i];
+                        int type = colTypes[i]; // No need to call getType again
+
+                        switch (type) {
+                            case FIELD_TYPE_STRING:
+                                row.put(colName, c.getString(index));
+                                break;
+                            case FIELD_TYPE_INTEGER:
+                                row.put(colName, c.getLong(index));
+                                break;
+                            case FIELD_TYPE_FLOAT:
+                                row.put(colName, c.getDouble(index));
+                                break;
+                            case FIELD_TYPE_BLOB:
+                                byte[] blobVal = c.getBlob(index);
+                                JSArray arr = this._uSqlite.ByteArrayToJSArray(blobVal);
+                                row.put(colName, arr);
+                                break;
+                            case FIELD_TYPE_NULL:
+                                row.put(colName, JSONObject.NULL);
+                                break;
+                            default:
+                                break; // Consider logging unknown types for debugging
+                        }
+                    }
+                    retArray.put(row);
+                } while (c.moveToNext());
             }
+
             return retArray;
         } catch (Exception e) {
-            throw new Exception("in selectSQL cursor " + e.getMessage());
+            throw new Exception("Error in selectSQL cursor: " + e.getMessage(), e); // Include the original exception for better debugging
         } finally {
             if (c != null) c.close();
         }
