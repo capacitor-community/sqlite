@@ -261,7 +261,8 @@ public class UtilsFile {
     }
 
     public String getFileExtension(String name) {
-        if (name.lastIndexOf(".") != -1 && name.lastIndexOf(".") != 0) return name.substring(name.lastIndexOf(".") + 1); else return "";
+        if (name.lastIndexOf(".") != -1 && name.lastIndexOf(".") != 0) return name.substring(name.lastIndexOf(".") + 1);
+        else return "";
     }
 
     public Boolean restoreDatabase(Context context, String databaseName) {

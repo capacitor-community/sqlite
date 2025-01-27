@@ -686,7 +686,7 @@ export class ExportToJson {
     char = char.toLowerCase();
     return tmpArr.reduce(
       (results: number[], elem: string, idx: number) => (elem.toLowerCase() === char ? [...results, idx] : results),
-      []
+      [],
     );
   }
 }
