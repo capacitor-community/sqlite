@@ -628,7 +628,7 @@ export class UtilsSQLite {
     tableName: string,
     whereStmt: string,
     initColNames: string[],
-    values: any[]
+    values: any[],
   ): boolean {
     try {
       const retBool = true;
@@ -681,7 +681,7 @@ export class UtilsSQLite {
             whereStmt,
             withRefsNames,
             colNames,
-            values
+            values,
           );
           if (result.relatedItems.length === 0 && result.key.length <= 0) {
             continue;
@@ -795,7 +795,7 @@ export class UtilsSQLite {
     whereStmt: string,
     setStmt: string,
     colNames: string[],
-    values: any[]
+    values: any[],
   ): void {
     try {
       let lastId = -1;
@@ -1058,7 +1058,7 @@ export class UtilsSQLite {
     whStmt: string,
     withRefsNames: string[],
     colNames: string[],
-    values: any[]
+    values: any[],
   ): { key: string; relatedItems: any[] } {
     const relatedItems: any[] = [];
     let key = '';

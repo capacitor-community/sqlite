@@ -31,7 +31,7 @@ export class UtilsDelete {
 
   public upDateWhereForDefault(
     withRefsNames: string[],
-    results: { key: string; relatedItems: any[] }
+    results: { key: string; relatedItems: any[] },
   ): { setStmt: string; uWhereStmt: string } {
     let setStmt = '';
     let uWhereStmt = '';

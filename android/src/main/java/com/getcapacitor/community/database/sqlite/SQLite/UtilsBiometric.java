@@ -79,41 +79,37 @@ public class UtilsBiometric {
      */
     private void setupBiometricPrompt(String biometricTitle, String biometricSubTitle) {
         executor = ContextCompat.getMainExecutor(context);
-        biometricPrompt =
-            new BiometricPrompt(
-                (FragmentActivity) context,
-                executor,
-                new BiometricPrompt.AuthenticationCallback() {
-                    @Override
-                    public void onAuthenticationError(int errorCode, @NonNull CharSequence errString) {
-                        super.onAuthenticationError(errorCode, errString);
-                        Toast.makeText(context, "Authentication error: " + errString, Toast.LENGTH_SHORT).show();
-                        listener.onFailed();
-                    }
-
-                    @Override
-                    public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
-                        super.onAuthenticationSucceeded(result);
-                        listener.onSuccess(result);
-                    }
-
-                    @Override
-                    public void onAuthenticationFailed() {
-                        super.onAuthenticationFailed();
-                        Toast.makeText(context, "Authentication failed", Toast.LENGTH_SHORT).show();
-                        listener.onFailed();
-                    }
+        biometricPrompt = new BiometricPrompt(
+            (FragmentActivity) context,
+            executor,
+            new BiometricPrompt.AuthenticationCallback() {
+                @Override
+                public void onAuthenticationError(int errorCode, @NonNull CharSequence errString) {
+                    super.onAuthenticationError(errorCode, errString);
+                    Toast.makeText(context, "Authentication error: " + errString, Toast.LENGTH_SHORT).show();
+                    listener.onFailed();
                 }
-            );
+
+                @Override
+                public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
+                    super.onAuthenticationSucceeded(result);
+                    listener.onSuccess(result);
+                }
+
+                @Override
+                public void onAuthenticationFailed() {
+                    super.onAuthenticationFailed();
+                    Toast.makeText(context, "Authentication failed", Toast.LENGTH_SHORT).show();
+                    listener.onFailed();
+                }
+            }
+        );
 
         // Create prompt dialog
-        promptInfo =
-            new BiometricPrompt.PromptInfo.Builder()
-                .setTitle(biometricTitle)
-                .setSubtitle(biometricSubTitle)
-                .setAllowedAuthenticators(
-                    BiometricManager.Authenticators.BIOMETRIC_STRONG | BiometricManager.Authenticators.DEVICE_CREDENTIAL
-                )
-                .build();
+        promptInfo = new BiometricPrompt.PromptInfo.Builder()
+            .setTitle(biometricTitle)
+            .setSubtitle(biometricSubTitle)
+            .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG | BiometricManager.Authenticators.DEVICE_CREDENTIAL)
+            .build();
     }
 }

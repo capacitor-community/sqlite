@@ -38,7 +38,7 @@ export class UtilsFile {
       this.capConfig = require(this.Path.join(pathToBuild, 'capacitor.config.js')).default;
     } else {
       this.capConfig = JSON.parse(
-        this.NodeFs.readFileSync(this.Path.join(this.appPath, 'capacitor.config.json')).toString()
+        this.NodeFs.readFileSync(this.Path.join(this.appPath, 'capacitor.config.json')).toString(),
       );
     }
     this.isEncryption = this.capConfig.plugins.CapacitorSQLite.electronIsEncryption
@@ -250,7 +250,7 @@ export class UtilsFile {
                 }
                 await this.NodeFs.promises.writeFile(pDb, content);
               }
-            })
+            }),
         );
       });
 
@@ -397,7 +397,7 @@ export class UtilsFile {
       const check = async () => {
         if (timeIsOver) {
           reject(
-            new Error(`WaitForFilePathLock: The resource is still locked / busy after ${timeoutMS} milliseconds.`)
+            new Error(`WaitForFilePathLock: The resource is still locked / busy after ${timeoutMS} milliseconds.`),
           );
           return;
         }

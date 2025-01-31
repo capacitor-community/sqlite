@@ -92,11 +92,10 @@ public class CapacitorSQLite {
                                 ks.load(null);
                                 Enumeration<String> aliases = ks.aliases();
                                 if (aliases.hasMoreElements()) {
-                                    masterKeyAlias =
-                                        new MasterKey.Builder(context)
-                                            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                                            .setUserAuthenticationRequired(true, VALIDITY_DURATION)
-                                            .build();
+                                    masterKeyAlias = new MasterKey.Builder(context)
+                                        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                                        .setUserAuthenticationRequired(true, VALIDITY_DURATION)
+                                        .build();
                                 } else {
                                     masterKeyAlias = new MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build();
                                 }
@@ -149,14 +148,13 @@ public class CapacitorSQLite {
     private void setSharedPreferences() throws Exception {
         try {
             // get instance of the EncryptedSharedPreferences class
-            this.sharedPreferences =
-                EncryptedSharedPreferences.create(
-                    context,
-                    "sqlite_encrypted_shared_prefs",
-                    masterKeyAlias,
-                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-                );
+            this.sharedPreferences = EncryptedSharedPreferences.create(
+                context,
+                "sqlite_encrypted_shared_prefs",
+                masterKeyAlias,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            );
             this.uSecret = new UtilsSecret(this.context, this.sharedPreferences);
         } catch (Exception e) {
             throw new Exception(e.getMessage());

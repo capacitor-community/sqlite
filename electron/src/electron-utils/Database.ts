@@ -44,7 +44,7 @@ export class Database {
     isEncryption: boolean,
     readonly: boolean,
     upgDict: Record<number, capSQLiteVersionUpgrade>,
-    globalUtil?: GlobalSQLite
+    globalUtil?: GlobalSQLite,
   ) {
     this.dbName = dbName;
     this._encrypted = encrypted;

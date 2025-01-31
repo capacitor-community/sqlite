@@ -165,8 +165,11 @@ public class ImportFromJson {
         for (int j = 0; j < mSchema.size(); j++) {
             if (j == mSchema.size() - 1) {
                 if (mSchema.get(j).getColumn() != null) {
-                    stmt =
-                        new StringBuilder(stmt).append(mSchema.get(j).getColumn()).append(" ").append(mSchema.get(j).getValue()).toString();
+                    stmt = new StringBuilder(stmt)
+                        .append(mSchema.get(j).getColumn())
+                        .append(" ")
+                        .append(mSchema.get(j).getValue())
+                        .toString();
                     if (mSchema.get(j).getColumn().equals("last_modified")) {
                         isLastModified = true;
                     }
@@ -174,31 +177,28 @@ public class ImportFromJson {
                         isSqlDeleted = true;
                     }
                 } else if (mSchema.get(j).getForeignkey() != null) {
-                    stmt =
-                        new StringBuilder(stmt)
-                            .append("FOREIGN KEY (")
-                            .append(mSchema.get(j).getForeignkey())
-                            .append(") ")
-                            .append(mSchema.get(j).getValue())
-                            .toString();
+                    stmt = new StringBuilder(stmt)
+                        .append("FOREIGN KEY (")
+                        .append(mSchema.get(j).getForeignkey())
+                        .append(") ")
+                        .append(mSchema.get(j).getValue())
+                        .toString();
                 } else if (mSchema.get(j).getConstraint() != null) {
-                    stmt =
-                        new StringBuilder(stmt)
-                            .append("CONSTRAINT ")
-                            .append(mSchema.get(j).getConstraint())
-                            .append(" ")
-                            .append(mSchema.get(j).getValue())
-                            .toString();
+                    stmt = new StringBuilder(stmt)
+                        .append("CONSTRAINT ")
+                        .append(mSchema.get(j).getConstraint())
+                        .append(" ")
+                        .append(mSchema.get(j).getValue())
+                        .toString();
                 }
             } else {
                 if (mSchema.get(j).getColumn() != null) {
-                    stmt =
-                        new StringBuilder(stmt)
-                            .append(mSchema.get(j).getColumn())
-                            .append(" ")
-                            .append(mSchema.get(j).getValue())
-                            .append(",")
-                            .toString();
+                    stmt = new StringBuilder(stmt)
+                        .append(mSchema.get(j).getColumn())
+                        .append(" ")
+                        .append(mSchema.get(j).getValue())
+                        .append(",")
+                        .toString();
                     if (mSchema.get(j).getColumn().equals("last_modified")) {
                         isLastModified = true;
                     }
@@ -206,23 +206,21 @@ public class ImportFromJson {
                         isSqlDeleted = true;
                     }
                 } else if (mSchema.get(j).getForeignkey() != null) {
-                    stmt =
-                        new StringBuilder(stmt)
-                            .append("FOREIGN KEY (")
-                            .append(mSchema.get(j).getForeignkey())
-                            .append(") ")
-                            .append(mSchema.get(j).getValue())
-                            .append(",")
-                            .toString();
+                    stmt = new StringBuilder(stmt)
+                        .append("FOREIGN KEY (")
+                        .append(mSchema.get(j).getForeignkey())
+                        .append(") ")
+                        .append(mSchema.get(j).getValue())
+                        .append(",")
+                        .toString();
                 } else if (mSchema.get(j).getConstraint() != null) {
-                    stmt =
-                        new StringBuilder(stmt)
-                            .append("CONSTRAINT ")
-                            .append(mSchema.get(j).getConstraint())
-                            .append(" ")
-                            .append(mSchema.get(j).getValue())
-                            .append(",")
-                            .toString();
+                    stmt = new StringBuilder(stmt)
+                        .append("CONSTRAINT ")
+                        .append(mSchema.get(j).getConstraint())
+                        .append(" ")
+                        .append(mSchema.get(j).getValue())
+                        .append(",")
+                        .toString();
                 }
             }
         }
@@ -587,16 +585,15 @@ public class ImportFromJson {
             if (questionMarkString.length() == 0) {
                 throw new Exception(msg + j + "questionMarkString is empty");
             }
-            stmt =
-                new StringBuilder("INSERT INTO ")
-                    .append(tableName)
-                    .append("(")
-                    .append(namesString)
-                    .append(")")
-                    .append(" VALUES (")
-                    .append(questionMarkString)
-                    .append(");")
-                    .toString();
+            stmt = new StringBuilder("INSERT INTO ")
+                .append(tableName)
+                .append("(")
+                .append(namesString)
+                .append(")")
+                .append(" VALUES (")
+                .append(questionMarkString)
+                .append(");")
+                .toString();
         } else {
             Boolean isUpdate = true;
             Integer idxDelete = tColNames.indexOf("sql_deleted");
@@ -741,25 +738,24 @@ public class ImportFromJson {
             if (colIndex == -1 || (int) rowIndex.get(colIndex) == 0) {
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
                     String formattedRow = null;
-                    formattedRow =
-                        String.join(
-                            ", ",
-                            rowIndex
-                                .stream()
-                                .map(item -> {
-                                    if (item instanceof String) {
-                                        String val = (String) item;
-                                        String rVal = val;
-                                        if (val.contains("'")) {
-                                            rVal = val.replace("'", "''");
-                                        }
-                                        return "'" + rVal + "'";
-                                    } else {
-                                        return item.toString();
+                    formattedRow = String.join(
+                        ", ",
+                        rowIndex
+                            .stream()
+                            .map(item -> {
+                                if (item instanceof String) {
+                                    String val = (String) item;
+                                    String rVal = val;
+                                    if (val.contains("'")) {
+                                        rVal = val.replace("'", "''");
                                     }
-                                })
-                                .toArray(String[]::new)
-                        );
+                                    return "'" + rVal + "'";
+                                } else {
+                                    return item.toString();
+                                }
+                            })
+                            .toArray(String[]::new)
+                    );
                     insertValues.append("(").append(formattedRow).append("), ");
                 } else {
                     StringBuilder formattedRow = new StringBuilder();

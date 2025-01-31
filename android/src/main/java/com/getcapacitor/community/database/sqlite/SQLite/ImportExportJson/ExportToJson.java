@@ -164,12 +164,11 @@ public class ExportToJson {
                     throw new Exception("No sync_table available");
                 }
 
-                tables =
-                    switch (sqlObj.getMode()) {
-                        case "partial" -> getTablesPartial(db, resTables);
-                        case "full" -> getTablesFull(db, resTables);
-                        default -> throw new Exception("CreateExportObject: expMode " + sqlObj.getMode() + " not defined");
-                    };
+                tables = switch (sqlObj.getMode()) {
+                    case "partial" -> getTablesPartial(db, resTables);
+                    case "full" -> getTablesFull(db, resTables);
+                    default -> throw new Exception("CreateExportObject: expMode " + sqlObj.getMode() + " not defined");
+                };
                 if (tables.size() > 0) {
                     retObj.setDatabase(sqlObj.getDatabase());
                     retObj.setVersion(sqlObj.getVersion());

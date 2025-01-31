@@ -264,7 +264,7 @@ export class UtilsJson {
     row: any[],
     j: number,
     tableName: string,
-    mode: string
+    mode: string,
   ): string {
     // Check the row number of columns
     const msg = 'CreateRowStatement';
