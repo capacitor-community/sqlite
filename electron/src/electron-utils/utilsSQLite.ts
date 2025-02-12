@@ -55,13 +55,6 @@ export class UtilsSQLite {
     }
     if (mDB != null) {
       try {
-        this.dbChanges(mDB);
-      } catch (err: any) {
-        const errmsg = err.message ? err.message : err;
-        throw new Error(`${msg} ${errmsg}`);
-      }
-
-      try {
         // set the password
         if (password.length > 0) {
           this.setCipherPragma(mDB, password);
@@ -72,6 +65,14 @@ export class UtilsSQLite {
         const errmsg = err.message ? err.message : err;
         throw new Error(`${msg} ${errmsg}`);
       }
+
+      try {
+        this.dbChanges(mDB);
+      } catch (err: any) {
+        const errmsg = err.message ? err.message : err;
+        throw new Error(`${msg} ${errmsg}`);
+      }
+
       return mDB;
     } else {
       throw new Error(msg + 'open database failed');
