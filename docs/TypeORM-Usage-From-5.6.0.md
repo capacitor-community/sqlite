@@ -227,20 +227,8 @@ const correctBugInCapacitorQueryRunner = (file) => {
         console.warn(`${isModifiedKey} found. Package probably fixed.`);
         return;
       }
-
-      const index = data.indexOf(`"DROP",`)
-      if (index === -1) {
-        console.warn('Line not found. Package probably fixed.');
-        return;
-      }
-
-      var result = data.replace(
-        `    "DROP",`,
-        `    "DROP",
-        "PRAGMA"`
-
-      );
-      result = result.replace(
+      
+      let result = data.replace(
         'else if (["INSERT", "UPDATE", "DELETE", "PRAGMA"].indexOf(command) !== -1) {',
         'else if (["INSERT", "UPDATE", "DELETE"].indexOf(command) !== -1) {'
       );
@@ -279,7 +267,7 @@ const correctBugInCapacitorDriver = (file) => {
         return;
       }
 
-      var result = data.replace(
+      let result = data.replace(
         'await connection.run(`PRAGMA foreign_keys = ON`);',
         'await connection.execute(`PRAGMA foreign_keys = ON`, false);'
       );
@@ -296,7 +284,7 @@ const correctBugInCapacitorDriver = (file) => {
       });
     });
   } else {
-    utils.warn(`Couldn't find file ${file}`);
+    console.log(`Couldn't find file ${file}`);
   }
 }
 
