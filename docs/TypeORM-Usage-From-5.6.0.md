@@ -200,7 +200,7 @@ export const getCountOfElements =  (async (connection: DataSource, entity:any): 
 
 ## Correcting a Bug in the TypeOrm Capacitor Driver
 
- - the bug is referenced "PRAGMA must run under query method in Capacitor sqlite #10687" in the typeorm/issues and it is for `typeorm release > 3.0.18`.
+ - the bug is referenced "PRAGMA must run under query method in Capacitor sqlite #10687" in the typeorm/issues and it is for `typeorm release > 0.3.18 and < 0.3.24`.
 
  - create a `scripts` directory at the root of the App.
 
