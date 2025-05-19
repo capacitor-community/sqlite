@@ -26,6 +26,7 @@ import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.JsonSQ
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.UtilsEncryption;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.UtilsJson;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -246,7 +247,7 @@ public class Database {
         if (_mode.equals("encryption")) {
             if (_isEncryption) {
                 try {
-                    _uCipher.encrypt(_context, _file, password.getBytes());
+                    _uCipher.encrypt(_context, _file, password.getBytes(StandardCharsets.UTF_8));
                 } catch (Exception e) {
                     String msg = "Failed in encryption " + e.getMessage();
                     Log.v(TAG, msg);
