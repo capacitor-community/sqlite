@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.List;
-import net.sqlcipher.Cursor;
+import net.zetetic.database.sqlcipher.SQLiteCursor;
 
 public class UtilsDrop {
 
@@ -20,7 +20,7 @@ public class UtilsDrop {
 
     public List<String> getTablesNames(Database db) throws Exception {
         List<String> tables = new ArrayList<String>();
-        Cursor cursor = null;
+        SQLiteCursor cursor = null;
         String query = "SELECT name FROM sqlite_master WHERE ";
         query += "type='table' AND name NOT LIKE 'sync_table' ";
         query += "AND name NOT LIKE '_temp_%' ";
@@ -28,7 +28,7 @@ public class UtilsDrop {
         query += "AND name NOT LIKE 'android_%' ";
         query += "ORDER BY rootpage DESC;";
         try {
-            cursor = (Cursor) db.getDb().query(query);
+            cursor = (SQLiteCursor) db.getDb().query(query);
             cursor.moveToFirst();
             while (!cursor.isAfterLast()) {
                 String tableName = cursor.getString(0);
@@ -51,12 +51,12 @@ public class UtilsDrop {
 
     public List<String> getViewNames(Database db) throws Exception {
         List<String> views = new ArrayList<String>();
-        Cursor cursor = null;
+        SQLiteCursor cursor = null;
         String query = "SELECT name FROM sqlite_master WHERE ";
         query += "type='view' AND name NOT LIKE 'sqlite_%' ";
         query += "ORDER BY rootpage DESC;";
         try {
-            cursor = (Cursor) db.getDb().query(query);
+            cursor = (SQLiteCursor) db.getDb().query(query);
             cursor.moveToFirst();
             while (!cursor.isAfterLast()) {
                 String viewName = cursor.getString(0);
@@ -113,10 +113,10 @@ public class UtilsDrop {
 
     public List<String> getIndexesNames(Database db) {
         List<String> indexes = new ArrayList<String>();
-        Cursor cursor = null;
+        SQLiteCursor cursor = null;
         String query = "SELECT name FROM sqlite_master WHERE ";
         query += "type='index' AND name NOT LIKE 'sqlite_%';";
-        cursor = (Cursor) db.getDb().query(query);
+        cursor = (SQLiteCursor) db.getDb().query(query);
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
             String indexName = cursor.getString(0);
@@ -152,10 +152,10 @@ public class UtilsDrop {
 
     public List<String> getTriggersNames(Database db) {
         List<String> triggers = new ArrayList<String>();
-        Cursor cursor = null;
+        SQLiteCursor cursor = null;
         String query = "SELECT name FROM sqlite_master WHERE ";
         query += "type='trigger';";
-        cursor = (Cursor) db.getDb().query(query);
+        cursor = (SQLiteCursor) db.getDb().query(query);
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
             String triggerName = cursor.getString(0);
