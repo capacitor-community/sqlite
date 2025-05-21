@@ -305,9 +305,11 @@ npm install --save-dev electron-builder@24.6.4
 
 - [angular-sqlite-synchronize-app](https://github.com/jepiqueau/angular-sqlite-synchronize-app) (Not Updated)
 
-### Ionic/Angular TypeORM app (Not Updated)
+### Ionic/Angular TypeORM app
 
-- [ionic-sqlite-typeorm-app](https://github.com/jepiqueau/ionic-sqlite-typeorm-app)
+- [ionic-sqlite-typeorm-app (Not Updated)](https://github.com/jepiqueau/ionic-sqlite-typeorm-app)
+  
+- [capacitor-typeorm-sqlite-ng](https://github.com/waliu/capacitor-typeorm-sqlite-ng)
 
 ### Ionic/React
 
