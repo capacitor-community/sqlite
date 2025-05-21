@@ -18,7 +18,7 @@ export class UtilsUpgrade {
     mDB: Database,
     vUpgDict: Record<number, capSQLiteVersionUpgrade>,
     curVersion: number,
-    targetVersion: number
+    targetVersion: number,
   ): Promise<number> {
     let changes;
     const sortedKeys: Int32Array = new Int32Array(Object.keys(vUpgDict).map((item) => parseInt(item))).sort();

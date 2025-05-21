@@ -10,7 +10,7 @@
 </p>
 <br>
 <p align="center">
-  <img src="https://img.shields.io/maintenance/yes/2024?style=flat-square" />
+  <img src="https://img.shields.io/maintenance/yes/2025?style=flat-square" />
   <a href="https://github.com/capacitor-community/sqlite/actions?query=workflow%3A%22CI%22"><img src="https://img.shields.io/github/actions/workflow/status/capacitor-community/sqlite/ci.yml?style=flat-square" /></a>
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/l/@capacitor-community/sqlite?branch=master&style=flat-square" /></a>
 <br>
@@ -131,14 +131,14 @@ You'll need the usual capacitor/android/react npm script to build and copy the a
   See [#301](https://github.com/capacitor-community/sqlite/issues/301) and [SO question](https://stackoverflow.com/questions/63291529/how-to-fix-more-than-one-file-was-found-with-os-independent-path-build-data-pro) for more information.
 
  - Check/Add the following:
-    Gradle JDK version 17
-    Android Gradle Plugin Version 8.0.0
+    Gradle JDK version 21
+    Android Gradle Plugin Version 8.7.2
     In variables.gradle
 
       ```
-      minSdkVersion = 22
-      compileSdkVersion = 33
-      targetSdkVersion = 33
+      minSdkVersion = 23
+      compileSdkVersion = 35
+      targetSdkVersion = 35
       ```
     In AndroidManifest.xml
       ```
