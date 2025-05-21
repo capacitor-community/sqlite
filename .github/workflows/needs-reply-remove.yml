@@ -5,9 +5,13 @@ on:
     types:
       - created
 
+permissions:
+  issues: write
+
 jobs:
   needs-reply:
     runs-on: ubuntu-latest
+    if: github.repository == 'capacitor-community/sqlite' && github.event.comment.author_association != 'MEMBER'
     steps:
       - name: Remove needs-reply label
         run: |
