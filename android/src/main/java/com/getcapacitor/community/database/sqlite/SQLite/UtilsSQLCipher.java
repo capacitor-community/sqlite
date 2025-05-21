@@ -58,14 +58,13 @@ public class UtilsSQLCipher {
                 } catch (Exception e1) {
                     try {
                         if (globVar.secret.length() > 0) {
-                            db =
-                                SQLiteDatabase.openDatabase(
-                                    dbPath.getAbsolutePath(),
-                                    globVar.secret,
-                                    null,
-                                    SQLiteDatabase.OPEN_READONLY,
-                                    null
-                                );
+                            db = SQLiteDatabase.openDatabase(
+                                dbPath.getAbsolutePath(),
+                                globVar.secret,
+                                null,
+                                SQLiteDatabase.OPEN_READONLY,
+                                null
+                            );
                             db.getVersion();
                             return (State.ENCRYPTED_GLOBAL_SECRET);
                         } else {
