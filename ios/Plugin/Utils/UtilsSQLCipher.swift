@@ -709,53 +709,67 @@ class UtilsSQLCipher {
 
     // MARK: - querySQL
 
-    class func querySQL(mDB: Database, sql: String,
-                        values: [Any]) throws -> [[String: Any]] {
-        var msg: String = "Error querySQL: "
-        if !mDB.isDBOpen() {
-            msg.append("Database not opened")
-            throw UtilsSQLCipherError.querySQL(message: msg)
+    class func querySQL(mDB: Database, sql: String, values: [Any]) throws -> [[String: Any]] {
+        var results: [[String: Any]] = []
+        var stmt: OpaquePointer? = nil
+        
+        // Prepare the SQL statement.
+        if sqlite3_prepare_v2(mDB.mDb, sql, -1, &stmt, nil) != SQLITE_OK {
+            let errorMessage = String(cString: sqlite3_errmsg(mDB.mDb))
+            throw UtilsSQLCipherError.querySQL(message: "Error preparing query: \(errorMessage)")
         }
-        var selectSQLStatement: OpaquePointer?
-        var result: [[String: Any]] = []
-        var message: String = ""
-        var returnCode: Int32 =
-            sqlite3_prepare_v2(mDB.mDb, sql, -1, &selectSQLStatement,
-                               nil)
-        if returnCode == SQLITE_OK {
-            if !values.isEmpty {
-                // do the binding of values
-                message = UtilsBinding.bindValues(
-                    handle: selectSQLStatement, values: values)
+        
+        // Bind provided values to the statement.
+        if values.count > 0 {
+            let bindError = UtilsBinding.bindValues(handle: stmt, values: values)
+            if bindError.count > 0 {
+                sqlite3_finalize(stmt)
+                throw UtilsSQLCipherError.querySQL(message: "Error binding values: \(bindError)")
             }
-            if message.count == 0 {
-                do {
-                    result = try UtilsSQLCipher.fetchColumnInfo(
-                        handle: selectSQLStatement, returnMode: "all")
-                } catch UtilsSQLCipherError
-                            .fetchColumnInfo(let message) {
-                    throw UtilsSQLCipherError
-                    .querySQL(message: message)
+        }
+        
+        // Execute the statement and build the results array.
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            var row: [String: Any] = [:]
+            let columnCount = sqlite3_column_count(stmt)
+            for i in 0..<columnCount {
+                guard let cName = sqlite3_column_name(stmt, Int32(i)) else { continue }
+                let columnName = String(cString: cName)
+                
+                // Switch on the column type.
+                let columnType = sqlite3_column_type(stmt, Int32(i))
+                var value: Any
+                switch columnType {
+                case SQLITE_INTEGER:
+                    value = sqlite3_column_int64(stmt, Int32(i))
+                case SQLITE_FLOAT:
+                    value = sqlite3_column_double(stmt, Int32(i))
+                case SQLITE_TEXT:
+                    if let cText = sqlite3_column_text(stmt, Int32(i)) {
+                        value = String(cString: cText)
+                    } else {
+                        value = ""
+                    }
+                case SQLITE_BLOB:
+                    let dataSize = sqlite3_column_bytes(stmt, Int32(i))
+                    if let dataPointer = sqlite3_column_blob(stmt, Int32(i)) {
+                        value = Data(bytes: dataPointer, count: Int(dataSize))
+                    } else {
+                        value = Data()
+                    }
+                case SQLITE_NULL:
+                    value = NSNull()
+                default:
+                    value = NSNull()
                 }
+                row[columnName] = value
             }
-        } else {
-            let errmsg: String = String(
-                cString: sqlite3_errmsg(mDB.mDb))
-            message = "Error: querySQL prepare failed rc: "
-            message.append("\(returnCode) message: \(errmsg)")
+            results.append(row)
         }
-        returnCode = sqlite3_finalize(selectSQLStatement)
-        if returnCode != SQLITE_OK {
-            let errmsg: String = String(
-                cString: sqlite3_errmsg(mDB.mDb))
-            message = "Error: querySQL finalize failed rc: "
-            message.append("\(returnCode) message: \(errmsg)")
-        }
-        if message.count > 0 {
-            throw UtilsSQLCipherError.querySQL(message: message)
-        } else {
-            return result
-        }
+        
+        // Finalize the statement to free its memory.
+        sqlite3_finalize(stmt)
+        return results
     }
 
     // MARK: - FetchColumnInfo
