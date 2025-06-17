@@ -15,6 +15,7 @@ export class UtilsFile {
   appPath: string;
   capConfig: any;
   isEncryption = false;
+  skipAppNameSuffix = false;
 
   constructor() {
     this.Path = require('path');
@@ -44,6 +45,7 @@ export class UtilsFile {
     this.isEncryption = this.capConfig.plugins.CapacitorSQLite.electronIsEncryption
       ? this.capConfig.plugins.CapacitorSQLite.electronIsEncryption
       : false;
+    this.skipAppNameSuffix = this.capConfig.plugins.CapacitorSQLite.electronSkipAppNameSuffix;
     this.osType = this.Os.type();
     switch (this.osType) {
       case 'Darwin':
@@ -135,7 +137,7 @@ export class UtilsFile {
     const dbFolder: string = this.pathDB;
     if (dbFolder.includes(sep)) {
       retPath = dbFolder;
-      if (this.Path.basename(dbFolder) !== this.AppName) {
+      if (this.Path.basename(dbFolder) !== this.AppName && !this.skipAppNameSuffix) {
         retPath = this.Path.join(dbFolder, this.AppName);
       }
     } else {
