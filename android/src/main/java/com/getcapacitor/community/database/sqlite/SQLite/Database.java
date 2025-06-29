@@ -26,6 +26,7 @@ import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.JsonSQ
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.UtilsEncryption;
 import com.getcapacitor.community.database.sqlite.SQLite.ImportExportJson.UtilsJson;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,9 +36,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import net.sqlcipher.Cursor;
-import net.sqlcipher.database.SQLiteDatabase;
-import net.sqlcipher.database.SQLiteException;
+import net.zetetic.database.sqlcipher.SQLiteCursor;
+import net.zetetic.database.sqlcipher.SQLiteDatabase;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -115,7 +115,7 @@ public class Database {
      * Initialize the SQLCipher Libraries
      */
     private void InitializeSQLCipher() {
-        SQLiteDatabase.loadLibs(_context);
+        System.loadLibrary("sqlcipher");
     }
 
     public SupportSQLiteDatabase getDb() {
@@ -247,7 +247,7 @@ public class Database {
         if (_mode.equals("encryption")) {
             if (_isEncryption) {
                 try {
-                    _uCipher.encrypt(_context, _file, SQLiteDatabase.getBytes(password.toCharArray()));
+                    _uCipher.encrypt(_context, _file, password.getBytes(StandardCharsets.UTF_8));
                 } catch (Exception e) {
                     String msg = "Failed in encryption " + e.getMessage();
                     Log.v(TAG, msg);
@@ -260,7 +260,7 @@ public class Database {
         if (_mode.equals("decryption")) {
             if (_isEncryption) {
                 try {
-                    _uCipher.decrypt(_context, _file, SQLiteDatabase.getBytes(password.toCharArray()));
+                    _uCipher.decrypt(_context, _file, password.getBytes());
                     password = "";
                 } catch (Exception e) {
                     String msg = "Failed in decryption " + e.getMessage();
@@ -273,9 +273,9 @@ public class Database {
         }
         try {
             if (!isNCDB() && !this._readOnly) {
-                _db = SQLiteDatabase.openOrCreateDatabase(_file, password, null);
+                _db = SQLiteDatabase.openOrCreateDatabase(_file, password, null, null);
             } else {
-                _db = SQLiteDatabase.openDatabase(String.valueOf(_file), password, null, SQLiteDatabase.OPEN_READONLY);
+                _db = SQLiteDatabase.openDatabase(String.valueOf(_file), password, null, SQLiteDatabase.OPEN_READONLY, null);
             }
             if (_db != null) {
                 if (_db.isOpen()) {
@@ -297,12 +297,6 @@ public class Database {
                         curVersion = _db.getVersion(); // default 0
                     } catch (IllegalStateException e) {
                         String msg = "Failed in get/setVersion " + e.getMessage();
-                        Log.v(TAG, msg);
-                        close();
-                        _db = null;
-                        throw new Exception(msg);
-                    } catch (SQLiteException e) {
-                        String msg = "Failed in setVersion " + e.getMessage();
                         Log.v(TAG, msg);
                         close();
                         _db = null;
@@ -973,12 +967,12 @@ public class Database {
      */
     public JSArray selectSQL(String statement, ArrayList<Object> values) throws Exception {
         JSArray retArray = new JSArray();
-        Cursor c = null;
+        SQLiteCursor c = null;
         if (_db == null) {
             return retArray;
         }
         try {
-            c = (Cursor) _db.query(statement, values.toArray(new Object[0]));
+            c = (SQLiteCursor) _db.query(statement, values.toArray(new Object[0]));
             while (c.moveToNext()) {
                 JSObject row = new JSObject();
                 for (int i = 0; i < c.getColumnCount(); i++) {
