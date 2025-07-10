@@ -50,6 +50,9 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
     }
   };
   ```
+- **setting `iosDatabaseLocation` to `group://CapacitorDatabase` will use AppGroup storage located at `group.<YOUR_APP_ID>`, making the database accessible to multiple apps or extensions sharing the same App Group.**
+
+
 
 ### Electron
 
