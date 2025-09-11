@@ -28,7 +28,10 @@
 | ---------- | ----------------------------------------- | --------------------------------------------- |
 | Robin Genz | [robingenz](https://github.com/robingenz) | [@robin_genz](https://twitter.com/robin_genz) |
 
-To install:
+# Installation
+
+> [!IMPORTANT]  
+> This plugin uses the [SQLCipher](https://www.zetetic.net/sqlcipher/) library (even for unencrypted databases), which is subject to the [Encryption Export Regulations](https://developer.apple.com/documentation/security/complying-with-encryption-export-regulations) and may require you to submit a year-end self-classification report to the U.S. government. Read more [here](https://discuss.zetetic.net/t/export-requirements-for-applications-using-sqlcipher/47).
 
 ```
 npm install --save @capacitor-community/sqlite
