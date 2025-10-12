@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [7.0.2](https://github.com/capacitor-community/sqlite/compare/v7.0.1...v7.0.2) (2025-10-12)
+
+
+### Bug Fixes
+
+* **android:** update sqlcipher-android dependency to version 4.10.0 ([#664](https://github.com/capacitor-community/sqlite/issues/664)) ([453b1ba](https://github.com/capacitor-community/sqlite/commit/453b1ba23401e5ecc579ad341b48adac297cbe16))
+
 ### [7.0.1](https://github.com/capacitor-community/sqlite/compare/v7.0.0...v7.0.1) (2025-07-02)
 
 
