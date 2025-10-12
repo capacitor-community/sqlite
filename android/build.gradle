@@ -61,7 +61,7 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation "androidx.coordinatorlayout:coordinatorlayout:1.2.0"
-    implementation 'net.zetetic:sqlcipher-android:4.6.1@aar'
+    implementation 'net.zetetic:sqlcipher-android:4.10.0@aar'
     implementation "androidx.sqlite:sqlite:2.4.0"
     //security library
     implementation "androidx.security:security-crypto:1.1.0-alpha06"
