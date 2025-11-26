@@ -491,40 +491,38 @@ public class Database {
     }
 
     public JSObject multipleRowsStatement(String statement, JSONArray valuesJson, String returnMode) throws Exception {
-        StringBuilder sqlBuilder = new StringBuilder();
-        try {
-            for (int j = 0; j < valuesJson.length(); j++) {
-                JSONArray innerArray = valuesJson.getJSONArray(j);
-                StringBuilder innerSqlBuilder = new StringBuilder();
-                for (int k = 0; k < innerArray.length(); k++) {
-                    Object innerElement = innerArray.get(k);
-                    String elementValue = "";
+        StringBuilder valuesSql = new StringBuilder();
+        ArrayList<Object> bindArgs = new ArrayList<>();
 
-                    if (innerElement instanceof String) {
-                        elementValue = DatabaseUtils.sqlEscapeString((String) innerElement);
-                    } else {
-                        elementValue = String.valueOf(innerElement);
-                    }
-                    innerSqlBuilder.append(elementValue);
+        // Build "(?, ?, ?), (?, ?, ?)" structure
+        for (int rowIndex = 0; rowIndex < valuesJson.length(); rowIndex++) {
+            JSONArray row = valuesJson.getJSONArray(rowIndex);
 
-                    if (k < innerArray.length() - 1) {
-                        innerSqlBuilder.append(",");
-                    }
-                }
+            valuesSql.append("(");
 
-                sqlBuilder.append("(").append(innerSqlBuilder.toString()).append(")");
+            for (int col = 0; col < row.length(); col++) {
+                valuesSql.append("?");
 
-                if (j < valuesJson.length() - 1) {
-                    sqlBuilder.append(",");
+                // Add raw values for binding (no escaping at all)
+                Object val = row.get(col);
+                bindArgs.add(val);
+
+                if (col < row.length() - 1) {
+                    valuesSql.append(",");
                 }
             }
-            String finalSql = replacePlaceholders(statement, sqlBuilder.toString());
 
-            JSObject respSet = prepareSQL(finalSql, new ArrayList<>(), false, returnMode);
-            return respSet;
-        } catch (Exception e) {
-            throw new Exception(e.getMessage());
+            valuesSql.append(")");
+
+            if (rowIndex < valuesJson.length() - 1) {
+                valuesSql.append(",");
+            }
         }
+
+        // Insert the placeholder string into the SQL template
+        String finalSql = replacePlaceholders(statement, valuesSql.toString());
+
+        return prepareSQL(finalSql, bindArgs, false, returnMode);
     }
 
     public String replacePlaceholders(String stmt, String sqlBuilder) {
@@ -565,16 +563,11 @@ public class Database {
     }
 
     public JSObject oneRowStatement(String statement, JSONArray valuesJson, String returnMode) throws Exception {
-        ArrayList<Object> values = new ArrayList<>();
-        for (int j = 0; j < valuesJson.length(); j++) {
-            values.add(valuesJson.get(j));
+        ArrayList<Object> bindArgs = new ArrayList<>();
+        for (int i = 0; i < valuesJson.length(); i++) {
+            bindArgs.add(valuesJson.get(i));
         }
-        try {
-            JSObject respSet = prepareSQL(statement, values, false, returnMode);
-            return respSet;
-        } catch (Exception e) {
-            throw new Exception(e.getMessage());
-        }
+        return prepareSQL(statement, bindArgs, false, returnMode);
     }
 
     public JSObject addToResponse(JSObject response, JSObject respSet) throws JSONException {
@@ -660,6 +653,8 @@ public class Database {
         JSObject retObject = new JSObject();
         String colNames = "";
         long initLastId = (long) -1;
+        long insertReturnedId = (long) -1;
+        int updateChanges = -1;
         retMode = (returnMode == null) ? "no" : returnMode;
         if (!"no".equals(retMode)) {
             retMode = "wA" + retMode;
@@ -696,12 +691,12 @@ public class Database {
             }
             initLastId = _uSqlite.dbLastId(_db);
             if (stmtType.equals("INSERT")) {
-                stmt.executeInsert();
+                insertReturnedId = stmt.executeInsert();
             } else {
                 if (retMode.startsWith("wA") && !colNames.isEmpty() && stmtType.equals("DELETE")) {
-                    retValues = getUpdDelReturnedValues(this, sqlStmt, colNames);
+                    retValues = getUpdDelReturnedValues(this, sqlStmt, colNames, values);
                 }
-                stmt.executeUpdateDelete();
+                updateChanges = stmt.executeUpdateDelete();
             }
             Long lastId = _uSqlite.dbLastId(_db);
             if (retMode.startsWith("wA") && !colNames.isEmpty()) {
@@ -711,7 +706,7 @@ public class Database {
                         retValues = getInsertReturnedValues(this, colNames, tableName, initLastId, lastId, retMode);
                     }
                 } else if (stmtType.equals("UPDATE")) {
-                    retValues = getUpdDelReturnedValues(this, sqlStmt, colNames);
+                    retValues = getUpdDelReturnedValues(this, sqlStmt, colNames, values);
                 }
             }
             retObject.put("lastId", lastId);
@@ -800,7 +795,7 @@ public class Database {
     private JSArray getInsertReturnedValues(Database mDB, String colNames, String tableName, Long iLastId, Long lastId, String rMode)
         throws Exception {
         JSArray retVals = new JSArray();
-        if (iLastId < 0 || colNames.length() == 0) return retVals;
+        if (iLastId < 0 || colNames.isEmpty()) return retVals;
         Long sLastId = iLastId + 1;
         StringBuilder sbQuery = new StringBuilder("SELECT ").append(colNames).append(" FROM ");
 
@@ -818,7 +813,7 @@ public class Database {
     }
 
     /** Accounts for CTEs before the UPDATE or DELETE statement */
-    private JSArray getUpdDelReturnedValues(Database mDB, String stmt, String colNames) throws Exception {
+    private JSArray getUpdDelReturnedValues(Database mDB, String stmt, String colNames, ArrayList<Object> bindValues) throws Exception {
         JSArray retVals = new JSArray();
 
         // Extract table name and WHERE clause
@@ -839,7 +834,7 @@ public class Database {
             // Append the main SELECT
             sbQuery.append("SELECT ").append(colNames).append(" FROM ").append(tableName).append(" WHERE ").append(whereClause).append(";");
 
-            retVals = mDB.selectSQL(sbQuery.toString(), new ArrayList<>());
+            retVals = mDB.selectSQL(sbQuery.toString(), bindValues);
         }
 
         return retVals;
