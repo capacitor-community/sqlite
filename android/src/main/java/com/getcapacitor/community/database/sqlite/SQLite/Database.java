@@ -651,10 +651,9 @@ public class Database {
         String retMode;
         JSArray retValues = new JSArray();
         JSObject retObject = new JSObject();
-        String colNames = "";
+        String colNames;
+        String tableName = extractTableName(sqlStmt);
         long initLastId = (long) -1;
-        long insertReturnedId = (long) -1;
-        int updateChanges = -1;
         retMode = (returnMode == null) ? "no" : returnMode;
         if (!"no".equals(retMode)) {
             retMode = "wA" + retMode;
@@ -669,16 +668,15 @@ public class Database {
             throw new Exception(e.getMessage());
         }
         try {
+            boolean shouldReturnValues = retMode.startsWith("wA") && !colNames.isEmpty();
             if (!fromJson && stmtType.equals("DELETE")) {
                 sqlStmt = deleteSQL(this, sqlStmt, values);
             }
-            if (sqlStmt != null) {
-                stmt = _db.compileStatement(sqlStmt);
-            } else {
+            if (sqlStmt == null) {
                 throw new Exception("sqlStmt is null");
             }
+            stmt = _db.compileStatement(sqlStmt);
             if (values != null && !values.isEmpty()) {
-                //               retMode = "no";
                 Object[] valObj = new Object[values.size()];
                 for (int i = 0; i < values.size(); i++) {
                     if ((values.get(i) == null) || (values.get(i) == JSONObject.NULL)) {
@@ -689,27 +687,31 @@ public class Database {
                 }
                 SimpleSQLiteQuery.bind(stmt, valObj);
             }
-            initLastId = _uSqlite.dbLastId(_db);
             if (stmtType.equals("INSERT")) {
-                insertReturnedId = stmt.executeInsert();
+                // Retrieve LastId for the table interested by the INSERT statement.
+                initLastId = _uSqlite.tblLastId(_db, tableName);
+                // Returns the row ID of the last inserted row, without requiring a new query
+                long finalLastId = stmt.executeInsert();
+                if (shouldReturnValues) {
+                    retValues = getInsertReturnedValues(this, colNames, tableName, initLastId, finalLastId, retMode);
+                }
+                retObject.put("lastId", finalLastId);
             } else {
-                if (retMode.startsWith("wA") && !colNames.isEmpty() && stmtType.equals("DELETE")) {
+                // Last ID may not refer to the table being updated/deleted as no insertion is taking place
+                Long lastId = _uSqlite.dbLastId(_db);
+                // Query the rows to be deleted BEFORE executing the delete
+                if (shouldReturnValues && stmtType.equals("DELETE")) {
                     retValues = getUpdDelReturnedValues(this, sqlStmt, colNames, values);
                 }
-                updateChanges = stmt.executeUpdateDelete();
-            }
-            Long lastId = _uSqlite.dbLastId(_db);
-            if (retMode.startsWith("wA") && !colNames.isEmpty()) {
-                if (stmtType.equals("INSERT")) {
-                    String tableName = extractTableName(sqlStmt);
-                    if (tableName != null) {
-                        retValues = getInsertReturnedValues(this, colNames, tableName, initLastId, lastId, retMode);
-                    }
-                } else if (stmtType.equals("UPDATE")) {
+                // execute UPDATE or DELETE
+                int updateChanges = stmt.executeUpdateDelete();
+                // Query the updated rows AFTER the update to emulate the returning behaviour.
+                // The returned rows may include modifications made by triggers unlike RETURNING clause
+                if (shouldReturnValues && stmtType.equals("UPDATE")) {
                     retValues = getUpdDelReturnedValues(this, sqlStmt, colNames, values);
                 }
+                retObject.put("lastId", lastId);
             }
-            retObject.put("lastId", lastId);
             retObject.put("values", retValues);
             return retObject;
         } catch (Exception e) {
@@ -795,20 +797,21 @@ public class Database {
     private JSArray getInsertReturnedValues(Database mDB, String colNames, String tableName, Long iLastId, Long lastId, String rMode)
         throws Exception {
         JSArray retVals = new JSArray();
-        if (iLastId < 0 || colNames.isEmpty()) return retVals;
-        Long sLastId = iLastId + 1;
-        StringBuilder sbQuery = new StringBuilder("SELECT ").append(colNames).append(" FROM ");
-
-        sbQuery.append(tableName).append(" WHERE ").append("rowid ");
+        if (lastId < 0 || colNames.isEmpty() || lastId < iLastId) return retVals;
+        StringBuilder sbQuery = new StringBuilder("SELECT ")
+            .append(colNames)
+            .append(" FROM ")
+            .append(tableName)
+            .append(" WHERE ")
+            .append("rowid ");
         if (rMode.equals("wAone")) {
-            sbQuery.append("= ").append(sLastId);
+            sbQuery.append("= ").append(lastId);
         }
         if (rMode.equals("wAall")) {
-            sbQuery.append("BETWEEN ").append(sLastId).append(" AND ").append(lastId);
+            sbQuery.append("BETWEEN ").append(iLastId + 1).append(" AND ").append(lastId);
         }
         sbQuery.append(";");
         retVals = mDB.selectSQL(sbQuery.toString(), new ArrayList<>());
-
         return retVals;
     }
 
