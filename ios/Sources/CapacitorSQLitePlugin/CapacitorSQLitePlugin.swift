@@ -4,7 +4,60 @@ import Capacitor
 @objc(CapacitorSQLitePlugin)
 // swiftlint:disable file_length
 // swiftlint:disable type_body_length
-public class CapacitorSQLitePlugin: CAPPlugin {
+public class CapacitorSQLitePlugin: CAPPlugin, CAPBridgedPlugin {
+    public let identifier = "CapacitorSQLitePlugin"
+    public let jsName = "CapacitorSQLite"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "echo", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "createConnection", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "closeConnection", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "createNCConnection", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "closeNCConnection", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getNCDatabasePath", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "open", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "close", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getUrl", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getVersion", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "execute", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "executeSet", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "run", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "query", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "isDBExists", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "isDBOpen", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "deleteDatabase", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "importFromJson", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "isJsonValid", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "exportToJson", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "deleteExportedRows", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "createSyncTable", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "setSyncDate", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getSyncDate", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "addUpgradeStatement", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "copyFromAssets", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "isDatabase", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "isNCDatabase", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "isTableExists", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getDatabaseList", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getTableList", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getMigratableDbList", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "addSQLiteSuffix", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "deleteOldDatabases", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "moveDatabasesAndAddSuffix", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "checkConnectionsConsistency", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "isSecretStored", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "setEncryptionSecret", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "changeEncryptionSecret", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "clearEncryptionSecret", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getFromHTTPRequest", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "checkEncryptionSecret", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "isInConfigEncryption", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "isInConfigBiometricAuth", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "isDatabaseEncrypted", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "beginTransaction", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "commitTransaction", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "rollbackTransaction", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "isTransactionActive", returnType: CAPPluginReturnPromise),
+    ]
     private var implementation: CapacitorSQLite?
     private let modeList: [String] = ["no-encryption", "encryption", "secret",
                                       "decryption", "newsecret", "wrongsecret"]
