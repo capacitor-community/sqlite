@@ -13,8 +13,7 @@
     "pretty": true,
     "sourceMap": true,
     "strict": true,
-    "target": "es2020",
-    "types": []
+    "target": "es2020"
   },
   "files": ["src/index.ts"]
 }
