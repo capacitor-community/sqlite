@@ -119,7 +119,7 @@ You'll need the usual capacitor/android/react npm script to build and copy the a
 
 #### For Vue & React frameworks
 
-- Copy manually the file `sql-wasm.wasm` from `node_modules/sql.js/dist/sql-wasm.wasm` to the `public/assets` folder of YOUR_APP
+- Copy manually the file `sql-wasm.wasm` from `node_modules/sql.js/dist/sql-wasm.wasm` to the `public/assets` folder of YOUR_APP 
 
 ## Web Debugging Tools
 
