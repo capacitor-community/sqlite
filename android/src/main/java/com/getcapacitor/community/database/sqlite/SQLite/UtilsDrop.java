@@ -251,7 +251,7 @@ public class UtilsDrop {
      */
     public List<String> getDictStringKeys(Dictionary<String, List<String>> dict) {
         List<String> lkeys = new ArrayList<>();
-        for (Enumeration<String> keys = dict.keys(); keys.hasMoreElements();) {
+        for (Enumeration<String> keys = dict.keys(); keys.hasMoreElements(); ) {
             String keyVal = keys.nextElement();
             lkeys.add(keyVal);
         }

@@ -40,7 +40,7 @@ public class NotificationCenter {
     }
 
     public synchronized void removeAllNotifications() {
-        for (Iterator<Map.Entry<String, ArrayList<MyRunnable>>> entry = registredObjects.entrySet().iterator(); entry.hasNext();) {
+        for (Iterator<Map.Entry<String, ArrayList<MyRunnable>>> entry = registredObjects.entrySet().iterator(); entry.hasNext(); ) {
             Map.Entry<String, ArrayList<MyRunnable>> e = entry.next();
             String key = e.getKey();
             ArrayList<MyRunnable> value = e.getValue();
