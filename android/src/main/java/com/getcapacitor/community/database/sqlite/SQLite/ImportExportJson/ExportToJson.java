@@ -342,7 +342,7 @@ public class ExportToJson {
             // first word as key
             for (String s : sch) {
                 String sc = s.replaceAll("\n", "").trim();
-                String[] row = sc.trim().split(" ", 2);
+                String[] row = sc.trim().split("\\s+", 2);
                 JsonColumn jsonRow = new JsonColumn();
                 String uppercasedValue = row[0].toUpperCase(); // Define uppercasedValue
                 int oPar;
