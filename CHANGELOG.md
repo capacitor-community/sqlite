@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. See [commit
 
 ## [7.0.3](https://github.com/capacitor-community/sqlite/compare/v7.0.2...v7.0.3) (2026-01-06)
 
+### Bug Fixes
+
+* **android:** fix getSchema by splitting on all whitespace ([#677](https://github.com/capacitor-community/sqlite/issues/677)) ([8dfa0c0](https://github.com/capacitor-community/sqlite/commit/8dfa0c09f5c52ef51372cb467ab0d98010861620))
+
 ### [7.0.2](https://github.com/capacitor-community/sqlite/compare/v7.0.1...v7.0.2) (2025-10-12)
 
 
