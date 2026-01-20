@@ -137,8 +137,8 @@ public class UtilsSQLStatement {
 
         Pattern pattern = Pattern.compile(
             "\\b[a-zA-Z]\\w*\\b(?=\\s*(?:<=?|>=?|<>?|=|AND|OR|BETWEEN|NOT|IN|LIKE))|" +
-            "\\b[a-zA-Z]\\w*\\b\\s+BETWEEN\\s+'[^']+'\\s+AND\\s+'[^']+'|" +
-            "\\(([^)]+)\\)\\s+IN\\s+\\(\\s*VALUES\\s*\\("
+                "\\b[a-zA-Z]\\w*\\b\\s+BETWEEN\\s+'[^']+'\\s+AND\\s+'[^']+'|" +
+                "\\(([^)]+)\\)\\s+IN\\s+\\(\\s*VALUES\\s*\\("
         );
         Matcher matcher = pattern.matcher(whereClause);
         List<String> columns = new ArrayList<>();

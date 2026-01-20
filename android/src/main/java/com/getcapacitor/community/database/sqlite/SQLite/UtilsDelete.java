@@ -334,7 +334,7 @@ public class UtilsDelete {
             Map<String, Object> map = new HashMap<>();
 
             // Extract key-value pairs from the JSObject and put them into the Map
-            for (Iterator<String> it = jsObject.keys(); it.hasNext();) {
+            for (Iterator<String> it = jsObject.keys(); it.hasNext(); ) {
                 String key = it.next();
                 map.put(key, jsObject.get(key)); // Convert JSValue to Java object
             }

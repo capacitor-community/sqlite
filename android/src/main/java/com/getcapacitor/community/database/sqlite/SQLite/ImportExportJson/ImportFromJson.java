@@ -742,7 +742,7 @@ public class ImportFromJson {
                         ", ",
                         rowIndex
                             .stream()
-                            .map(item -> {
+                            .map((item) -> {
                                 if (item instanceof String) {
                                     String val = (String) item;
                                     String rVal = val;
