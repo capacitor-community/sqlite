@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.0.0](https://github.com/capacitor-community/sqlite/compare/v7.0.3...v8.0.0) (2026-01-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* This plugin now supports Capacitor 8.
+
+### Features
+
+* Capacitor 8 support ([#675](https://github.com/capacitor-community/sqlite/issues/675)) ([206c0ce](https://github.com/capacitor-community/sqlite/commit/206c0cef5564daded6011e2e078a0707e2d4292c))
+
 ## [7.0.3](https://github.com/capacitor-community/sqlite/compare/v7.0.2...v7.0.3) (2026-01-06)
 
 ### Bug Fixes
