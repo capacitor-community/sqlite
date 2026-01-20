@@ -10,7 +10,7 @@
 </p>
 <br>
 <p align="center">
-  <img src="https://img.shields.io/maintenance/yes/2025?style=flat-square" />
+  <img src="https://img.shields.io/maintenance/yes/2026?style=flat-square" />
   <a href="https://github.com/capacitor-community/sqlite/actions?query=workflow%3A%22CI%22"><img src="https://img.shields.io/github/actions/workflow/status/capacitor-community/sqlite/ci.yml?style=flat-square" /></a>
   <a href="https://www.npmjs.com/package/@capacitor-community/sqlite"><img src="https://img.shields.io/npm/l/@capacitor-community/sqlite?branch=master&style=flat-square" /></a>
 <br>
