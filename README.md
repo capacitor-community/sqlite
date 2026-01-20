@@ -121,6 +121,16 @@ You'll need the usual capacitor/android/react npm script to build and copy the a
 
 - Copy manually the file `sql-wasm.wasm` from `node_modules/sql.js/dist/sql-wasm.wasm` to the `public/assets` folder of YOUR_APP 
 
+## Web Debugging Tools
+
+When using the Web platform, SQLite databases are backed by `jeep-sqlite` and stored in IndexedDB, which can be difficult to inspect during development.
+
+For easier debugging, there is a Chrome DevTools extension that allows browsing, querying, and exporting `jeep-sqlite` databases directly from IndexedDB:
+
+- **Jeep SQLite Browser (Chrome DevTools Extension)**
+  - Chrome Web Store: https://chromewebstore.google.com/detail/jeep-sqlite-browser/ocgeealadeabmhponndjebghfkbfbnch
+  - GitHub: https://github.com/pinguluk/jeep-sqlite-browser
+
 ## Android Quirks
 
  - In case you get the following error when building your app in Android Studio:
