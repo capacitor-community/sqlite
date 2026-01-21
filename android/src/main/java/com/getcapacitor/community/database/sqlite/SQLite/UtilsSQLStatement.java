@@ -10,6 +10,19 @@ import java.util.regex.Pattern;
 
 public class UtilsSQLStatement {
 
+    public static class ParsedCtes {
+
+        public List<Cte> ctes = new ArrayList<>();
+        public int endIndex;
+    }
+
+    public static class Cte {
+
+        public String name;
+        public String columnList;
+        public String body;
+    }
+
     public static String flattenMultilineString(String input) {
         String[] lines = input.split("\\r?\\n");
         return String.join(" ", lines);
@@ -25,14 +38,146 @@ public class UtilsSQLStatement {
         return null;
     }
 
-    public static String extractWhereClause(String statement) {
-        Pattern pattern = Pattern.compile("WHERE(.+?)(?:ORDER\\s+BY|LIMIT|$)", Pattern.CASE_INSENSITIVE);
-        Matcher match = pattern.matcher(statement);
-        if (match.find() && match.groupCount() > 0) {
-            String whereClause = match.group(1).trim();
-            return whereClause;
+    /**
+     * Extract the rightmost occurrence of the where clause
+     * Accounts for ORDER BY / LIMIT when sqlite is compiled with SQLITE_ENABLE_UPDATE_DELETE_LIMIT
+     * Assumes the RETURNING clause has already been removed
+     * @param statement Input sql statement
+     * @return where expression string
+     */
+    public static String extractWhereClause(String sql) {
+        String upper = sql.toUpperCase();
+
+        int whereIndex = upper.lastIndexOf("WHERE");
+        if (whereIndex == -1) return null;
+
+        // Part of the statement after "WHERE"
+        int start = whereIndex + "WHERE".length();
+
+        // If SQLite is built with the SQLITE_ENABLE_UPDATE_DELETE_LIMIT compile-time option
+        // then the syntax of the UPDATE statement is extended with optional ORDER BY and LIMIT clauses
+        int orderByIndex = upper.indexOf("ORDER BY", start);
+        int limitIndex = upper.indexOf("LIMIT", start);
+
+        // Pick the earliest of the two, ignoring -1
+        int end = -1;
+        if (orderByIndex != -1 && limitIndex != -1) {
+            end = Math.min(orderByIndex, limitIndex);
+        } else if (orderByIndex != -1) {
+            end = orderByIndex;
+        } else if (limitIndex != -1) {
+            end = limitIndex;
         }
-        return null;
+
+        // WHERE is the part between WHERE and end of statement or LIMIT/ORDER BY
+        return (end == -1) ? sql.substring(start).trim() : sql.substring(start, end).trim();
+    }
+
+    public static ParsedCtes parseCtes(String sql) {
+        ParsedCtes result = new ParsedCtes();
+
+        int i = 0;
+        int len = sql.length();
+
+        // must begin with WITH (case-insensitive)
+        String trimmed = sql.trim();
+        if (!trimmed.toUpperCase().startsWith("WITH")) {
+            result.endIndex = 0;
+            return result;
+        }
+
+        // start after WITH
+        i = trimmed.indexOf("WITH") + 4;
+
+        while (i < len) {
+            Cte cte = new Cte();
+
+            // skip whitespace
+            while (i < len && Character.isWhitespace(trimmed.charAt(i))) i++;
+
+            // parse CTE name
+            int start = i;
+            while (i < len && (Character.isLetterOrDigit(trimmed.charAt(i)) || trimmed.charAt(i) == '_')) i++;
+            cte.name = trimmed.substring(start, i);
+
+            // skip whitespace
+            while (i < len && Character.isWhitespace(trimmed.charAt(i))) i++;
+
+            // optional column list
+            if (i < len && trimmed.charAt(i) == '(') {
+                int colStart = i;
+                i = skipBalanced(trimmed, i);
+                cte.columnList = trimmed.substring(colStart, i);
+            }
+
+            // skip whitespace
+            while (i < len && Character.isWhitespace(trimmed.charAt(i))) i++;
+
+            // must be AS
+            if (trimmed.regionMatches(true, i, "AS", 0, 2)) {
+                i += 2;
+            }
+
+            // skip whitespace
+            while (i < len && Character.isWhitespace(trimmed.charAt(i))) i++;
+
+            // parse AS (...) body
+            if (i < len && trimmed.charAt(i) == '(') {
+                int bodyStart = i;
+                i = skipBalanced(trimmed, i);
+                cte.body = trimmed.substring(bodyStart, i);
+            }
+
+            result.ctes.add(cte);
+
+            // skip whitespace
+            while (i < len && Character.isWhitespace(trimmed.charAt(i))) i++;
+
+            // if comma → more CTEs
+            if (i < len && trimmed.charAt(i) == ',') {
+                i++;
+                continue;
+            }
+
+            break;
+        }
+
+        result.endIndex = i;
+        return result;
+    }
+
+    private static int skipBalanced(String sql, int i) {
+        int depth = 0;
+        int len = sql.length();
+
+        do {
+            char c = sql.charAt(i);
+            if (c == '(') depth++;
+            else if (c == ')') depth--;
+            i++;
+        } while (i < len && depth > 0);
+
+        return i;
+    }
+
+    public static String extractStatementType(String sql) {
+        if (sql == null) return null;
+        String trimmed = sql.trim();
+
+        String first = trimmed.split("\\s+")[0].toUpperCase();
+        if (!first.equals("WITH")) {
+            return first;
+        }
+
+        ParsedCtes parsed = parseCtes(trimmed);
+
+        // Use endIndex to get the first word after all CTEs
+        if (parsed.endIndex >= trimmed.length()) return null;
+
+        String rest = trimmed.substring(parsed.endIndex).trim();
+        if (rest.isEmpty()) return null;
+
+        return rest.split("\\s+")[0].toUpperCase();
     }
 
     public static String addPrefixToWhereClause(String whereClause, String[] colNames, String[] refNames, String prefix) {

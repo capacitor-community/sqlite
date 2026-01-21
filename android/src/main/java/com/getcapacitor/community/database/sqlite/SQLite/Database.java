@@ -6,9 +6,12 @@ import static android.database.Cursor.FIELD_TYPE_INTEGER;
 import static android.database.Cursor.FIELD_TYPE_NULL;
 import static android.database.Cursor.FIELD_TYPE_STRING;
 import static com.getcapacitor.community.database.sqlite.SQLite.UtilsDelete.findReferencesAndUpdate;
+import static com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLStatement.ParsedCtes;
 import static com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLStatement.extractColumnNames;
+import static com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLStatement.extractStatementType;
 import static com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLStatement.extractTableName;
 import static com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLStatement.extractWhereClause;
+import static com.getcapacitor.community.database.sqlite.SQLite.UtilsSQLStatement.parseCtes;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -488,40 +491,38 @@ public class Database {
     }
 
     public JSObject multipleRowsStatement(String statement, JSONArray valuesJson, String returnMode) throws Exception {
-        StringBuilder sqlBuilder = new StringBuilder();
-        try {
-            for (int j = 0; j < valuesJson.length(); j++) {
-                JSONArray innerArray = valuesJson.getJSONArray(j);
-                StringBuilder innerSqlBuilder = new StringBuilder();
-                for (int k = 0; k < innerArray.length(); k++) {
-                    Object innerElement = innerArray.get(k);
-                    String elementValue = "";
+        StringBuilder valuesSql = new StringBuilder();
+        ArrayList<Object> bindArgs = new ArrayList<>();
 
-                    if (innerElement instanceof String) {
-                        elementValue = DatabaseUtils.sqlEscapeString((String) innerElement);
-                    } else {
-                        elementValue = String.valueOf(innerElement);
-                    }
-                    innerSqlBuilder.append(elementValue);
+        // Build "(?, ?, ?), (?, ?, ?)" structure
+        for (int rowIndex = 0; rowIndex < valuesJson.length(); rowIndex++) {
+            JSONArray row = valuesJson.getJSONArray(rowIndex);
 
-                    if (k < innerArray.length() - 1) {
-                        innerSqlBuilder.append(",");
-                    }
-                }
+            valuesSql.append("(");
 
-                sqlBuilder.append("(").append(innerSqlBuilder.toString()).append(")");
+            for (int col = 0; col < row.length(); col++) {
+                valuesSql.append("?");
 
-                if (j < valuesJson.length() - 1) {
-                    sqlBuilder.append(",");
+                // Add raw values for binding (no escaping at all)
+                Object val = row.get(col);
+                bindArgs.add(val);
+
+                if (col < row.length() - 1) {
+                    valuesSql.append(",");
                 }
             }
-            String finalSql = replacePlaceholders(statement, sqlBuilder.toString());
 
-            JSObject respSet = prepareSQL(finalSql, new ArrayList<>(), false, returnMode);
-            return respSet;
-        } catch (Exception e) {
-            throw new Exception(e.getMessage());
+            valuesSql.append(")");
+
+            if (rowIndex < valuesJson.length() - 1) {
+                valuesSql.append(",");
+            }
         }
+
+        // Insert the placeholder string into the SQL template
+        String finalSql = replacePlaceholders(statement, valuesSql.toString());
+
+        return prepareSQL(finalSql, bindArgs, false, returnMode);
     }
 
     public String replacePlaceholders(String stmt, String sqlBuilder) {
@@ -562,16 +563,11 @@ public class Database {
     }
 
     public JSObject oneRowStatement(String statement, JSONArray valuesJson, String returnMode) throws Exception {
-        ArrayList<Object> values = new ArrayList<>();
-        for (int j = 0; j < valuesJson.length(); j++) {
-            values.add(valuesJson.get(j));
+        ArrayList<Object> bindArgs = new ArrayList<>();
+        for (int i = 0; i < valuesJson.length(); i++) {
+            bindArgs.add(valuesJson.get(i));
         }
-        try {
-            JSObject respSet = prepareSQL(statement, values, false, returnMode);
-            return respSet;
-        } catch (Exception e) {
-            throw new Exception(e.getMessage());
-        }
+        return prepareSQL(statement, bindArgs, false, returnMode);
     }
 
     public JSObject addToResponse(JSObject response, JSObject respSet) throws JSONException {
@@ -641,59 +637,49 @@ public class Database {
     /**
      * PrepareSQL Method
      *
-     * @param statement SQL statement
-     * @param values SQL Values if any
-     * @param fromJson is the statement from importFromJson
+     * @param statement  SQL statement
+     * @param values     SQL Values if any
+     * @param fromJson   is the statement from importFromJson
      * @param returnMode return mode to handle RETURNING
      * @return JSObject
      * @throws Exception message
      */
     public JSObject prepareSQL(String statement, ArrayList<Object> values, Boolean fromJson, String returnMode) throws Exception {
-        String stmtType = statement.trim().split("\\s+")[0].toUpperCase();
+        String stmtType = extractStatementType(statement);
         SupportSQLiteStatement stmt = null;
         String sqlStmt = statement;
         String retMode;
         JSArray retValues = new JSArray();
         JSObject retObject = new JSObject();
-        String colNames = "";
+        String colNames;
+        String tableName = extractTableName(sqlStmt);
         long initLastId = (long) -1;
-        /*        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
-          retMode = returnMode;
-          throw new Exception(retMode +"Not implemented for above TIRAMISU");
-        } else {
-
- */
-        retMode = returnMode;
-        if (!retMode.equals("no")) {
+        retMode = (returnMode == null) ? "no" : returnMode;
+        if (!"no".equals(retMode)) {
             retMode = "wA" + retMode;
         }
-        //       }
-        if (retMode.equals("no") || retMode.substring(0, Math.min(retMode.length(), 2)).equals("wA")) {
-            // get the statement and the returning column names
-            try {
-                JSObject stmtObj = getStmtAndRetColNames(sqlStmt, retMode);
-                sqlStmt = stmtObj.getString("stmt", sqlStmt);
-                colNames = stmtObj.getString("names", "");
-            } catch (JSONException e) {
-                throw new Exception(e.getMessage());
-            }
+        try {
+            // Separate the statement from the returning clause,
+            // which is unsupported for most Android versions
+            JSObject stmtObj = getStmtAndRetColNames(sqlStmt, retMode);
+            sqlStmt = stmtObj.getString("stmt", sqlStmt);
+            colNames = stmtObj.getString("names", "");
+        } catch (JSONException e) {
+            throw new Exception(e.getMessage());
         }
         try {
+            boolean shouldReturnValues = retMode.startsWith("wA") && !colNames.isEmpty();
             if (!fromJson && stmtType.equals("DELETE")) {
                 sqlStmt = deleteSQL(this, sqlStmt, values);
             }
-            if (sqlStmt != null) {
-                stmt = _db.compileStatement(sqlStmt);
-            } else {
+            if (sqlStmt == null) {
                 throw new Exception("sqlStmt is null");
             }
-            if (values != null && values.size() > 0) {
-                //               retMode = "no";
+            stmt = _db.compileStatement(sqlStmt);
+            if (values != null && !values.isEmpty()) {
                 Object[] valObj = new Object[values.size()];
                 for (int i = 0; i < values.size(); i++) {
-                    if (values.get(i) == null) {
-                        valObj[i] = null;
-                    } else if (JSONObject.NULL == values.get(i)) {
+                    if ((values.get(i) == null) || (values.get(i) == JSONObject.NULL)) {
                         valObj[i] = null;
                     } else {
                         valObj[i] = values.get(i);
@@ -701,35 +687,31 @@ public class Database {
                 }
                 SimpleSQLiteQuery.bind(stmt, valObj);
             }
-            initLastId = _uSqlite.dbLastId(_db);
             if (stmtType.equals("INSERT")) {
-                stmt.executeInsert();
+                // Retrieve LastId for the table interested by the INSERT statement.
+                initLastId = _uSqlite.tblLastId(_db, tableName);
+                // Returns the row ID of the last inserted row, without requiring a new query
+                long finalLastId = stmt.executeInsert();
+                if (shouldReturnValues) {
+                    retValues = getInsertReturnedValues(this, colNames, tableName, initLastId, finalLastId, retMode);
+                }
+                retObject.put("lastId", finalLastId);
             } else {
-                if (retMode.startsWith("wA") && colNames.length() > 0 && stmtType.equals("DELETE")) {
-                    retValues = getUpdDelReturnedValues(this, sqlStmt, colNames);
+                // Last ID may not refer to the table being updated/deleted as no insertion is taking place
+                Long lastId = _uSqlite.dbLastId(_db);
+                // Query the rows to be deleted BEFORE executing the delete
+                if (shouldReturnValues && stmtType.equals("DELETE")) {
+                    retValues = getUpdDelReturnedValues(this, sqlStmt, colNames, values);
                 }
-                stmt.executeUpdateDelete();
-            }
-            Long lastId = _uSqlite.dbLastId(_db);
-            if (retMode.startsWith("wA") && colNames.length() > 0) {
-                if (stmtType.equals("INSERT")) {
-                    String tableName = extractTableName(sqlStmt);
-                    if (tableName != null) {
-                        retValues = getInsertReturnedValues(this, colNames, tableName, initLastId, lastId, retMode);
-                    }
-                } else if (stmtType.equals("UPDATE")) {
-                    retValues = getUpdDelReturnedValues(this, sqlStmt, colNames);
+                // execute UPDATE or DELETE
+                int updateChanges = stmt.executeUpdateDelete();
+                // Query the updated rows AFTER the update to emulate the returning behaviour.
+                // The returned rows may include modifications made by triggers unlike RETURNING clause
+                if (shouldReturnValues && stmtType.equals("UPDATE")) {
+                    retValues = getUpdDelReturnedValues(this, sqlStmt, colNames, values);
                 }
+                retObject.put("lastId", lastId);
             }
-            /*
-          if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
-
-            if (retMode.startsWith("one") || retMode.startsWith("all")) {
-              throw new Exception("returnMode : " + retMode + "Not implemented for above TIRAMISU");
-            }
-          }
-           */
-            retObject.put("lastId", lastId);
             retObject.put("values", retValues);
             return retObject;
         } catch (Exception e) {
@@ -750,14 +732,9 @@ public class Database {
         retObj.put("stmt", stmt);
         retObj.put("names", "");
 
-        if (isReturning && retMode.startsWith("wA")) {
-            String lowercaseSuffix = suffix != null ? suffix.toLowerCase() : "";
-            int returningIndex = lowercaseSuffix.indexOf("returning");
-            if (returningIndex != -1) {
-                String substring = suffix.substring(returningIndex + "returning".length());
-                String names = substring.trim();
-                retObj.put("names", getNames(names));
-            }
+        if (isReturning && retMode.startsWith("wA") && suffix.toLowerCase().startsWith("returning")) {
+            String returnExpr = suffix.substring("returning".length()).trim();
+            retObj.put("names", getNames(returnExpr));
         }
         return retObj;
     }
@@ -785,75 +762,26 @@ public class Database {
         JSObject retObj = new JSObject();
 
         String stmt = sqlStmt.trim();
-        if (stmt.endsWith(";")) {
-            // Remove the suffix
-            stmt = stmt.substring(0, stmt.length() - 1).trim();
-        }
+        String upperStmt = sqlStmt.toUpperCase();
         retObj.put("isReturning", false);
         retObj.put("stmt", sqlStmt);
         retObj.put("names", "");
-        String stmtType = sqlStmt.trim().split("\\s+")[0].toUpperCase();
-
-        switch (stmtType) {
-            case "INSERT":
-                int valuesIndex = stmt.toUpperCase().indexOf("VALUES");
-                if (valuesIndex != -1) {
-                    int closingParenthesisIndex = -1;
-
-                    for (int i = stmt.length() - 1; i >= valuesIndex; i--) {
-                        if (stmt.charAt(i) == ')') {
-                            closingParenthesisIndex = i;
-                            break;
-                        }
-                    }
-                    if (closingParenthesisIndex != -1) {
-                        String stmtString = stmt.substring(0, closingParenthesisIndex + 1).trim() + ";";
-                        String resultString = stmt.substring(closingParenthesisIndex + 1).trim();
-                        if (resultString.length() > 0 && !resultString.endsWith(";")) {
-                            resultString += ";";
-                        }
-                        if (resultString.toLowerCase().contains("returning")) {
-                            retObj.put("isReturning", true);
-                            retObj.put("stmt", stmtString);
-                            retObj.put("names", resultString);
-                        }
-                    }
-                }
-                return retObj;
-            case "DELETE":
-            case "UPDATE":
-                String[] words = stmt.split("\\s+");
-                List<String> wordsBeforeReturning = new ArrayList<>();
-                List<String> returningString = new ArrayList<>();
-
-                boolean isReturningOutsideMessage = false;
-                for (String word : words) {
-                    if (word.toLowerCase().equals("returning")) {
-                        isReturningOutsideMessage = true;
-                        // Include "RETURNING" and the words after it in returningString
-                        returningString.add(word);
-                        returningString.addAll(wordsAfter(word, words));
-                        break;
-                    }
-                    wordsBeforeReturning.add(word);
-                }
-
-                if (isReturningOutsideMessage) {
-                    String joinedWords = String.join(" ", wordsBeforeReturning) + ";";
-                    String joinedReturningString = String.join(" ", returningString);
-                    if (joinedReturningString.length() > 0 && !joinedReturningString.endsWith(";")) {
-                        joinedReturningString += ";";
-                    }
-                    retObj.put("isReturning", true);
-                    retObj.put("stmt", joinedWords);
-                    retObj.put("names", joinedReturningString);
-                    return retObj;
-                } else {
-                    return retObj;
-                }
-            default:
-                return retObj;
+        int returningIdx = upperStmt.lastIndexOf("RETURNING");
+        String stmtType = extractStatementType(stmt);
+        // Only separate the returning clause when the statement is recognized as INSERT, UPDATE or DELETE
+        if (!(stmtType.equals("INSERT") || stmtType.equals("DELETE") || stmtType.equals("UPDATE")) || (returningIdx == -1)) {
+            return retObj;
         }
+        String stmtWithoutReturning = String.join(" ", stmt.substring(0, returningIdx).trim().split("\\s+")) + ";";
+        String returningClause = stmt.substring(returningIdx).trim();
+        if (!returningClause.endsWith((";"))) {
+            returningClause += ";";
+        }
+        // INSERT, DELETE, UPDATE
+        retObj.put("isReturning", true);
+        retObj.put("stmt", stmtWithoutReturning);
+        retObj.put("names", returningClause);
+        return retObj;
     }
 
     private List<String> wordsAfter(String word, String[] words) {
@@ -869,32 +797,49 @@ public class Database {
     private JSArray getInsertReturnedValues(Database mDB, String colNames, String tableName, Long iLastId, Long lastId, String rMode)
         throws Exception {
         JSArray retVals = new JSArray();
-        if (iLastId < 0 || colNames.length() == 0) return retVals;
-        Long sLastId = iLastId + 1;
-        StringBuilder sbQuery = new StringBuilder("SELECT ").append(colNames).append(" FROM ");
-
-        sbQuery.append(tableName).append(" WHERE ").append("rowid ");
+        if (lastId < 0 || colNames.isEmpty() || lastId < iLastId) return retVals;
+        StringBuilder sbQuery = new StringBuilder("SELECT ")
+            .append(colNames)
+            .append(" FROM ")
+            .append(tableName)
+            .append(" WHERE ")
+            .append("rowid ");
         if (rMode.equals("wAone")) {
-            sbQuery.append("= ").append(sLastId);
+            sbQuery.append("= ").append(lastId);
         }
         if (rMode.equals("wAall")) {
-            sbQuery.append("BETWEEN ").append(sLastId).append(" AND ").append(lastId);
+            sbQuery.append("BETWEEN ").append(iLastId + 1).append(" AND ").append(lastId);
         }
         sbQuery.append(";");
         retVals = mDB.selectSQL(sbQuery.toString(), new ArrayList<>());
-
         return retVals;
     }
 
-    private JSArray getUpdDelReturnedValues(Database mDB, String stmt, String colNames) throws Exception {
+    /** Accounts for CTEs before the UPDATE or DELETE statement */
+    private JSArray getUpdDelReturnedValues(Database mDB, String stmt, String colNames, ArrayList<Object> bindValues) throws Exception {
         JSArray retVals = new JSArray();
+
+        // Extract table name and WHERE clause
         String tableName = extractTableName(stmt);
         String whereClause = extractWhereClause(stmt);
+
         if (whereClause != null && tableName != null) {
-            StringBuilder sbQuery = new StringBuilder("SELECT ").append(colNames).append(" FROM ");
-            sbQuery.append(tableName).append(" WHERE ").append(whereClause).append(";");
-            retVals = mDB.selectSQL(sbQuery.toString(), new ArrayList<>());
+            StringBuilder sbQuery = new StringBuilder();
+
+            // If statement starts with WITH, prepend the CTEs
+            String trimmedStmt = stmt.trim();
+            if (trimmedStmt.toUpperCase().startsWith("WITH")) {
+                ParsedCtes parsedCtes = parseCtes(trimmedStmt);
+                // Append the full CTE text from the original statement
+                sbQuery.append(trimmedStmt, 0, parsedCtes.endIndex).append(" ");
+            }
+
+            // Append the main SELECT
+            sbQuery.append("SELECT ").append(colNames).append(" FROM ").append(tableName).append(" WHERE ").append(whereClause).append(";");
+
+            retVals = mDB.selectSQL(sbQuery.toString(), bindValues);
         }
+
         return retVals;
     }
 
