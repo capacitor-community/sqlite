@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.0.1](https://github.com/capacitor-community/sqlite/compare/v8.0.0...v8.0.1) (2026-03-07)
+
+
+### Bug Fixes
+
+* **android:** AGP 9.0 no longer supports `proguard-android.txt` ([#684](https://github.com/capacitor-community/sqlite/issues/684)) ([5305e38](https://github.com/capacitor-community/sqlite/commit/5305e384c0383c261ec83aa433ab7599d2cbe000))
+
 ## [8.0.0](https://github.com/capacitor-community/sqlite/compare/v7.0.3...v8.0.0) (2026-01-20)
 
 
