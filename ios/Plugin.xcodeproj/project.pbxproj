@@ -40,9 +40,7 @@
 		2F98D68224C9AAE500613A4C /* CapacitorSQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F98D68124C9AAE400613A4C /* CapacitorSQLite.swift */; };
 		50ADFF92201F53D600D50D53 /* Plugin.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50ADFF88201F53D600D50D53 /* Plugin.framework */; };
 		50ADFF97201F53D600D50D53 /* CapacitorSQLitePluginTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50ADFF96201F53D600D50D53 /* CapacitorSQLitePluginTests.swift */; };
-		50ADFF99201F53D600D50D53 /* CapacitorSQLitePlugin.h in Headers */ = {isa = PBXBuildFile; fileRef = 50ADFF8B201F53D600D50D53 /* CapacitorSQLitePlugin.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		50ADFFA42020D75100D50D53 /* Capacitor.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50ADFFA52020D75100D50D53 /* Capacitor.framework */; };
-		50ADFFA82020EE4F00D50D53 /* CapacitorSQLitePlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = 50ADFFA72020EE4F00D50D53 /* CapacitorSQLitePlugin.m */; };
 		50E1A94820377CB70090CE1A /* CapacitorSQLitePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50E1A94720377CB70090CE1A /* CapacitorSQLitePlugin.swift */; };
 /* End PBXBuildFile section */
 
@@ -88,13 +86,11 @@
 		2F98D68124C9AAE400613A4C /* CapacitorSQLite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CapacitorSQLite.swift; sourceTree = "<group>"; };
 		3B2A61DA5A1F2DD4F959604D /* Pods_Plugin.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Plugin.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		50ADFF88201F53D600D50D53 /* Plugin.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Plugin.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		50ADFF8B201F53D600D50D53 /* CapacitorSQLitePlugin.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CapacitorSQLitePlugin.h; sourceTree = "<group>"; };
 		50ADFF8C201F53D600D50D53 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50ADFF91201F53D600D50D53 /* PluginTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PluginTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		50ADFF96201F53D600D50D53 /* CapacitorSQLitePluginTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapacitorSQLitePluginTests.swift; sourceTree = "<group>"; };
 		50ADFF98201F53D600D50D53 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50ADFFA52020D75100D50D53 /* Capacitor.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Capacitor.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		50ADFFA72020EE4F00D50D53 /* CapacitorSQLitePlugin.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CapacitorSQLitePlugin.m; sourceTree = "<group>"; };
 		50E1A94720377CB70090CE1A /* CapacitorSQLitePlugin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CapacitorSQLitePlugin.swift; sourceTree = "<group>"; };
 		5E23F77F099397094342571A /* Pods-Plugin.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Plugin.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Plugin/Pods-Plugin.debug.xcconfig"; sourceTree = "<group>"; };
 		91781294A431A2A7CC6EB714 /* Pods-Plugin.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Plugin.release.xcconfig"; path = "Pods/Target Support Files/Pods-Plugin/Pods-Plugin.release.xcconfig"; sourceTree = "<group>"; };
@@ -205,8 +201,6 @@
 				2C3AF2F725B591BC00C5EF2F /* Utils */,
 				2F98D68124C9AAE400613A4C /* CapacitorSQLite.swift */,
 				50E1A94720377CB70090CE1A /* CapacitorSQLitePlugin.swift */,
-				50ADFF8B201F53D600D50D53 /* CapacitorSQLitePlugin.h */,
-				50ADFFA72020EE4F00D50D53 /* CapacitorSQLitePlugin.m */,
 				50ADFF8C201F53D600D50D53 /* Info.plist */,
 				2CB89AE227C57603001F464B /* BiometricIDAuthentication.swift */,
 				2C3AF2F325B58EC400C5EF2F /* Database.swift */,
@@ -255,7 +249,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				50ADFF99201F53D600D50D53 /* CapacitorSQLitePlugin.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -451,7 +444,6 @@
 				2CB9B93A2601EF3700743730 /* UtilsMigrate.swift in Sources */,
 				2CB4368728EEEFF500C973AA /* UtilsDownloadFromHTTP.swift in Sources */,
 				2C8C860B2A84373F001F9CB2 /* UtilsSQLStatement.swift in Sources */,
-				50ADFFA82020EE4F00D50D53 /* CapacitorSQLitePlugin.m in Sources */,
 				2C3AF31A25B593E500C5EF2F /* UtilsUpgrade.swift in Sources */,
 				2C3AF31225B5938500C5EF2F /* UtilsJson.swift in Sources */,
 				2CB89AE327C57603001F464B /* BiometricIDAuthentication.swift in Sources */,
