@@ -13,7 +13,8 @@
     "src/",
     "ios/Plugin/",
     "electron/",
-    "CapacitorCommunitySqlite.podspec"
+    "CapacitorCommunitySqlite.podspec",
+    "Package.swift"
   ],
   "author": "Robin Genz <mail@robingenz.dev>",
   "license": "MIT",
@@ -57,7 +58,8 @@
     "watch": "tsc --watch",
     "test": "echo \"No test specified\"",
     "prepublishOnly": "npm run build && npm run build-electron && npm run docgen",
-    "release": "commit-and-tag-version"
+    "release": "commit-and-tag-version",
+    "ios:spm:install": "cd ios && swift package resolve && cd .."
   },
   "devDependencies": {
     "@capacitor/android": "^8.0.0",
