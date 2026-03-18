@@ -59,7 +59,7 @@
     "test": "echo \"No test specified\"",
     "prepublishOnly": "npm run build && npm run build-electron && npm run docgen",
     "release": "commit-and-tag-version",
-    "ios:spm:install": "cd ios && swift package resolve && cd .."
+    "ios:spm:install": "swift package resolve"
   },
   "devDependencies": {
     "@capacitor/android": "^8.0.0",
