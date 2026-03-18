@@ -24,9 +24,9 @@
 
 ## Maintainers
 
-| Maintainer | GitHub                                    | Social                                        |
-| ---------- | ----------------------------------------- | --------------------------------------------- |
-| Robin Genz | [robingenz](https://github.com/robingenz) | [@robin_genz](https://twitter.com/robin_genz) |
+| Maintainer | Company                             | GitHub                                    | Social                                        |
+| ---------- | ----------------------------------- | ----------------------------------------- | --------------------------------------------- |
+| Robin Genz | [Capawesome](https://capawesome.io) | [robingenz](https://github.com/robingenz) | [@robin_genz](https://twitter.com/robin_genz) |
 
 # Installation
 
