@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.1.0](https://github.com/capacitor-community/sqlite/compare/v8.0.1...v8.1.0) (2026-03-30)
+
+
+### Features
+
+* **ios:** add Swift Package Manager support ([#686](https://github.com/capacitor-community/sqlite/issues/686)) ([5a32e11](https://github.com/capacitor-community/sqlite/commit/5a32e11a96952173baf5cda7c1775ccfc531e41c))
+
 ## [8.0.1](https://github.com/capacitor-community/sqlite/compare/v8.0.0...v8.0.1) (2026-03-07)
 
 
