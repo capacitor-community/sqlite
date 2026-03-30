@@ -64,7 +64,8 @@ public class ImportFromJson {
         } catch (Exception e) {
             String msg = "CreateDatabaseSchema: " + e.getMessage();
             throw new Exception(msg);
-        } finally {}
+        } finally {
+        }
     }
 
     /**

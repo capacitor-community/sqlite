@@ -189,7 +189,7 @@ class UtilsJson {
 
     // MARK: - ImportFromJson - CheckColumnTypes
 
-    class func checkColumnTypes (
+    class func checkColumnTypes(
         mDB: Database, types: [String],
         values: [UncertainValue<String, Int, Double, [UInt8]>]) -> Bool {
         var isRetType: Bool = true

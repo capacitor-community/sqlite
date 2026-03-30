@@ -1590,9 +1590,10 @@ public class CapacitorSQLitePlugin extends Plugin {
         config.setIsEncryption(isEncryption);
         JSONObject androidBiometric = pConfig.has("androidBiometric") ? pConfig.getJSONObject("androidBiometric") : null;
         if (androidBiometric != null) {
-            boolean biometricAuth = androidBiometric.has("biometricAuth") && isEncryption
-                ? androidBiometric.getBoolean("biometricAuth")
-                : config.getBiometricAuth();
+            boolean biometricAuth =
+                androidBiometric.has("biometricAuth") && isEncryption
+                    ? androidBiometric.getBoolean("biometricAuth")
+                    : config.getBiometricAuth();
             config.setBiometricAuth(biometricAuth);
             String biometricTitle = androidBiometric.has("biometricTitle")
                 ? androidBiometric.getString("biometricTitle")

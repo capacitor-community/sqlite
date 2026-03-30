@@ -85,19 +85,19 @@ class Database {
 
     // MARK: - isOpen
 
-    func isDBOpen () -> Bool {
+    func isDBOpen() -> Bool {
         return isOpen
     }
 
     // MARK: - isNCDB
 
-    func isNCDB () -> Bool {
+    func isNCDB() -> Bool {
         return ncDB
     }
 
     // MARK: - getUrl
 
-    func getUrl () -> String {
+    func getUrl() -> String {
         return "file://\(path)"
     }
 
@@ -105,7 +105,7 @@ class Database {
 
     // swiftlint:disable cyclomatic_complexity
     // swiftlint:disable function_body_length
-    func open () throws {
+    func open() throws {
         var password: String = ""
         if isEncryption && encrypted && (mode == "secret"
                                             || mode == "encryption"
@@ -236,7 +236,7 @@ class Database {
 
     // MARK: - Close
 
-    func close () throws {
+    func close() throws {
         if isOpen {
             // close the database
             do {
@@ -323,7 +323,7 @@ class Database {
 
     // MARK: - GetVersion
 
-    func getVersion () throws -> Int {
+    func getVersion() throws -> Int {
         if isOpen {
             do {
                 let curVersion: Int = try UtilsSQLCipher
