@@ -2,7 +2,7 @@ name: Lock old issues and pull requests that are closed
 
 on:
   schedule:
-    - cron: '0 20 * * *'
+    - cron: "0 20 * * *"
   workflow_dispatch:
 
 permissions:
@@ -16,6 +16,6 @@ jobs:
   action:
     runs-on: ubuntu-latest
     steps:
-      - uses: dessant/lock-threads@v3
+      - uses: dessant/lock-threads@v6
         with:
-          issue-inactive-days: '56'
+          issue-inactive-days: "56"
