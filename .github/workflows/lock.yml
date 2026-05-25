@@ -6,10 +6,9 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
   issues: write
   pull-requests: write
-  repository-projects: read
+  discussions: write
 
 concurrency:
   group: lock
