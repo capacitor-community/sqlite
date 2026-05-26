@@ -29,6 +29,20 @@ public class UtilsSQLite {
         return ret;
     }
 
+    public long tblLastId(SupportSQLiteDatabase db, String tableName) {
+        long ret = (long) -1;
+        if (tableName == null || !tableName.matches("[A-Za-z0-9_]+")) {
+            return ret;
+        }
+        String stmt = String.valueOf("SELECT MAX(_rowid_) from " + tableName + ";");
+        SQLiteCursor cursor = (SQLiteCursor) db.query(stmt);
+        if (cursor.moveToFirst()) {
+            ret = cursor.getLong(0);
+        }
+        cursor.close();
+        return ret;
+    }
+
     public long dbLastId(SupportSQLiteDatabase db) {
         String SELECT_CHANGE = "SELECT last_insert_rowid()";
         Boolean success = true;
