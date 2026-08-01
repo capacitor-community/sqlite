@@ -50,6 +50,8 @@ pnpm install --save sql.js
 npx cap sync
 ```
 
+On iOS the plugin supports both Swift Package Manager and CocoaPods, and the two link different `SQLCipher` versions. See [IOS Quirks](#ios-quirks) before you create the iOS project.
+
 then add plugin to main `capacitor.config.ts` file:
 
 ```ts
@@ -212,6 +214,34 @@ npm install --save-dev electron-builder@24.6.4
 
 - on iOS, no further steps needed.
 
+### Dependency manager: Swift Package Manager or CocoaPods
+
+The iOS side of this plugin ships both a Swift package (`Package.swift`) and a CocoaPods podspec (`CapacitorCommunitySqlite.podspec`). Capacitor picks one when the iOS project is created, and that choice decides which `SQLCipher` build your app links, and therefore which SQLite version it runs.
+
+**Swift Package Manager (recommended).** This is what `npx cap add ios` uses by default in Capacitor 8, and it is the path this repository builds in CI.
+
+```
+npx cap add ios
+```
+
+It resolves `SQLCipher` through [SQLCipher.swift](https://github.com/sqlcipher/SQLCipher.swift), pinned to 4.17.0, whose SQLite baseline is 3.53.3. That is the same SQLCipher release the Android side uses (`net.zetetic:sqlcipher-android:4.17.0`), so both native platforms stay on one SQLite generation.
+
+**CocoaPods (still supported, but frozen).** Existing projects keep working unchanged, and a new project can still opt in:
+
+```
+npx cap add ios --packagemanager CocoaPods
+```
+
+The podspec pins `SQLCipher` to 4.10.0, whose SQLite baseline is 3.50.4. That pin is a ceiling rather than a preference: SQLCipher 4.11.0 removed CocoaPods support ("Removes CocoaPods support (`SQLCipher.podspec.json`)" in its CHANGELOG, October 2025), so 4.10.0 is the last version published to the CocoaPods trunk and no newer SQLCipher can reach this path.
+
+The practical difference is the SQLite baseline: 3.53.3 on Swift Package Manager against 3.50.4 on CocoaPods. Both are encrypted by SQLCipher and both are supported; only the Swift Package Manager path will keep moving.
+
+To move an existing CocoaPods project across, Capacitor ships an assistant:
+
+```
+npx cap spm-migration-assistant
+```
+
 
 ## Supported Methods by Platform
 
@@ -367,7 +397,7 @@ npm install --save-dev electron-builder@24.6.4
 
 ## Dependencies
 
-The iOS and Android codes are using `SQLCipher` allowing for database encryption.
+The iOS and Android codes are using `SQLCipher` allowing for database encryption. On iOS the version depends on the dependency manager, see [IOS Quirks](#ios-quirks).
 The iOS code is using `ZIPFoundation` for unzipping assets files
 The Electron code is using `better-sqlite3-multiple-ciphers` , `electron-json-storage` and `node-fetch`  from 5.0.4.
 The Web code is using the Stencil component `jeep-sqlite` based on `sql.js`, `localforage`. and `jszip`  

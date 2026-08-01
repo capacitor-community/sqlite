@@ -164,7 +164,7 @@ class UtilsDownloadFromHTTP {
             do {
                 let destinationURL = zipFile.deletingLastPathComponent()
 
-                guard let archive = Archive(url: zipFile, accessMode: .read) else {
+                guard let archive = try? Archive(url: zipFile, accessMode: .read, pathEncoding: nil) else {
                     let msg = "Failed in reading Archive"
                     completion([], UtilsDownloadError.invalidArchive(message: msg))
                     return

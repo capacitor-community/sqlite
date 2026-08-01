@@ -39,6 +39,11 @@ class BiometricIDAuthentication {
             return .touchID
         case .faceID:
             return .faceID
+        case .opticID:
+            // Not reachable on iOS. Handled explicitly so the switch stays exhaustive; the
+            // behaviour is the same as before `opticID` became a known case.
+            let msg = "Biometric type not implemented"
+            throw BiometricIDAuthenticationError.biometricType(message: msg)
         @unknown default:
             let msg = "Biometric type not implemented"
             throw BiometricIDAuthenticationError.biometricType(message: msg)

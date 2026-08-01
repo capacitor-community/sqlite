@@ -425,7 +425,7 @@ class UtilsFile {
                                overwrite: Bool) throws {
         do {
             let zipAsset: URL = fromURL.appendingPathComponent(zip)
-            guard let archive = Archive(url: zipAsset, accessMode: .read) else {
+            guard let archive = try? Archive(url: zipAsset, accessMode: .read, pathEncoding: nil) else {
                 let msg = "Error: Read Archive: \(zipAsset) failed"
                 print("\(msg)")
                 throw UtilsFileError.unzipToDatabaseFailed(message: msg)

@@ -891,7 +891,6 @@ class UtilsSQLCipher {
             }
             sqlStmt = resArr.joined(separator: ";")
         }
-        let curTime = UtilsDelete.getCurrentTimeAsInteger()
         let returnCode: Int32 = sqlite3_exec(mDB.mDb, sqlStmt, nil,
                                              nil, nil)
         if returnCode != SQLITE_OK {

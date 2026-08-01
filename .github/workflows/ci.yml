@@ -29,8 +29,10 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
       - name: Install dependencies
         run: npm ci
-      - name: Build iOS
+      - name: Build iOS (Swift Package Manager)
         run: npm run verify:ios
+      - name: Lint iOS podspec (CocoaPods compatibility path)
+        run: npm run verify:ios:pod
       - name: Build Android
         run: npm run verify:android
       - name: Build Web

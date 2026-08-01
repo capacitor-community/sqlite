@@ -38,8 +38,9 @@
     "sqlite"
   ],
   "scripts": {
-    "verify": "npm run verify:ios && npm run verify:android && npm run verify:web && npm run verify:electron",
-    "verify:ios": "cd ios && pod install && xcodebuild -workspace Plugin.xcworkspace -scheme Plugin OTHER_CFLAGS='-DHAVE_GETHOSTUUID=0' && cd ..",
+    "verify": "npm run verify:ios && npm run verify:ios:pod && npm run verify:android && npm run verify:web && npm run verify:electron",
+    "verify:ios": "xcodebuild build-for-testing -scheme CapacitorCommunitySqlite -destination 'generic/platform=iOS Simulator'",
+    "verify:ios:pod": "pod lib lint CapacitorCommunitySqlite.podspec",
     "verify:android": "cd android && ./gradlew clean build test && cd ..",
     "verify:web": "npm run build",
     "verify:electron": "npm run build-electron",
@@ -86,7 +87,6 @@
     "@capacitor/core": ">=8.0.0"
   },
   "prettier": "@ionic/prettier-config",
-  "swiftlint": "@ionic/swiftlint-config",
   "eslintConfig": {
     "extends": "@ionic/eslint-config/recommended"
   },

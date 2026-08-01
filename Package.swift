@@ -11,7 +11,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", branch: "8.0.0"),
-        .package(url: "https://github.com/sqlcipher/SQLCipher.swift.git", from: "4.14.0"),
+        .package(url: "https://github.com/sqlcipher/SQLCipher.swift.git", exact: "4.17.0"),
         .package(url: "https://github.com/weichsel/ZIPFoundation.git", from: "0.9.0")
     ],
     targets: [

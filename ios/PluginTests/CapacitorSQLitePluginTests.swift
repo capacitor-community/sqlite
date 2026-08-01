@@ -1,5 +1,5 @@
 import XCTest
-@testable import Plugin
+@testable import CapacitorSQLitePlugin
 
 class CapacitorSQLiteTests: XCTestCase {
 
@@ -7,7 +7,7 @@ class CapacitorSQLiteTests: XCTestCase {
         // This is an example of a functional test case for a plugin.
         // Use XCTAssert and related functions to verify your tests produce the correct results.
 
-        let implementation = CapacitorSQLite()
+        let implementation = CapacitorSQLite(config: SqliteConfig())
         let value = "Hello, World!"
         let result = implementation.echo(value)
 

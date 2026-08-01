@@ -546,7 +546,6 @@ class UtilsSQLStatement {
                 return SQLStatementInfo(isReturning: false, stmtString: mStmt, resultString: "")
             }
 
-            let intParenthesisValue = mStmt.distance(from: mStmt.startIndex, to: closingParenthesisIndex)
             let substringAfterValues = stmt[closingParenthesisIndex...]
             var resultString = String(substringAfterValues)
                 .trimmingCharacters(in: .whitespacesAndNewlines)

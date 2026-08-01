@@ -19,6 +19,12 @@ This guide provides instructions for contributing to this Capacitor plugin.
    brew install swiftlint
    ```
 
+4. On macOS, the iOS side is a Swift package. Open `Package.swift` in Xcode to work on it. There is no CocoaPods workspace to generate first.
+
+   ```shell
+   xed .
+   ```
+
 ### Scripts
 
 #### `npm run build`
@@ -34,6 +40,17 @@ Then, Rollup will bundle the code into a single file at `dist/plugin.js`. This f
 Build and validate the web and native projects.
 
 This is useful to run in CI to verify that the plugin builds for all platforms.
+
+On iOS this is two gates, both of which also run in CI:
+
+- `npm run verify:ios` builds the Swift package, library and test target, for an iOS Simulator destination. This is the maintained iOS path.
+- `npm run verify:ios:pod` runs `pod lib lint` against `CapacitorCommunitySqlite.podspec`, which is the CocoaPods compatibility path kept for existing consumers. See the iOS section of the README for why that path is frozen.
+
+The iOS unit tests are built by `verify:ios` but not run by it, because running them needs a named simulator rather than a generic destination. To run them locally, pick one that exists on your machine:
+
+```shell
+xcodebuild test -scheme CapacitorCommunitySqlite -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
+```
 
 #### `npm run lint` / `npm run fmt`
 
