@@ -6,49 +6,223 @@
 
 ## General to all applications
 
-This is the description on how to use the Web part of the @capacitor-community/sqlite for development purpose.
-
-When your developement is fully tested, it will be a good idea to minimize the package size of your native app to remove the `jeep-sqlite` Stencil component and the `sql-wasm.wasm` file from the assets folder.
-
+This describes how to use the Web part of `@capacitor-community/sqlite`. It is a real SQLite, fit
+for production, not only for development: the plugin runs
+[`@sqlite.org/sqlite-wasm`](https://github.com/sqlite/sqlite-wasm), the official SQLite wasm build,
+inside a dedicated Worker that it creates and owns. All SQL and all persistence happen in that
+worker; the main thread never touches the wasm heap.
 
 ```bash
 npm i --save @capacitor-community/sqlite@latest
-npm i --save jeep-sqlite@latest
 ```
 
-`jeep-sqlite` is a Stencil Component which is using `sql.js` for sql in-memory queries and store the database in the Browser on a `localforage` IndexedDB store named `jeepSqliteStore` and inside a table named `databases`.
+That is the whole install. There is no second package for the Web platform: the worker
+(`dist/web-worker.js`) and the SQLite binary (`dist/sqlite3.wasm`) ship inside the plugin, and
+there is no file to copy into your assets folder.
 
-🚨 The database is stored from in-memory to `localforage` IndexedDB store when one requires 
- - a `saveToStore`,
- - a `close`,
- - a `closeConnection`. 
-🚨
+`initWebStore()` is mandatory on Web and must complete before the first `createConnection`. It
+boots the worker, selects the durability tier, and, the very first time it runs after an upgrade,
+imports any database left behind by the previous `jeep-sqlite` implementation.
 
 ## App Index
 
-* [`Ionic/Angular App`](#ionic/angular-app)
-* [`Ionic/Vue App`](#ionic/vue-app)
-* [`Ionic/React App`](#ionic/react-app)
+* [`Requirements and browser support`](#requirements-and-browser-support)
+* [`Durability tiers`](#durability-tiers)
+* [`Backgrounding under Capacitor`](#backgrounding-under-capacitor)
+* [`Serving the worker and the wasm`](#serving-the-worker-and-the-wasm)
+* [`Migrating from jeep-sqlite`](#migrating-from-jeep-sqlite)
+* [`Limitations`](#limitations)
+* [`Ionic/Angular App`](#ionicangular-app)
+* [`Ionic/Vue App`](#ionicvue-app)
+* [`Ionic/React App`](#ionicreact-app)
+* [`Troubleshooting`](#troubleshooting)
+
+## Requirements and browser support
+
+There are two floors, and they are not the same floor. The first decides whether the plugin runs
+at all; the second decides only where your data rests.
+
+| Floor | Chromium / Android WebView | Safari / iOS WebKit | Firefox | Below it |
+| ----- | -------------------------- | ------------------- | ------- | -------- |
+| **Engine**: `BigInt`, optional chaining, nullish coalescing | 80 | 14 | 74 | **Nothing loads.** The worker fails to parse and `initWebStore()` rejects. |
+| **Durability**: OPFS sync access handles | 108 | 16.4 | 111 | Everything works, on tier 2 below. Android WebView reached this in M132, January 2025. |
+
+The engine floor is not a limitation this plugin can lift. `BigInt` is a runtime dependency of
+SQLite's int64 support and cannot be polyfilled, and the ES2020 syntax is upstream
+`@sqlite.org/sqlite-wasm`'s own, so lowering your app's build target does not help and only breaks
+your own code. Anything older than that floor is unsupported on the Web platform and fails loudly
+rather than degrading.
+
+No COOP/COEP headers and no `SharedArrayBuffer` are required on either tier, which is what makes
+this work unchanged inside Capacitor's `capacitor://` and `https://localhost` WebViews and on
+ordinary static hosting.
+
+## Durability tiers
+
+`initWebStore()` probes the browser and settles on one of two tiers for the lifetime of the worker.
+
+**Tier 1, the normal case.** Databases are real files in the browser's Origin Private File System,
+reached through SQLite's own `opfs-sahpool` VFS, in a pool directory named `.capacitor-sqlite`.
+Every committed write is durable when the method resolves, exactly as on native.
+
+**Tier 2, the automatic fallback** when the browser has no OPFS sync access handles. Databases are
+opened `:memory:` and the whole database image is written to IndexedDB, in a database named
+`capacitor-sqlite-store` under the object store `databases`. This is the model the previous
+`jeep-sqlite` implementation used everywhere.
+
+🚨 On tier 2 the image is written to IndexedDB when one requires
+ - a `saveToStore`,
+ - a `close`,
+ - a `closeConnection`,
+
+and additionally after an `importFromJson` and after a committed explicit transaction.
+🚨
+
+`saveToStore()` is a no-op on tier 1 and a real flush on tier 2, so calling it after a batch of
+writes is the portable pattern and costs nothing where it is unnecessary. The `<jeep-sqlite>`
+element's `autosave` attribute is gone and has no replacement: there is no element to put it on,
+and on tier 1 there is nothing for it to do.
+
+Only one browsing context may own the store, because OPFS access handles are single-owner by
+design. If another tab of the same origin already holds it, `initWebStore()` rejects with an
+explicit error rather than quietly opening an empty database over your data.
+
+**Tier 2 is not a one-way door.** A browser that lacked OPFS sync access handles and later gains
+them, which is the normal update path for the devices that land on tier 2, would otherwise select
+tier 1 and find an empty pool while the data sat in IndexedDB. Each `initWebStore()` on tier 1
+therefore moves any image left in the fallback store into the pool, verifies it, and only then
+removes the original. Nothing is deleted until its replacement has been read back, so an
+interrupted move resumes on the next start and a browser that drops back to tier 2 still finds
+whatever has not moved yet.
+
+## Backgrounding under Capacitor
+
+WKWebView invalidates OPFS access handles when the OS suspends the app, so the store cannot simply
+be left open across a background. When the plugin detects a native Capacitor platform it follows
+the app itself: on the way out it closes every connection and pauses the VFS, and on the way back
+it unpauses and reopens what it closed. A transaction open at that moment cannot survive the
+close; it is rolled back and reported on the console rather than silently abandoned.
+
+If the gentle path cannot run, which is what a long suspension can do to a pool behind the
+plugin's back, the worker is torn down and a fresh one takes the pool over, then reopens the same
+connections. This is the recovery path, and it is why a suspension does not end in a dead store.
+
+Three methods are exported for apps that would rather drive this from `App.appStateChange`, which
+is more precise than the visibility signal the plugin uses on its own. They are safe to call in
+addition to the automatic wiring, since all three are idempotent:
+
+```ts
+await (CapacitorSQLite as any).pauseWebStore();    // close everything, pause the VFS
+await (CapacitorSQLite as any).resumeWebStore();   // unpause and reopen, restarting if needed
+await (CapacitorSQLite as any).restartWebStore();  // the heavy path on its own
+```
+
+On the plain web none of this is wired up: a browser tab going hidden is not a suspension, and
+closing every connection on a tab switch would be a bug rather than a protection.
+
+## Serving the worker and the wasm
+
+The plugin builds its worker from `dist/web-worker.js` inside the package, and that worker loads
+`dist/sqlite3.wasm` sitting next to it. Whether your bundler follows that on its own depends on
+the bundler, because the worker URL is computed at runtime rather than written as a literal
+`new URL('...', import.meta.url)`. Serving the two files yourself is two lines and always works,
+so prefer it if you would rather not find out:
+
+```ts
+import { setSqliteWorkerFactory } from '@capacitor-community/sqlite';
+
+// Copy dist/web-worker.js and dist/sqlite3.wasm from the package into the folder your app serves
+// as its web root (public/ for Vite, src/assets/ for Angular, and so on). Keeping them side by
+// side is all the wasm needs: the worker resolves it as its own sibling.
+setSqliteWorkerFactory(() => new Worker(new URL('web-worker.js', document.baseURI)));
+```
+
+Under Capacitor, files in the web root are copied into the native app by `npx cap sync`, so the
+same two lines cover iOS and Android.
+
+**Vite needs this.** Measured with Vite 7: the plugin's runtime-computed URL is rewritten to point
+at a module of the plugin's own that Vite emits as an asset, `web-worker.js` is never emitted, and
+the request 404s. The symptom is an `initWebStore()` rejection quoting
+`Unexpected token '<'`, which is the application's HTML answering the worker request.
+
+Two further escape hatches, both additive exports and both to be called before `initWebStore()`:
+
+```ts
+import { setSqliteWebOptions, setSqliteWorkerFactory } from '@capacitor-community/sqlite';
+
+// 1. The wasm is served from somewhere else, for instance a CDN or a hashed asset path.
+setSqliteWebOptions({ wasmUrl: '/assets/sqlite3.wasm' });
+
+// 2. Your bundler does emit the worker, and you would rather it owned the URL.
+setSqliteWorkerFactory(() => new Worker(new URL('./web-worker.js', import.meta.url)));
+```
+
+`setSqliteWebOptions` also accepts `assetsPath`, if your prepopulated databases are not served
+from `assets/databases/`.
+
+One bundler note: a Vite build also emits `sqlite3-worker1.js` and `sqlite3-opfs-async-proxy.js`,
+about 237 KiB together, because `@sqlite.org/sqlite-wasm`'s entry point references them with
+`new URL`. This plugin uses neither and never fetches them at runtime; they are dead weight in the
+output directory, and you can exclude them in your bundler configuration if the size matters.
+
+## Migrating from jeep-sqlite
+
+Nothing to do. The first `initWebStore()` after upgrading reads the old
+`jeepSqliteStore` IndexedDB store, imports every database it finds into the active tier, and
+verifies each one with `PRAGMA integrity_check` before retiring the legacy store. It runs once and
+then records that it has run.
+
+Two details worth knowing if you are watching the console:
+
+- A leftover `backup-<name>SQLite.db` key, which jeep-sqlite writes before a version upgrade and
+  deletes after it, is skipped rather than imported as a database in its own right, and does not
+  prevent the old store being retired. That only applies while `<name>SQLite.db` is there too: a
+  `backup-` key on its own is the only copy of something and is migrated like any other database.
+- A database that already exists under the same name is never written over. That cannot happen on
+  a normal upgrade, where nothing has been opened yet, but it can if you ran with
+  `skipJeepMigration` and later turned it off. The legacy database is reported as failed and both
+  copies are left intact for you to reconcile.
+- If any database fails to import or fails its integrity check, nothing is deleted. The legacy
+  store is left exactly as it was and a warning naming the database is written to the console, so
+  the data is still recoverable by hand. The migration is not retried on the next boot: by then
+  the databases that did migrate are live, and re-importing the old images over them would undo
+  whatever the app has written since.
+
+The databases keep their names, so no application code changes.
+
+## Limitations
+
+- **No encryption.** There is no SQLCipher build for wasm. `createConnection` with
+  `encrypted: true` rejects, as do `setEncryptionSecret`, `changeEncryptionSecret`,
+  `clearEncryptionSecret`, `checkEncryptionSecret`, `isSecretStored`, `isDatabaseEncrypted`,
+  `isInConfigEncryption` and `isInConfigBiometricAuth`.
+- **No WAL.** `opfs-sahpool` has no shared-memory support, so tier 1 stays on the `delete` journal
+  and a `PRAGMA journal_mode=WAL` is silently refused. Tier 2 runs on the `memory` journal.
+- **Foreign keys are enforced.** `PRAGMA foreign_keys` is ON from the moment a database is opened,
+  which matches every other platform of this plugin. If your schema declares constraints it was
+  quietly violating on the old web engine, they will now be reported.
+- **The soft-delete cascade needs rowids.** On a database that participates in sync, a DELETE is
+  recorded rather than performed, so sqlite never runs the `ON DELETE` actions itself and the
+  plugin applies them instead. It identifies affected rows by `rowid`, so a `WITHOUT ROWID` table
+  on the receiving end of a constraint with an `ON DELETE` action is reported as an error rather
+  than skipped. A referencing table that has no `sql_deleted` column is left alone: there is
+  nothing to mark, the parent row physically remains, and sqlite runs the real action later when
+  `deleteExportedRows` performs the actual delete.
+- **Integers above 2^53 come back as `BigInt`.** This is a correctness improvement over the
+  previous engine, which silently lost precision, but `JSON.stringify` throws a `TypeError` on a
+  `BigInt`. Use `exportToJson`, which encodes out-of-range integers as decimal strings that SQLite
+  reads back identically on import, or supply your own replacer.
+- **One owning tab per origin**, as described under [Durability tiers](#durability-tiers).
+- **Not implemented on Web**: `getUrl`, the Cordova migration helpers (`getMigratableDbList`,
+  `addSQLiteSuffix`, `deleteOldDatabases`, `moveDatabasesAndAddSuffix`) and the non-conformed
+  database methods (`getNCDatabasePath`, `createNCConnection`, `closeNCConnection`,
+  `isNCDatabase`), which are all filesystem-path based and native-only.
+
+Read-only connections (`readonly: true`) are supported on Web, on both tiers.
 
 ## Ionic/Angular App
 
-- **sql-wasm.wasm** 
-   - Either copy manually the file `sql-wasm.wasm` from `node_modules/sql.js/dist/sql-wasm.wasm` to the `src/assets` folder of YOUR_APP 
-   - or `npm i --save-dev copyfiles` and modify the scripts in the `package.json` file as follows:
-
-     ```
-     "scripts": {
-        "ng": "ng",
-        "start": "npm run copysqlwasm && ng serve",
-        "build": "npm run copysqlwasm && ng build",
-        "test": "ng test",
-        "lint": "ng lint",
-        "e2e": "ng e2e",
-        "copysqlwasm": "copyfiles -u 3 node_modules/sql.js/dist/sql-wasm.wasm src/assets"
-     },
-     ```
-
-- For databases in the `src/assets/databases` folder if any, you have to create a `databases.json` file which includes only the non-encrypted database's names
+- For databases in the `src/assets/databases` folder if any, you have to create a `databases.json` file which includes only the non-encrypted database's names (on Web that is every database, since encryption is unsupported there)
 
 ```json
 {
@@ -60,13 +234,11 @@ npm i --save jeep-sqlite@latest
 }
 ```
 
-- open the `main.ts` file and add the following 
+- `main.ts` needs no web-specific step. There is no custom element to register, so bootstrap the
+  app as you normally would
 
 ```js
 ...
-import { defineCustomElements as jeepSqlite} from 'jeep-sqlite/loader';
-...
-jeepSqlite(window);
 platformBrowserDynamic().bootstrapModule(AppModule)
   .catch(err => console.log(err));
 ```
@@ -74,7 +246,7 @@ platformBrowserDynamic().bootstrapModule(AppModule)
 - open the `app.module.ts` file and add
 
 ```js
-import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
+import { NgModule } from '@angular/core';
 ...
 import { SQLiteService } from './services/sqlite.service';
 import { DetailService } from './services/detail.service';
@@ -89,16 +261,17 @@ import { DetailService } from './services/detail.service';
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
   ],
   bootstrap: [AppComponent],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 ```
 
-- open the `app-component.html` file and add
+  `CUSTOM_ELEMENTS_SCHEMA` is no longer needed: it was only there so Angular would tolerate the
+  `<jeep-sqlite>` tag in a template.
+
+- `app-component.html` needs no web-specific element either
 
 ```html
 <ion-app>
   <ion-router-outlet></ion-router-outlet>
-  <jeep-sqlite *ngIf="isWeb"></jeep-sqlite>
 </ion-app>
 ```
 
@@ -115,7 +288,6 @@ import { SQLiteService } from './services/sqlite.service';
   styleUrls: ['app.component.scss']
 })
 export class AppComponent {
-  public isWeb: boolean = false;
   private initPlugin: boolean;
   constructor(
     private platform: Platform,
@@ -129,14 +301,13 @@ export class AppComponent {
       this.sqlite.initializePlugin().then(async (ret) => {
         this.initPlugin = ret;
         if( this.sqlite.platform === "web") {
-          this.isWeb = true;
-          await customElements.whenDefined('jeep-sqlite');
-          const jeepSqliteEl = document.querySelector('jeep-sqlite');
-          if(jeepSqliteEl != null) {
+          try {
             await this.sqlite.initWebStore();
-            console.log(`>>>> isStoreOpen ${await jeepSqliteEl.isStoreOpen()}`);
-          } else {
-            console.log('>>>> jeepSqliteEl is null');
+          } catch (err) {
+            // Two failure modes are worth telling the user apart: a browser below the engine
+            // floor, where the plugin cannot run at all, and another tab already owning the
+            // store. See the Troubleshooting section.
+            console.log(`>>>> initWebStore failed: ${err}`);
           }
         }
 
@@ -252,7 +423,7 @@ export class SQLiteService {
                                         : Promise<void> {
         if(this.sqlite != null) {
             try {
-                await this.sqlite.addUpgradeStatement(database, toVersion, statement);
+                await this.sqlite.addUpgradeStatement(database, toVersion, statements);
                 return Promise.resolve();
             } catch (err) {
                 return Promise.reject(new Error(err));
@@ -383,9 +554,10 @@ export class SQLiteService {
      * @param encrypted 
      * @param mode 
      * @param version 
+     * @param readonly read-only connections work on every platform, web included
      */
     async createConnection(database:string, encrypted: boolean,
-                           mode: string, version: number
+                           mode: string, version: number, readonly = false
                            ): Promise<SQLiteDBConnection> {
         if(this.sqlite != null) {
             try {
@@ -399,7 +571,7 @@ export class SQLiteService {
                 }
 */
                const db: SQLiteDBConnection = await this.sqlite.createConnection(
-                                database, encrypted, mode, version);
+                                database, encrypted, mode, version, readonly);
                 if (db != null) {
                     return Promise.resolve(db);
                 } else {
@@ -652,8 +824,10 @@ export class SQLiteService {
     }
 
     /**
-     * Initialize the Web store
-     * @param database 
+     * Initialize the Web store.
+     * Mandatory on web and must complete before the first createConnection. It boots the
+     * plugin's worker, selects the durability tier, and on its first run imports any database
+     * left behind by the previous jeep-sqlite implementation.
      */
      async initWebStore(): Promise<void> {
         if(this.platform !== 'web')  {
@@ -671,7 +845,9 @@ export class SQLiteService {
         }
     }
     /**
-     * Save a database to store
+     * Save a database to store.
+     * A no-op on tier 1, where OPFS writes are already durable, and the real flush of the
+     * database image to IndexedDB on tier 2. Safe and cheap to call unconditionally.
      * @param database 
      */
      async saveToStore(database:string): Promise<void> {
@@ -707,7 +883,7 @@ that is it.
 
 ## Ionic/Vue App
 
-- copy manually the file `sql-wasm.wasm` from `node_modules/sql.js/dist/sql-wasm.wasm` to the `public/assets` folder of YOUR_APP 
+- Nothing to copy: see [Serving the worker and the wasm](#serving-the-worker-and-the-wasm).
 
 - For databases in the `public/assets/databases` folder if any, you have to create a `databases.json` file which includes only the non-encrypted database's names
 
@@ -725,17 +901,12 @@ that is it.
 
 ```js
 ...
-import { defineCustomElements as jeepSqlite, applyPolyfills } from "jeep-sqlite/loader";
 import { Capacitor } from '@capacitor/core';
 import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite';
 import { useState } from '@/composables/state';
 
 
 ...
-applyPolyfills().then(() => {
-    jeepSqlite(window);
-});
-
 window.addEventListener('DOMContentLoaded', async () => {
   const platform = Capacitor.getPlatform();
   const sqlite: SQLiteConnection = new SQLiteConnection(CapacitorSQLite)
@@ -760,10 +931,6 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   try {
     if(platform === "web") {
-      // Create the 'jeep-sqlite' Stencil component
-      const jeepSqlite = document.createElement('jeep-sqlite');
-      document.body.appendChild(jeepSqlite);
-      await customElements.whenDefined('jeep-sqlite');
       // Initialize the Web store
       await sqlite.initWebStore();
     }
@@ -1112,7 +1279,7 @@ that is it.
 
 ## Ionic/React App
 
-- copy manually the file `sql-wasm.wasm` from `node_modules/sql.js/dist/sql-wasm.wasm` to the `public/assets` folder of YOUR_APP 
+- Nothing to copy: see [Serving the worker and the wasm](#serving-the-worker-and-the-wasm).
 
 - For databases in the `public/assets/databases` folder if any, you have to create a `databases.json` file which includes only the non-encrypted database's names
 
@@ -1128,39 +1295,19 @@ that is it.
 
 - open the `index.tsx` file and add the following 
 
+There is no global JSX augmentation to write any more: with no custom element, TypeScript has
+nothing extra to be taught.
+
 ```ts
 ...
-import { defineCustomElements as jeepSqlite, applyPolyfills, JSX as LocalJSX  } from "jeep-sqlite/loader";
-import { HTMLAttributes } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite';
-
-type StencilToReact<T> = {
-  [P in keyof T]?: T[P] & Omit<HTMLAttributes<Element>, 'className'> & {
-    class?: string;
-  };
-} ;
-
-declare global {
-  export namespace JSX {
-    interface IntrinsicElements extends StencilToReact<LocalJSX.IntrinsicElements> {
-    }
-  }
-}
-
-applyPolyfills().then(() => {
-    jeepSqlite(window);
-});
 
 window.addEventListener('DOMContentLoaded', async () => {
   const platform = Capacitor.getPlatform();
   const sqlite: SQLiteConnection = new SQLiteConnection(CapacitorSQLite)
   try {
     if(platform === "web") {
-      // add 'jeep-sqlite' Stencil component to the DOM
-      const jeepEl = document.createElement("jeep-sqlite");
-      document.body.appendChild(jeepEl);
-      await customElements.whenDefined('jeep-sqlite');
       // initialize the web store
       await sqlite.initWebStore();
     }
@@ -1508,4 +1655,37 @@ that is it.
     
 ## Troubleshooting
 
-* The web-implementation uses IndexedDB to store the data. IndexedDB-support is checked via userAgent. Pay attention not to modify your userAgent (e.g. selecting an iPhone in the Chrome device simulator in your devtools), as this may break the user-agent check and result in an uninitialized DB (causing an error like this:`No available storage method found`). 
+* **`initWebStore()` rejects with a message about another tab or window.** The store is
+  single-owner per origin: OPFS access handles cannot be shared, so a second tab is refused
+  rather than being handed an empty database on top of your real data. Close the other tab. In
+  development, remember that a stale tab or a detached DevTools window still counts as a tab.
+
+* **`initWebStore()` rejects quoting `Unexpected token '<'`.** The worker URL 404s and the server
+  answered with your application's HTML, so this is a bundler problem and not a browser one, on
+  any browser. See [Serving the worker and the wasm](#serving-the-worker-and-the-wasm); with Vite
+  it is the expected default. The error the plugin raises says the same thing and carries the
+  code `WORKER_LOAD_FAILED`.
+
+* **`initWebStore()` rejects with `UNSUPPORTED_ENGINE` and some other `SyntaxError`.**
+  The browser is below the engine floor described under
+  [Requirements and browser support](#requirements-and-browser-support). This is not something the
+  plugin falls back from, and lowering your app's build target will not help: the syntax that
+  fails to parse belongs to `@sqlite.org/sqlite-wasm` itself.
+
+* **`sqlite3.wasm` cannot be found (a 404 in the network panel).** The worker looks for it as its
+  own sibling. Either put it next to the worker or point at it with
+  `setSqliteWebOptions({ wasmUrl })` from
+  [Serving the worker and the wasm](#serving-the-worker-and-the-wasm).
+
+* **Data disappears between reloads.** You are almost certainly on tier 2 and never reached a
+  flush point. Call `saveToStore(database)` after your writes, or `closeConnection`. To confirm
+  which tier you are on, look for the databases: tier 1 puts them in the Origin Private File
+  System, tier 2 in IndexedDB under `capacitor-sqlite-store`.
+
+* **`JSON.stringify` throws `TypeError: Do not know how to serialize a BigInt`.** A column holds
+  an integer above 2^53. See [Limitations](#limitations).
+
+* **Databases from an older version of the app are missing.** Check the console for a migration
+  warning. If the one-time import from `jeep-sqlite` failed, nothing was deleted: the legacy
+  IndexedDB store `jeepSqliteStore` is still there and the warning names the database that could
+  not be read.

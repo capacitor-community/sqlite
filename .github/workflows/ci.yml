@@ -33,6 +33,8 @@ jobs:
         run: npm run verify:ios
       - name: Build Android
         run: npm run verify:android
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
       - name: Build Web
         run: npm run verify:web
       - name: Build Electron

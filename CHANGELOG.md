@@ -2,6 +2,46 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.2.0](https://github.com/capacitor-community/sqlite/compare/v8.1.0...v8.2.0) (2026-08-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* **web:** the web implementation no longer uses `jeep-sqlite`. Remove the `jeep-sqlite` dependency, the `defineCustomElements`/`applyPolyfills` import, the `<jeep-sqlite>` element and any React JSX augmentation for it from your app. `initWebStore()` is still mandatory and is still called the same way.
+* **web:** the `sql-wasm.wasm` copy step is gone. The worker and `sqlite3.wasm` ship inside the package under `dist/`; delete any `copysqlwasm` script or assets entry.
+* **web:** minimum browser versions are now Chrome/Android WebView 80, Safari 14 and Firefox 74. Below that the plugin fails to load rather than degrading, and no build target in your app changes that.
+* **web:** the `<jeep-sqlite>` `autosave` attribute no longer exists. `saveToStore()` is a no-op when the store is on OPFS and the real image flush on the IndexedDB fallback.
+* **web:** integer values above 2^53 are returned as `BigInt` instead of a silently truncated number. `JSON.stringify` throws on those; `exportToJson` encodes them as decimal strings.
+* **web:** only one tab per origin may own the store. A second tab now gets an explicit error from `initWebStore()` instead of racing the first.
+* **web:** foreign keys are now enforced. `PRAGMA foreign_keys` is set ON at open, as it already was on every other platform, so a schema that was quietly violating its own constraints will start reporting them.
+
+### Features
+
+* **web:** replace the jeep-sqlite pass-through with an in-repo engine on `@sqlite.org/sqlite-wasm`, running in a dedicated worker, with databases stored as real files in OPFS through the `opfs-sahpool` VFS and no COOP/COEP headers required
+* **web:** add an automatic `:memory:` + IndexedDB fallback tier for browsers without OPFS sync access handles, so the two tiers differ only in where the bytes rest
+* **web:** import databases from the previous `jeep-sqlite` IndexedDB store once, on the first `initWebStore()`, verifying each one with `PRAGMA integrity_check` before retiring the legacy store
+* **web:** support read-only connections, which were previously unsupported on this platform
+* **web:** add a real browser test suite (vitest browser mode, Playwright Chromium) covering both durability tiers
+* **web:** export `setSqliteWorkerFactory`, `setSqliteWebOptions` and `setSqliteLocalDiskAdapter` for bundlers and file pickers that need to override the defaults
+* **web:** propagate a soft delete along foreign keys, applying each constraint's `ON DELETE` action to the `sql_deleted` marking, recursively and for every referencing table
+* **web:** move databases out of the IndexedDB fallback store and into OPFS automatically when a browser gains OPFS support, so an engine update no longer strands them
+* **web:** close and pause the store when a Capacitor app is backgrounded and restore it on return, with a worker restart as the fallback when the gentle path cannot run
+
+### Bug Fixes
+
+* **web:** a failed database upgrade now restores the pre-upgrade image and rejects, instead of returning a working connection at the old version with no signal that the migration failed
+* **web:** errors keep their message instead of being re-thrown as the string `Error: Error: ...`
+* **web:** a worker that fails to load now says which of the two causes it was, an unsupported browser or an asset the bundler did not serve, and quotes what the browser reported
+* **web:** a `DELETE` inside an `execute()` batch is now recorded on a sync-tracked database instead of physically removing the rows, matching `run()` and every other platform
+* **web:** a soft delete whose `WHERE` clause contained a string literal produced SQL that did not parse; the clause now keeps its literals
+* **web:** `DELETE ... RETURNING` on a sync-tracked database produced SQL that did not parse; the clause is now carried to the rewritten statement and the rows come back
+* **web:** a `DELETE` against a table without a `sql_deleted` column is no longer rewritten just because some other table in the database has one
+* **web:** a `DELETE` against a double-quoted table name on a sync-tracked database performed a real delete instead of recording one
+* **web:** a `DELETE` whose `WHERE` clause contained a top-level `OR` re-marked already-deleted rows, because `AND` binds tighter than `OR` in the rewritten statement
+* **web:** a table whose name is a reserved word, such as `order`, switched soft deletes off for the whole database
+* **web:** `CREATE TABLE` issued through `run()` rather than `execute()` left the cached schema stale, so a foreign key added that way was invisible to the next delete
+* **web:** `importFromJson` with `overwrite` left the caller's open connection closed behind its back
+
 ## [8.1.0](https://github.com/capacitor-community/sqlite/compare/v8.0.1...v8.1.0) (2026-03-30)
 
 

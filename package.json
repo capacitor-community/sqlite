@@ -41,12 +41,12 @@
     "verify": "npm run verify:ios && npm run verify:android && npm run verify:web && npm run verify:electron",
     "verify:ios": "cd ios && pod install && xcodebuild -workspace Plugin.xcworkspace -scheme Plugin OTHER_CFLAGS='-DHAVE_GETHOSTUUID=0' && cd ..",
     "verify:android": "cd android && ./gradlew clean build test && cd ..",
-    "verify:web": "npm run build",
+    "verify:web": "npm run build && npm run test",
     "verify:electron": "npm run build-electron",
     "lint": "npm run eslint && npm run prettier -- --check && npm run swiftlint -- lint",
     "fmt": "npm run eslint -- --fix && npm run prettier -- --write && npm run swiftlint -- --fix --format",
-    "eslint": "eslint . --ext ts",
-    "prettier": "prettier \"**/*.{css,html,ts,js,java}\" --plugin=prettier-plugin-java",
+    "eslint": "eslint src test electron/src --ext ts",
+    "prettier": "prettier \"{src,test,electron/src,android/src,ios}/**/*.{css,html,ts,js,java}\" --plugin=prettier-plugin-java",
     "swiftlint": "node-swiftlint",
     "docgen": "npm run docgenPlugin && npm run docgenConnection && npm run docgenDBConnection",
     "docgenPlugin": "docgen --api CapacitorSQLitePlugin --output-readme docs/API.md",
@@ -56,7 +56,7 @@
     "build-electron": "tsc --project electron/tsconfig.json && rollup -c electron/rollup.config.mjs && rimraf ./electron/build",
     "clean": "rimraf ./dist",
     "watch": "tsc --watch",
-    "test": "echo \"No test specified\"",
+    "test": "vitest run",
     "prepublishOnly": "npm run build && npm run build-electron && npm run docgen",
     "release": "commit-and-tag-version",
     "ios:spm:install": "swift package resolve"
@@ -72,15 +72,20 @@
     "@ionic/swiftlint-config": "^2.0.0",
     "@rollup/plugin-commonjs": "28.0.2",
     "@rollup/plugin-node-resolve": "16.0.0",
+    "@rollup/plugin-terser": "0.4.4",
     "@types/node": "25.0.3",
+    "@vitest/browser": "4.1.10",
+    "@vitest/browser-playwright": "4.1.10",
     "commit-and-tag-version": "12.6.1",
     "eslint": "^8.57.1",
+    "playwright": "1.62.1",
     "prettier": "^3.6.2",
     "prettier-plugin-java": "^2.7.7",
     "rimraf": "^6.1.0",
     "rollup": "^4.53.2",
     "swiftlint": "^2.0.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "4.1.10"
   },
   "peerDependencies": {
     "@capacitor/core": ">=8.0.0"
@@ -102,6 +107,7 @@
     }
   },
   "dependencies": {
-    "jeep-sqlite": "^2.7.2"
+    "@sqlite.org/sqlite-wasm": "3.53.0-build1",
+    "fflate": "0.8.3"
   }
 }

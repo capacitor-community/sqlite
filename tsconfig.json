@@ -15,5 +15,5 @@
     "strict": true,
     "target": "es2020"
   },
-  "files": ["src/index.ts"]
+  "files": ["src/index.ts", "src/web/worker/worker.ts"]
 }

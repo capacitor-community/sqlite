@@ -30,6 +30,13 @@ To install it in your Ionic/Vue App
     npm i --save-dev vue-sqlite-hook@latest
 ```
 
+No extra package is needed for the Web platform: the plugin ships its own worker
+(`dist/web-worker.js`) and SQLite build (`dist/sqlite3.wasm`). It does have browser floors,
+though: `BigInt`, optional chaining and nullish coalescing (Chrome/Android WebView 80, Safari 14,
+Firefox 74) or it does not load at all, and OPFS sync access handles (Chromium 108, WebKit 16.4,
+Firefox 111, Android WebView M132) for durable files rather than the IndexedDB fallback. See
+[Web Usage](Web-Usage.md).
+
 ### Vue SQLite Hook Declaration for platforms other than Web
 
 To use the `vue-sqlite-hook`as a singleton hook, the declaration must be done in the `main.ts` file of your application
@@ -99,21 +106,20 @@ Now the Singleton SQLite Hook `$sqlite`and Existing Connections Store `$existing
 
 ### Vue SQLite Hook Declaration for platforms including Web
 
-As for the Web platform, the `jeep-sqlite` Stencil component is used and requires the DOM:
-the declaration of the SQLite Hook has to be moved to the App.vue
+On the Web platform the only extra step is `initWebStore()`, called once before any connection is
+created. It boots the plugin's worker, selects the durability tier, and on its very first run
+imports any database left behind by the previous `jeep-sqlite` based implementation. Nothing needs
+the DOM any more, so the SQLite Hook declaration can stay in `main.ts` exactly as in the section
+above; the App.vue variant below is kept only as an alternative pattern.
 
 So the `main.ts`file 
 ```js
 ...
-import { defineCustomElements as jeepSqlite, applyPolyfills } from "jeep-sqlite/loader";
 import { Capacitor } from '@capacitor/core';
 import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite';
 import { useState } from '@/composables/state';
 import { schemaToImport179 } from '@/utils/utils-import-from-json';
 
-applyPolyfills().then(() => {
-    jeepSqlite(window);
-});
 window.addEventListener('DOMContentLoaded', async () => {
   const platform = Capacitor.getPlatform();
   const sqlite: SQLiteConnection = new SQLiteConnection(CapacitorSQLite)
@@ -138,10 +144,6 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   try {
     if(platform === "web") {
-      // Create the 'jeep-sqlite' Stencil component
-      const jeepSqlite = document.createElement('jeep-sqlite');
-      document.body.appendChild(jeepSqlite);
-      await customElements.whenDefined('jeep-sqlite');
       // Initialize the Web store
       await sqlite.initWebStore();
     }

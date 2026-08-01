@@ -4,6 +4,10 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!! This documentation is obsolete if you are using Ionic7 and Vite !!!!
 !!!! Go To TypeORM-Usage-From-5.6.0
+!!!!
+!!!! Its Web setup also predates the current web engine. All Web setup,
+!!!! including initWebStore and asset handling, is documented in
+!!!! TypeORM-Usage-From-5.6.0 and in Web-Usage.
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 ```typescript
@@ -220,7 +224,7 @@ module.exports = {
   "$schema": "https://json.schemastore.org/swcrc",
   "jsc": {
     "externalHelpers": true,
-    "target": "es5",
+    "target": "es2020",
     "preserveAllComments": true,
     "parser": {
       "syntax": "typescript",
@@ -236,6 +240,8 @@ module.exports = {
 }
 ```
 
+The target must stay at `es2020` or later. The web engine depends on `BigInt`, which cannot be downlevelled, and the shipped `@sqlite.org/sqlite-wasm` bundle uses optional chaining and nullish coalescing. Building for `es5` does not widen browser support here; it only breaks the build.
+
 #### 3. Update build commands to use craco CLI
 
 In particular in the :
@@ -245,13 +251,14 @@ In particular in the :
 
 ```json
 "scripts": {
-  "start": "npm run copysqlwasm && craco start",
-  "build": "npm run copysqlwasm && craco build",  
-  "copysqlwasm": "copyfiles -u 3 node_modules/sql.js/dist/sql-wasm.wasm public/assets",
+  "start": "craco start",
+  "build": "craco build",  
   "ionic:build": "npm run build",
   "ionic:serve": "npm run start"
 },
 ```
+
+There is no wasm copy step any more. The plugin ships `dist/web-worker.js` and `dist/sqlite3.wasm` itself and resolves them at runtime; only apps whose bundler cannot serve those files need `setSqliteWebOptions({ wasmUrl })` or `setSqliteWorkerFactory()`, both described in [Web Usage](Web-Usage.md).
 
 #### 4. Add the following to tsconfig.json
 

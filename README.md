@@ -4,9 +4,10 @@
 <br>
 
 <p align="center">
-  Capacitor community plugin for Native and Electron SQLite Databases.
+  Capacitor community plugin for Native, Electron and Web SQLite Databases.
    - In Native, databases could be encrypted with `SQLCipher`
    - In Electron, databases could be encrypted with `better-sqlite3-multiple-ciphers`
+   - In Web, databases run on `@sqlite.org/sqlite-wasm` in a Worker and persist in OPFS; encryption is not available
 </p>
 <br>
 <p align="center">
@@ -45,8 +46,6 @@ npx cap sync
 
 ```
 pnpm install --save @capacitor-community/sqlite
-pnpm install --save jeep-sqlite
-pnpm install --save sql.js
 npx cap sync
 ```
 
@@ -101,35 +100,74 @@ export default config;
 
 ## Tutorials Blog
 
- - [JeepQ Capacitor Plugin Tutorials](https://jepiqueau.github.io/)
+ - [JeepQ Capacitor Plugin Tutorials](https://jepiqueau.github.io/) (the Web tutorials there describe the previous `jeep-sqlite` setup, which no longer applies)
 
 
 ## Web Quirks
 
-The plugin follows the guidelines from the `Capacitor Team`,
+On the Web platform the plugin runs [`@sqlite.org/sqlite-wasm`](https://github.com/sqlite/sqlite-wasm), the official SQLite build, inside a dedicated Worker that it creates itself. There is nothing to install alongside it and nothing to copy into your assets folder: the worker (`dist/web-worker.js`) and the SQLite binary (`dist/sqlite3.wasm`) ship inside the package. Full setup is in [Web Usage](https://github.com/capacitor-community/sqlite/blob/master/docs/Web-Usage.md), which is required reading for the Web platform.
 
-- [Capacitor Browser Support](https://capacitorjs.com/docs/v3/web#browser-support)
+`initWebStore()` is still mandatory and is still called exactly as before, once, before the first connection.
 
-Meaning that it will not work in IE11 without additional JavaScript transformations, e.g. with [Babel](https://babeljs.io/).
-You'll need the usual capacitor/android/react npm script to build and copy the assets folder.
+#### Where the data lives
 
-#### For Angular framework
+`initWebStore()` picks one of two durability tiers:
 
-- Copy manually the file `sql-wasm.wasm` from `node_modules/sql.js/dist/sql-wasm.wasm` to the `src/assets` folder of YOUR_APP 
+| Tier | Storage | When it is used |
+| ---- | ------- | --------------- |
+| 1 | Real database files in the `Origin Private File System`, through the `opfs-sahpool` VFS. Needs no COOP/COEP headers and no `SharedArrayBuffer`, so it works inside Capacitor WebViews and on ordinary hosting. | Whenever the browser has OPFS sync access handles. |
+| 2 | `:memory:` databases whose whole-file image is written to IndexedDB, the model the previous implementation used. | Automatic fallback when it does not. |
 
-#### For Vue & React frameworks
+`saveToStore()` is a no-op on tier 1, where every committed write is already durable, and performs the real image flush on tier 2 (as do `close` and `closeConnection`). Calling it unconditionally is the portable pattern. The old `<jeep-sqlite>` `autosave` attribute is gone and has no replacement.
 
-- Copy manually the file `sql-wasm.wasm` from `node_modules/sql.js/dist/sql-wasm.wasm` to the `public/assets` folder of YOUR_APP 
+#### Browser support
+
+There are two separate floors, and they mean different things:
+
+| Floor | Chromium / Android WebView | Safari / iOS WebKit | Firefox | What happens below it |
+| ----- | -------------------------- | ------------------- | ------- | --------------------- |
+| Engine (`BigInt`, optional chaining, nullish coalescing) | 80 | 14 | 74 | **The plugin does not load at all.** The failure is a syntax error inside the SQLite build, not a fallback, and no transpiler setting in your app can change it. |
+| Durability (OPFS sync access handles) | 108 | 16.4 | 111 | Tier 2 above: everything works, the database is an image in IndexedDB rather than a file. Android WebView reached this in M132, January 2025. |
+
+#### Who actually lands on tier 2
+
+Tier 2 is chosen at `initWebStore()` when the browser lacks OPFS sync access handles:
+concretely, `navigator.storage.getDirectory` or
+`FileSystemFileHandle.prototype.createSyncAccessHandle` is missing, or the SQLite build's own
+API version check rejects. In browser versions that means Safari / iOS WebKit 14 to 16.3,
+Chromium 80 to 107, Firefox 74 to 110, and Android System WebView before M132 (January 2025).
+Two version-independent cases: Safari private browsing always runs tier 2 (OPFS is unavailable
+there on every Safari version), and a store already owned by another tab is an explicit error,
+never a silent drop to tier 2.
+
+How much traffic that is: measured against caniuse-lite 1.0.30001806 (StatCounter data,
+checked 2026-08), the whole tier 2 version band is about **1.4% of global browser usage**:
+Safari / iOS 14-16.3 at ~0.5%, Chromium 80-107 remnants at ~0.9%, Firefox 74-110 at ~0.01%.
+Put differently, of the usage that can load this plugin at all, **roughly 98% runs tier 1 and
+under 2% lands on tier 2**, and the band shrinks as evergreen browsers update. In-app WebView
+versions are not visible to StatCounter, so treat WebViews older than M132 (devices without
+Google Play services, or with WebView updates disabled) as a small qualitative extra on top.
+
+Why the tier stays despite the small share: Capacitor 8 itself supports iOS 15.0+ and Android
+API 24+ with WebViews as old as Chrome 60, so the platform's official support envelope reaches
+below the tier 1 floor, and a Capacitor plugin should not fail where Capacitor does not; and
+Safari private browsing is tier 2 forever regardless of version, so the tier is the difference
+between an app that works ephemerally in a private tab and one that is simply broken there.
+
+#### Other things worth knowing
+
+- **One tab at a time.** OPFS access handles are single-owner by design, so `initWebStore()` fails with an explicit error if another tab of the same origin already owns the store.
+- **Migration is automatic.** The first `initWebStore()` after upgrading imports every database left behind by the previous `jeep-sqlite`/IndexedDB implementation, verifies each one with `PRAGMA integrity_check`, and only then retires the old store. A failure leaves the old data untouched and warns on the console.
+- **Tier 2 databases follow you up to tier 1.** When a browser that lacked OPFS gains it, which is the normal upgrade path for the devices that run on tier 2, `initWebStore()` moves the stored images into OPFS and only then removes them.
+- **Foreign keys are enforced**, as on every other platform. On a database that participates in sync, a soft delete also applies each constraint's `ON DELETE` action to the children, and to their children.
+- **Backgrounding is handled** under Capacitor native: the store is closed and paused before the OS suspends the app, and reopened on return. `pauseWebStore()`, `resumeWebStore()` and `restartWebStore()` are there if you would rather drive it from `App.appStateChange`.
+- **Integers above 2^53 are returned as `BigInt`.** The previous web engine silently lost precision on those. `JSON.stringify` refuses to serialise a `BigInt`, so code that stringifies query results may need `exportToJson`, which handles this, or a replacer.
+- **No encryption.** There is no SQLCipher build for wasm, so encrypted connections and every secret-related method still reject on Web.
+- **Read-only connections work on Web**, on both tiers.
 
 ## Web Debugging Tools
 
-When using the Web platform, SQLite databases are backed by `jeep-sqlite` and stored in IndexedDB, which can be difficult to inspect during development.
-
-For easier debugging, there is a Chrome DevTools extension that allows browsing, querying, and exporting `jeep-sqlite` databases directly from IndexedDB:
-
-- **Jeep SQLite Browser (Chrome DevTools Extension)**
-  - Chrome Web Store: https://chromewebstore.google.com/detail/jeep-sqlite-browser/ocgeealadeabmhponndjebghfkbfbnch
-  - GitHub: https://github.com/pinguluk/jeep-sqlite-browser
+Where to look depends on the tier. On tier 1, open DevTools > Application > Storage and browse the Origin Private File System: the databases sit in the `.capacitor-sqlite` directory, though `opfs-sahpool` names the files opaquely, so exporting through the plugin is usually easier than reading them in place. On tier 2, they appear in IndexedDB under `capacitor-sqlite-store` > `databases`, one whole-file image per key.
 
 ## Android Quirks
 
@@ -218,11 +256,11 @@ npm install --save-dev electron-builder@24.6.4
 | Name                         | Android | iOS  | Electron | Web  |
 | :--------------------------- | :------ | :--- | :------- | :--- |
 | createConnection (ReadWrite) | ✅       | ✅    | ✅        | ✅    |
-| createConnection (ReadOnly)  | ✅       | ✅    | ✅        | ❌    | since 4.1.0-7    |
+| createConnection (ReadOnly)  | ✅       | ✅    | ✅        | ✅    | since 4.1.0-7, Web since 8.2.0 |
 | closeConnection (ReadWrite)  | ✅       | ✅    | ✅        | ✅    |
-| closeConnection (ReadOnly)   | ✅       | ✅    | ✅        | ❌    | since 4.1.0-7    |
+| closeConnection (ReadOnly)   | ✅       | ✅    | ✅        | ✅    | since 4.1.0-7, Web since 8.2.0 |
 | isConnection (ReadWrite)     | ✅       | ✅    | ✅        | ✅    |
-| isConnection (ReadOnly)      | ✅       | ✅    | ✅        | ❌    | since 4.1.0-7    |
+| isConnection (ReadOnly)      | ✅       | ✅    | ✅        | ✅    | since 4.1.0-7, Web since 8.2.0 |
 | open (non-encrypted DB)      | ✅       | ✅    | ✅        | ✅    |
 | open (encrypted DB)          | ✅       | ✅    | ✅        | ❌    |
 | close                        | ✅       | ✅    | ✅        | ✅    |
@@ -259,7 +297,7 @@ npm install --save-dev electron-builder@24.6.4
 | clearEncryptionSecret        | ✅       | ✅    | ✅        | ❌    |
 | checkEncryptionSecret        | ✅       | ✅    | ✅        | ❌    |
 | initWebStore                 | ❌       | ❌    | ❌        | ✅    |
-| saveToStore                  | ❌       | ❌    | ❌        | ✅    |
+| saveToStore                  | ❌       | ❌    | ❌        | ✅    | Web: no-op on OPFS, flushes the image on the IndexedDB tier |
 | getNCDatabasePath            | ✅       | ✅    | ❌        | ❌    |
 | createNCConnection           | ✅       | ✅    | ❌        | ❌    |
 | closeNCConnection            | ✅       | ✅    | ❌        | ❌    |
@@ -295,7 +333,7 @@ npm install --save-dev electron-builder@24.6.4
 
 - [TypeORM-From-5.6.0](https://github.com/capacitor-community/sqlite/blob/master/docs/TypeORM-Usage-From-5.6.0.md)
 
-- [Web Usage](https://github.com/capacitor-community/sqlite/blob/master/docs/Web-Usage.md)
+- [Web Usage](https://github.com/capacitor-community/sqlite/blob/master/docs/Web-Usage.md) (required reading for the Web platform)
 
 - [Non Conformed Databases](https://github.com/capacitor-community/sqlite/blob/master/docs/NonConformedDatabases.md)
 
@@ -309,6 +347,11 @@ npm install --save-dev electron-builder@24.6.4
 
 
 ## Applications demonstrating the use of the plugin and related documentation
+
+> The sample apps below predate the current Web engine. Their native code is unaffected, but every
+> Web setup step they show (installing `jeep-sqlite`, defining the custom element, copying
+> `sql-wasm.wasm`) has been removed from the plugin. Follow
+> [Web Usage](https://github.com/capacitor-community/sqlite/blob/master/docs/Web-Usage.md) instead.
 
 ### Ionic/Angular
 
@@ -370,7 +413,7 @@ npm install --save-dev electron-builder@24.6.4
 The iOS and Android codes are using `SQLCipher` allowing for database encryption.
 The iOS code is using `ZIPFoundation` for unzipping assets files
 The Electron code is using `better-sqlite3-multiple-ciphers` , `electron-json-storage` and `node-fetch`  from 5.0.4.
-The Web code is using the Stencil component `jeep-sqlite` based on `sql.js`, `localforage`. and `jszip`  
+The Web code is using `@sqlite.org/sqlite-wasm`, the official SQLite wasm build, in a dedicated Worker, with `fflate` for unzipping assets files.  
 
 ## Contributors ✨
 

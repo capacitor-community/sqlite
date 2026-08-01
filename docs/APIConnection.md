@@ -64,6 +64,11 @@ initWebStore() => Promise<void>
 
 Init the web store
 
+Mandatory on the web platform and must resolve before the first `createConnection`. It starts
+the plugin's SQLite worker, selects the durability tier, and on its very first run imports any
+database left behind by the previous jeep-sqlite implementation. Rejects when another tab of
+the same origin already owns the store.
+
 **Since:** 3.2.3-1
 
 --------------------
@@ -75,7 +80,10 @@ Init the web store
 saveToStore(database: string) => Promise<void>
 ```
 
-Save the datbase to the web store
+Save the database to the web store
+
+A no-op when the web store is on OPFS, and the real flush of the database image to IndexedDB
+on the fallback tier. Safe and cheap to call unconditionally.
 
 | Param          | Type                |
 | -------------- | ------------------- |
@@ -247,13 +255,13 @@ createConnection(database: string, encrypted: boolean, mode: string, version: nu
 
 Create a connection to a database
 
-| Param           | Type                 |
-| --------------- | -------------------- |
-| **`database`**  | <code>string</code>  |
-| **`encrypted`** | <code>boolean</code> |
-| **`mode`**      | <code>string</code>  |
-| **`version`**   | <code>number</code>  |
-| **`readonly`**  | <code>boolean</code> |
+| Param           | Type                 | Description                                   |
+| --------------- | -------------------- | --------------------------------------------- |
+| **`database`**  | <code>string</code>  |                                               |
+| **`encrypted`** | <code>boolean</code> | not available on the web platform             |
+| **`mode`**      | <code>string</code>  |                                               |
+| **`version`**   | <code>number</code>  |                                               |
+| **`readonly`**  | <code>boolean</code> | supported on every platform, the web included |
 
 **Returns:** <code>Promise&lt;SQLiteDBConnection&gt;</code>
 

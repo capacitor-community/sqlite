@@ -50,6 +50,15 @@ export class SQLiteService {
         }
         this.sqlitePlugin = CapacitorSQLite;
         this.sqlite = new SQLiteConnection(this.sqlitePlugin);
+        if ( this.platform === 'web' ) {
+            // Required on web, and the only web-specific step there is: it boots the plugin's
+            // worker, selects the durability tier (OPFS when the browser supports it, whole
+            // database images in IndexedDB otherwise), and on its very first run imports any
+            // database left behind by the previous jeep-sqlite based implementation. It must
+            // complete before any createConnection call. There is no element to add to the DOM
+            // and no wasm file to copy into the app's assets.
+            await this.sqlite.initWebStore();
+        }
         this.isService = true;
         return true;
     }
@@ -165,12 +174,13 @@ export class SQLiteService {
      * @param encrypted
      * @param mode
      * @param version
+     * @param readonly read-only connections work on every platform, web included
      */
     async createConnection(database: string, encrypted: boolean,
-                           mode: string, version: number
+                           mode: string, version: number, readonly = false
     ): Promise<SQLiteDBConnection> {
         this.ensureConnectionIsOpen();
-        const db: SQLiteDBConnection = await this.sqlite.createConnection(database, encrypted, mode, version, false);
+        const db: SQLiteDBConnection = await this.sqlite.createConnection(database, encrypted, mode, version, readonly);
         if ( db == null ) {
             throw new Error(`no db returned is null`);
         }
@@ -316,7 +326,11 @@ export class SQLiteService {
     }
 
     /**
-     * Save a database to store
+     * Save a database to store.
+     * On the web this flushes the whole database image to IndexedDB, but only on the fallback
+     * tier: when the plugin is running on OPFS every committed write is already durable and this
+     * is a no-op. Calling it after a batch of writes is the portable pattern either way. The
+     * <jeep-sqlite> "autosave" attribute it used to pair with no longer exists.
      * @param database
      */
     async saveToStore(database: string): Promise<void> {

@@ -10,9 +10,9 @@
 ### By Default
 
   The three SQLite methods <strong>(execute, executeSet, and run)</strong> in the `@capacitor-community/sqlite` plugin are inherently transactional.
-  On the Web platform, the in-memory database is saved in the store after the execution of each method if you enable the autosave property of the jeep-sqlite web component.
+  On the Web platform, how durable that transaction is depends on the tier the plugin selected when `initWebStore()` ran. On tier 1 (OPFS) a committed transaction is already on disk when the method resolves, exactly as on native. On tier 2 (the `:memory:` + IndexedDB fallback, used when the browser has no OPFS sync access handles) the change lives in memory until the database image is flushed, which happens on `saveToStore`, `close`, `closeConnection`, after `importFromJson`, and after a committed explicit transaction. See [Web Usage](Web-Usage.md) for how to tell which tier you are on.
 
-  This approach is suitable and secure when the methods are executed from a UI component. However, it can be notably slow when dealing with a batch of commands.
+  This approach is suitable and secure when the methods are executed from a UI component. However, it can be notably slow when dealing with a batch of commands, because every call pays for its own implicit transaction.
 
   Code example: 
 
@@ -95,6 +95,7 @@
         // Commit Transaction
         await db.commitTransaction()
         if (platform === 'web') {
+          // Tier 2 (the IndexedDB fallback) only: a no-op when the plugin is running on OPFS.
           await sqliteServ.saveToStore(dbName);
         }
         setLog(prevLog => prevLog + '### Commit Test Transaction Manage ###\n');
@@ -117,6 +118,8 @@
 ### Using executeTransaction method
 
  This method has been updated to utilize the new techniques outlined in the `For Batch of Commands` chapter. It accepts a collection of tasks of type `capTask` as its input parameter.
+
+ On the Web platform the whole task set is durable as soon as `executeTransaction` resolves when the plugin is on tier 1 (OPFS). On tier 2, follow it with `saveToStore(dbName)` exactly as in the example above.
 
   ```ts
   const testExecuteTransaction = async (db: SQLiteDBConnection) => {

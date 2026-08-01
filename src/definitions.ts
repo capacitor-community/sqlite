@@ -7,13 +7,23 @@ export interface CapacitorSQLitePlugin {
   /**
    * Initialize the web store
    *
+   * Mandatory on the web platform and must resolve before the first `createConnection`. It starts
+   * the plugin's SQLite worker, selects the durability tier (databases as files in OPFS, or as
+   * whole-file images in IndexedDB on browsers without OPFS sync access handles), and on its very
+   * first run imports any database left behind by the previous jeep-sqlite implementation.
+   * Rejects when another tab of the same origin already owns the store.
+   *
    * @return Promise<void>
    * @since 3.2.3-1
    */
 
   initWebStore(): Promise<void>;
   /**
-   * Save database to  the web store
+   * Save database to the web store
+   *
+   * A no-op when the web store is on OPFS, where every committed write is already durable, and
+   * the real flush of the database image to IndexedDB on the fallback tier. Safe and cheap to
+   * call unconditionally after a batch of writes.
    *
    * @param options: capSQLiteOptions
    * @return Promise<void>
@@ -1058,12 +1068,20 @@ export interface capSQLiteVersionUpgrade {
 export interface ISQLiteConnection {
   /**
    * Init the web store
+   *
+   * Mandatory on the web platform and must resolve before the first `createConnection`. It starts
+   * the plugin's SQLite worker, selects the durability tier, and on its very first run imports any
+   * database left behind by the previous jeep-sqlite implementation. Rejects when another tab of
+   * the same origin already owns the store.
    * @returns Promise<void>
    * @since 3.2.3-1
    */
   initWebStore(): Promise<void>;
   /**
-   * Save the datbase to the web store
+   * Save the database to the web store
+   *
+   * A no-op when the web store is on OPFS, and the real flush of the database image to IndexedDB
+   * on the fallback tier. Safe and cheap to call unconditionally.
    * @param database
    * @returns Promise<void>
    * @since 3.2.3-1
@@ -1138,10 +1156,10 @@ export interface ISQLiteConnection {
   /**
    * Create a connection to a database
    * @param database
-   * @param encrypted
+   * @param encrypted not available on the web platform
    * @param mode
    * @param version
-   * @param readonly
+   * @param readonly supported on every platform, the web included
    * @returns Promise<SQLiteDBConnection>
    * @since 2.9.0 refactor
    */

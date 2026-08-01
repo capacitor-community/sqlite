@@ -87,7 +87,12 @@ The plugin add a suffix "SQLite" and an extension ".db" to the database name giv
 
 ### Web
 
-- the database is stored in Web browser INDEXEDDB storage as a `localforage` store under the `jeepSqliteStore` name and `databases` table name.
+Where a database is stored depends on the durability tier the plugin selected when `initWebStore()` ran:
+
+- Tier 1: as a real file in the browser's `Origin Private File System`, in the pool directory `.capacitor-sqlite`, through the `opfs-sahpool` VFS. This is the normal case.
+- Tier 2 (fallback for browsers without OPFS sync access handles): as a whole-database image in `IndexedDB`, in a database named `capacitor-sqlite-store` under the object store `databases`.
+
+In both cases the file name is `YOUR_DATABASE_NAMESQLite.db`, the same convention the native platforms use. See [Web Usage](Web-Usage.md) for the browser requirements behind that choice.
 
 ## Comments within SQL statements
 
@@ -164,7 +169,7 @@ Unexpected or erroneous behaviour users of this library have encountered.
 In https://github.com/capacitor-community/sqlite/issues/393 a user of this library
 experienced bugs when running a statement that itself contained multiple update statements.
 
-The statement executed fine on the web version of this library (sql-wasm.wasm).
+The statement executed fine on the web version of this library.
 
 But on android and IOS only some updates took place, some updates were ignored and did not take effect in the database.
 
@@ -176,11 +181,13 @@ Note that in general in SQLite this is not recommended, since it makes your quer
 
 ## Write-Ahead Logging (WAL)
 
- - Electron, Web platforms only WAL journal_mode is implemented
+ - Electron platform: only WAL journal_mode is implemented
 
  - Both WAL and WAL2 journal_mode are implemented
 
  - Android WAL2 is set by default, so you do not need to set it up
+
+ - Web platform: WAL is NOT available. The `opfs-sahpool` VFS has no shared-memory support, so tier 1 databases stay on the `delete` journal and a `PRAGMA journal_mode=WAL` is silently refused; tier 2 databases run in memory and use the `memory` journal.
 
 ## Error Return values
 
@@ -276,6 +283,12 @@ initWebStore() => Promise<void>
 
 Initialize the web store
 
+Mandatory on the web platform and must resolve before the first `createConnection`. It starts
+the plugin's SQLite worker, selects the durability tier (databases as files in OPFS, or as
+whole-file images in IndexedDB on browsers without OPFS sync access handles), and on its very
+first run imports any database left behind by the previous jeep-sqlite implementation.
+Rejects when another tab of the same origin already owns the store.
+
 **Since:** 3.2.3-1
 
 --------------------
@@ -287,7 +300,11 @@ Initialize the web store
 saveToStore(options: capSQLiteOptions) => Promise<void>
 ```
 
-Save database to  the web store
+Save database to the web store
+
+A no-op when the web store is on OPFS, where every committed write is already durable, and
+the real flush of the database image to IndexedDB on the fallback tier. Safe and cheap to
+call unconditionally after a batch of writes.
 
 | Param         | Type                                                          | Description                                        |
 | ------------- | ------------------------------------------------------------- | -------------------------------------------------- |

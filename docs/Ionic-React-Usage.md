@@ -34,10 +34,14 @@ To install it in your Ionic/React App
     npm i --save-dev react-sqlite-hook@latest
 ```
 
- - `for Web Browser` 
-```bash
-    npm i --save-dev jeep-sqlite@latest
-```
+ - `for Web Browser`
+
+   Nothing further to install. The plugin ships its own worker (`dist/web-worker.js`) and SQLite
+   build (`dist/sqlite3.wasm`). Note the browser floors: the plugin needs `BigInt`, optional
+   chaining and nullish coalescing (Chrome/Android WebView 80, Safari 14, Firefox 74) or it does
+   not load at all, and it stores databases in OPFS only where sync access handles exist
+   (Chromium 108, WebKit 16.4, Firefox 111, Android WebView M132), falling back to IndexedDB
+   images below that. See [Web Usage](Web-Usage.md).
 
 
 ### React SQLite Hook Declaration for platforms other than Web
@@ -86,7 +90,7 @@ export default App;
 Now the Singleton SQLite Hook `sqlite`and Existing Connections Store `existingConn` can be used in other components
 
 ### React SQLite Hook Declaration for platforms including Web
-As for the Web platform, the `jeep-sqlite` Stencil component is used and requires the DOM it is then defined and initialized in the `index.tsx` file.
+On the Web platform the only extra step is `initWebStore()`, called once before any connection is created. It boots the plugin's worker, selects the durability tier, and on its very first run imports any database left behind by the previous `jeep-sqlite` based implementation. There is no custom element to define, no `applyPolyfills`, and no DOM dependency, so the declaration below no longer has to live in `index.tsx` for the web's sake.
 
 ```ts
 import React from 'react';
@@ -94,36 +98,15 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
-import { defineCustomElements as jeepSqlite, applyPolyfills, JSX as LocalJSX  } from "jeep-sqlite/loader";
-import { HTMLAttributes } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite';
 
-type StencilToReact<T> = {
-  [P in keyof T]?: T[P] & Omit<HTMLAttributes<Element>, 'className'> & {
-    class?: string;
-  };
-} ;
-
-declare global {
-  export namespace JSX {
-    interface IntrinsicElements extends StencilToReact<LocalJSX.IntrinsicElements> {
-    }
-  }
-}
-
-applyPolyfills().then(() => {
-  jeepSqlite(window);
-});
 window.addEventListener('DOMContentLoaded', async () => {
   console.log('$$$ in index $$$');
   const platform = Capacitor.getPlatform();
   const sqlite: SQLiteConnection = new SQLiteConnection(CapacitorSQLite)
   try {
     if(platform === "web") {
-      const jeepEl = document.createElement("jeep-sqlite");
-      document.body.appendChild(jeepEl);
-      await customElements.whenDefined('jeep-sqlite');
       await sqlite.initWebStore();
     }
     const ret = await sqlite.checkConnectionsConsistency();
@@ -329,6 +312,8 @@ const Test2dbs: React.FC = () => {
             // initialize the connection
             const db = await sqlite
                 .createConnection("testNew", false, "no-encryption", 1);
+            // Native and Electron only: encryption is not supported on the Web platform, where
+            // this call rejects.
             const db1 = await sqlite
                 .createConnection("testSet", true, "secret", 1);
 
@@ -425,6 +410,9 @@ const Test2dbs: React.FC = () => {
                 return false;
             }
             if (platform === "web") {
+                // Tier 2 (the IndexedDB fallback) only: a no-op when the plugin is running on
+                // OPFS, where every committed write is already durable. Calling it
+                // unconditionally is the portable pattern.
                 await sqlite.saveToStore("testNew");
                 await sqlite.saveToStore("testSet");
             }

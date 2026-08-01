@@ -13,11 +13,18 @@
 
  - The `typeOrm` package now has a `capacitor` driver type that must be used with the `@capacitor-community/sqlite` capacitor plugin.
 
- - Apps using the `@capacitor-community/sqlite` capacitor plugin cannot use the `CLI` of the `typeOrm` package. Developers trying to do so, will receive a message stating that the "jeep-sqlite element is not present in the DOM". The Web part of the plugin needs the DOM to create and store the database. 
+ - Apps using the `@capacitor-community/sqlite` capacitor plugin cannot use the `CLI` of the `typeOrm` package. The `CLI` runs under Node, and the Web part of the plugin needs a browser: it runs SQLite in a dedicated Worker and stores databases in the Origin Private File System, or in IndexedDB on browsers without it. Neither exists under Node, so the CLI cannot reach a database. 
 
  - In release 5.6.0, I attempted to propose a workaround by utilizing certain Node.js packages like 'fs', 'os', and 'path' to facilitate the generation of initial and subsequent migration files. While this workaround worked smoothly on some frameworks using Vite (such as React and Svelte), unfortunately, I encountered difficulties with Angular due to the inability to find a suitable method for building the app.
 
  - In release 5.6.1.1, I decided to retract the proposal for the workaround and refrain from implementing it. As a consequence, migration files will need to be created manually.
+
+ - On the Web platform, four constraints are worth knowing before you start. They are described in full in [Web Usage](Web-Usage.md):
+
+    - The plugin needs a browser with `BigInt`, optional chaining and nullish coalescing (Chrome/Android WebView 80, Safari 14, Firefox 74). Below that it does not load at all, and no transpiler target can change that.
+    - Databases are durable files in the Origin Private File System when the browser supports OPFS sync access handles (Chromium 108, WebKit 16.4, Firefox 111, Android WebView M132), and whole-database images in IndexedDB otherwise. The `saveToStore` calls below matter only in the second case.
+    - Only one browser tab may own the store. A second tab gets an explicit error from `initWebStore()`.
+    - Integer values above 2^53 are returned as `BigInt`. Declare such columns as `bigint` in your entities with a transformer rather than `number`, which the previous web engine let you get away with by silently losing precision.
 
 
 ## Applications/Tutorials
@@ -368,11 +375,8 @@ Somewhere in the `main.ts` file of your App you must initialize your DataSources
 
 ```ts 
 ... 
-import { JeepSqlite } from 'jeep-sqlite/dist/components/jeep-sqlite';
 import sqliteParams from './databases/sqliteParams';
 import authorDataSource from './databases/datasources/AuthorDataSource';
-
-customElements.define('jeep-sqlite', JeepSqlite);
 
 const initializeDataSources = async () => {
   //check sqlite connections consistency
@@ -391,31 +395,28 @@ const initializeDataSources = async () => {
       await mDataSource.dataSource.runMigrations();
     }
     if( sqliteParams.platform === 'web') {
+      // Tier 2 (the IndexedDB fallback) only: a no-op when the plugin is running on OPFS.
       await sqliteParams.connection.saveToStore(mDataSource.dbName);
     }                    
   }     
 }
 
-if (sqliteParams.platform !== "web") {
-  initializeDataSources();
+const start = async () => {
+  if (sqliteParams.platform === "web") {
+    // Required on web, and the only web-specific step there is. It boots the plugin's worker,
+    // selects the durability tier, and on its first run imports any database left behind by the
+    // previous jeep-sqlite based implementation.
+    await sqliteParams.connection.initWebStore();
+  }
+  await initializeDataSources();
   // Now depending on the Framework render your APP
   ...
-} else {
-  window.addEventListener('DOMContentLoaded', async () => {
-      const jeepEl = document.createElement("jeep-sqlite");
-      document.body.appendChild(jeepEl);
-      customElements.whenDefined('jeep-sqlite').then(async () => {
-        await sqliteParams.connection.initWebStore();
-        await initializeDataSources();
-        // Now depending on the Framework render your APP
-        ...
-     })
-      .catch ((err) => {
-        console.log(`Error: ${err}`);
-        throw new Error(`Error: ${err}`)
-      });
-  });
+}
 
+start().catch((err) => {
+  console.log(`Error: ${err}`);
+  throw new Error(`Error: ${err}`);
+});
 ```
 
 
