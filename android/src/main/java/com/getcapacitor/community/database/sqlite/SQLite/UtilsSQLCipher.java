@@ -44,16 +44,16 @@ public class UtilsSQLCipher {
 
                 db.getVersion();
 
-                return (State.UNENCRYPTED);
+                return State.UNENCRYPTED;
             } catch (Exception e) {
                 try {
                     String passphrase = sharedPreferences.getString("secret", "");
                     if (passphrase.length() > 0) {
                         db = SQLiteDatabase.openDatabase(dbPath.getAbsolutePath(), passphrase, null, SQLiteDatabase.OPEN_READONLY, null);
                         db.getVersion();
-                        return (State.ENCRYPTED_SECRET);
+                        return State.ENCRYPTED_SECRET;
                     } else {
-                        return (State.UNKNOWN);
+                        return State.UNKNOWN;
                     }
                 } catch (Exception e1) {
                     try {
@@ -66,12 +66,12 @@ public class UtilsSQLCipher {
                                 null
                             );
                             db.getVersion();
-                            return (State.ENCRYPTED_GLOBAL_SECRET);
+                            return State.ENCRYPTED_GLOBAL_SECRET;
                         } else {
-                            return (State.UNKNOWN);
+                            return State.UNKNOWN;
                         }
                     } catch (Exception e2) {
-                        return (State.UNKNOWN);
+                        return State.UNKNOWN;
                     }
                 }
             } finally {
@@ -81,7 +81,7 @@ public class UtilsSQLCipher {
             }
         }
 
-        return (State.DOES_NOT_EXIST);
+        return State.DOES_NOT_EXIST;
     }
 
     /**

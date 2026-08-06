@@ -995,7 +995,7 @@ public class CapacitorSQLitePlugin extends Plugin {
             JSONArray keys = set.getJSONObject(i).names();
             for (int j = 0; j < keys.length(); ++j) {
                 String key = keys.getString(j);
-                if (!(key.equals("statement")) && !(key.equals("values"))) {
+                if (!key.equals("statement") && !key.equals("values")) {
                     String msg = "ExecuteSet: Must provide a set as Array of {statement,";
                     msg += "values}";
                     rHandler.retChanges(call, retRes, msg);

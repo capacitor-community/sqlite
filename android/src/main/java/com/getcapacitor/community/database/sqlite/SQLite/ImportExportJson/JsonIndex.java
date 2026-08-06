@@ -77,7 +77,7 @@ public class JsonIndex {
                     }
                 }
                 if (key.equals("mode")) {
-                    if (!(objValue instanceof String) || !(((String) objValue).equalsIgnoreCase("UNIQUE"))) {
+                    if (!(objValue instanceof String) || !((String) objValue).equalsIgnoreCase("UNIQUE")) {
                         return false;
                     } else {
                         mode = (String) objValue;

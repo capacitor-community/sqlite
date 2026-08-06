@@ -141,7 +141,7 @@ public class UtilsSQLite {
     public byte[] JSONArrayToByteArray(JSONArray arr) throws JSONException {
         byte[] bArr = new byte[arr.length()];
         for (int i = 0; i < arr.length(); i++) {
-            bArr[i] = (byte) (((int) arr.get(i)) & 0xFF);
+            bArr[i] = (byte) ((int) arr.get(i) & 0xFF);
         }
         return bArr;
     }

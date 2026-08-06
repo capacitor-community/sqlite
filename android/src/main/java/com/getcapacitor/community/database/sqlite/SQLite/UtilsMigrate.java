@@ -53,14 +53,14 @@ public class UtilsMigrate {
                 String toFile = "";
                 if (dbList.size() > 0) {
                     if (dbList.contains(file)) {
-                        if (uFile.getFileExtension((file)).equals("db")) {
+                        if (uFile.getFileExtension(file).equals("db")) {
                             toFile = file.replace(".db", "SQLite.db");
                         } else {
                             toFile = file.concat("SQLite.db");
                         }
                     }
                 } else {
-                    if (uFile.getFileExtension((file)).equals("db")) {
+                    if (uFile.getFileExtension(file).equals("db")) {
                         toFile = file.replace(".db", "SQLite.db");
                     }
                 }
@@ -114,7 +114,7 @@ public class UtilsMigrate {
                         delFile = file;
                     }
                 } else {
-                    if (uFile.getFileExtension((file)).equals("db")) {
+                    if (uFile.getFileExtension(file).equals("db")) {
                         delFile = file;
                     }
                 }
@@ -157,14 +157,14 @@ public class UtilsMigrate {
             String toFile = "";
             if (dbList.size() > 0) {
                 if (dbList.contains(file)) {
-                    if (uFile.getFileExtension((file)).equals("db")) {
+                    if (uFile.getFileExtension(file).equals("db")) {
                         toFile = file.replace(".db", "SQLite.db");
                     } else {
                         toFile = file.concat("SQLite.db");
                     }
                 }
             } else {
-                if (uFile.getFileExtension((file)).equals("db")) {
+                if (uFile.getFileExtension(file).equals("db")) {
                     toFile = file.replace(".db", "SQLite.db");
                 }
             }

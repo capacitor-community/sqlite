@@ -368,7 +368,7 @@ public class UtilsFile {
         for (File file : fList) {
             if (file.isFile()) {
                 String fileName = file.getName();
-                if (getFileExtension((fileName)).equals("db")) {
+                if (getFileExtension(fileName).equals("db")) {
                     fileList.add(fileName);
                 }
             }
