@@ -1,0 +1,123 @@
+# Dependabot configuration.
+#
+# Version updates run once a week, on Monday mornings UTC, and are grouped so a
+# normal week produces a handful of PRs rather than a dozen. Security updates
+# are deliberately not throttled here: they are a separate Dependabot feature
+# that ignores `schedule`, `cooldown` and `open-pull-requests-limit`, so
+# advisories still land as soon as a fix is published.
+#
+# CocoaPods (CapacitorCommunitySqlite.podspec) is not covered — Dependabot has
+# no CocoaPods ecosystem. That manifest still needs manual bumps.
+version: 2
+
+updates:
+  # ---------------------------------------------------------------- npm ----
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 5
+    # Let a release settle before proposing it, so we skip versions that get
+    # pulled or hotfixed within days. Majors wait longer.
+    cooldown:
+      default-days: 7
+      semver-major-days: 14
+      semver-patch-days: 3
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      # The Capacitor packages are released in lockstep and are validated
+      # together by CI, so a split across PRs would just produce a broken
+      # intermediate state.
+      capacitor:
+        patterns:
+          - "@capacitor/*"
+      # Toolchain noise: one PR a week for the whole lot.
+      dev-dependencies:
+        dependency-type: development
+        exclude-patterns:
+          - "@capacitor/*"
+        update-types:
+          - minor
+          - patch
+      production-dependencies:
+        dependency-type: production
+        update-types:
+          - minor
+          - patch
+    # Majors outside the Capacitor group stay ungrouped on purpose — they get
+    # their own PR because they need their own review.
+
+  # ------------------------------------------------------------- gradle ----
+  - package-ecosystem: gradle
+    directory: "/android"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
+      semver-major-days: 14
+      semver-patch-days: 3
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      android-minor-patch:
+        update-types:
+          - minor
+          - patch
+
+  # -------------------------------------------------------------- swift ----
+  # Reads Package.swift. `Package.resolved` is gitignored in this repo, so
+  # Dependabot updates the declared version requirements only — which is
+  # exactly the class of drift that produced #697.
+  - package-ecosystem: swift
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
+      semver-major-days: 14
+      semver-patch-days: 3
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      swift-minor-patch:
+        update-types:
+          - minor
+          - patch
+
+  # ----------------------------------------------------- github-actions ----
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: ci
+      include: scope
+    groups:
+      # actions/* move together often enough that separate PRs are pure noise.
+      github-actions:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
