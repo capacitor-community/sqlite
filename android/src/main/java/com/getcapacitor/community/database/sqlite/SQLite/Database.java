@@ -695,6 +695,10 @@ public class Database {
                         valObj[i] = null;
                     } else if (JSONObject.NULL == values.get(i)) {
                         valObj[i] = null;
+                    } else if (
+                        values.get(i).getClass() == JSONObject.class && ((JSONObject) values.get(i)).getString("type").equals("Buffer")
+                    ) {
+                        valObj[i] = _uSqlite.JSONArrayToByteArray(((JSONObject) values.get(i)).getJSONArray("data"));
                     } else {
                         valObj[i] = values.get(i);
                     }
