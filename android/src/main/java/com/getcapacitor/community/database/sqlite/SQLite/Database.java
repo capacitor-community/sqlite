@@ -236,6 +236,7 @@ public class Database {
      */
     public void open() throws Exception {
         int curVersion;
+        String openPhase = "init";
 
         String password = "";
         if (_encrypted && (_mode.equals("secret") || _mode.equals("encryption") || _mode.equals("decryption"))) {
@@ -273,17 +274,20 @@ public class Database {
         }
         try {
             if (!isNCDB() && !this._readOnly) {
+                openPhase = "openOrCreateDatabase";
                 _db = SQLiteDatabase.openOrCreateDatabase(_file, password, null, null);
             } else {
+                openPhase = "openDatabase";
                 _db = SQLiteDatabase.openDatabase(String.valueOf(_file), password, null, SQLiteDatabase.OPEN_READONLY, null);
             }
             if (_db != null) {
                 if (_db.isOpen()) {
                     // set the Foreign Key Pragma ON
+                    openPhase = "setForeignKeyConstraintsEnabled";
                     try {
                         _db.setForeignKeyConstraintsEnabled(true);
                     } catch (IllegalStateException e) {
-                        String msg = "Failed in setForeignKeyConstraintsEnabled " + e.getMessage();
+                        String msg = buildOpenErrorMessage(openPhase, e);
                         Log.v(TAG, msg);
                         close();
                         _db = null;
@@ -293,10 +297,11 @@ public class Database {
                         _isOpen = true;
                         return;
                     }
+                    openPhase = "getVersion";
                     try {
                         curVersion = _db.getVersion(); // default 0
                     } catch (IllegalStateException e) {
-                        String msg = "Failed in get/setVersion " + e.getMessage();
+                        String msg = buildOpenErrorMessage(openPhase, e);
                         Log.v(TAG, msg);
                         close();
                         _db = null;
@@ -304,6 +309,7 @@ public class Database {
                     }
                     if (_version > curVersion && _vUpgObject != null && _vUpgObject.size() > 0) {
                         //                           if (_vUpgObject != null && _vUpgObject.size() > 0) {
+                        openPhase = "onUpgrade";
                         try {
                             this._uFile.copyFile(_context, _dbName, "backup-" + _dbName);
 
@@ -341,11 +347,31 @@ public class Database {
                 throw new Exception("No database returned");
             }
         } catch (Exception e) {
-            String msg = "Error in creating the database" + e.getMessage();
+            String msg = buildOpenErrorMessage(openPhase, e);
             _isOpen = false;
             _db = null;
             throw new Exception(msg);
         }
+    }
+
+    private String buildOpenErrorMessage(String phase, Exception error) {
+        String nativeMessage = error.getMessage() != null ? error.getMessage() : error.toString();
+        if (nativeMessage.startsWith("Error in creating the database phase=")) {
+            return nativeMessage;
+        }
+
+        return (
+            "Error in creating the database phase=" +
+            phase +
+            " database=" +
+            _dbName +
+            " file=" +
+            _file.getAbsolutePath() +
+            " errorClass=" +
+            error.getClass().getName() +
+            " message=" +
+            nativeMessage
+        );
     }
 
     /**

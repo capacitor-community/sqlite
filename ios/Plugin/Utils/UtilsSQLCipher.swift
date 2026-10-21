@@ -176,35 +176,74 @@ class UtilsSQLCipher {
                 """
                 if sqlite3_exec(mDB, keyStatementString, nil, nil, nil)
                     != SQLITE_OK {
-                    let msg: String = "Wrong Secret"
+                    let msg: String = sqliteErrorMessage(
+                        mDB: mDB,
+                        phase: "pragma_key",
+                        database: filename,
+                        fallback: "Wrong Secret")
                     throw UtilsSQLCipherError
                     .openOrCreateDatabase(message: msg)
                 }
             }
-            let retB: Bool = checkDB(mDB: mDB)
-            if !retB {
-                let msg: String = "Cannot open the DB"
+            if let msg = checkDB(mDB: mDB, database: filename) {
                 throw UtilsSQLCipherError
                 .openOrCreateDatabase(message: msg)
             }
             return mDB
         } else {
-            let message: String = "open_v2 failed"
+            let message: String = sqliteErrorMessage(
+                mDB: mDB,
+                phase: "sqlite3_open_v2",
+                database: filename,
+                fallback: "open_v2 failed")
             throw UtilsSQLCipherError
             .openOrCreateDatabase(message: message)
         }
     }
 
+    private class func sqliteErrorMessage(mDB: OpaquePointer?,
+                                          phase: String,
+                                          database: String,
+                                          fallback: String,
+                                          resultCode: Int32? = nil,
+                                          execMessage: String? = nil) -> String {
+        guard let db = mDB else {
+            return "\(fallback) phase=\(phase) database=\(database)"
+        }
+
+        let code = resultCode ?? sqlite3_errcode(db)
+        let extendedCode = sqlite3_extended_errcode(db)
+        let message = String(cString: sqlite3_errmsg(db))
+        let execMessagePart = execMessage.map { " execMessage=\($0)" } ?? ""
+
+        return "\(fallback) phase=\(phase) database=\(database) " +
+            "code=\(code) extendedCode=\(extendedCode) message=\(message)" +
+            execMessagePart
+    }
+
     // MARK: - CheckDB
 
-    class func checkDB(mDB: OpaquePointer?) -> Bool {
-        var ret: Bool = false
+    class func checkDB(mDB: OpaquePointer?, database: String) -> String? {
         var stmt: String = "SELECT count(*) FROM "
         stmt.append("sqlite_master;")
-        if sqlite3_exec(mDB, stmt, nil, nil, nil) == SQLITE_OK {
-            ret = true
+        var errorMessage: UnsafeMutablePointer<Int8>?
+        let resultCode = sqlite3_exec(mDB, stmt, nil, nil, &errorMessage)
+        if resultCode == SQLITE_OK {
+            return nil
         }
-        return ret
+
+        let execMessage = errorMessage.map { String(cString: $0) }
+        if let errorMessage = errorMessage {
+            sqlite3_free(errorMessage)
+        }
+
+        return sqliteErrorMessage(
+            mDB: mDB,
+            phase: "checkDB",
+            database: database,
+            fallback: "Cannot open the DB",
+            resultCode: resultCode,
+            execMessage: execMessage)
     }
 
     // MARK: - ChangePassword
