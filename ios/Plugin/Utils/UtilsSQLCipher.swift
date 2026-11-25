@@ -172,7 +172,7 @@ class UtilsSQLCipher {
 
             if password.count > 0 {
                 let keyStatementString = """
-                PRAGMA key = '\(password)';
+                PRAGMA key = \(password.quotedAsSQLStringLiteral());
                 """
                 if sqlite3_exec(mDB, keyStatementString, nil, nil, nil)
                     != SQLITE_OK {
@@ -219,7 +219,7 @@ class UtilsSQLCipher {
                                      readonly: false)
             // change password
             let keyStatementString = """
-            PRAGMA rekey = '\(newpassword)';
+            PRAGMA rekey = \(newpassword.quotedAsSQLStringLiteral());
             """
             let returnCode: Int32 = sqlite3_exec(
                 oDB, keyStatementString, nil, nil, nil)
