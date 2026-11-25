@@ -102,18 +102,18 @@ Now the Singleton SQLite Hook `$sqlite`and Existing Connections Store `$existing
 As for the Web platform, the `jeep-sqlite` Stencil component is used and requires the DOM:
 the declaration of the SQLite Hook has to be moved to the App.vue
 
+First follow the setup in [Web Usage](https://github.com/capacitor-community/sqlite/blob/master/docs/Web-Usage.md). It covers `jeep-sqlite`, `sql.js` and the `sql-wasm.wasm` file.
+
 So the `main.ts`file 
 ```js
 ...
-import { defineCustomElements as jeepSqlite, applyPolyfills } from "jeep-sqlite/loader";
+import { defineCustomElements as jeepSqlite } from "jeep-sqlite/loader";
 import { Capacitor } from '@capacitor/core';
 import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite';
 import { useState } from '@/composables/state';
 import { schemaToImport179 } from '@/utils/utils-import-from-json';
 
-applyPolyfills().then(() => {
-    jeepSqlite(window);
-});
+jeepSqlite(window);
 window.addEventListener('DOMContentLoaded', async () => {
   const platform = Capacitor.getPlatform();
   const sqlite: SQLiteConnection = new SQLiteConnection(CapacitorSQLite)

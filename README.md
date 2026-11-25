@@ -44,9 +44,9 @@ npx cap sync
 ```
 
 ```
-pnpm install --save @capacitor-community/sqlite
-pnpm install --save jeep-sqlite
-pnpm install --save sql.js
+pnpm add @capacitor-community/sqlite
+pnpm add jeep-sqlite
+pnpm add --save-exact sql.js@1.11.0
 npx cap sync
 ```
 
@@ -112,6 +112,12 @@ The plugin follows the guidelines from the `Capacitor Team`,
 
 Meaning that it will not work in IE11 without additional JavaScript transformations, e.g. with [Babel](https://babeljs.io/).
 You'll need the usual capacitor/android/react npm script to build and copy the assets folder.
+
+The file `sql-wasm.wasm` must come from `sql.js` 1.11.0. A file from version 1.13.0 or newer does not work. It fails with an error like `function import requires a callable`. The [Web Usage](https://github.com/capacitor-community/sqlite/blob/master/docs/Web-Usage.md) documentation explains why. Install this exact version in your app before you copy the file:
+
+```
+npm install --save-exact sql.js@1.11.0
+```
 
 #### For Angular framework
 
