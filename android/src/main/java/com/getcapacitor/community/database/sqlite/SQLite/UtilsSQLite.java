@@ -103,13 +103,13 @@ public class UtilsSQLite {
         return trimmedStrings;
     }
 
-    public ArrayList<Object> objectJSArrayToArrayList(JSArray jsArray) throws JSONException {
+    public ArrayList<Object> objectJSArrayToArrayList(JSONArray jsonArray) throws JSONException {
         ArrayList<Object> list = new ArrayList<Object>();
-        for (int i = 0; i < jsArray.length(); i++) {
-            if (jsArray.isNull(i)) {
+        for (int i = 0; i < jsonArray.length(); i++) {
+            if (jsonArray.isNull(i)) {
                 list.add(null);
             } else {
-                Object obj = jsArray.get(i);
+                Object obj = jsonArray.get(i);
                 if (obj.getClass() == JSONObject.class) {
                     if (((JSONObject) obj).getString("type").equals("Buffer")) {
                         byte[] bArr = JSONArrayToByteArray(((JSONObject) obj).getJSONArray("data"));

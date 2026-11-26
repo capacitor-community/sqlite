@@ -525,13 +525,6 @@ public class Database {
     }
 
     public String replacePlaceholders(String stmt, String sqlBuilder) {
-        // Extract question mark placeholders from the input statement
-        String extractedValues = extractQuestionMarkValues(stmt);
-
-        // Check if any placeholders were found
-        if (extractedValues == null) {
-            return stmt; // Return the original statement if no placeholders are found
-        }
         // Regex to match the VALUES clause with varying number of placeholders
         String regex = "(?i)VALUES\\s*\\((\\s*\\?\\s*(?:,\\s*\\?\\s*)*)\\)";
 
@@ -545,27 +538,12 @@ public class Database {
             String formattedStmt = matcher.replaceAll("VALUES " + Matcher.quoteReplacement(sqlBuilder));
             return formattedStmt;
         } else {
-            throw new IllegalArgumentException("The statement does not contain a valid VALUES clause with placeholders.");
-        }
-    }
-
-    public String extractQuestionMarkValues(String input) {
-        Pattern pattern = Pattern.compile("(?i)VALUES \\((\\?(?:,\\s*\\?\\s*)*)\\)");
-        Matcher matcher = pattern.matcher(input);
-
-        if (matcher.find()) {
-            String extractedSubstring = matcher.group(1);
-            return "(" + extractedSubstring.replaceAll("\\s*,\\s*", ",") + ")";
-        } else {
-            return null;
+            throw new IllegalArgumentException("Nested values need a VALUES clause that holds only placeholders, such as VALUES (?, ?).");
         }
     }
 
     public JSObject oneRowStatement(String statement, JSONArray valuesJson, String returnMode) throws Exception {
-        ArrayList<Object> values = new ArrayList<>();
-        for (int j = 0; j < valuesJson.length(); j++) {
-            values.add(valuesJson.get(j));
-        }
+        ArrayList<Object> values = _uSqlite.objectJSArrayToArrayList(valuesJson);
         try {
             JSObject respSet = prepareSQL(statement, values, false, returnMode);
             return respSet;
