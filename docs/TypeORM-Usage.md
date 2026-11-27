@@ -253,6 +253,8 @@ In particular in the :
 },
 ```
 
+The `sql-wasm.wasm` file must come from `sql.js` 1.11.0. See [Web Usage](https://github.com/capacitor-community/sqlite/blob/master/docs/Web-Usage.md).
+
 #### 4. Add the following to tsconfig.json
 
 ```json

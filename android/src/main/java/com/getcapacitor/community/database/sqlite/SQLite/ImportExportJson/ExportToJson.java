@@ -275,53 +275,19 @@ public class ExportToJson {
         }
     }
 
-    /**
-     * Modify ',' by '§' for Embedded Parentheses
-     * @param sqlStmt SQLite statement
-     * @return String
-     */
+    /** Replaces each comma inside parentheses with "§". The caller splits the column list at the remaining commas. */
     private String modEmbeddedParentheses(String sqlStmt) throws Exception {
-        List<Integer> oPars = getIndices(sqlStmt, "(");
-        List<Integer> cPars = getIndices(sqlStmt, ")");
-        if (oPars.size() != cPars.size()) {
-            throw new Exception("ModEmbeddedParentheses: Not same number of " + "opening and closing parentheses");
+        StringBuilder resStmt = new StringBuilder();
+        int depth = 0;
+        for (char c : sqlStmt.toCharArray()) {
+            if (c == '(') depth++;
+            if (c == ')') depth--;
+            resStmt.append(c == ',' && depth > 0 ? '§' : c);
         }
-        if (oPars.size() == 0) return sqlStmt;
-        StringBuilder resStmt = new StringBuilder(sqlStmt.substring(0, oPars.get(0) - 1));
-        for (int i = 0; i < oPars.size(); i++) {
-            String str;
-            if (i < oPars.size() - 1) {
-                if (oPars.get(i + 1) < cPars.get(i)) {
-                    str = sqlStmt.substring(oPars.get(i) - 1, cPars.get(i + 1));
-                    i++;
-                } else {
-                    str = sqlStmt.substring(oPars.get(i) - 1, cPars.get(i));
-                }
-            } else {
-                str = sqlStmt.substring(oPars.get(i) - 1, cPars.get(i));
-            }
-            String newS = str.replaceAll(",", "§");
-            resStmt.append(newS);
-            if (i < oPars.size() - 1) {
-                resStmt.append(sqlStmt.substring(cPars.get(i), oPars.get(i + 1) - 1));
-            }
+        if (depth != 0) {
+            throw new Exception("ModEmbeddedParentheses: Not same number of opening and closing parentheses");
         }
-        resStmt.append(sqlStmt.substring(cPars.get(cPars.size() - 1)));
         return resStmt.toString();
-    }
-
-    private List<Integer> getIndices(String textString, String search) {
-        List<Integer> indexes = new ArrayList<>();
-
-        int index = 0;
-        while (index != -1) {
-            index = textString.indexOf(search, index);
-            if (index != -1) {
-                indexes.add(index);
-                index++;
-            }
-        }
-        return indexes;
     }
 
     /**
@@ -329,7 +295,7 @@ public class ExportToJson {
      * @param sqlStmt SQLite statement
      * @return ArrayList<JsonColumn>
      */
-    private ArrayList<JsonColumn> getSchema(String sqlStmt) throws Exception {
+    ArrayList<JsonColumn> getSchema(String sqlStmt) throws Exception {
         String msg = "GetSchema: ";
         ArrayList<JsonColumn> schema = new ArrayList<>();
         // get the sqlStmt between the parenthesis sqlStmt

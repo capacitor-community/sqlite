@@ -39,5 +39,10 @@ extension String {
     public func trimmingLeadingAndTrailingSpaces(using characterSet: CharacterSet = .whitespacesAndNewlines) -> String {
         return trimmingCharacters(in: characterSet)
     }
+    /// Returns the string as an SQL string literal: in single quotes, with each single quote doubled.
+    public func quotedAsSQLStringLiteral() -> String {
+        // A literal search also finds a quote that is followed by a combining character.
+        return "'\(replacingOccurrences(of: "'", with: "''", options: .literal))'"
+    }
 
 }

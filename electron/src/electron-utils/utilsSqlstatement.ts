@@ -168,6 +168,11 @@ export class UtilsSQLStatement {
     return indices;
   }
 
+  /** Returns the value as an SQL string literal: in single quotes, with each single quote doubled. */
+  public quoteAsSQLStringLiteral(value: string): string {
+    return `'${value.replaceAll("'", "''")}'`;
+  }
+
   public getWhereStmtForNonCombinedPK(whStmt: string, withRefs: string[], colNames: string[]): string {
     let whereStmt = '';
     let stmt: string = whStmt.substring(6);
