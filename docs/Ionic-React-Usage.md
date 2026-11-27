@@ -35,9 +35,8 @@ To install it in your Ionic/React App
 ```
 
  - `for Web Browser` 
-```bash
-    npm i --save-dev jeep-sqlite@latest
-```
+
+Follow the setup in [Web Usage](https://github.com/capacitor-community/sqlite/blob/master/docs/Web-Usage.md). It covers `jeep-sqlite`, `sql.js` and the `sql-wasm.wasm` file.
 
 
 ### React SQLite Hook Declaration for platforms other than Web
@@ -94,7 +93,7 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
-import { defineCustomElements as jeepSqlite, applyPolyfills, JSX as LocalJSX  } from "jeep-sqlite/loader";
+import { defineCustomElements as jeepSqlite, JSX as LocalJSX } from "jeep-sqlite/loader";
 import { HTMLAttributes } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite';
@@ -112,9 +111,7 @@ declare global {
   }
 }
 
-applyPolyfills().then(() => {
-  jeepSqlite(window);
-});
+jeepSqlite(window);
 window.addEventListener('DOMContentLoaded', async () => {
   console.log('$$$ in index $$$');
   const platform = Capacitor.getPlatform();
