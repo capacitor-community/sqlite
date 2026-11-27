@@ -88,7 +88,7 @@ export class UtilsSQLite {
     try {
       mDB.pragma(`cipher='sqlcipher'`);
       mDB.pragma(`legacy=4`);
-      mDB.pragma(`key='${passphrase}'`);
+      mDB.pragma(`key=${this.statUtil.quoteAsSQLStringLiteral(passphrase)}`);
       return;
     } catch (err: any) {
       const errmsg = err.message ? err.message : err;
@@ -189,8 +189,8 @@ export class UtilsSQLite {
     try {
       mDB.pragma(`cipher='sqlcipher'`);
       mDB.pragma(`legacy=4`);
-      mDB.pragma(`key='${passphrase}'`);
-      mDB.pragma(`rekey='${newpassphrase}'`);
+      mDB.pragma(`key=${this.statUtil.quoteAsSQLStringLiteral(passphrase)}`);
+      mDB.pragma(`rekey=${this.statUtil.quoteAsSQLStringLiteral(newpassphrase)}`);
       return;
     } catch (err: any) {
       const errmsg = err.message ? err.message : err;

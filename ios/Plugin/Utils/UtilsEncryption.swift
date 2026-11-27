@@ -41,8 +41,8 @@ class UtilsEncryption {
                                               password: password,
                                               readonly: false)
 
-                    var stmt: String = "ATTACH DATABASE '\(filePath)' "
-                    stmt.append("AS encrypted KEY '\(password)';")
+                    var stmt: String = "ATTACH DATABASE \(filePath.quotedAsSQLStringLiteral()) "
+                    stmt.append("AS encrypted KEY \(password.quotedAsSQLStringLiteral());")
                     stmt.append("SELECT sqlcipher_export('encrypted');")
                     stmt.append("DETACH DATABASE encrypted;")
                     if sqlite3_exec(oDB, stmt, nil, nil, nil) ==
@@ -114,8 +114,8 @@ class UtilsEncryption {
                                               password: "",
                                               readonly: false)
 
-                    var stmt: String = "PRAGMA key = '\(password)';"
-                    stmt.append("ATTACH DATABASE '\(filePath)' ")
+                    var stmt: String = "PRAGMA key = \(password.quotedAsSQLStringLiteral());"
+                    stmt.append("ATTACH DATABASE \(filePath.quotedAsSQLStringLiteral()) ")
                     stmt.append("AS plaintext KEY '';")
                     stmt.append("SELECT sqlcipher_export('plaintext');")
                     stmt.append("DETACH DATABASE plaintext;")
