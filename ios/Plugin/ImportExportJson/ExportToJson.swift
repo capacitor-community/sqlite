@@ -774,52 +774,21 @@ class ExportToJson {
 
     // MARK: - ExportToJson - ModEmbeddedParentheses
 
+    /// Replaces each comma inside parentheses with "§". The caller splits the column list at the remaining commas.
     class func modEmbeddedParentheses(sqlStmt: String) throws -> String {
-        let stmt: String = sqlStmt
-        let oPars: [Int] = stmt.indicesOf(string: "(")
-        let cPars: [Int] = stmt.indicesOf(string: ")")
-        if oPars.count != cPars.count {
-            let msg: String = "Not same number of " +
-                "opening and closing parentheses"
+        var resStmt: String = ""
+        var depth = 0
+        for char in sqlStmt {
+            if char == "(" { depth += 1 }
+            if char == ")" { depth -= 1 }
+            resStmt.append(char == "," && depth > 0 ? "§" : char)
+        }
+        if depth != 0 {
             throw ExportToJsonError.modEmbeddedParentheses(
-                message: msg)
+                message: "Not same number of opening and closing parentheses")
         }
-        if oPars.count == 0 {
-            return stmt
-        }
-
-        var resStmt: String = String(stmt.stringRange(fromIdx: 0, toIdx: oPars[0]))
-        var ipos = 0
-        while ipos < oPars.count {
-            var str: String
-            if ipos < oPars.count - 1 {
-                if oPars[ipos+1] < cPars[ipos] {
-                    str = String(stmt.stringRange(fromIdx: oPars[ipos],
-                                                  toIdx: cPars[ipos + 1] + 1))
-                    ipos += 1
-                } else {
-                    str = String(stmt.stringRange(fromIdx: oPars[ipos],
-                                                  toIdx: cPars[ipos] + 1))
-                }
-            } else {
-                str = String(stmt.stringRange(fromIdx: oPars[ipos],
-                                              toIdx: cPars[ipos] + 1))
-            }
-            let mStmt: String = str.replacingOccurrences(of: ",", with: "§")
-            resStmt.append(mStmt)
-            if ipos < oPars.count - 1 {
-                resStmt.append(String(stmt.stringRange(fromIdx: cPars[ipos] + 1,
-                                                       toIdx: oPars[ipos + 1])))
-            }
-            ipos += 1
-        }
-        resStmt.append(String(stmt.stringRange(fromIdx: cPars[cPars.count - 1] + 1,
-                                               toIdx: stmt.count)))
         return resStmt
-
     }
-
-    // swiftlint:enable function_body_length
 
     // MARK: - ExportToJson - CreateSchema
 

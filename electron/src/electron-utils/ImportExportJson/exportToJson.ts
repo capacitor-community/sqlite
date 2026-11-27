@@ -649,44 +649,19 @@ export class ExportToJson {
       throw new Error(`${msg} ${err}`);
     }
   }
+  /** Replaces each comma inside parentheses with "§". The caller splits the column list at the remaining commas. */
   private modEmbeddedParentheses(sstr: string): string {
     const msg = 'ModEmbeddedParentheses';
-    const oParArray: number[] = this.indexOfChar(sstr, '(');
-    const cParArray: number[] = this.indexOfChar(sstr, ')');
-    if (oParArray.length != cParArray.length) {
+    let resStmt = '';
+    let depth = 0;
+    for (const char of sstr) {
+      if (char === '(') depth++;
+      if (char === ')') depth--;
+      resStmt += char === ',' && depth > 0 ? '§' : char;
+    }
+    if (depth !== 0) {
       throw new Error(`${msg} Not same number of '(' & ')'`);
     }
-    if (oParArray.length === 0) {
-      return sstr;
-    }
-    let resStmt = sstr.substring(0, oParArray[0] - 1);
-    for (let i = 0; i < oParArray.length; i++) {
-      let str: string;
-      if (i < oParArray.length - 1) {
-        if (oParArray[i + 1] < cParArray[i]) {
-          str = sstr.substring(oParArray[i] - 1, cParArray[i + 1]);
-          i++;
-        } else {
-          str = sstr.substring(oParArray[i] - 1, cParArray[i]);
-        }
-      } else {
-        str = sstr.substring(oParArray[i] - 1, cParArray[i]);
-      }
-      const newS = str.replace(/,/g, '§');
-      resStmt += newS;
-      if (i < oParArray.length - 1) {
-        resStmt += sstr.substring(cParArray[i], oParArray[i + 1] - 1);
-      }
-    }
-    resStmt += sstr.substring(cParArray[cParArray.length - 1], sstr.length);
     return resStmt;
-  }
-  private indexOfChar(str: string, char: string): number[] {
-    const tmpArr: string[] = [...str];
-    char = char.toLowerCase();
-    return tmpArr.reduce(
-      (results: number[], elem: string, idx: number) => (elem.toLowerCase() === char ? [...results, idx] : results),
-      [],
-    );
   }
 }
