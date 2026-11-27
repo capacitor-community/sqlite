@@ -35,11 +35,8 @@ To install it in your Ionic/React App
 ```
 
  - `for Web Browser` 
-```bash
-    npm i --save-dev jeep-sqlite@latest
-```
 
-Then follow the setup in [Web Usage](https://github.com/capacitor-community/sqlite/blob/master/docs/Web-Usage.md). It covers `sql.js` and the `sql-wasm.wasm` file.
+Follow the setup in [Web Usage](https://github.com/capacitor-community/sqlite/blob/master/docs/Web-Usage.md). It covers `jeep-sqlite`, `sql.js` and the `sql-wasm.wasm` file.
 
 
 ### React SQLite Hook Declaration for platforms other than Web

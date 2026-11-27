@@ -13,11 +13,10 @@ When your developement is fully tested, it will be a good idea to minimize the p
 
 ```bash
 npm i --save @capacitor-community/sqlite@latest
-npm i --save jeep-sqlite@latest
-npm i --save-exact sql.js@1.11.0
+npm i --save-exact jeep-sqlite@2.8.0 sql.js@1.11.0
 ```
 
-`jeep-sqlite` 2.8.0 is built with `sql.js` 1.11.0. The `sql-wasm.wasm` file in your assets folder must come from that same version. `jeep-sqlite` pulls in the newest `sql.js`, so the file in `node_modules` can be too new. A file from version 1.13.0 or newer does not work. It fails with an error like `function import requires a callable`.
+`jeep-sqlite` 2.8.0 is built with `sql.js` 1.11.0. The `sql-wasm.wasm` file in your assets folder must come from that same version. Install both as exact versions, so the two always match. Without the exact `sql.js` version, `jeep-sqlite` pulls in the newest `sql.js`, and the file in `node_modules` can be too new. A file from version 1.13.0 or newer does not work. It fails with an error like `function import requires a callable`.
 
 `jeep-sqlite` is a Stencil Component which is using `sql.js` for sql in-memory queries and store the database in the Browser on a `localforage` IndexedDB store named `jeepSqliteStore` and inside a table named `databases`.
 
