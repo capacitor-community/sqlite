@@ -302,6 +302,8 @@ public class Database {
                         _db = null;
                         throw new Exception(msg);
                     }
+                    // ALWAYS set _isOpen before the upgrade. deleteSQL() needs it for a DELETE ... WHERE statement.
+                    _isOpen = true;
                     if (_version > curVersion && _vUpgObject != null && _vUpgObject.size() > 0) {
                         //                           if (_vUpgObject != null && _vUpgObject.size() > 0) {
                         try {
@@ -328,7 +330,6 @@ public class Database {
                             throw new Exception(msg);
                         }
                     }
-                    _isOpen = true;
                     return;
                 } else {
                     _isOpen = false;
@@ -357,6 +358,9 @@ public class Database {
     public void close() throws Exception {
         if (_db.isOpen()) {
             try {
+                // An open transaction keeps its connection, so _db.close() alone leaves the file locked.
+                // Only a transaction of the calling thread is ended.
+                rollbackTransaction();
                 _db.close();
                 _isOpen = false;
                 return;
@@ -405,10 +409,14 @@ public class Database {
         Boolean transaction = others.length == 1 ? others[0] : true;
         JSObject retObj = new JSObject();
         Integer changes = Integer.valueOf(-1);
+        boolean ownsTransaction = false;
         try {
             if (_db != null && _db.isOpen()) {
                 Integer initChanges = _uSqlite.dbChanges(_db);
-                if (transaction) beginTransaction();
+                if (transaction) {
+                    beginTransaction();
+                    ownsTransaction = true;
+                }
                 for (String cmd : statements) {
                     if (!cmd.endsWith(";")) cmd += ";";
                     String nCmd = cmd;
@@ -431,7 +439,7 @@ public class Database {
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         } finally {
-            if (_db != null && transaction && _db.inTransaction()) rollbackTransaction();
+            if (ownsTransaction && _db.inTransaction()) rollbackTransaction();
         }
     }
 
@@ -447,10 +455,14 @@ public class Database {
         Long lastId = (long) -1;
         Integer changes = -1;
         JSObject response = new JSObject();
+        boolean ownsTransaction = false;
         try {
             if (_db != null && _db.isOpen()) {
                 int initChanges = _uSqlite.dbChanges(_db);
-                if (transaction) beginTransaction();
+                if (transaction) {
+                    beginTransaction();
+                    ownsTransaction = true;
+                }
                 for (int i = 0; i < set.length(); i++) {
                     JSONObject row = set.getJSONObject(i);
                     JSObject respSet = new JSObject();
@@ -483,7 +495,7 @@ public class Database {
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         } finally {
-            if (_db != null && transaction && _db.inTransaction()) rollbackTransaction();
+            if (ownsTransaction && _db.inTransaction()) rollbackTransaction();
         }
     }
 
@@ -616,10 +628,14 @@ public class Database {
         JSObject retObj = new JSObject();
         long lastId = (long) -1;
         int changes = -1;
+        boolean ownsTransaction = false;
         try {
             if (_db != null && _db.isOpen() && statement.length() > 0) {
                 int initChanges = _uSqlite.dbChanges(_db);
-                if (transaction) beginTransaction();
+                if (transaction) {
+                    beginTransaction();
+                    ownsTransaction = true;
+                }
                 JSObject response = prepareSQL(statement, values, false, returnMode);
                 lastId = response.getLong("lastId");
                 if (lastId != -1 && transaction) commitTransaction();
@@ -634,7 +650,7 @@ public class Database {
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         } finally {
-            if (_db != null && transaction && _db.inTransaction()) rollbackTransaction();
+            if (ownsTransaction && _db.inTransaction()) rollbackTransaction();
         }
     }
 
